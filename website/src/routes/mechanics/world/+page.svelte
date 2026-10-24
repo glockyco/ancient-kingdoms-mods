@@ -182,24 +182,24 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Npc.cs:InteractNpc; Player.cs:UserCode_CmdBindPlayer; TargetBuffSkill.cs:Apply; ScrollItem.cs:UseAfterCast; website/data/compendium.db:skills.bind_affinity — confirming a binder or bind spell saves the player's current zone and position; Bind Affinity belongs to Ranger, Cleric, Wizard, Druid and Necromancer. -->
       <p>
-        Set your bind point where you want to return, using a <a
+        To set your bind point, speak to a <a
           href="/npcs?npcs.role_keys=is_soul_binder"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >soul binder</a
-        >,
+        >, cast
         <a
           href="/skills/bind_affinity"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >Bind Affinity</a
         >
-        spell, or a
+        or use a
         <a
           href="/items/scroll_of_binding"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >Scroll of Binding</a
         >
-        and confirm the binding. Bind Affinity is available to Rangers, Clerics, Wizards,
-        Druids, and Necromancers.
+        where you want to return, then confirm the binding. Rangers, Clerics, Wizards,
+        Druids, and Necromancers can cast Bind Affinity.
       </p>
       <!-- Source: server-scripts/TravelItem.cs:22-41 — a Bind Point travel item reads the saved bind point and teleports without changing it. The exported gate_scroll item is a TravelItem. -->
       <p>
