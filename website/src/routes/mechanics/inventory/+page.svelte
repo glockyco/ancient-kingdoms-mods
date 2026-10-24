@@ -810,13 +810,14 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PlayerEquipment.cs:OnStartServer; website/data/compendium.db:items.stats.max_durability — 16 equipment slots, most gear 10 points; Rusty Pickaxe 10, other pickaxes 20–250. -->
       <p>
-        Equipment has 16 equipped slots. Most gear has 10 durability points. The
+        You have 16 equipment slots. Most gear has 10 durability points. The
         Rusty Pickaxe also has 10, and other pickaxes have 20 to 250.
       </p>
       <!-- Source: server-scripts/Player.cs:OnDeath — each equipped item loses one durability point. -->
       <p>
         <span class="block"
-          >Each death costs 1 durability point: 10% on most gear.</span
+          >Each equipped item loses 1 durability point when you die: 10% on most
+          gear.</span
         >
         <span class="block"
           ><a
@@ -829,8 +830,8 @@
       <!-- Source: server-scripts/Combat.cs:DealDamageAt; server-scripts/PlayerEquipment.cs:57-58 — after the miss or resistance check, a successful armor-breaking chance selects any of the 16 player equipment slots and removes 1–4 points from unbroken gear, including mercenary gear. -->
       <p>
         On a successful hit, an armor-breaking skill can select one of your 16
-        equipment slots at random. If it holds unbroken gear, that item loses
-        1–4 durability points. Mercenary gear can lose durability the same way.
+        equipment slots at random. If it holds unbroken gear, that item loses 1
+        to 4 durability points. Mercenary gear can lose durability the same way.
       </p>
       <!-- Source: server-scripts/Combat.cs:DealDamageAt — each skill's armor-breaking chance determines whether an equipment slot is selected after a successful hit. -->
       <p>
