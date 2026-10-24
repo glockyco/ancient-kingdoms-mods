@@ -121,7 +121,7 @@ export function avoidanceCalculation(physical = false): Calculation {
         name: physical ? statName("block_chance") : "Resist contribution",
         expression: physical
           ? `Your character window's ${statName("block_chance")}`
-          : "Your Magic Resist, Fire Resist, Cold Resist, Poison Resist or Disease Resist × 0.05%, for that damage type",
+          : "Your Magic Resist, Fire Resist, Cold Resist, Poison Resist or Disease Resist × 0.05 percentage points, for that damage type",
       },
       {
         name: "Level contribution",
