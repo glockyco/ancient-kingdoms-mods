@@ -9,13 +9,17 @@ using UnityEngine;
 namespace DataExporter.Exporters;
 
 /// <summary>
-/// Exports the Dynamic Events settings and the city invasion definitions.
+/// Exports the Dynamic Events settings, the city invasion definitions, and what each event region
+/// can host.
 /// </summary>
 /// <remarks>
 /// The game loads the definitions with <c>Resources.LoadAll</c> from <c>RegionalEvents</c>, and the
-/// exporter reads them the same way. Schedules, goals and rewards are code, not data.
+/// exporter reads them the same way. Region activities come from the game's own discovery, which
+/// needs the hosted world because it finds each city's boundary among spawned zone triggers.
+/// Schedules, goals and rewards are code, not data.
 /// Source: server-scripts/RegionalInvasions.cs:Definitions — Resources.LoadAll from RegionalEvents.
 /// Source: server-scripts/NetworkManagerMMO.cs:regionalEvents — the server's RegionalEventSettings.
+/// Source: server-scripts/RegionalEventActivities.cs:Discover — fishing, cooking and hunting options per region.
 /// </remarks>
 public class RegionalEventExporter : BaseExporter
 {
@@ -82,18 +86,117 @@ public class RegionalEventExporter : BaseExporter
             throw new InvalidOperationException("No regional invasion definitions were found under RegionalEvents.");
 
         data.invasions.Sort((a, b) => string.CompareOrdinal(a.id, b.id));
+        data.regions = ExportRegions(settings, data.invasions);
         WriteJson(data, "regional_events.json");
-        Logger.Msg($"✓ Exported {data.invasions.Count} regional invasions");
+        Logger.Msg($"✓ Exported {data.invasions.Count} regional invasions and {data.regions.Count} event regions");
     }
 
-    private static string ZoneId(int zone, string invasionId)
+    // Source: server-scripts/RegionalEvents.cs:TryStart — the goal counts up to five players in the region.
+    private const int MaxCountedPlayers = 5;
+
+    // Source: server-scripts/RegionalEvents.cs:TryStart — discovery runs with 12 + 3 per extra player as the goal.
+    private static int ActivityGoal(int players) => 12 + 3 * (players - 1);
+
+    private static List<RegionalEventRegionData> ExportRegions(
+        Il2Cpp.RegionalEventSettings settings, IReadOnlyList<RegionalInvasionData> invasions)
+    {
+        var duration = Il2Cpp.RegionalEvents.Minutes(settings.activityDurationMinutes, 20f);
+        var zones = new List<int>();
+        foreach (var entry in Il2Cpp.ZoneInfo.zones)
+            zones.Add(entry.Key);
+        zones.Sort();
+
+        var regions = new List<RegionalEventRegionData>();
+        foreach (var zone in zones.Where(Il2Cpp.RegionalEvents.IsRegion))
+        {
+            var zoneId = ZoneId(zone, $"region {zone}");
+            var region = new RegionalEventRegionData { zone_id = zoneId };
+            var huntPlayers = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (var players = 1; players <= MaxCountedPlayers; players++)
+            {
+                var activities = Il2Cpp.RegionalEventActivities.Discover(zone, ActivityGoal(players), duration)
+                    ?? throw new InvalidOperationException($"Region {zoneId}: discovery returned nothing.");
+                if (players == 1)
+                    ReadRequests(activities, region, invasions);
+                // A higher goal only removes animals, so the last goal that keeps one is its limit.
+                foreach (var choice in activities.huntChoices)
+                    huntPlayers[SanitizeId(choice)] = players;
+            }
+            region.hunt_targets = huntPlayers
+                .Select(pair => new RegionalHuntTargetData { monster_id = pair.Key, max_players = pair.Value })
+                .OrderBy(target => target.monster_id, StringComparer.Ordinal)
+                .ToList();
+            regions.Add(region);
+        }
+        if (regions.Count == 0)
+            throw new InvalidOperationException("No zone is a regional event region.");
+
+        // Source: server-scripts/RegionalEvents.cs:CombatRegion — a dungeon's kills count for its evacuation region.
+        var byZoneId = new Dictionary<string, RegionalEventRegionData>(StringComparer.Ordinal);
+        foreach (var region in regions)
+            byZoneId.Add(region.zone_id, region);
+        foreach (var zone in zones)
+        {
+            var info = Il2Cpp.ZoneInfo.zones[(byte)zone];
+            if (info == null || !info.isDungeon)
+                continue;
+            var parent = Il2Cpp.RegionalEvents.CombatRegion(zone);
+            if (Il2Cpp.RegionalEvents.IsRegion(parent))
+                byZoneId[ZoneId(parent, $"dungeon {zone}")].dungeon_zone_ids.Add(ZoneId(zone, $"dungeon {zone}"));
+        }
+        foreach (var region in regions)
+            region.dungeon_zone_ids.Sort(StringComparer.Ordinal);
+        return regions;
+    }
+
+    private static void ReadRequests(
+        Il2Cpp.RegionalEventActivities activities, RegionalEventRegionData region,
+        IReadOnlyList<RegionalInvasionData> invasions)
+    {
+        var invasion = invasions.SingleOrDefault(candidate => candidate.zone_id == region.zone_id);
+        if (invasion != null && activities.cityBoundary == null)
+            throw new InvalidOperationException(
+                $"Region {region.zone_id}: the zone trigger for {invasion.city_name} is not spawned. Host the world before exporting.");
+
+        var kinds = new Il2CppSystem.Collections.Generic.List<Il2Cpp.RegionalEventKind>();
+        activities.AddAvailableKinds(kinds);
+        region.fishing = kinds.Contains(Il2Cpp.RegionalEventKind.FishingSupplies);
+        if (!kinds.Contains(Il2Cpp.RegionalEventKind.CookingSupplies))
+            return;
+
+        region.cooking_city = activities.City.ToString();
+        region.cooking_animal = activities.cookingAnimal;
+        foreach (var dish in activities.cityDishes)
+        {
+            if (dish == null || string.IsNullOrEmpty(dish.name))
+                throw new InvalidOperationException($"Region {region.zone_id}: a cooking request dish has no name.");
+            region.cooking_dish_ids.Add(SanitizeId(dish.name));
+        }
+        region.cooking_dish_ids.Sort(StringComparer.Ordinal);
+
+        foreach (var obj in Resources.FindObjectsOfTypeAll(Il2CppType.Of<Il2Cpp.ScriptableItem>()))
+        {
+            var item = obj.TryCast<Il2Cpp.ScriptableItem>();
+            if (item == null || string.IsNullOrEmpty(item.name)
+                || Il2Cpp.RegionalEventActivities.MeatAnimal(item.name) != region.cooking_animal)
+                continue;
+            var id = SanitizeId(item.name);
+            if (!region.cooking_meat_ids.Contains(id))
+                region.cooking_meat_ids.Add(id);
+        }
+        if (region.cooking_meat_ids.Count == 0)
+            throw new InvalidOperationException($"Region {region.zone_id}: no item counts as {region.cooking_animal} meat.");
+        region.cooking_meat_ids.Sort(StringComparer.Ordinal);
+    }
+
+    private static string ZoneId(int zone, string context)
     {
         if (zone < byte.MinValue || zone > byte.MaxValue
             || Il2Cpp.ZoneInfo.zones == null || !Il2Cpp.ZoneInfo.zones.ContainsKey((byte)zone))
-            throw new InvalidOperationException($"Regional invasion {invasionId} names unknown zone {zone}.");
+            throw new InvalidOperationException($"Regional event {context} names unknown zone {zone}.");
         var info = Il2Cpp.ZoneInfo.zones[(byte)zone];
         if (info == null || string.IsNullOrEmpty(info.name))
-            throw new InvalidOperationException($"Regional invasion {invasionId} names unnamed zone {zone}.");
+            throw new InvalidOperationException($"Regional event {context} names unnamed zone {zone}.");
         return SanitizeId(info.name);
     }
 }

@@ -79,6 +79,11 @@ public static class ExportConfig
       <Private>False</Private>
     </Reference>
 
+    <Reference Include="Il2CppSystem.Core">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppSystem.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <Reference Include="Il2CppInterop.Runtime">
       <HintPath>$(MelonLoaderPath)\net6\Il2CppInterop.Runtime.dll</HintPath>
       <Private>False</Private>

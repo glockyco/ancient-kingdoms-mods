@@ -4388,6 +4388,9 @@
       "sha256": "cda22fe4315d32c46837ed9697eb487a382644ca517e32cf5fd2e03729a941dd",
       "span": 1
     },
+    "RegionalEventActivities.cs:Discover": {
+      "span": 0
+    },
     "RegionalEventActivities.cs:TypicalAnimal": {
       "span": 0
     },
@@ -4522,6 +4525,12 @@
     "RegionalEvents.cs:559": {
       "sha256": "1fa9250f7f75ec07bbaaa105f9c46be465ef55322d0cf0000ae20f82d0ee3166",
       "span": 1
+    },
+    "RegionalEvents.cs:CombatRegion": {
+      "span": 0
+    },
+    "RegionalEvents.cs:TryStart": {
+      "span": 0
     },
     "RegionalInvasions.cs:182-195": {
       "sha256": "66d28f83c9c85f681aba3fa0c3ccfcaab6e94773863b6e310fe1318f2742cca9",

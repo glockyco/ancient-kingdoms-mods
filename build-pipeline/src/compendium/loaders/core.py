@@ -30,6 +30,7 @@ from compendium.models import (
     ProgressionExportData,
     QuestData,
     RegionalEventData,
+    RegionalEventRegionData,
     ScribingRecipeData,
     ScribingTableData,
     SkillData,
@@ -1084,7 +1085,7 @@ def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
 
 
 def load_regional_events(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load the Dynamic Events settings and the city invasions."""
+    """Load the Dynamic Events settings, the city invasions and the event regions."""
     console.print("Loading regional events...")
 
     filepath = export_dir / "regional_events.json"
@@ -1132,10 +1133,66 @@ def load_regional_events(conn: sqlite3.Connection, export_dir: Path) -> None:
                 for ordinal, monster_id in enumerate(invasion.attacker_monster_ids)
             ],
         )
+    _load_regional_event_regions(cursor, events.regions, monsters)
     conn.commit()
     console.print(
-        f"  [green]OK[/green] Loaded {len(events.invasions)} regional invasions"
+        f"  [green]OK[/green] Loaded {len(events.invasions)} regional invasions "
+        f"and {len(events.regions)} event regions"
     )
+
+
+def _load_regional_event_regions(
+    cursor: sqlite3.Cursor,
+    regions: list[RegionalEventRegionData],
+    monsters: set[str],
+) -> None:
+    items = {row[0] for row in cursor.execute("SELECT id FROM items")}
+    zones = {row[0] for row in cursor.execute("SELECT id FROM zones")}
+    for region in regions:
+        named_zones = [region.zone_id, *region.dungeon_zone_ids]
+        named_items = [*region.cooking_meat_ids, *region.cooking_dish_ids]
+        named_monsters = [target.monster_id for target in region.hunt_targets]
+        for kind, names, known in (
+            ("zones", named_zones, zones),
+            ("items", named_items, items),
+            ("monsters", named_monsters, monsters),
+        ):
+            missing = [name for name in names if name not in known]
+            if missing:
+                raise ValueError(
+                    f"Regional event region {region.zone_id} names unknown {kind}: {missing}"
+                )
+        cursor.execute(
+            "INSERT INTO regional_event_regions "
+            "(zone_id, fishing, cooking_city, cooking_animal) VALUES (?, ?, ?, ?)",
+            (
+                region.zone_id,
+                region.fishing,
+                region.cooking_city,
+                region.cooking_animal,
+            ),
+        )
+        cursor.executemany(
+            "INSERT INTO regional_event_cooking_meats (region_zone_id, item_id) VALUES (?, ?)",
+            [(region.zone_id, item_id) for item_id in region.cooking_meat_ids],
+        )
+        cursor.executemany(
+            "INSERT INTO regional_event_cooking_dishes (region_zone_id, item_id) VALUES (?, ?)",
+            [(region.zone_id, item_id) for item_id in region.cooking_dish_ids],
+        )
+        cursor.executemany(
+            "INSERT INTO regional_event_hunt_targets "
+            "(region_zone_id, monster_id, max_players) VALUES (?, ?, ?)",
+            [
+                (region.zone_id, target.monster_id, target.max_players)
+                for target in region.hunt_targets
+            ],
+        )
+        cursor.executemany(
+            "INSERT INTO regional_event_dungeons (dungeon_zone_id, region_zone_id) "
+            "VALUES (?, ?)",
+            [(dungeon_id, region.zone_id) for dungeon_id in region.dungeon_zone_ids],
+        )
 
 
 def load_alchemy_tables(conn: sqlite3.Connection, export_dir: Path) -> None:

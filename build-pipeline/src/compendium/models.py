@@ -1592,13 +1592,35 @@ class RegionalInvasionData(BaseModel):
     attacker_monster_ids: list[str] = Field(min_length=1)
 
 
+class RegionalHuntTargetData(BaseModel):
+    """An animal a region's hunting request can ask for."""
+
+    monster_id: str
+    max_players: int = Field(ge=1, le=5)
+
+
+class RegionalEventRegionData(BaseModel):
+    """The fishing, cooking and hunting requests an event region can host."""
+
+    zone_id: str
+    fishing: bool
+    # The exporter omits null properties, so a region without a cooking request has neither.
+    cooking_city: str | None = None
+    cooking_animal: str | None = None
+    cooking_meat_ids: list[str]
+    cooking_dish_ids: list[str]
+    hunt_targets: list[RegionalHuntTargetData]
+    dungeon_zone_ids: list[str]
+
+
 class RegionalEventData(BaseModel):
-    """The Dynamic Events settings and invasions from regional_events.json."""
+    """The Dynamic Events settings, invasions and regions from regional_events.json."""
 
     enabled: bool
     activity_duration_minutes: float
     prosperity_duration_minutes: float
     invasions: list[RegionalInvasionData] = Field(min_length=1)
+    regions: list[RegionalEventRegionData] = Field(min_length=1)
 
 
 # =============================================================================

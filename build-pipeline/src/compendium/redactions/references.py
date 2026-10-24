@@ -230,6 +230,15 @@ CANONICAL_DIRECTIONS: dict[tuple[str, str], Direction] = {
     # An invasion spawns each of its attackers in its city.
     ("regional_invasion_attackers", "invasion_id"): "provided_by",
     ("regional_invasion_attackers", "monster_id"): "provides",
+    # A region's request rows belong to the region. A request asks for dishes,
+    # meat and animals that exist without it, so it provides none of them.
+    ("regional_event_cooking_meats", "region_zone_id"): "provided_by",
+    ("regional_event_cooking_meats", "item_id"): "none",
+    ("regional_event_cooking_dishes", "region_zone_id"): "provided_by",
+    ("regional_event_cooking_dishes", "item_id"): "none",
+    ("regional_event_hunt_targets", "region_zone_id"): "provided_by",
+    ("regional_event_hunt_targets", "monster_id"): "none",
+    ("regional_event_dungeons", "region_zone_id"): "provided_by",
 }
 for _domain, _column in PROVIDER_COLUMNS.items():
     CANONICAL_DIRECTIONS[(f"acquisition_providers_{_domain}", _column)] = "provided_by"

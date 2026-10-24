@@ -738,6 +738,52 @@ CREATE TABLE regional_invasion_attackers (
 
 CREATE INDEX idx_regional_invasion_attackers_monster ON regional_invasion_attackers(monster_id);
 
+-- What each event region can host besides herb, ore and invasion requests, as the
+-- game's own discovery finds it. Herb, ore and invasion availability are code rules.
+CREATE TABLE regional_event_regions (
+    zone_id TEXT PRIMARY KEY REFERENCES zones(id),
+    fishing BOOLEAN NOT NULL,
+    cooking_city TEXT,                      -- RegionalInvasionCity member whose ovens host the cooking request
+    cooking_animal TEXT,                    -- the animal whose meat a dish must contain
+    CHECK ((cooking_city IS NULL) = (cooking_animal IS NULL))
+);
+
+-- Ingredients the game counts as the cooking request's meat.
+CREATE TABLE regional_event_cooking_meats (
+    region_zone_id TEXT NOT NULL REFERENCES regional_event_regions(zone_id),
+    item_id TEXT NOT NULL REFERENCES items(id),
+    PRIMARY KEY (region_zone_id, item_id)
+);
+
+CREATE INDEX idx_regional_event_cooking_meats_item ON regional_event_cooking_meats(item_id);
+
+-- Dishes that count for the cooking request: made from the meat, directly or through another dish.
+CREATE TABLE regional_event_cooking_dishes (
+    region_zone_id TEXT NOT NULL REFERENCES regional_event_regions(zone_id),
+    item_id TEXT NOT NULL REFERENCES items(id),
+    PRIMARY KEY (region_zone_id, item_id)
+);
+
+CREATE INDEX idx_regional_event_cooking_dishes_item ON regional_event_cooking_dishes(item_id);
+
+-- Animals a hunting request can ask for, up to the most players whose goal they still meet.
+CREATE TABLE regional_event_hunt_targets (
+    region_zone_id TEXT NOT NULL REFERENCES regional_event_regions(zone_id),
+    monster_id TEXT NOT NULL REFERENCES monsters(id),
+    max_players INTEGER NOT NULL CHECK (max_players BETWEEN 1 AND 5),
+    PRIMARY KEY (region_zone_id, monster_id)
+);
+
+CREATE INDEX idx_regional_event_hunt_targets_monster ON regional_event_hunt_targets(monster_id);
+
+-- Dungeons whose kills count as their region's for Prosperity.
+CREATE TABLE regional_event_dungeons (
+    dungeon_zone_id TEXT PRIMARY KEY REFERENCES zones(id),
+    region_zone_id TEXT NOT NULL REFERENCES regional_event_regions(zone_id)
+);
+
+CREATE INDEX idx_regional_event_dungeons_region ON regional_event_dungeons(region_zone_id);
+
 -- =============================================================================
 -- NPCS
 -- =============================================================================
