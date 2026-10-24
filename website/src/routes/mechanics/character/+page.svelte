@@ -715,9 +715,9 @@
         <p>
           Commands run once, from top to bottom. The macro does not loop, wait
           for casts or cooldowns, or retry failed actions. Add pauses for your
-          cast times. Normal target, range, resource, equipment, and cooldown
-          rules still apply. Normal skill use can still queue a skill behind a
-          current cast or move you into range.
+          cast times. Skills have the same target, range, resource, equipment,
+          and cooldown requirements as when you use them directly. They can
+          queue behind your current cast or move you into range.
         </p>
         <!-- Source: server-scripts/UISkillbar.cs:ExecuteMacroCommand,ExecuteCompanionMacro; server-scripts/SkillbarMacroSequence.cs:Tick — unknown, unlearned or passive skills, missing usable items and companion orders that no companion receives stop the sequence, but cooldown warnings and unsuccessful ordinary actions do not. -->
         <p>
