@@ -29,6 +29,7 @@ from compendium.models import (
     ProfessionData,
     ProgressionExportData,
     QuestData,
+    RegionalEventData,
     ScribingRecipeData,
     ScribingTableData,
     SkillData,
@@ -1079,6 +1080,61 @@ def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(triggers)} summon triggers")
     console.print(
         f"  [green]OK[/green] Loaded {placeholder_count} placeholder relationships"
+    )
+
+
+def load_regional_events(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load the Dynamic Events settings and the city invasions."""
+    console.print("Loading regional events...")
+
+    filepath = export_dir / "regional_events.json"
+    _require_export(filepath)
+    with open(filepath, encoding="utf-8") as f:
+        events = RegionalEventData.model_validate(json.load(f))
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO regional_event_settings "
+        "(id, enabled, activity_duration_minutes, prosperity_duration_minutes) "
+        "VALUES (1, ?, ?, ?)",
+        (
+            events.enabled,
+            events.activity_duration_minutes,
+            events.prosperity_duration_minutes,
+        ),
+    )
+    monsters = {row[0] for row in cursor.execute("SELECT id FROM monsters")}
+    for invasion in events.invasions:
+        missing = [m for m in invasion.attacker_monster_ids if m not in monsters]
+        if missing:
+            raise ValueError(
+                f"Regional invasion {invasion.id} names unknown monsters: {missing}"
+            )
+        cursor.execute(
+            "INSERT INTO regional_invasions "
+            "(id, city, city_name, zone_id, health_multiplier, minimum_level, maximum_level) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                invasion.id,
+                invasion.city,
+                invasion.city_name,
+                invasion.zone_id,
+                invasion.health_multiplier,
+                invasion.minimum_level,
+                invasion.maximum_level,
+            ),
+        )
+        cursor.executemany(
+            "INSERT INTO regional_invasion_attackers (invasion_id, ordinal, monster_id) "
+            "VALUES (?, ?, ?)",
+            [
+                (invasion.id, ordinal, monster_id)
+                for ordinal, monster_id in enumerate(invasion.attacker_monster_ids)
+            ],
+        )
+    conn.commit()
+    console.print(
+        f"  [green]OK[/green] Loaded {len(events.invasions)} regional invasions"
     )
 
 

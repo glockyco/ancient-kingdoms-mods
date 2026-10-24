@@ -2363,6 +2363,9 @@
     "NetworkManagerMMO.cs:OnStartServer": {
       "span": 0
     },
+    "NetworkManagerMMO.cs:regionalEvents": {
+      "span": 0
+    },
     "Npc.cs": {
       "span": 0
     },
@@ -4278,6 +4281,9 @@
     "RandomItem.cs:6": {
       "sha256": "3e13b7703edced5f3016e98239a2d0b353d8a643e0e3de51f08fcf462931d42f",
       "span": 1
+    },
+    "RegionalInvasions.cs:Definitions": {
+      "span": 0
     },
     "RelicItem.cs:12-13": {
       "sha256": "bd9b584a79c3542b75d4d262dfba52709430d46e913f70c93670d6b68ff3c495",

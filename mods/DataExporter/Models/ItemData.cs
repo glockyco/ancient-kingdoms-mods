@@ -75,6 +75,8 @@ public class ItemData
     // === ScrollItem fields (when item_type = scroll) ===
     public string scroll_skill_id { get; set; }
     public bool is_repair_kit { get; set; }
+    /// <summary>The scroll applies on use, without the cast and without cancelling the current cast.</summary>
+    public bool scroll_instant_use { get; set; }
 
     // === MountItem fields (when item_type = mount) ===
     public float mount_speed { get; set; }

@@ -357,6 +357,7 @@ public class ItemExporter : BaseExporter
         if (scrollItem == null) return;
 
         itemData.is_repair_kit = scrollItem.isRepairKit;
+        itemData.scroll_instant_use = scrollItem.instantUse;
         if (scrollItem.skillEffect != null)
         {
             itemData.scroll_skill_id = SanitizeId(scrollItem.skillEffect.name);

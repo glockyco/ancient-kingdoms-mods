@@ -47,6 +47,7 @@ from compendium.loaders.core import (
     load_progression,
     load_quests,
     load_recipe_family,
+    load_regional_events,
     load_scribing_tables,
     load_skills,
     load_static_data,
@@ -296,6 +297,17 @@ DATASETS: tuple[Dataset, ...] = (
         ("summon_triggers", "summon_trigger_placeholders"),
         after=("zones", "monster_spawns", "npc_spawns"),
         handler=_plain(load_summon_triggers),
+    ),
+    Dataset(
+        "regional_events",
+        ("regional_events.json",),
+        (
+            "regional_event_settings",
+            "regional_invasions",
+            "regional_invasion_attackers",
+        ),
+        after=("zones", "monsters"),
+        handler=_plain(load_regional_events),
     ),
     Dataset(
         "quests",

@@ -411,6 +411,7 @@ CREATE TABLE items (
     scroll_skill_id TEXT REFERENCES skills(id),
     scroll_skill_name TEXT,
     is_repair_kit BOOLEAN DEFAULT 0,
+    scroll_instant_use BOOLEAN NOT NULL DEFAULT 0,  -- applies on use, without the 1-second scroll cast
     mount_speed REAL DEFAULT 0.0,
     backpack_slots INTEGER DEFAULT 0,
     backpack_is_unique BOOLEAN DEFAULT 0,
@@ -704,6 +705,38 @@ CREATE TABLE summon_trigger_placeholders (
 
 CREATE INDEX idx_summon_placeholders_trigger ON summon_trigger_placeholders(trigger_id);
 CREATE INDEX idx_summon_placeholders_spawn ON summon_trigger_placeholders(spawn_id);
+
+-- =============================================================================
+-- REGIONAL EVENTS (Dynamic Events)
+-- =============================================================================
+
+-- The server's Dynamic Events settings. Schedules, goals and rewards are code.
+CREATE TABLE regional_event_settings (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    enabled BOOLEAN NOT NULL,
+    activity_duration_minutes REAL NOT NULL,
+    prosperity_duration_minutes REAL NOT NULL
+);
+
+CREATE TABLE regional_invasions (
+    id TEXT PRIMARY KEY,
+    city TEXT NOT NULL,                     -- RegionalInvasionCity member, such as 'Elven'
+    city_name TEXT NOT NULL,
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    health_multiplier REAL NOT NULL,
+    minimum_level INTEGER NOT NULL,
+    maximum_level INTEGER NOT NULL CHECK (maximum_level >= minimum_level)
+);
+
+-- Attackers in the order the waves cycle through them.
+CREATE TABLE regional_invasion_attackers (
+    invasion_id TEXT NOT NULL REFERENCES regional_invasions(id),
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    monster_id TEXT NOT NULL REFERENCES monsters(id),
+    PRIMARY KEY (invasion_id, ordinal)
+);
+
+CREATE INDEX idx_regional_invasion_attackers_monster ON regional_invasion_attackers(monster_id);
 
 -- =============================================================================
 -- NPCS

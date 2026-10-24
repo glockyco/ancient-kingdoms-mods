@@ -119,6 +119,7 @@ namespace DataExporter
                 new("scribingRecipes", new[] { "scribing_recipes.json" }, () => new ScribingRecipeExporter(LoggerInstance, path, snapshot).Export()),
                 new("summonTriggers", new[] { "summon_triggers.json" }, () => new SummonTriggerExporter(LoggerInstance, path, snapshot).Export()),
                 new("luckTokens", new[] { "luck_tokens.json" }, () => new LuckTokenExporter(LoggerInstance, path).Export()),
+                new("regionalEvents", new[] { "regional_events.json" }, () => new RegionalEventExporter(LoggerInstance, path).Export()),
                 new("altars", new[] { "altars.json" }, () => new AltarExporter(LoggerInstance, path).Export()),
                 new("treasureLocations", new[] { "treasure_locations.json" }, () => new TreasureLocationExporter(LoggerInstance, path).Export()),
                 new("pets", new[] { "pets.json" }, () => new PetExporter(LoggerInstance, path, visuals).Export()),

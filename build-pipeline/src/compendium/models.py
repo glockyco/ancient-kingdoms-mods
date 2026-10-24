@@ -437,6 +437,7 @@ class ItemData(BaseModel):
     book_wisdom_gain: int = 0
     book_charisma_gain: int = 0
     is_repair_kit: bool = False
+    scroll_instant_use: bool = False
     mount_speed: float = 0.0
     backpack_slots: int = 0
     backpack_is_unique: bool = False
@@ -1574,6 +1575,30 @@ class LuckTokenData(BaseModel):
     fragment_amount_needed: int = 0
     boss_luck_bonus: float = 0.05
     fragment_drop_chance: float = 0.05
+
+
+class RegionalInvasionData(BaseModel):
+    """A city invasion definition from regional_events.json."""
+
+    id: str
+    city: str
+    city_name: str
+    zone_id: str
+    center: Point2
+    radius: float
+    health_multiplier: float
+    minimum_level: int
+    maximum_level: int
+    attacker_monster_ids: list[str] = Field(min_length=1)
+
+
+class RegionalEventData(BaseModel):
+    """The Dynamic Events settings and invasions from regional_events.json."""
+
+    enabled: bool
+    activity_duration_minutes: float
+    prosperity_duration_minutes: float
+    invasions: list[RegionalInvasionData] = Field(min_length=1)
 
 
 # =============================================================================
