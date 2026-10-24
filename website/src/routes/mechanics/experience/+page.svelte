@@ -530,7 +530,7 @@
               href="/mercenaries#how-it-works"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >veteran bonuses</a
-            >. Living summoned mercenaries are healed.
+            >. Living summoned mercenaries return to full Hit Points.
           </span>
         </p>
         <Calculation calculation={veteranExperience()} />
@@ -668,7 +668,7 @@
         </dl>
         <!-- Source: server-scripts/Experience.cs:max; server-scripts/PlayerSkills.cs:GetTotalVeteranPoints — these totals sum each point's XP cost without ranks that cost 2 points. -->
         <p class="text-sm text-muted-foreground">
-          Without learning ranks that cost 2 points, reaching {MAX_VETERAN_POINTS}
+          If you never learn a rank that costs 2 points, reaching {MAX_VETERAN_POINTS}
           total veteran points takes
           {formatNumber(VETERAN_TOTAL)} XP, roughly {formatNumber(
             VETERAN_TOTAL / TOTAL_TO_CAP,
@@ -681,16 +681,16 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Spending and counting</h3>
         <p class="text-sm text-muted-foreground">
-          Veteran points buy ranks in veteran skills. Your total counts unspent
-          points plus learned veteran ranks.
+          Veteran points buy ranks in veteran skills. Your total is your unspent
+          points plus your learned veteran ranks.
         </p>
         <!-- Source: server-scripts/PlayerSkills.cs:GetTotalVeteranPoints,ResetVeteranSkillPoints; server-scripts/Experience.cs:max — two-point ranks count and refund only one point. -->
         <!-- Observed: docs/game-bugs/two-point-veteran-skills-lose-points-and-progression.md — two-point ranks lower VT and XP cost; paid resets lose the second point. -->
         <p class="text-sm text-muted-foreground">
-          A game defect counts a veteran skill rank that costs 2 points as only
-          1 point. Each such rank lowers your total veteran points by 1 and the
-          next point's XP cost by 20,000 XP. A veteran skill reset refunds only
-          1 of its 2 points.
+          Your total includes only 1 point per learned veteran skill rank, even
+          if the rank costs 2 points. This bug lowers your total by 1 for each
+          2-point rank you learn and cuts the next point's XP cost by 20,000 XP.
+          Resetting refunds only 1 of the 2 points.
         </p>
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Player.cs:11132-11167; server-scripts/Npc.cs:1824-1842; server-scripts/PlayerSkills.cs:1887-1914 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
@@ -721,7 +721,7 @@
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Experience.cs:372-407 — earning stops at 200 total points and pays out the max-level reward item instead. -->
           <span class="block"
-            >Further XP grants veteran points while your total is below {MAX_VETERAN_POINTS}.</span
+            >You can earn up to {MAX_VETERAN_POINTS} total veteran points.</span
           >
           <span class="block"
             >At that total, each filled experience bar grants a
