@@ -940,7 +940,7 @@
             <tr>
               <td class="py-2 pr-4">5 equipped</td>
               <td class="py-2"
-                >The set's skill-level bonuses, for players only</td
+                >The set's skill-rank bonuses, for players only</td
               >
             </tr>
           </tbody>
@@ -950,7 +950,8 @@
       <p>
         <span class="block">The pieces must belong to the same named set.</span>
         <span class="block"
-          >A broken or unequipped piece can remove a threshold bonus.</span
+          >Broken and unequipped pieces do not count toward the 3- and 5-piece
+          bonuses.</span
         >
       </p>
       <!-- Source: server-scripts/MercenaryEquipment.cs:148-185,226-241 and server-scripts/EquipmentItem.cs:525-527 — mercenary set processing has the three-piece attribute threshold but no five-piece skill threshold. -->
