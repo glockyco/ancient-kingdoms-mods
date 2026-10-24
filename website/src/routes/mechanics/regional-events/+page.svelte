@@ -43,8 +43,8 @@
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEvents.cs:120-125,377-432 — checks start 300 seconds after server start and repeat every 1800 seconds, with a 30% roll if connected players exist and no event is active or waiting. -->
       <p>
-        The first check is 300 s after server start. Checks repeat every 1800 s
-        with a 30% chance to start an event. At least one player must be
+        The first check is 5 minutes after server start. Checks repeat every 30
+        minutes with a 30% chance to start an event. At least one player must be
         connected, and no event can already be active or waiting for players.
       </p>
       <!-- Source: server-scripts/RegionalEvents.cs:497-542 — zones 1 through 5 are candidates unless occupied by the current event or Prosperity. Northern Wastes requires an online level 35 player and an invasion definition. -->
@@ -87,13 +87,13 @@
             >
             <tr class="border-b"
               ><td class="p-3">Invasion warning</td><td class="p-3"
-                >Up to 1200 s. A living level 35 or higher player in the region
-                starts the invasion.</td
+                >Up to 20 minutes. A living level 35 or higher player in the
+                region starts the invasion.</td
               ></tr
             >
             <tr class="border-b"
               ><td class="p-3">Active invasion</td><td class="p-3"
-                >600 s after the invasion starts</td
+                >10 minutes after the invasion starts</td
               ></tr
             >
             <tr
@@ -378,7 +378,7 @@
         damage.
       </p>
       <!-- Source: server-scripts/Npc.cs:1505-1510 — a citizen killed by a regional invader respawns 900 seconds after death. -->
-      <p>A city NPC killed by an invader respawns 900 s after death.</p>
+      <p>A city NPC killed by an invader respawns 15 minutes after death.</p>
     </Card.Content>
   </Card.Root>
 </div>
