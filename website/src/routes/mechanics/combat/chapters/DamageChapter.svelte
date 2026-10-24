@@ -338,10 +338,10 @@
     <Formula calculation={advantageCalculation} />
     <!-- Source: server-scripts/Combat.cs:704-708 — against a moving player, stunChance gains Clamp(0.1 − 0.01 × level difference, 0.01, 0.1), capped at 1, and stunTime is at least 0.5 seconds. -->
     <p>
-      Moving gives physical hits against you 10 percentage points more stun
-      chance if the attacker is above level 5. Each level you have above the
-      attacker reduces that bonus by 1 percentage point, to a minimum of 1. The
-      total chance cannot exceed 100%, and the stun lasts at least 0.5 seconds.
+      While you move, physical hits from attackers above level 5 get 10
+      percentage points more stun chance, minus 1 for each level you are above
+      the attacker, but at least 1. The total chance cannot exceed 100%, and the
+      stun lasts at least 0.5 seconds.
     </p>
     <!-- Source: server-scripts/Combat.cs:DealDamageAt; PlayerSkills.cs:CmdUse — Fishing, Gathering, Mining, Digging and Opening occupy slots 19,22,23,26,27; hitting those casts cancels them and grants damage advantage plus 75 percentage points of Critical Chance. -->
     <p>
