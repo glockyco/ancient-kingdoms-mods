@@ -244,22 +244,23 @@
       the target's chance to resist them, to at least 0%. Other debuffs that lower
       resists get no such bonus.
     </p>
-    <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — on a boss, immunity lets through only debuffs that deal damage over time and change nothing else besides Movement Speed; on other monsters it lets through resistance-decrease skills. -->
+    <!-- Source: server-scripts/TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191; BuffSkill.cs:169-190 — immunity accepts pure damage over time with an optional slow, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
     <p>
-      Monsters whose pages list Immune to Debuffs ignore debuffs, with two
+      Monsters whose pages list Immune to Debuffs ignore debuffs, with these
       exceptions:
     </p>
     <ul>
       <li>
-        The five skills above still affect such a monster unless it is a boss.
+        The five skills above and debuffs that grant positive Health
+        Regeneration still affect such a monster unless it is a boss.
       </li>
       <li>
-        A boss still takes debuffs whose only effects are damage over time and
-        optionally a slow, such as <a href="/skills/immolate">Immolate</a> and
-        <a href="/skills/venom_of_the_grave">Venom of the Grave</a>. It ignores
-        the slow.
+        Debuffs whose only effects are damage over time and optionally a slow
+        still affect such a monster.
       </li>
     </ul>
+    <!-- Source: server-scripts/Monster.cs:469-481 — bosses and monsters flagged immune to debuffs ignore every slow. -->
+    <p>Bosses and monsters with Immune to Debuffs ignore the slow.</p>
     <SeeAlso
       links={[{ href: "#root", label: "Root, for bosses and slowing debuffs" }]}
     />

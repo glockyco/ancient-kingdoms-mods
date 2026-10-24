@@ -61,9 +61,9 @@ export interface ImmuneDebuffBypass {
 
 /**
  * A boss lets through only damage over time, optionally with a slow, that changes nothing else.
- * Other monsters let through resistance-decrease skills and positive Health Regeneration. Debuffs
- * never carry the undead illusion or Avatar of War flags the boss check also refuses.
- * Source: server-scripts/BuffSkill.cs:IgnoreImmuneDebuff; TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply
+ * Other monsters with Immune to Debuffs also let through that damage over time,
+ * resistance-decrease skills and positive Health Regeneration.
+ * Source: server-scripts/BuffSkill.cs:169-190; TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191 — flagged non-boss monsters accept the boss rule and the two extra cases.
  */
 export function immuneDebuffBypass(
   skill: SkillDetailView,
@@ -82,12 +82,13 @@ export function immuneDebuffBypass(
     healing > 0 ||
     healthPercent > 0 ||
     (healing >= 0 && healthPercent >= 0);
+  const boss =
+    !refusedByBoss &&
+    value(skill.speed_bonus) <= 0 &&
+    BOSS_DOT_ZERO_FIELDS.every((field) => value(skill[field]) === 0);
   return {
-    boss:
-      !refusedByBoss &&
-      value(skill.speed_bonus) <= 0 &&
-      BOSS_DOT_ZERO_FIELDS.every((field) => value(skill[field]) === 0),
-    otherMonster: skill.is_decrease_resists_skill || healing > 0,
+    boss,
+    otherMonster: boss || skill.is_decrease_resists_skill || healing > 0,
   };
 }
 

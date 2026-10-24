@@ -61,13 +61,10 @@
       >.
     </p>
   {/if}
-  <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — immunity lets through pure damage over time on bosses, and resistance-decrease skills and positive Health per second on other monsters. -->
+  <!-- Source: server-scripts/TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191; BuffSkill.cs:169-190 — immunity lets through pure damage over time with an optional slow on every flagged monster, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
   <p class="text-muted-foreground">
     {#if bypass.boss && bypass.otherMonster}
       Immune to Debuffs does not stop this debuff.
-    {:else if bypass.boss}
-      Bosses with Immune to Debuffs are still affected. Other monsters with that
-      immunity are unaffected.
     {:else if bypass.otherMonster}
       Monsters whose pages list Immune to Debuffs are still affected, except
       bosses.

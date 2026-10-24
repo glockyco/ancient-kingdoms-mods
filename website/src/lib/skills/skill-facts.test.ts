@@ -6,7 +6,11 @@ import type {
   SkillItemSource,
   TimingModel,
 } from "$lib/types/skills";
-import { skillFacts, weaponProcClasses } from "./skill-facts";
+import {
+  immuneDebuffBypass,
+  skillFacts,
+  weaponProcClasses,
+} from "./skill-facts";
 
 function skill(overrides: Partial<SkillDetailView> = {}): SkillDetailView {
   return {
@@ -52,6 +56,78 @@ function pet(overrides: Partial<SkillPet> = {}): SkillPet {
     ...overrides,
   };
 }
+
+describe("debuff immunity bypass", () => {
+  const linear = (base_value: number, bonus_per_level = 0) => ({
+    base_value,
+    bonus_per_level,
+  });
+
+  test("pure damage over time bypasses immunity on bosses and non-boss monsters", () => {
+    for (const speed of [0, -10, -50]) {
+      expect(
+        immuneDebuffBypass(
+          skill({
+            healing_per_second_bonus: linear(-5),
+            speed_bonus: linear(speed),
+          }),
+          1,
+        ),
+      ).toEqual({ boss: true, otherMonster: true });
+    }
+    expect(
+      immuneDebuffBypass(
+        skill({ health_percent_per_second_bonus: linear(-1) }),
+        1,
+      ),
+    ).toEqual({ boss: true, otherMonster: true });
+  });
+
+  test("other effects prevent the pure damage-over-time bypass", () => {
+    for (const extra of [
+      { is_dispel: true },
+      { is_blindness: true },
+      { speed_bonus: linear(1) },
+      { defense_bonus: linear(-1) },
+      {
+        healing_per_second_bonus: linear(-5),
+        health_percent_per_second_bonus: linear(1),
+      },
+    ]) {
+      expect(
+        immuneDebuffBypass(
+          skill({ healing_per_second_bonus: linear(-5), ...extra }),
+          1,
+        ),
+      ).toEqual({ boss: false, otherMonster: false });
+    }
+    expect(immuneDebuffBypass(skill(), 1)).toEqual({
+      boss: false,
+      otherMonster: false,
+    });
+  });
+
+  test("resistance decreases and positive regeneration bypass only non-boss immunity", () => {
+    expect(
+      immuneDebuffBypass(
+        skill({
+          is_decrease_resists_skill: true,
+          magic_resist_bonus: linear(-20),
+        }),
+        1,
+      ),
+    ).toEqual({ boss: false, otherMonster: true });
+    const regeneration = skill({ healing_per_second_bonus: linear(0, 1) });
+    expect(immuneDebuffBypass(regeneration, 1)).toEqual({
+      boss: false,
+      otherMonster: false,
+    });
+    expect(immuneDebuffBypass(regeneration, 2)).toEqual({
+      boss: false,
+      otherMonster: true,
+    });
+  });
+});
 
 describe("skill page facts", () => {
   test("zero-valued exported damage is not actual damage, while nonzero threat retains its card", () => {

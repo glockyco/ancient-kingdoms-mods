@@ -60,6 +60,14 @@
       "sha256": "307a83f2730c82c603dd9014a862c930acb81aa6efd4102a207693371a105187",
       "span": 47
     },
+    "AreaDebuffSkill.cs:155-191": {
+      "sha256": "29c895be59384e3e67d6900d3b69706a02c7f708992662e328b4147de34c7d09",
+      "span": 37
+    },
+    "AreaDebuffSkill.cs:183-191": {
+      "sha256": "22b4b30cedf95be413e8693fe5785ec95d77c072d8dec0f77ef56c5db27e4449",
+      "span": 9
+    },
     "AreaDebuffSkill.cs:192-225": {
       "sha256": "827fc93a44e92ce04167b44084dbb7220acf2c3c12b9c6f801baf183081d073a",
       "span": 34
@@ -339,6 +347,10 @@
       "sha256": "3792632f0045822dfe4cd78432b32dc570bfc8a16e6787b6792fae232a72b7be",
       "span": 18
     },
+    "BuffSkill.cs:169-190": {
+      "sha256": "9c264fb0057173cb02c5b74b3b812cd1a7420c0516498b78350cfb0685502f75",
+      "span": 22
+    },
     "BuffSkill.cs:233-250": {
       "sha256": "13d379cf3086b5ef2fbe868598c93b0244cdc488f6932ef31d6bce0f422980f1",
       "span": 18
@@ -395,9 +407,6 @@
       "span": 0
     },
     "BuffSkill.cs:HasAppearanceIllusion": {
-      "span": 0
-    },
-    "BuffSkill.cs:IgnoreImmuneDebuff": {
       "span": 0
     },
     "BuffSkill.cs:ScaleFearResistChanceBonus": {
@@ -2116,6 +2125,10 @@
     "Monster.cs:4636-4675": {
       "sha256": "9482355022b53dddc8ccdec93c2b3669a06219382c796d628fa1dcdb158fc340",
       "span": 40
+    },
+    "Monster.cs:469-481": {
+      "sha256": "2b0371db6df7e9b59a7af3bd02fcae41417c313baa0f23df33d28253b3f91f57",
+      "span": 13
     },
     "Monster.cs:591-615": {
       "sha256": "e802ad22bc0691c9aff0b5eda0e1c1fc97442ab596a4c694ffb19ab6dca65eee",
@@ -4479,6 +4492,10 @@
       "sha256": "8871eff5a759abf83c81d2ee6c6e4188e4240ddeb854ad8d1af0aa084e6b69ec",
       "span": 33
     },
+    "Skills.cs:1247-1270": {
+      "sha256": "f1119bbd4672bde71f945216a2adbdca60e1c065ab57e252402846e95cabdbc9",
+      "span": 24
+    },
     "Skills.cs:125": {
       "sha256": "dc56f1cf9fbd8eee0d1534ed3a51e7f1b1af20e94d0f460bc9bcfbd97b6e01a8",
       "span": 1
@@ -4816,6 +4833,14 @@
     "TargetDebuffSkill.cs:106-156": {
       "sha256": "6aadf26f047ea235fbea091bb759d8f3daac2c38b6e7e70f16af278c33846a03",
       "span": 51
+    },
+    "TargetDebuffSkill.cs:144-180": {
+      "sha256": "2c2c2de7c32994462d9178b0281c2fa3c5a8dc142e084f03b4b773f7866c72dd",
+      "span": 37
+    },
+    "TargetDebuffSkill.cs:172-180": {
+      "sha256": "79faecd967a2a440ac45168bcea9b7249994480fe476c2797dd4873c44cc2a3d",
+      "span": 9
     },
     "TargetDebuffSkill.cs:181-214": {
       "sha256": "30cde2eb7d886606986baaf75597ec48b69a7c177dcffbce620558a6a22fbbaf",
