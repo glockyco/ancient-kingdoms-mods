@@ -288,10 +288,6 @@
                     onclick={onSelectDiscovery}
                   >
                     {obj.targetName}{obj.zoneName ? ` in ${obj.zoneName}` : ""}
-                    <span class="block text-sm text-muted-foreground">
-                      ({obj.position[0].toFixed(0)}, {(-obj
-                        .position[1]).toFixed(0)})
-                    </span>
                   </button>
                 {:else}
                   <span
