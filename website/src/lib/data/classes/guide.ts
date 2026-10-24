@@ -5,7 +5,7 @@ import type { ClassGuide } from "$lib/types/classes";
 export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   warrior: {
     attributes: {
-      text: "Each Strength point adds 1 Attack Power and 10 maximum Rage. Each Constitution point adds 25 maximum Hit Points and 0.03 percentage points of Block Chance. Constitution adds no Health Regeneration.",
+      text: "Each Strength point adds 1 Attack Power and 10 maximum Rage. Each Constitution point adds 25 maximum Hit Points and 0.03% Block Chance. Constitution adds no Health Regeneration.",
       source:
         "Source: server-scripts/Strength.cs:15-18,80-83; server-scripts/Constitution.cs:13-25,73-76; server-scripts/Health.cs:28-44 — Constitution adds maximum health, not recovery",
     },
@@ -85,7 +85,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   ranger: {
     attributes: {
-      text: "Each Dexterity point adds 0.05 percentage points of Accuracy and 0.03 percentage points of Critical Strike. Bow damage gains 150% of your Dexterity, rounded. Each Strength point adds 1 Attack Power. Direct heals gain 1.2% per Wisdom point, up to a 500% bonus.",
+      text: "Each Dexterity point adds 0.05% Accuracy and 0.03% Critical Strike. Bow damage gains 150% of your Dexterity, rounded. Each Strength point adds 1 Attack Power. Direct heals gain 1.2% per Wisdom point, up to a 500% bonus.",
       source:
         "Source: server-scripts/Dexterity.cs:59-71,89-92; server-scripts/Strength.cs:15-18; server-scripts/Wisdom.cs:107-114 — attribute effects and Ranger multiplier",
     },
@@ -111,7 +111,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   rogue: {
     attributes: {
-      text: "Each Dexterity point adds 0.05 percentage points of Accuracy and 0.03 percentage points of Critical Strike. Poison damage from your attacks gains 250% of your Dexterity, rounded. Each Strength point adds 1 Attack Power and 10 maximum Rage.",
+      text: "Each Dexterity point adds 0.05% Accuracy and 0.03% Critical Strike. Poison damage from your attacks gains 250% of your Dexterity, rounded. Each Strength point adds 1 Attack Power and 10 maximum Rage.",
       source:
         "Source: server-scripts/Dexterity.cs:59-71,89-96; server-scripts/Strength.cs:15-18,80-83 — attribute effects",
     },
@@ -137,7 +137,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   wizard: {
     attributes: {
-      text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. Each Dexterity point adds 0.05 percentage points of Accuracy and 0.03 percentage points of Critical Strike.",
+      text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. Each Dexterity point adds 0.05% Accuracy and 0.03% Critical Strike.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Dexterity.cs:59-71 — Intelligence increases maximum mana and magic damage",
     },
@@ -168,7 +168,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   bard: {
     attributes: {
-      text: "Each Charisma point makes your songs and Final Cadence 0.1% stronger, up to a 200% bonus, and lowers the chance that a target resists your charm by 0.02 percentage points. Wisdom and Intelligence do not change your songs or Final Cadence.",
+      text: "Each Charisma point makes your songs and Final Cadence 0.1% stronger, up to a 200% bonus, and subtracts 0.02% from the chance that a target resists your charm. Wisdom and Intelligence do not change your songs or Final Cadence.",
       source:
         "Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40; server-scripts/BardCharmSongSkill.cs:66-71; server-scripts/BardSongSkill.cs:Apply; server-scripts/BardFinalCadenceSkill.cs:Apply — Charisma scales songs and Final Cadence and reduces charm resistance",
     },
