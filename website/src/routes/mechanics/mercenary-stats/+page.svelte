@@ -680,9 +680,9 @@
             >
             <span class="block"
               >Lower percentages demand stronger hires. At 25%, you accept only
-              the best quarter of each stat roll. The dot spreads your overall
-              stat-roll chance evenly across the rolls, so it may not line up
-              with any one slider.</span
+              the best quarter of each stat roll. The dot marks the single
+              percentage that gives your overall stat-roll chance when applied
+              to every roll, so it may not line up with any one slider.</span
             >
           </p>
         {/if}
