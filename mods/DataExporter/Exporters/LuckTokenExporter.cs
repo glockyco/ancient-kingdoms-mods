@@ -49,8 +49,6 @@ public class LuckTokenExporter : BaseExporter
                 zone_id = SanitizeId(zone.name),
                 zone_name = zone.name,
                 boss_luck_token_id = SanitizeId(bossToken.name),
-                boss_luck_bonus = 0.05f,  // Legacy denormalized field kept for fatecharm relationship wiring; UI no longer displays this as a % bonus
-                fragment_drop_chance = 0.05f  // Hardcoded 5% in Monster.cs (Random.value > 0.95)
             };
 
             // Check if this zone has a fragment token

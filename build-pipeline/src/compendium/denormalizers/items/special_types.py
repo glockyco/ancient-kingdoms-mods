@@ -17,7 +17,7 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
     cursor = conn.cursor()
     cursor.execute("""
         SELECT zone_id, zone_name, boss_luck_token_id, fragment_token_id,
-               fragment_amount_needed, fragment_drop_chance, boss_luck_bonus
+               fragment_amount_needed
         FROM luck_tokens
     """)
 
@@ -30,8 +30,6 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
         boss_token_id,
         fragment_token_id,
         fragment_amount,
-        fragment_drop_chance,
-        boss_bonus,
     ) in cursor.fetchall():
         if fragment_token_id:
             # Loot methods own the native placement-specific fragment roll.
@@ -41,13 +39,12 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
                 UPDATE items
                 SET luck_token_zone_id = ?,
                     luck_token_zone_name = ?,
-                    luck_token_drop_chance = ?
+                    luck_token_role = 'fragment'
                 WHERE id = ?
             """,
                 (
                     zone_id,
                     zone_name,
-                    fragment_drop_chance,
                     fragment_token_id,
                 ),
             )
@@ -70,7 +67,7 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
                 UPDATE items
                 SET luck_token_zone_id = ?,
                     luck_token_zone_name = ?,
-                    luck_token_bonus = ?,
+                    luck_token_role = 'fatecharm',
                     luck_token_fragment_id = ?,
                     luck_token_fragment_name = ?,
                     luck_token_fragments_needed = ?
@@ -79,7 +76,6 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
                 (
                     zone_id,
                     zone_name,
-                    boss_bonus,
                     fragment_token_id,
                     fragment_name,
                     fragment_amount,

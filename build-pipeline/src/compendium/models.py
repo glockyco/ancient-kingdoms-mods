@@ -1573,8 +1573,6 @@ class LuckTokenData(BaseModel):
     boss_luck_token_id: str
     fragment_token_id: str | None = None
     fragment_amount_needed: int = 0
-    boss_luck_bonus: float = 0.05
-    fragment_drop_chance: float = 0.05
 
 
 class RegionalInvasionData(BaseModel):

@@ -25,11 +25,7 @@ export function monsterFatecharm(
   const reference = model.rows.facts.luck_tokens?.find(
     (row) => row.zone_id === zoneId,
   );
-  if (
-    typeof reference?.boss_luck_token_id !== "string" ||
-    Number(reference.boss_luck_bonus) <= 0
-  )
-    return null;
+  if (typeof reference?.boss_luck_token_id !== "string") return null;
   const item = model.entities.get("items")?.get(reference.boss_luck_token_id);
   if (typeof item?.name !== "string")
     throw new Error(`Missing Fatecharm item ${reference.boss_luck_token_id}`);

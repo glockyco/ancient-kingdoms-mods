@@ -663,7 +663,6 @@ describe("canonical source, inspection and provider behavior", () => {
         zone_id: "zone",
         zone_name: "Test dungeon",
         fragment_token_id: "fragment",
-        fragment_drop_chance: 0.05,
       });
       f.output("fragment-output", "normal", "fragment", 1, {
         ordinal: 1,

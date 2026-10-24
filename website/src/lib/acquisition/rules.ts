@@ -722,7 +722,8 @@ export function calculateMethodProbabilities(
       Number(detail.exp_multiplier) >= 1 &&
       typeof fragment?.fragment_token_id === "string"
     ) {
-      const probability = Number(fragment.fragment_drop_chance);
+      // Source: server-scripts/Monster.cs:OnDeath — the fragment drops when Random.value > 0.95, a 5% chance.
+      const probability = 0.05;
       emit(
         {
           kind: "item",

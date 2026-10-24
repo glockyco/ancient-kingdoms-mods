@@ -258,9 +258,7 @@ CREATE TABLE luck_tokens (
     zone_name TEXT NOT NULL,
     boss_luck_token_id TEXT REFERENCES items(id),
     fragment_token_id TEXT REFERENCES items(id),
-    fragment_amount_needed INTEGER DEFAULT 0,
-    boss_luck_bonus REAL DEFAULT 0.05,
-    fragment_drop_chance REAL DEFAULT 0.05
+    fragment_amount_needed INTEGER DEFAULT 0
 );
 
 -- =============================================================================
@@ -440,8 +438,7 @@ CREATE TABLE items (
     -- Luck token properties
     luck_token_zone_id TEXT,
     luck_token_zone_name TEXT,
-    luck_token_drop_chance REAL,
-    luck_token_bonus REAL,
+    luck_token_role TEXT CHECK (luck_token_role IN ('fatecharm', 'fragment')),
     luck_token_fragment_id TEXT REFERENCES items(id),
     luck_token_fragment_name TEXT,
     luck_token_fragments_needed INTEGER,

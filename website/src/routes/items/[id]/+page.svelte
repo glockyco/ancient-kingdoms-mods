@@ -811,7 +811,7 @@
       {/if}
 
       <!-- Fatecharm -->
-      {#if data.item.luck_token_bonus}
+      {#if data.item.luck_token_role === "fatecharm"}
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title level={2}>Fatecharm</Card.Title>
@@ -847,7 +847,7 @@
       {/if}
 
       <!-- Fatecharm Fragment -->
-      {#if data.item.luck_token_drop_chance && data.item.fragment_result_item_id}
+      {#if data.item.luck_token_role === "fragment" && data.item.fragment_result_item_id}
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title level={2}>Fatecharm Fragment</Card.Title>

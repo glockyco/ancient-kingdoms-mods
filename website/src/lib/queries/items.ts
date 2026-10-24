@@ -99,8 +99,7 @@ export interface Item {
   // Luck tokens
   luck_token_zone_id: string | null;
   luck_token_zone_name: string | null;
-  luck_token_drop_chance: number | null;
-  luck_token_bonus: number | null;
+  luck_token_role: "fatecharm" | "fragment" | null;
   luck_token_fragment_id: string | null;
   luck_token_fragment_name: string | null;
   luck_token_fragments_needed: number | null;
