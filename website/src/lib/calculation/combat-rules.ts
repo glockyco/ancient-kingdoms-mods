@@ -218,7 +218,7 @@ export const advantageCalculation: Calculation = {
     {
       name: "Moving-player avoidance",
       expression:
-        "Avoidance chance after any applicable from-behind adjustment − 25 percentage points",
+        "Avoidance chance after the from-behind adjustment, if attacking from behind, − 25 percentage points",
       limit: "at least 0%",
     },
     {
@@ -243,7 +243,7 @@ export const advantageCalculation: Calculation = {
       expression: "Damage after variance + from-behind extra damage + 1",
     },
   ],
-  note: "The from-behind and moving-player adjustments apply only when the hit meets the condition in the step's name.",
+  note: "Attacking from behind means a single-target attack with attacker and target facing the same direction. Moving-player bonuses apply when the target is a moving player.",
   example: () => {
     const behindChance = multiplyF32(0.5, 0.8);
     const movingChance = Math.max(0, addF32(behindChance, -0.25));
