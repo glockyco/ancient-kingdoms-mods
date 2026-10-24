@@ -323,12 +323,12 @@ export function pRaceAtRecruiter(
   return pool.includes(race) ? 1 / pool.length : 0;
 }
 
-/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:17-20, server-scripts/UINpcTrading.cs:870-877 — GetDiscountPurchaseBonus returns Charisma * 0.002 and CalculatePurchaseItemPrice caps it at 0.25. */
+/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:17-20, server-scripts/UINpcTrading.cs:923-930 — GetDiscountPurchaseBonus returns Charisma * 0.002 and CalculatePurchaseItemPrice caps it at 0.25. */
 export function charismaDiscount(charisma: number): number {
   return multiplyF32(clamp(charisma, 0, 125), 0.002);
 }
 
-/** Source: server-scripts/UIMercenaries.cs:657-663, server-scripts/UINpcTrading.cs:870-877 — double-precision base price, then a float32 Charisma product rounded upward. */
+/** Source: server-scripts/UIMercenaries.cs:657-663, server-scripts/UINpcTrading.cs:923-930 — double-precision base price, then a float32 Charisma product rounded upward. */
 export function hirePrice(
   level: number,
   veteran: number,

@@ -465,7 +465,7 @@
           require 15,000 reputation (Friendly 14,000 / 20,000 in the faction panel).
         </li>
         <li>
-          <!-- Source: server-scripts/UINpcTrading.cs:427-431 — per-item faction requirement against the vendor's faction. -->
+          <!-- Source: server-scripts/UINpcTrading.cs:452-456 — per-item faction requirement against the vendor's faction. -->
           <strong class="text-foreground">Some items</strong> require additional reputation
           with the selling NPC's faction, even when the NPC opens their shop.
         </li>

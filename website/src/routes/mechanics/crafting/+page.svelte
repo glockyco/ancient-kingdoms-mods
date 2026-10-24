@@ -88,7 +88,7 @@
           instead of giving you a pack to open.
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:12890-12903 and server-scripts/UIJournal.cs:86-93,262-292 and server-scripts/UICraftingDetail.cs:33-63 — successful crafts are recorded, and discovered entries display their ingredients and count. -->
+      <!-- Source: server-scripts/Player.cs:12890-12903 and server-scripts/UIJournal.cs:86-93,263-296 and server-scripts/UICraftingDetail.cs:33-63 — successful crafts are recorded, and discovered entries display their ingredients and count. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Your Crafting journal records successful crafts.</li>
         <li>
@@ -144,7 +144,7 @@
         Augments grant their bonuses only while the equipment is worn and has
         durability above zero.
       </p>
-      <!-- Source: server-scripts/UINpcTrading.cs:249-266,314-331 and server-scripts/PlayerNpcTrading.cs:377-398 — the removal service lists carried and equipped items; its price depends on augment quality, and it needs space for the returned augment. -->
+      <!-- Source: server-scripts/UINpcTrading.cs:274-291,339-356 and server-scripts/PlayerNpcTrading.cs:483-504 — the removal service lists carried and equipped items; its price depends on augment quality, and it needs space for the returned augment. -->
       <div class="space-y-2">
         <p>
           An <a
@@ -186,7 +186,7 @@
           inventory. Leave room for it.
         </p>
       </div>
-      <!-- Source: server-scripts/UINpcTrading.cs:143-159 — selling augmented equipment displays an attached-augment warning. -->
+      <!-- Source: server-scripts/UINpcTrading.cs:147-163 — selling augmented equipment displays an attached-augment warning. -->
       <p>Remove an augment before selling if you want to keep it.</p>
       <p>
         For general equipment repair, see <MechanicsLink

@@ -305,7 +305,7 @@
             >.
           </div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Npc.cs:1908-1919, UIMercenaries.cs:CalculatePriceMercenaryLevel, Charisma.cs:17-20, UINpcTrading.cs:870-877, Utils.cs:GetRandomChar -->
+            <!-- Source: server-scripts/Npc.cs:1908-1919, UIMercenaries.cs:CalculatePriceMercenaryLevel, Charisma.cs:17-20, UINpcTrading.cs:923-930, Utils.cs:GetRandomChar -->
             <p>
               Recruiters serve you from level {MERC_MIN_LEVEL}. Hiring costs
               more as your level and veteran points rise. Charisma lowers the

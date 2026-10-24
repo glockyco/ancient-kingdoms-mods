@@ -1300,7 +1300,7 @@
               </div>
               <div>
                 <div class={styles.label}>Removing</div>
-                <!-- Source: server-scripts/UINpcTrading.cs:164-169,228-232 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
+                <!-- Source: server-scripts/UINpcTrading.cs:168-173,253-257 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
                 <div class={styles.value}>
                   Visit an Augmenter to remove a socketed augment. Removal costs {formatGold(
                     5000,

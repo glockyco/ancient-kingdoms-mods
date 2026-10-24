@@ -1,6 +1,6 @@
 {
   "snapshot": {
-    "game_version": "0.9.37.0",
+    "game_version": "0.9.37.1",
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
@@ -3854,53 +3854,53 @@
     "PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32": {
       "span": 0
     },
-    "PlayerNpcTrading.cs:17": {
+    "PlayerNpcTrading.cs:18": {
       "sha256": "eac4684e9544b40c28c44ec27a6a6760b7e21a8d40cc1b45ac13ee10e27d7aeb",
       "span": 1
     },
-    "PlayerNpcTrading.cs:170-226": {
-      "sha256": "9f45380fc520bdc05cbe6a4dae914f83340ce6f49c921f0d632ac04d3d8dde4e",
-      "span": 57
-    },
-    "PlayerNpcTrading.cs:19-49": {
+    "PlayerNpcTrading.cs:20-50": {
       "sha256": "b959f94576ef0cf33c1458c8eb5d599907637bead61c2d07e15724853e3f7dab",
       "span": 31
     },
-    "PlayerNpcTrading.cs:250-318": {
-      "sha256": "4608c68a8d80e011eccc125c191bf1642a0a67df0bfe16ac0a8cbf8acae9c43e",
-      "span": 69
+    "PlayerNpcTrading.cs:276-332": {
+      "sha256": "9f45380fc520bdc05cbe6a4dae914f83340ce6f49c921f0d632ac04d3d8dde4e",
+      "span": 57
     },
-    "PlayerNpcTrading.cs:28-42": {
+    "PlayerNpcTrading.cs:29-43": {
       "sha256": "caf633c7230d3692714fb79c49c44e2abb4aa2d27b9ed5e6e54746f10a90cc39",
       "span": 15
     },
-    "PlayerNpcTrading.cs:295-317": {
+    "PlayerNpcTrading.cs:356-424": {
+      "sha256": "4608c68a8d80e011eccc125c191bf1642a0a67df0bfe16ac0a8cbf8acae9c43e",
+      "span": 69
+    },
+    "PlayerNpcTrading.cs:401-423": {
       "sha256": "be377660f07851ecb550b3a180d4e8f023087b00f54b559ed996e4ea6fec4fc2",
       "span": 23
     },
-    "PlayerNpcTrading.cs:377-397": {
+    "PlayerNpcTrading.cs:483-503": {
       "sha256": "f9f024d66660c3708677575a1f402f93134645da197b0b1457f59a515909988b",
       "span": 21
     },
-    "PlayerNpcTrading.cs:377-398": {
+    "PlayerNpcTrading.cs:483-504": {
       "sha256": "c0cf9ee927febf043e8e544997d9ce6762bc0e640525e1e37b6fd6030514f82b",
       "span": 22
     },
-    "PlayerNpcTrading.cs:413-441": {
+    "PlayerNpcTrading.cs:519-547": {
       "sha256": "4825f7ab252dc41601dd97cb8c4b0aebc86ec3675ca6435a81bd6fedc722fe50",
       "span": 29
     },
-    "PlayerNpcTrading.cs:413-479": {
+    "PlayerNpcTrading.cs:519-585": {
       "sha256": "18a51b197841340c7cfa56141e676845270d67d483db3a7f70ab350ac5d441e0",
       "span": 67
     },
-    "PlayerNpcTrading.cs:495-526": {
-      "sha256": "cf369839b1a351c02f20883b9607ac91dd4402bbaa8b205d4e70676cd0b76fcc",
-      "span": 32
-    },
-    "PlayerNpcTrading.cs:52-60": {
+    "PlayerNpcTrading.cs:53-61": {
       "sha256": "d14660354d27c5096eefa5b2c8ba0addf3c6b201b7d29b6860a6acb590aeef27",
       "span": 9
+    },
+    "PlayerNpcTrading.cs:601-632": {
+      "sha256": "cf369839b1a351c02f20883b9607ac91dd4402bbaa8b205d4e70676cd0b76fcc",
+      "span": 32
     },
     "PlayerNpcTrading.cs:CalculateRepairItemPrice": {
       "span": 0
@@ -5514,9 +5514,9 @@
     "UIHousing.cs:Start": {
       "span": 0
     },
-    "UIJournal.cs:262-292": {
-      "sha256": "91da850359441e94cf224459e02d1131fbe332ac61359ab5ccec6da1e1f7256a",
-      "span": 31
+    "UIJournal.cs:263-296": {
+      "sha256": "bd204e10507790884966070a7b4d82ecd88fba5621394d392906c9bace4ddff7",
+      "span": 34
     },
     "UIJournal.cs:86-93": {
       "sha256": "055fefedfb3ba091676aa38343d2f8e858c05a910096ebefff7bac7f18009c74",
@@ -5608,47 +5608,47 @@
       "sha256": "52e5e77f089a6b494969471a567e3e0dbf17577a9711b51fac6acaa4f34fc0be",
       "span": 4
     },
-    "UINpcTrading.cs:143-159": {
+    "UINpcTrading.cs:147-163": {
       "sha256": "474954921afb05ea0555214d12cfeb951eb90bbb939138cedc9e0a1bca7bc887",
       "span": 17
     },
-    "UINpcTrading.cs:164-169": {
+    "UINpcTrading.cs:168-173": {
       "sha256": "a63cb6201b7d6cb698d0dbe0c72506ca435ab4bc51aad8b8223993d9b3e4ee62",
       "span": 6
     },
-    "UINpcTrading.cs:228-232": {
+    "UINpcTrading.cs:253-257": {
       "sha256": "a6358b1f0b1e5f43e8a8d76e8add43141deecb1b3233b4c810dd3a339fbab510",
       "span": 5
     },
-    "UINpcTrading.cs:249-266": {
+    "UINpcTrading.cs:274-291": {
       "sha256": "c7598c54a0805fbc5437a049ad90f112a61324037b7819361d37efdc2dbc90db",
       "span": 18
     },
-    "UINpcTrading.cs:260-265": {
+    "UINpcTrading.cs:285-290": {
       "sha256": "890c3f5ed4a7dabc89c5c3c66ded3379b9c8ffe6045092d17d72a2202d09a6a0",
       "span": 6
     },
-    "UINpcTrading.cs:314-331": {
+    "UINpcTrading.cs:339-356": {
       "sha256": "0482b6307fe5f7bbfd32270c36678d3a6331510158f9d40cec0cc3aaf546c478",
       "span": 18
     },
-    "UINpcTrading.cs:325-330": {
+    "UINpcTrading.cs:350-355": {
       "sha256": "87a79a95ecb592825372009ef5f9939cb68f37effb624ff1a0f52fac8b8455c0",
       "span": 6
     },
-    "UINpcTrading.cs:427-431": {
+    "UINpcTrading.cs:452-456": {
       "sha256": "3e4b1f461a2b1736fb19b2cc02f9b82a63258b8ab73df0625dee6bf970813bf5",
       "span": 5
     },
-    "UINpcTrading.cs:556-565": {
+    "UINpcTrading.cs:581-590": {
       "sha256": "dce747628e897e32a5a3de3788ef55dca4d612b48c6aaf7a9ff570da74316b23",
       "span": 10
     },
-    "UINpcTrading.cs:870-877": {
+    "UINpcTrading.cs:923-930": {
       "sha256": "24e56e21fddf789f66c37d4edbc80b08b48ab59613d323894dc1cf8ad944e251",
       "span": 8
     },
-    "UINpcTrading.cs:870-878": {
+    "UINpcTrading.cs:923-931": {
       "sha256": "164875a119a56d5bee40b674d1d5793ee66f32e033204855312b287a5491ab09",
       "span": 9
     },

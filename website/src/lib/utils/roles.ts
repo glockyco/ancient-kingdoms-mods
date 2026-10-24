@@ -169,7 +169,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       "You need at least 15,000 reputation with this faction (Friendly 14,000 / 20,000 in the faction panel).",
     ],
   },
-  // Source: server-scripts/Npc.cs:InteractNpc; server-scripts/UINpcTrading.cs:556-565 — the trading window offers only equipment with durability above zero.
+  // Source: server-scripts/Npc.cs:InteractNpc; server-scripts/UINpcTrading.cs:581-590 — the trading window offers only equipment with durability above zero.
   is_essence_trader: {
     description:
       'Trade Magic-quality or better equipment for <a href="/items/primal_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Primal Essence</a>.',
@@ -234,7 +234,7 @@ export const ROLE_DESCRIPTIONS: Partial<
     description:
       'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',
   },
-  // Source: server-scripts/UINpcTrading.cs:260-265,325-330 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
+  // Source: server-scripts/UINpcTrading.cs:285-290,350-355 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
   is_augmenter: {
     description: "Removes augments from equipment and returns them to you.",
     details: [

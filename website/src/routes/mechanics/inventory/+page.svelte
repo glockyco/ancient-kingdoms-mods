@@ -607,7 +607,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:170-226 — trading requires an idle player near a merchant; purchases check token or gold cost and storage for the full delivered quantity, including pack contents. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:276-332 — trading requires an idle player near a merchant; purchases check token or gold cost and storage for the full delivered quantity, including pack contents. -->
       <p>
         <span class="block"
           >Buying requires an idle character within 2.4 yd of a merchant.</span
@@ -619,7 +619,7 @@
           >Buying a pack puts its contents directly in inventory.</span
         >
       </p>
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:250-318,52-60 — only sellable items are accepted; damaged equipment loses sale value; Charisma adds at most 25% to the sale price. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:356-424,53-61 — only sellable items are accepted; damaged equipment loses sale value; Charisma adds at most 25% to the sale price. -->
       <p>Damaged equipment sells for less.</p>
       <!-- Source: server-scripts/UINpcTrading.cs:CalculatePurchaseItemPrice; website/src/routes/items/[id]/+page.svelte — item pages expose Buy Price; the merchant displays the discounted result. -->
       <p>
@@ -630,7 +630,7 @@
       </p>
       <Calculation calculation={merchantPrice(false)} />
       <Calculation calculation={merchantPrice(true)} />
-      <!-- Source: server-scripts/UINpcTrading.cs:143-159 and server-scripts/PlayerNpcTrading.cs:377-397 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
+      <!-- Source: server-scripts/UINpcTrading.cs:147-163 and server-scripts/PlayerNpcTrading.cs:483-503 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
       <p>
         <span class="block">Selling augmented gear triggers a warning.</span>
         <span class="block"
@@ -644,7 +644,7 @@
           > needs room in your inventory for the returned augment.</span
         >
       </p>
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:17,295-317,495-526 — sales enter a 20-stack player buyback list for 600 seconds; any trading NPC can sell the full stack back for the recorded payout if it fits. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:18,401-423,601-632 — sales enter a 20-stack player buyback list for 600 seconds; any trading NPC can sell the full stack back for the recorded payout if it fits. -->
       <p>
         <span class="block"
           >You can buy back up to 20 recently sold stacks for 10 minutes.</span
@@ -655,7 +655,7 @@
         <span class="block">The entire stack must fit in inventory.</span>
         <span class="block">New sales push out the oldest entries.</span>
       </p>
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:19-49,413-479 — only repair-enabled merchants repair damaged gear; price uses half the sell value times missing durability fraction, less a capped Charisma discount, at least 1 gold. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:20-50,519-585 — only repair-enabled merchants repair damaged gear; price uses half the sell value times missing durability fraction, less a capped Charisma discount, at least 1 gold. -->
       <p>
         <span class="block"
           >Only repair merchants restore damaged equipment.</span
@@ -892,7 +892,7 @@
           >.</span
         >
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:50-84, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4642-4645 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
+      <!-- Source: server-scripts/ScrollItem.cs:50-84, server-scripts/PlayerNpcTrading.cs:29-43,519-547 and server-scripts/Player.cs:4642-4645 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
         <span class="block">Kits do not repair inventory tools.</span>
         <span class="block"
