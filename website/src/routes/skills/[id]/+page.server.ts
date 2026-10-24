@@ -52,6 +52,7 @@ export interface SkillDetailPageData {
     cooldown: number;
     cooldown_category: string;
   }[];
+  scrollCastTime: number;
   skillCategories: string[];
   /** Other skills whose effects share this skill's overwrite group. */
   categorySkills: { id: string; name: string; mercenaryAreaBuff: boolean }[];
@@ -301,10 +302,20 @@ export const load: PageServerLoad = async ({
   const scrollItems =
     scrollItemIds.length === 0
       ? []
-      : query<SkillDetailPageData["scrollItems"][number]>(
-          `SELECT id, name, cooldown, cooldown_category FROM items WHERE id IN (${scrollItemIds.map(() => "?").join(",")}) ORDER BY name`,
+      : query<
+          SkillDetailPageData["scrollItems"][number] & {
+            scroll_instant_use: number;
+          }
+        >(
+          `SELECT id, name, cooldown, cooldown_category, scroll_instant_use FROM items WHERE id IN (${scrollItemIds.map(() => "?").join(",")}) ORDER BY name`,
           scrollItemIds,
         );
+  // Source: server-scripts/PlayerInventory.cs:118-142 — only instant-use scrolls bypass the 1-second cast.
+  const scrollCastTime =
+    scrollItems.length > 0 &&
+    scrollItems.every((item) => item.scroll_instant_use)
+      ? 0
+      : 1;
   const categoryPositions = playerClasses.length
     ? query<{
         class_id: string;
@@ -543,6 +554,7 @@ export const load: PageServerLoad = async ({
     effectSummary,
     grantedByItems,
     scrollItems,
+    scrollCastTime,
     skillCategories,
     familiarSkills,
     usedByMonsters,

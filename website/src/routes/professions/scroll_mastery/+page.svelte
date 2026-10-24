@@ -203,16 +203,19 @@
           <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast — a valid scroll casts its skill at rank RoundToInt(scrollMasteryLevel × 20), clamped between 1 and the skill's maximum rank, and consumes one charge unless infiniteCharges is set. -->
           <!-- Source: server-scripts/ScrollItem.cs:127 — RoundToInt rounds an exact half to the even rank. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            A scroll takes 1 second to cast its skill without teaching it.
-            Scaling scrolls cast at one rank per 5% Scroll Mastery, rounded,
-            from rank 1 up to the skill's highest rank. At 37% Scroll Mastery,
-            they cast at rank 7. Exact halves go to the even rank, so 12.5%
-            Scroll Mastery casts at rank 2. Fixed scrolls cast at rank 1.
-            Successful completion consumes one charge unless the scroll has
-            infinite charges. Mastery gains also occur on completion.
+            Scrolls cast skills without teaching them. Scaling scrolls cast at
+            one rank per 5% Scroll Mastery, rounded, from rank 1 up to the
+            skill's highest rank. At 37% Scroll Mastery, they cast at rank 7.
+            Exact halves go to the even rank, so 12.5% Scroll Mastery casts at
+            rank 2. Fixed scrolls cast at rank 1. Successful completion consumes
+            one charge unless the scroll has infinite charges. Mastery gains
+            also occur on completion.
           </p>
-          <!-- Source: server-scripts/ScrollItem.cs:7,15-18; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, a lost start target, another active skill, or an empty or changed slot. -->
+          <!-- Source: server-scripts/PlayerInventory.cs:StartScrollCast,UpdateScrollCast; server-scripts/ScrollItem.cs:13,39-138 — instant-use scrolls apply after the usual checks without a cast or cast sound and preserve the current skill cast. Other scrolls take 1 second and apply effects, cooldown and charges only on successful completion. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Instant-use scrolls apply immediately after the usual use and target
+            checks, without a cast time or cast sound, and do not cancel your
+            current skill cast. Other scrolls take 1 second to cast.
             Interrupting the cast uses no charge and starts no item cooldown.
             See <MechanicsLink section="inventory#scroll-casting"
               >scroll casting and interruptions</MechanicsLink

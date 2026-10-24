@@ -107,6 +107,17 @@ describe("skill game tooltips", () => {
       ["scroll_of_dispel_magic", 30],
     ]);
   });
+  it.each([
+    ["skyflare", 0],
+    ["dispel", 1],
+  ] as const)(
+    "loads the granting scroll cast time for %s",
+    async (id, expectedCastTime) => {
+      const data = await loadSkill(id);
+      expect(data.scrollItems.length).toBeGreaterThan(0);
+      expect(data.scrollCastTime).toBe(expectedCastTime);
+    },
+  );
   it("loads familiar skill caps from the summoned familiar", async () => {
     const data = await loadSkill("invoke_arcane_familiar");
     if (!data) throw new Error("Missing invoke_arcane_familiar");

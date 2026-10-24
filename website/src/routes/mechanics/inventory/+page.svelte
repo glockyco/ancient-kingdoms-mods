@@ -997,15 +997,18 @@
         and round to the nearest whole number. The minimum is rank 1 and the
         maximum is the skill's highest rank.
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:7,15-37,93-138; PlayerInventory.cs:StartScrollCast,UpdateScrollCast — ScrollItem casts for 1 second; UseAfterCast applies the effect, item cooldown and charge consumption only after successful completion. -->
+      <!-- Source: server-scripts/ScrollItem.cs:7,13,15-37,93-138; PlayerInventory.cs:StartScrollCast,UpdateScrollCast; UsableItem.cs:Use — instant-use scrolls apply after the usual checks without a cast or cast sound and preserve the current skill cast. Other scrolls cast for 1 second. Successful use applies the effect, item cooldown and charge consumption. -->
       <p id="scroll-casting">
-        All skill scrolls, the Scroll of Binding, and repair kits take 1 second
-        to cast. Only a successful cast activates the effect, starts the item
-        cooldown, removes invisibility, and spends a charge. Interrupted or
-        failed casts spend no charge and start no item cooldown. Infinite-charge
-        scrolls do not consume a charge.
-        <!-- Source: server-scripts/PlayerInventory.cs:127-132 — starting a scroll cancels the current cast and clears pending and follow-up skill state. -->
-        Starting a scroll cast cancels your current skill cast and clears queued skills.
+        Instant-use scrolls apply immediately after the usual use and target
+        checks, without a cast time or cast sound, and do not cancel your
+        current skill cast. Other scrolls take 1 second to cast. Only successful
+        use activates the effect, starts the item cooldown, removes
+        invisibility, and spends a charge. Interrupted or failed casts spend no
+        charge and start no item cooldown. Infinite-charge scrolls do not
+        consume a charge.
+        <!-- Source: server-scripts/PlayerInventory.cs:127-132 — starting a timed scroll cast cancels the current cast and clears pending and follow-up skill state. -->
+        Starting a timed scroll cast cancels your current skill cast and clears queued
+        skills.
       </p>
       <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3182-3240 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
       <p>

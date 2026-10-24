@@ -252,6 +252,7 @@ export const PAGE_FINGERPRINT_FIELDS = Object.freeze({
     "relic_buff_id",
     "relic_buff_level",
     "relic_buff_name",
+    "scroll_instant_use",
     "scroll_skill_allow_dungeon",
     "scroll_skill_id",
     "scroll_skill_name",

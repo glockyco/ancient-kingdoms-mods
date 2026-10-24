@@ -3693,6 +3693,10 @@
     "PlayerInventory.cs": {
       "span": 0
     },
+    "PlayerInventory.cs:118-142": {
+      "sha256": "18cc431e2f83a7d6677b6d6fe7a76eaa8bee18377035a75088813d11e4740139",
+      "span": 25
+    },
     "PlayerInventory.cs:127-132": {
       "sha256": "d60b4e36290a7adaf74689c085d25843982ecb5360dfb4052be33a0c0036fbd3",
       "span": 6
@@ -4415,13 +4419,17 @@
       "sha256": "ac1f39a1d4d189dcd25d5cfd0f6072d4d7b85d338b46c8c5cde42aecd731f728",
       "span": 1
     },
-    "ScrollItem.cs:15-18": {
-      "sha256": "c03cab15a2ec9353809347a1e48ab90eb8b72fada67bf8c79832d6575e7f285d",
-      "span": 4
+    "ScrollItem.cs:13": {
+      "sha256": "76e9462d1e85bcac5da6f892bba9e4c5fb7618a031ebd3218611cb712561b3c9",
+      "span": 1
     },
     "ScrollItem.cs:15-37": {
       "sha256": "ba29966179385f052fee0434559f7ed207444b62a71d8d04a40444095149427e",
       "span": 23
+    },
+    "ScrollItem.cs:39-138": {
+      "sha256": "bd5088fe1cb3c1641e3ea5dc5e4d89808d505c95d7fec88ce4798b11eb56aa5b",
+      "span": 100
     },
     "ScrollItem.cs:39-41": {
       "sha256": "d420578ddd321f2b3e4353dd6350fcaedcb1bfec6f006b5d9938011edd9ce119",

@@ -516,14 +516,18 @@
       <Card.Content>
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if scrollOnly}
-            <!-- Source: server-scripts/PlayerInventory.cs:StartScrollCast; server-scripts/ScrollItem.cs:UseAfterCast; server-scripts/UsableItem.cs:Use — fixed 1-second cast, no Mana payment, cooldown comes from the scroll item. -->
+            <!-- Source: server-scripts/PlayerInventory.cs:StartScrollCast; server-scripts/ScrollItem.cs:UseAfterCast; server-scripts/UsableItem.cs:Use — instant-use scrolls bypass the 1-second cast, with no Mana payment and cooldown from the scroll item. -->
             <div>
               <dt class="text-muted-foreground">Mana Cost</dt>
               <dd class="font-medium">None</dd>
             </div>
             <div>
               <dt class="text-muted-foreground">Cast Time</dt>
-              <dd class="font-medium">1s</dd>
+              <dd class="font-medium">
+                {data.scrollCastTime === 0
+                  ? "Instant"
+                  : fmt.formatSeconds(data.scrollCastTime)}
+              </dd>
             </div>
             {#each data.scrollItems as item (item.id)}
               <div>
