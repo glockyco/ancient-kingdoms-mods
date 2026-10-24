@@ -431,8 +431,9 @@
   <Topic id="dispel">
     <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply — dispel uses its landing roll, then removes TargetBuffSkill and AreaBuffSkill, preserving player Rest and all BardSongSkill buffs. -->
     <p>
-      A dispel that <a href="#debuff-landing">lands</a> removes beneficial buffs from
-      its target. Bard songs always stay.
+      Dispels remove beneficial buffs unless the target
+      <a href="#debuff-landing">resists them</a>. Bard songs cannot be
+      dispelled.
     </p>
     <RefTable caption="What a dispel removes">
       <thead>
