@@ -121,17 +121,17 @@
       <Calculation calculation={partyGold()} />
       <!-- Source: server-scripts/PlayerLooting.cs:108-147 — matching unfinished GatherQuest objectives advance for nearby party members on monster or chest pickup; the loot is consumed rather than copied. -->
       <p>
-        Collecting a gather-quest drop from a monster or chest advances each
-        nearby member's matching unfinished quest. The drop is used up rather
-        than added to anyone's inventory.
+        Picking up a gather-quest drop from a monster or chest advances the
+        matching unfinished quest for each nearby party member. Nobody receives
+        the drop in their inventory.
       </p>
       <!-- Source: server-scripts/PlayerLooting.cs:177-203 and server-scripts/Monster.cs:4574-4613 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
       <p>
         <span class="block"
-          >Items that do not require a roll go to the collector.</span
+          >The collector receives items that do not require a roll.</span
         >
         <span class="block"
-          >Shared drops that require a roll go to the winner instead.</span
+          >The roll winner receives shared drops that require a roll.</span
         >
         <span class="block"
           >See <a
