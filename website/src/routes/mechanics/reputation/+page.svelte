@@ -305,8 +305,9 @@
             href="/monsters/avatar_of_water"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Avatar of Water</a
-          > is a level 56 boss with 800,000 maximum Hit Points. Its kill raises Elven
-          Kingdom, Children of Illithor, and Army of Order, and lowers Ancient Gods.</span
+          > is a level 56 boss with 800,000 maximum Hit Points. Killing it raises
+          your reputation with Elven Kingdom, Children of Illithor, and Army of Order,
+          and lowers your reputation with Ancient Gods.</span
         >
       </p>
       <Calculation calculation={reputationExample(56, 800_000)} />
@@ -316,7 +317,7 @@
           href="/mechanics/party#shared-rewards"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >nearby party player</a
-        > receives the full monster-kill reputation.
+        > receives the full reputation gain or loss from the kill.
       </p>
     </Card.Content>
   </Card.Root>
