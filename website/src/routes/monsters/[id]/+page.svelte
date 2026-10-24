@@ -915,8 +915,10 @@
               >{invasion.zone_name}</a
             >
             <p class="mt-1 text-sm text-muted-foreground">
-              Level {invasion.minimum_level} to {invasion.maximum_level}. Health
-              ×{invasion.health_multiplier}.
+              Invades at level {invasion.minimum_level} to {invasion.maximum_level}{invasion.health_multiplier ===
+              1
+                ? ""
+                : ` with ${invasion.health_multiplier} times its normal health`}.
             </p>
           </div>
         {/each}

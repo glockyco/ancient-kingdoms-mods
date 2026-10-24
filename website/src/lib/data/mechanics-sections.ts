@@ -98,10 +98,10 @@ export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
       { id: "seasonal-events", label: "Seasonal events" },
     ],
     "/mechanics/regional-events": [
-      { id: "availability", label: "When and where events start" },
-      { id: "activities", label: "Activities and contributions" },
-      { id: "rewards", label: "Goals and completion rewards" },
-      { id: "prosperity", label: "Regional prosperity" },
+      { id: "availability", label: "When events happen" },
+      { id: "activities", label: "What to do" },
+      { id: "rewards", label: "Goals and rewards" },
+      { id: "prosperity", label: "Prosperity" },
       { id: "invasions", label: "City invasions" },
     ],
     "/mechanics/inventory": [

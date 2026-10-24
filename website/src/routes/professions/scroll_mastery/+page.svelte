@@ -213,11 +213,9 @@
           </p>
           <!-- Source: server-scripts/PlayerInventory.cs:StartScrollCast,UpdateScrollCast; server-scripts/ScrollItem.cs:13,39-138 — instant-use scrolls apply after the usual checks without a cast or cast sound and preserve the current skill cast. Other scrolls take 1 second and apply effects, cooldown and charges only on successful completion. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Instant-use scrolls apply immediately after the usual use and target
-            checks, without a cast time or cast sound, and do not cancel your
-            current skill cast. Other scrolls take 1 second to cast.
-            Interrupting the cast uses no charge and starts no item cooldown.
-            See <MechanicsLink section="inventory#scroll-casting"
+            Most scrolls take 1 second to cast. A few, such as fireworks, work
+            instantly. An interrupted scroll uses no charge and starts no
+            cooldown. See <MechanicsLink section="inventory#scroll-casting"
               >scroll casting and interruptions</MechanicsLink
             >.
           </p>

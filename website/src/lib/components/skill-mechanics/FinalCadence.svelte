@@ -50,9 +50,8 @@
     >
     <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — living, non-hidden, same-zone, visible and attackable monsters qualify without combat or party-target requirements. The IL compares speed with -50 and skips at or below it. -->
     <span class="block"
-      >Damages living, visible, non-hidden monsters the caster can attack within
-      cast range in the same zone, whether or not they are fighting. Sleeping
-      monsters are excluded.</span
+      >Damages every monster in range that the caster could attack, in combat or
+      not, except sleeping ones.</span
     >
     <span class="block">Final Cadence does not heal familiars.</span>
   </p>

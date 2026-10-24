@@ -9,6 +9,15 @@
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
+
+  // Source: server-scripts/RegionalEventActivities.cs:TypicalAnimal — the animal whose meat each city's cooking request uses.
+  const COOKING_ANIMALS: Record<string, string> = {
+    Elven: "Deer",
+    Dwarven: "Bison",
+    Milldenn: "Sabretooth",
+    DarkElven: "Magmadrake",
+    Felarii: "Panther",
+  };
 </script>
 
 <Seo
@@ -29,43 +38,44 @@
   <h1 class="text-4xl font-bold">Regional Event Mechanics</h1>
   <!-- Source: server-scripts/RegionalEventText.cs:81-105,138-152 — the map shows the regional objective, time, progress, contribution and completion rewards. -->
   <p class="text-muted-foreground">
-    Regional events, also called Dynamic Events, ask players to supply a region,
-    hunt animals, or defend a city. Check the map for the objective, remaining
-    time, progress, and your contributions.
+    Regional events, also called Dynamic Events, ask everyone in a region for
+    help: gather supplies, hunt, cook, or defend a city from invaders. The map
+    shows the goal, the time left, and your progress. Help at least 3 times to
+    earn a reward, and the whole region prospers when the goal is reached.
   </p>
 
   <PageSections sections={MECHANICS_SECTIONS["/mechanics/regional-events"]} />
 
   <Card.Root id="availability" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>When and where events start</Card.Title>
+      <Card.Title>When events happen</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEvents.cs:120-125,377-432 — checks start 300 seconds after server start and repeat every 1800 seconds, with a 30% roll if connected players exist and no event is active or waiting. -->
       <p>
-        The first check is 5 minutes after server start. Checks repeat every 30
-        minutes with a 30% chance to start an event. At least one player must be
-        connected, and no event can already be active or waiting for players.
+        Every 30 minutes there is a 30% chance that an event starts, as long as
+        someone is online and no other event is running. The first chance comes
+        5 minutes after the world starts.
       </p>
       <!-- Source: server-scripts/RegionalEvents.cs:497-542 — zones 1 through 5 are candidates unless occupied by the current event or Prosperity. Northern Wastes requires an online level 35 player and an invasion definition. -->
       <p>
-        Events can select
+        Events take place in
         {#each data.regions as region, i (region.id)}{#if i > 0}{i ===
             data.regions.length - 1
-              ? ", or "
+              ? ", and "
               : ", "}{/if}<a
             href="/zones/{region.id}"
             class="text-blue-600 hover:underline dark:text-blue-400"
             >{region.name}</a
-          >{/each}.
+          >{/each}. Events in the
         <a
           href="/zones/northern_wastes"
           class="text-blue-600 hover:underline dark:text-blue-400"
           >Northern Wastes</a
         >
-        is also eligible when a level 35 or higher player is online and an invasion
-        is configured there. A region with the current event or active Prosperity
-        is excluded. City invasions require a level 35 or higher player online.
+        and city invasions only happen while a level 35 or higher player is online.
+        The same region never gets two events in a row, and a region gets no event
+        while it prospers.
       </p>
       <!-- Source: server-scripts/RegionalEvents.cs:433-440,536-559; server-scripts/RegionalEventProgress.cs:38-60 — ordinary requests use the configured activity duration. Invasions wait 1200 seconds for a living level 35 participant in the region, then run for 600 seconds. -->
       <!-- Source: server-scripts/RegionalEventSettings.cs:6-10 — enabled state and activity and Prosperity durations are configured settings. -->
@@ -73,7 +83,7 @@
         <table class="w-full text-sm border-collapse">
           <thead
             ><tr class="border-b"
-              ><th class="p-3 text-left font-medium text-foreground">Stage</th
+              ><th class="p-3 text-left font-medium text-foreground">Event</th
               ><th class="p-3 text-left font-medium text-foreground"
                 >Time limit</th
               ></tr
@@ -81,23 +91,19 @@
           >
           <tbody class="[&>tr:nth-child(odd)]:bg-muted/30">
             <tr class="border-b"
-              ><td class="p-3">Supply or hunting request</td><td class="p-3"
+              ><td class="p-3">Supply request, hunt, or cooking request</td><td
+                class="p-3"
                 >{data.settings.activity_duration_minutes} minutes</td
               ></tr
             >
             <tr class="border-b"
-              ><td class="p-3">Invasion warning</td><td class="p-3"
-                >Up to 20 minutes. A living level 35 or higher player in the
-                region starts the invasion.</td
-              ></tr
-            >
-            <tr class="border-b"
-              ><td class="p-3">Active invasion</td><td class="p-3"
-                >10 minutes after the invasion starts</td
+              ><td class="p-3">City invasion</td><td class="p-3"
+                >Up to 20 minutes to reach the region. The fight starts when a
+                level 35 or higher player arrives and lasts 10 minutes.</td
               ></tr
             >
             <tr
-              ><td class="p-3">Prosperity after success</td><td class="p-3"
+              ><td class="p-3">Prosperity</td><td class="p-3"
                 >{data.settings.prosperity_duration_minutes} minutes</td
               ></tr
             >
@@ -105,33 +111,28 @@
         </table>
       </div>
       {#if !data.settings.enabled}
-        <p>Regional events are disabled in the exported server settings.</p>
+        <p>Regional events are switched off in the exported server settings.</p>
       {/if}
     </Card.Content>
   </Card.Root>
 
   <Card.Root id="activities" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Activities and contributions</Card.Title>
-      <!-- Source: server-scripts/RegionalEvents.cs:211-257,270-314 — contributions require a connected, living player in the event region and the matching activity. -->
-      <Card.Description
-        >Contribute while alive and connected in the event's region.</Card.Description
-      >
+      <Card.Title>What to do</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEventText.cs:30-40 — the six activity titles. -->
       <!-- Source: server-scripts/RegionalEvents.cs:243-257,270-306,536-551 — gathering uses 5 yd, hunting uses 40 yd, fishing and cooking use 2.5 yd from the activity collider. Herbs exclude Northern Wastes. Ore uses zones 2, 3 and 5. -->
       <!-- Source: server-scripts/RegionalEventActivities.cs:32-128,139-181,212-279 — fishing needs valid spots and fish, cooking needs city ovens and dishes using the requested animal, and hunting selects a viable wild animal population. -->
-      <!-- Source: server-scripts/GatherItem.cs:523-535,1365-1379 — gathering and fishing contributions require the item to enter the player's inventory. -->
+      <!-- Source: server-scripts/RegionalEventActivities.cs:TypicalAnimal,MeatAnimal — each city's cooking request uses one animal's meat. -->
       <div class="overflow-x-auto">
         <table class="w-full text-sm border-collapse">
           <thead
             ><tr class="border-b"
-              ><th class="p-3 text-left font-medium text-foreground"
-                >In-game title</th
+              ><th class="p-3 text-left font-medium text-foreground">Event</th
               ><th class="p-3 text-left font-medium text-foreground">Where</th
               ><th class="p-3 text-left font-medium text-foreground"
-                >One contribution</th
+                >What counts</th
               ></tr
             ></thead
           >
@@ -140,11 +141,8 @@
               <td class="p-3 font-medium text-foreground"
                 >The Apothecaries' Call</td
               >
-              <td class="p-3">The five standard regions listed above</td>
-              <td class="p-3"
-                >Gather a non-quest plant into your inventory within 5 yd of the
-                resource.</td
-              >
+              <td class="p-3">Any event region except the Northern Wastes</td>
+              <td class="p-3">Each plant you gather.</td>
             </tr>
             <tr class="border-b">
               <td class="p-3 font-medium text-foreground">Fires of the Forge</td
@@ -159,156 +157,99 @@
                     >{region.name}</a
                   >{/each}</td
               >
-              <td class="p-3"
-                >Mine non-quest ore into your inventory within 5 yd of the
-                resource.</td
-              >
+              <td class="p-3">Each ore you mine.</td>
             </tr>
             <tr class="border-b">
               <td class="p-3 font-medium text-foreground"
                 >The Fishers' Request</td
               >
-              <td class="p-3"
-                >Eligible regions with active fishing spots and non-quest fish</td
-              >
-              <td class="p-3"
-                >Catch a non-quest fish into your inventory within 2.5 yd of the
-                fishing spot's edge.</td
-              >
+              <td class="p-3">A region with fishing spots</td>
+              <td class="p-3">Each fish you catch.</td>
             </tr>
             <tr class="border-b">
               <td class="p-3 font-medium text-foreground">Cook for [city]</td>
+              <td class="p-3">An oven in the named city</td>
               <td class="p-3"
-                >Invasion cities listed below with suitable ovens and recipes</td
-              >
-              <td class="p-3"
-                >Cook a dish using the requested animal at an oven inside the
-                named city, within 2.5 yd of the oven's edge. Any quality
-                counts. Recipes using another qualifying dish also count.</td
+                >Each dish you cook with the city's animal meat, at any quality.
+                The animals are listed under City invasions.</td
               >
             </tr>
             <tr class="border-b">
               <td class="p-3 font-medium text-foreground">A Regional Hunt</td>
+              <td class="p-3">A region with plenty of one wild animal</td>
               <td class="p-3"
-                >Eligible regions with at least 3 reliably respawning wild
-                animals of one kind and enough estimated kills to meet the goal</td
-              >
-              <td class="p-3"
-                >Help kill the requested animal. Have positive threat on it and
-                stay within 40 yd when it dies.</td
+                >Each requested animal you help kill, if you are nearby when it
+                dies.</td
               >
             </tr>
             <tr>
               <td class="p-3 font-medium text-foreground">Defend [city]</td>
-              <td class="p-3">Invasion cities listed below</td>
+              <td class="p-3">One of the cities under City invasions</td>
               <td class="p-3"
-                >Strike an invader to join. For each kill, have positive threat
-                on that invader and stay within 40 yd when it dies.</td
+                >Each invader you help kill, if you are nearby when it dies.</td
               >
             </tr>
           </tbody>
         </table>
       </div>
       <!-- Source: server-scripts/RegionalEventProgress.cs:72-102; server-scripts/RegionalEvents.cs:229-249 — each distinct action advances the goal once and can credit multiple hunters. Invader deaths advance the goal even without a credited player. -->
-      <p>
-        Each completed action adds one to the shared goal. A hunting or invasion
-        kill can credit several players. Invaders killed without a qualifying
-        player still advance the shared goal, but give no personal contribution.
-      </p>
+      <!-- Source: server-scripts/RegionalEvents.cs:251-258; RegionalEventActivities.cs:54,150,258 — quest items do not count for gathering, fishing or cooking. -->
       <!-- Source: server-scripts/RegionalEventText.cs:81-90 — players keep gathered resources, fish and cooked dishes. -->
-      <p>You keep the resources, fish, and dishes.</p>
+      <p>
+        All players in the region work toward the same goal. A kill counts for
+        everyone who helped. Invaders killed by townsfolk also count. Quest
+        items do not count. You keep what you gather, catch, and cook.
+      </p>
     </Card.Content>
   </Card.Root>
 
   <Card.Root id="rewards" class="bg-muted/30">
-    <Card.Header
-      ><Card.Title>Goals and completion rewards</Card.Title></Card.Header
-    >
+    <Card.Header><Card.Title>Goals and rewards</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEventProgress.cs:38-48; server-scripts/RegionalEvents.cs:220-227,527-559 — goals count living, connected players in the chosen region at event creation, with at most four extra participants. -->
       <p>
-        Participants are counted when the event is created, using living,
-        connected players in the region. Each participant after the first raises
-        the goal, up to four extra participants. Joining later does not increase
-        it.
+        The goal depends on how many players are in the region when the event
+        starts, up to 5. Players who arrive later do not change it.
       </p>
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="rounded-md border bg-muted/30 p-4">
           <h3 class="font-semibold text-foreground">
-            Supply requests and hunts
+            Supply, hunting, and cooking requests
           </h3>
-          <p>12 + 3 per extra participant</p>
-          <p>12 to 24 completed actions</p>
+          <p>12 actions, plus 3 for each extra player (12 to 24)</p>
         </div>
         <div class="rounded-md border bg-muted/30 p-4">
           <h3 class="font-semibold text-foreground">City invasions</h3>
-          <p>60 + 10 per extra participant</p>
-          <p>Defeat invaders to reach the goal.</p>
+          <p>60 invaders, plus 10 for each extra player (60 to 100)</p>
         </div>
       </div>
       <!-- Source: server-scripts/RegionalEventProgress.cs:72-101,127-142; server-scripts/RegionalEvents.cs:316-344 — three contributions qualify for rewards, computed from the first contribution's level and XP requirement, and only connected players in the region at completion receive them. -->
       <!-- Source: server-scripts/RegionalEventText.cs:138-152 — the quarter-level reward is Veteran XP at level 50. -->
       <p>
-        Make at least 3 contributions and be connected in the region when the
-        shared goal is completed. You receive 20 + 10 × your level in gold and a
-        quarter of the XP required for your current level, rounded down. At
-        level 50, this is Veteran XP. Your level and XP requirement are recorded
-        at your first contribution.
+        Help at least 3 times and be in the region when the goal is reached. You
+        get 20 + 10 × your level in gold (520 at level 50) and 25% of a full
+        level's XP. At level 50 this is Veteran XP.
       </p>
-      <!-- Source: server-scripts/RegionalEventProgress.cs:105-142; server-scripts/RegionalEvents.cs:328-344 — an expired event, fewer than three contributions, disconnection or absence at completion prevents the personal reward. -->
-      <p>
-        You receive no completion reward if the event expires, you make fewer
-        than 3 contributions, or you are disconnected or outside the region at
-        completion.
-      </p>
+      <!-- Source: server-scripts/RegionalEventProgress.cs:105-142; server-scripts/RegionalEventText.cs:103 — an expired event pays nothing and has no penalty. -->
+      <p>If time runs out, the event ends with no reward and no penalty.</p>
     </Card.Content>
   </Card.Root>
 
   <Card.Root id="prosperity" class="bg-muted/30">
-    <Card.Header><Card.Title>Regional prosperity</Card.Title></Card.Header>
+    <Card.Header><Card.Title>Prosperity</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEventProgress.cs:97-101,145-152; server-scripts/RegionalEvents.cs:188-195,363-375 — completion grants a regional 15% XP multiplier, floored, with dungeon combat mapped to its parent region. -->
-      <!-- Source: server-scripts/Monster.cs:3202-3208,3239-3245; server-scripts/GatherItem.cs:630-642,818-828 — Prosperity follows Double XP and, for monster kills, the Forgotten Altar multiplier. -->
+      <!-- Source: server-scripts/PlayerQuests.cs:384-392; server-scripts/Player.cs:13348-13351,13757-13770,14040-14042,14063-14067; server-scripts/Npc.cs:1608-1616,1641-1649 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
       <p>
-        Completing the shared goal starts Prosperity in that region for
-        {data.settings.prosperity_duration_minutes} minutes. Every player earning
-        eligible XP there gets the bonus, whether or not they contributed. The eligible
-        XP is multiplied by 1.15 and rounded down, after Double XP and any Forgotten
-        Altar multiplier.
+        When the goal is reached, the region prospers for
+        {data.settings.prosperity_duration_minutes} minutes. Everyone in the region
+        gets 15% more XP from monsters, including in its dungeons, and from gathering
+        and fishing outside dungeons. Players who did not help get the bonus too.
+        Quests, crafting, exploring, and NPC kills get no bonus.
       </p>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse">
-          <thead
-            ><tr class="border-b"
-              ><th class="p-3 text-left font-medium text-foreground"
-                >XP source</th
-              ><th class="p-3 text-left font-medium text-foreground"
-                >Prosperity bonus</th
-              ></tr
-            ></thead
-          >
-          <tbody class="[&>tr:nth-child(odd)]:bg-muted/30">
-            <tr class="border-b"
-              ><td class="p-3">Monster kills</td><td class="p-3"
-                >15% more XP in the region and its dungeons, solo or in a party</td
-              ></tr
-            >
-            <tr class="border-b"
-              ><td class="p-3">Gathering and fishing</td><td class="p-3"
-                >15% more XP outdoors in the region only</td
-              ></tr
-            >
-            <!-- Source: server-scripts/PlayerQuests.cs:384-392; server-scripts/Player.cs:13348-13351,13757-13770,14040-14042,14063-14067; server-scripts/Npc.cs:1608-1616,1641-1649 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
-            <tr
-              ><td class="p-3">Quests, crafting, discovery, and NPC kills</td
-              ><td class="p-3">No Prosperity bonus</td></tr
-            >
-          </tbody>
-        </table>
-      </div>
       <p>
-        See <MechanicsLink section="experience">Experience</MechanicsLink> for other
-        XP modifiers.
+        See <MechanicsLink section="experience">Experience</MechanicsLink> for how
+        the bonus combines with Double XP.
       </p>
     </Card.Content>
   </Card.Root>
@@ -321,12 +262,15 @@
         <table class="w-full text-sm border-collapse">
           <thead
             ><tr class="border-b"
+              ><th class="p-3 text-left font-medium text-foreground">City</th
               ><th class="p-3 text-left font-medium text-foreground"
-                >City and region</th
-              ><th class="p-3 text-left font-medium text-foreground">Level</th
-              ><th class="p-3 text-left font-medium text-foreground">Health</th
+                >Invader level</th
               ><th class="p-3 text-left font-medium text-foreground"
-                >Attackers</th
+                >Invader health</th
+              ><th class="p-3 text-left font-medium text-foreground"
+                >Invaders</th
+              ><th class="p-3 text-left font-medium text-foreground"
+                >Cooking request</th
               ></tr
             ></thead
           >
@@ -346,7 +290,9 @@
                   >{invasion.minimum_level} to {invasion.maximum_level}</td
                 >
                 <td class="p-3 whitespace-nowrap"
-                  >×{invasion.health_multiplier}</td
+                  >{invasion.health_multiplier === 1
+                    ? "Normal"
+                    : `${invasion.health_multiplier} × normal`}</td
                 >
                 <td class="p-3"
                   ><ul class="space-y-1">
@@ -359,26 +305,28 @@
                       </li>{/each}
                   </ul></td
                 >
+                <td class="p-3 whitespace-nowrap"
+                  >{COOKING_ANIMALS[invasion.city] ?? "None"} meat</td
+                >
               </tr>
             {/each}
           </tbody>
         </table>
       </div>
       <!-- Source: server-scripts/RegionalInvasions.cs:283-341,378-384 — waves contain up to eight attackers every 20 seconds, at most 24 live attackers, and no gold, item drops or faction changes. -->
-      <p>
-        Waves spawn up to 8 attackers every 20 s, with at most 24 alive. Each
-        attacker uses only its first skill. Invasion attackers drop no loot or
-        gold and give no faction gains or losses.
-      </p>
       <!-- Source: server-scripts/RegionalInvasions.cs:182-195,216-245 — invaders deal ten times damage to city citizens, take a tenth from them with a minimum of one damage, and only attack participating players inside the city. -->
       <p>
-        Invaders attack city NPCs and only attack players who strike first,
-        while those players remain inside the city. Against city NPCs, invaders
-        deal 10 times damage and take one tenth damage, with a minimum of 1
-        damage.
+        Invaders arrive in waves of up to 8 every 20 seconds, with at most 24 at
+        once. They attack the townsfolk and leave you alone until you hit them.
+        They only use their basic attack. They drop no loot or gold, and killing
+        them does not change your reputation.
       </p>
       <!-- Source: server-scripts/Npc.cs:1505-1510 — a citizen killed by a regional invader respawns 900 seconds after death. -->
-      <p>A city NPC killed by an invader respawns 15 minutes after death.</p>
+      <p>
+        Invaders deal 10 times their normal damage to townsfolk. Townsfolk deal
+        only a tenth of their normal damage to invaders. A townsperson killed by
+        an invader comes back after 15 minutes.
+      </p>
     </Card.Content>
   </Card.Root>
 </div>

@@ -160,9 +160,8 @@
         </li>
         <li>
           <!-- Source: server-scripts/UIBigBackpack.cs:317-329; server-scripts/PlayerInventory.cs:2244-2264,808-829 — clicking an equipped backpack moves it to the first empty base slot unless removal would lock occupied storage slots or all 24 base slots are full. -->
-          Click an equipped backpack in the Combined Backpack window to move it to
-          the first empty slot in your 24-slot base inventory. This is refused if
-          removing it would lock away stored items or no base slot is free.
+          To take a backpack off, click it in the Combined Backpack window. It moves
+          to your main inventory, which needs a free slot.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:626-642 — removal or downgrade is blocked if items would be locked away. -->You
@@ -1005,16 +1004,17 @@
       </p>
       <!-- Source: server-scripts/ScrollItem.cs:7,13,15-37,93-138; PlayerInventory.cs:StartScrollCast,UpdateScrollCast; UsableItem.cs:Use — instant-use scrolls apply after the usual checks without a cast or cast sound and preserve the current skill cast. Other scrolls cast for 1 second. Successful use applies the effect, item cooldown and charge consumption. -->
       <p id="scroll-casting">
-        Instant-use scrolls apply immediately after the usual use and target
-        checks, without a cast time or cast sound, and do not cancel your
-        current skill cast. Other scrolls take 1 second to cast. Only successful
-        use activates the effect, starts the item cooldown, removes
-        invisibility, and spends a charge. Interrupted or failed casts spend no
-        charge and start no item cooldown. Infinite-charge scrolls do not
-        consume a charge.
+        Most scrolls take 1 second to cast, and starting one cancels the skill
+        you are casting and any queued skills. A few, such as the
+        <a
+          href="/items/skyflare"
+          class="text-blue-600 dark:text-blue-400 hover:underline">Skyflare</a
+        >
+        firework, work instantly and leave your current cast alone. A scroll uses
+        a charge, starts its cooldown, and ends invisibility only when it works, so
+        an interrupted scroll costs nothing. Scrolls with unlimited charges never
+        run out.
         <!-- Source: server-scripts/PlayerInventory.cs:127-132 — starting a timed scroll cast cancels the current cast and clears pending and follow-up skill state. -->
-        Starting a timed scroll cast cancels your current skill cast and clears queued
-        skills.
       </p>
       <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3182-3240 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
       <p>
