@@ -51,7 +51,6 @@ def calculate_monster_base_exp(
     """Calculate base EXP reward for killing a monster.
 
     This is the base value before level difference scaling is applied.
-    Formula from Monster.cs:2802-2829.
 
     Args:
         level: Monster level
@@ -184,7 +183,7 @@ def run(conn: sqlite3.Connection) -> None:
 
 def run_gathering(conn: sqlite3.Connection) -> None:
     """Derive definition XP from canonical primary outputs before withholding."""
-    # GatherItem.cs:630-644,817-828 excludes quest-only primary rewards from XP.
+    # Source: server-scripts/GatherItem.cs:630-645,818-830 — a quest-only primary reward gives no gathering XP. Fishing XP has no such gate.
     resources = {
         row[0]: row[1:]
         for row in conn.execute("""

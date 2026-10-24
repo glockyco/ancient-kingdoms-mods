@@ -15,8 +15,7 @@ export function achievementAnchor(id: string): string {
  * Facts the game's achievement text leaves out, shown under the description.
  */
 export const achievementNotes: Record<string, string> = {
-  // Source: Player.cs:11517-11525 versus Utils.cs:291 — Scaleblight is in the
-  // game's world-boss list but not among the bosses the achievement checks.
+  // Source: server-scripts/Player.cs:11973-11981; Utils.cs:worldBosses — Scaleblight is in the game's world-boss list but not among the bosses the achievement checks.
   KILL_WORLD_BOSSES:
     "Kill each of the five bosses below at least once. Scaleblight is also a world boss but does not count.",
 };
@@ -174,8 +173,7 @@ export const achievementRelationships: Record<
       [relationship],
     ]),
   ),
-  // Source: Player.cs:11517-11525 — the achievement checks these five bosses by
-  // name, each killed at least once; it does not read Utils.worldBosses.
+  // Source: server-scripts/Player.cs:11973-11981 — the achievement checks these five bosses by name, each killed at least once, rather than reading the world-boss list.
   KILL_WORLD_BOSSES: [
     monsterLinks.KILL_BLACK_DRAGON,
     monsterLinks.KILL_PYROTH,

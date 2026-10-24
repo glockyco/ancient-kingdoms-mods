@@ -28,7 +28,7 @@ function groupCasters<P extends { caster: Caster }>(
   return [...groups.values()];
 }
 
-/** Integer fields scaled by Buff.cs:45-275 and rounded by Charisma.cs:28-31. */
+/** Source: server-scripts/Buff.cs:47-258,276-283; BuffSkill.cs:252-273; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:33-36 — integer effects scale with Charisma and round to integers. */
 function hasCharismaScaledIntegerEffect(skill: SkillDetailView): boolean {
   return (
     hasNonZeroField(skill.health_max_bonus) ||
@@ -50,7 +50,7 @@ function hasCharismaScaledIntegerEffect(skill: SkillDetailView): boolean {
   );
 }
 
-/** Percentage fields scaled by Buff.cs:59-275 and Charisma.cs:33-36. */
+/** Source: server-scripts/Buff.cs:63-262,285-292; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:38-41 — percentage fields scale with Charisma without integer rounding. */
 function hasCharismaScaledPercentageEffect(skill: SkillDetailView): boolean {
   return (
     hasNonZeroField(skill.health_max_percent_bonus) ||
@@ -413,7 +413,7 @@ export function computeMechanicsSpec(
     const isAreaBuff = skill.skill_type === "area_buff";
 
     if (skill.is_relic && isAreaBuff) {
-      // Source: AreaBuffSkill.cs:38-41 — isRelic → caster.level.current * 10.
+      // Source: server-scripts/AreaBuffSkill.cs:38-41 — isRelic uses caster.level.current * 10.
       // Relic items can be used by any player class regardless of skill.player_classes;
       // a single "Player" context covers all of them. No merc/pet path: relics are
       // player-only equipment usables.
@@ -430,8 +430,7 @@ export function computeMechanicsSpec(
           // Source: BardSongSkill.cs — Bard songs use the caster's Charisma.
           src = "player_cha";
         } else if (isAreaBuff && skill.is_mercenary_skill) {
-          // Source: AreaBuffSkill.cs:GetLeadershipAttributeBonus,58 — Leadership uses round((WIS+CON+CHA)/2);
-          // other player-cast mercenary buffs use round((WIS+CON)/2).
+          // Source: server-scripts/AreaBuffSkill.cs:GetLeadershipAttributeBonus,58 — Leadership divides the sum of Wisdom, Constitution and Charisma by two. Other player-cast mercenary buffs average Wisdom and Constitution.
           src =
             skill.id === "leadership"
               ? "player_wis_con_cha_half"
@@ -440,7 +439,7 @@ export function computeMechanicsSpec(
           // Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — scalesWithIntelligence selects intelligence, otherwise wisdom.
           src = skill.scales_with_intelligence ? "player_int" : "player_wis";
         } else if (cls === "ranger") {
-          // Source: TargetBuffSkill.cs:434-437; BuffSkill.cs:GetBuffPowerAttribute — Ranger → attribute * 3
+          // Source: server-scripts/TargetBuffSkill.cs:453-456; BuffSkill.cs:GetBuffPowerAttribute — Rangers triple the selected buff attribute.
           src = skill.scales_with_intelligence
             ? "player_ranger_int"
             : "player_ranger_wis";
@@ -502,8 +501,7 @@ export function computeMechanicsSpec(
     const hasReqWeapon = Boolean(skill.required_weapon_category);
 
     for (const cls of playerClasses) {
-      // Source: Player.cs:2783 — delay-based refractory applies when !isSpell && hasReqWeapon
-      // Source: Player.cs:refractoryPeriodSkill,3084-3087 — isSpell && !hasReqWeapon → flat 0.75s refractory (player_spell)
+      // Source: server-scripts/Player.cs:GetSkillRefractoryPeriod — non-spells with a required weapon use a delay-based refractory period. Spells and skills without a required weapon use a flat 0.75s.
       // Note: spell auto-attacks have no required_weapon_category in the data, so isSpell alone is the discriminant.
       const model: TimingModel =
         !isSpell && hasReqWeapon
@@ -514,7 +512,7 @@ export function computeMechanicsSpec(
       timingPairs.push({ caster: { kind: "player", classId: cls }, model });
     }
     for (const pet of mercPets) {
-      // Source: Skills.cs:1141-1159 — followupDefaultAttack && !isSpell → cooldown * (1 - haste)
+      // Source: server-scripts/Skills.cs:1141-1159 — mercenary non-spells with followupDefaultAttack use cooldown * (1 - haste).
       const model: TimingModel = isSpell ? "merc_spell" : "merc_auto";
       timingPairs.push({
         caster: { kind: "mercenary", className: pet.type_monster ?? "Unknown" },
@@ -539,8 +537,7 @@ export function computeMechanicsSpec(
   }
 
   // ---------- debuff ----------
-  // Source: TargetDebuffSkill.cs:265-279 — bonusAttribute determined by caster type and skill flags.
-  // Non-Player casters (monsters, NPCs, non-merc pets) fall through to default: bonusAttribute = 0.
+  // Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — caster type and skill flags select the debuff attribute. Other casters use zero unless the skill scales with Charisma.
   const isDebuffSkill =
     skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff";
 
@@ -582,10 +579,8 @@ export function computeMechanicsSpec(
         bonusAttrKind: playerMercKind,
       });
     }
-    // Source: TargetDamageSkill.cs:246-276 and ProjectileSkillEffect.cs:143-155 —
-    // weapon proc effects call Apply(player/pet, 1). TargetDebuffSkill.cs:273-280
-    // then reads the player or mercenary attribute even though proc skills have no
-    // player_classes entries of their own.
+    // Source: server-scripts/TargetDamageSkill.cs:246-288; ProjectileSkillEffect.cs:196; TargetDebuffSkill.cs:283-287; BuffSkill.cs:GetDebuffPowerAttribute — weapon procs apply at rank one using their caster's debuff attribute, except scrolls use zero.
+    // Proc skills need no player_classes entries for that attribute scaling.
     if (isWeaponProc) {
       debuffPairs.push({
         caster: { kind: "weapon_effect" },
@@ -598,7 +593,7 @@ export function computeMechanicsSpec(
         bonusAttrKind: playerMercKind,
       });
     }
-    // Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — other casters receive no attribute bonus; only show that comparison beside a scaled caster.
+    // Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — other casters receive zero except pets using Charisma scaling. Only show this comparison beside a scaled caster.
     if (debuffPairs.length > 0) {
       for (const caster of otherCasters) {
         debuffPairs.push({ caster, bonusAttrKind: "none" });

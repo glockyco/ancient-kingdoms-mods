@@ -103,7 +103,7 @@ export function getResourceDisplayName(resourceType: string): string {
 /**
  * Race name mapping (database ID -> display name)
  * IDs come from the curated build-pipeline/curated/classes.json, which the build loads.
- * Canonical race names in the game: server-scripts/Database.cs:2999-3070 — CharacterCreate switch block.
+ * Source: server-scripts/Database.cs:CharacterCreate — the race-name switch defines the canonical race names.
  */
 const RACE_DISPLAY_NAMES: Record<string, string> = {
   human: "Human",

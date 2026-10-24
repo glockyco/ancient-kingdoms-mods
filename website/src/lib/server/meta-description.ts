@@ -58,12 +58,10 @@ export interface ItemMetaContext {
    * Base duration of the linked buff in seconds, if the item applies one
    * (potions/food/relics). Source: skills.duration_base on the row keyed
    * by potion_buff_id / food_buff_id / relic_buff_id. We only surface the
-   * base value because PotionItem.GetBuffLevelWithElixirEndurance resolves
-   * the applied level at use time (server-scripts/PotionItem.cs:24-39,
-   * 143-145). Non-bandage potions can use Elixir Endurance; bandages keep
-   * their base buff level. Mercenary utility potions pass the owner's Player
-   * (server-scripts/Pet.cs:2120-2144), so that owner's veteran rank applies.
-   * We cannot predict that runtime rank at SSR time.
+   * base value because the applied level depends on the player's veteran rank,
+   * which is unknown at SSR time.
+   * Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — non-bandage potions can use Elixir Endurance. Bandages keep their base buff level.
+   * Source: server-scripts/Pet.cs:2141-2154 — mercenary utility potions resolve their buff level from the owner's veteran rank.
    */
   buffDurationSeconds?: number | null;
   /** Whether the linked relic buff is a cleanse spell. */
@@ -627,9 +625,8 @@ function keyDescription(ctx: ItemMetaContext): string {
   // Source: server-scripts/Portal.cs:49 and InteractablePortal.cs:101 —
   // portals gated by a key check `player.keys` (or any party member's
   // keyring) for the matching name. Source: server-scripts/ScriptableItem.cs:47
-  // — items flagged `isKey` are routed to the keyring (`player.AddKey(...)`)
-  // by every loot path (PlayerLooting.cs:146, ChestItem.cs:50,
-  // GatherItem.cs:455, …) instead of taking an inventory slot.
+  // — items flagged `isKey` belong in the keyring.
+  // Source: server-scripts/PlayerLooting.cs:177-182; ChestItem.cs:51-54; GatherItem.cs:529-532 — these loot paths route keys to the keyring instead of taking an inventory slot.
   // Source: server-scripts/GatherInventoryQuest.cs:21,47 — the keyring also
   // counts as inventory for gather-inventory quest gates that name a key.
   const portals = ctx.usages?.portals ?? [];
@@ -761,7 +758,7 @@ interface AltarSpawnInfo {
 }
 
 /**
- * The fixed guard group checked by server-scripts/SummonMonster.cs:73-93.
+ * Source: server-scripts/SummonMonster.cs:AreAllPlaceholdersDead — the configured guard group must all be dead.
  */
 interface SummonSpawnInfo {
   zone_name: string;

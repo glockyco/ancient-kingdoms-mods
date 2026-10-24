@@ -396,9 +396,9 @@ export type BuffBonusAttrSource =
   | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
   | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf
   | "merc_cha" // Bard mercenary songs multiply eligible buff values by the mercenary's Charisma. Source: server-scripts/BardMercenarySkills.cs:RefreshAura
-  | "player_wis_con_avg" // round((WIS+CON)/2) for ordinary player-cast mercenary buffs. Source: AreaBuffSkill.cs:58
-  | "player_wis_con_cha_half" // round((WIS+CON+CHA)/2) for Leadership. Source: AreaBuffSkill.cs:GetLeadershipAttributeBonus,58
-  | "player_level" // casterLevel × 10 — relic skills (AreaBuffSkill.isRelic). Source: AreaBuffSkill.cs:38-41
+  | "player_wis_con_avg" // round((WIS+CON)/2) for ordinary player-cast mercenary buffs. Source: server-scripts/AreaBuffSkill.cs:58 — ordinary mercenary buffs average Wisdom and Constitution.
+  | "player_wis_con_cha_half" // round((WIS+CON+CHA)/2) for Leadership. Source: server-scripts/AreaBuffSkill.cs:GetLeadershipAttributeBonus — Leadership adds Charisma before dividing by two.
+  | "player_level" // Source: server-scripts/AreaBuffSkill.cs:38-41 — relic skills use caster level times ten.
   | "none"; // monster/NPC: 0 (only shown when player/merc also casts the skill)
 
 export interface BuffContext {
@@ -440,7 +440,7 @@ export interface DebuffContext {
   /** Every caster that shares this bonus attribute kind. */
   casters: Caster[];
   /** How the bonus attribute is determined for this caster type.
-   * Source: TargetDebuffSkill.cs:265-279 — non-Player (monster/NPC) falls through to default 0.
+   * Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — players and mercenaries use the selected attribute. Other casters use zero unless the skill scales with Charisma.
    */
   bonusAttrKind: DebuffBonusAttrKind;
 }

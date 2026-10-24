@@ -38,10 +38,9 @@ export function isCookable(quality: number, cookingPercent: number): boolean {
 // Displayed success chance (0..100) for a cooking recipe.
 //
 // Below the craftable threshold it is 0% — you cannot make it yet. Once
-// craftable, FoodItem results roll the chance, but non-food results (e.g.
-// Dragonbait Stew, item_type "general") always succeed: Player.cs:11727 only
-// rolls GetSuccessProbCooking for `item.data is FoodItem`; everything else
-// goes through the guaranteed-craft branch (Player.cs:11761-11774).
+// craftable, food results roll the chance, but non-food results (e.g.
+// Dragonbait Stew, item_type "general") always succeed.
+// Source: server-scripts/Player.cs:14012-14068 — only FoodItem results roll GetSuccessProbCooking. Other results go through the guaranteed-craft branch.
 export function cookingSuccessPercent(
   quality: number,
   cookingPercent: number,
@@ -68,11 +67,9 @@ export function cookingSkillGainChancePercent(cookingPercent: number): number {
   return skillGainChance(mechanics.skillGain, cookingPercent) * 100;
 }
 
-// Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — num3 = Random.Range(1, 4) /
-// (successChance * 3000). Skill gain only happens for FoodItem results
-// (Player.cs:11727), only when the recipe is craftable, and only while it still
-// grants skill (not "effortless"). Returns percentage-point bounds, or null when
-// no skill gain applies.
+// Source: server-scripts/Player.cs:14012-14039 — num3 = Random.Range(1, 4) / (successProbCooking * 3000).
+// Only successful food crafts can grant skill, while below the cap and not
+// "effortless". Returns percentage-point bounds, or null when none applies.
 export function cookingSkillGainRange(
   quality: number,
   cookingPercent: number,

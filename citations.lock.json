@@ -20,7 +20,18 @@
       "sha256": "372f6983752c21777c3d103925ee6addeeb24c74b47f42735becf0952aba8f37",
       "span": 26
     },
+    "AreaBuffSkill.cs:38-41": {
+      "sha256": "1b7ccaa28d0d37a9d31b0c6edf70f1f1b88397b23791585304fdc1351c5bfbc3",
+      "span": 4
+    },
+    "AreaBuffSkill.cs:58": {
+      "sha256": "f89a753c1bd4ed910e42a530e0bc10fc7393c7e31be90d35f58d10c497b6228b",
+      "span": 1
+    },
     "AreaBuffSkill.cs:Apply": {
+      "span": 0
+    },
+    "AreaBuffSkill.cs:GetLeadershipAttributeBonus": {
       "span": 0
     },
     "AreaDamageSkill.cs": {
@@ -52,6 +63,10 @@
     "AreaDebuffSkill.cs:192-225": {
       "sha256": "827fc93a44e92ce04167b44084dbb7220acf2c3c12b9c6f801baf183081d073a",
       "span": 34
+    },
+    "AreaDebuffSkill.cs:192-313": {
+      "sha256": "f09f9a95aa21e94d9523938003c746e8847fd91236526dad8190ff0e76608276",
+      "span": 122
     },
     "AreaDebuffSkill.cs:229-254": {
       "sha256": "d6b50f09773d3cb7764b453e6fe7d3670e0d2ac78d2254cf29533227ff8c423c",
@@ -262,6 +277,14 @@
       "sha256": "4d2746bd4c3c8c6308e4c3bb3ffbb3a57e590968fc7b92f989bca0ec12c6499b",
       "span": 1
     },
+    "Buff.cs:276-283": {
+      "sha256": "6b718bbd02609ef5d917ea59df8f6b22ba14c69d565c74a5b7687997bd971c77",
+      "span": 8
+    },
+    "Buff.cs:285-292": {
+      "sha256": "a4cf7e47c5f5c6d581465d89b6c5a0c5ec71a565ad4939c1c0f072ffc88f5189",
+      "span": 8
+    },
     "Buff.cs:370-378": {
       "sha256": "4bcda78bd7e5fdf45c77dd4beba004b49835b8c4973abd30e6f28f664683c946",
       "span": 9
@@ -281,6 +304,10 @@
     "Buff.cs:47-60": {
       "sha256": "5e195bbf0a640b3c41d738a379c5cc56b54e6936a9ab317ad3634e597a463d71",
       "span": 14
+    },
+    "Buff.cs:63-262": {
+      "sha256": "126021010510b1b3124cd534ca42bce5e75a6faf6881505e8a084feecbfbf8e7",
+      "span": 200
     },
     "Buff.cs:69-228": {
       "sha256": "fe5ea2340d0f3dcb02aeac91d0c596c672facaf6d6293a0222c1cb8cae1162e5",
@@ -315,6 +342,10 @@
     "BuffSkill.cs:233-250": {
       "sha256": "13d379cf3086b5ef2fbe868598c93b0244cdc488f6932ef31d6bce0f422980f1",
       "span": 18
+    },
+    "BuffSkill.cs:252-273": {
+      "sha256": "49f22055782c1ed853acc2585073eaabd6e23e30ec1d925621a8b2b8e965bbe1",
+      "span": 22
     },
     "BuffSkill.cs:252-286": {
       "sha256": "d929a97037e0c66ececcfee300d8ee5e8ad1c793c6f7c8b300705b81d4f2b6bf",
@@ -424,6 +455,10 @@
     "ChestItem.cs:30": {
       "sha256": "0b4d8b8452b97d5828471fb462afd5cf4785d9c0f760f101686b1d44b232087c",
       "span": 1
+    },
+    "ChestItem.cs:51-54": {
+      "sha256": "c790098e56db9f0f926276ce55a13b12405de1becddf7c9f680b600e91140a3c",
+      "span": 4
     },
     "ChestItem.cs:61": {
       "sha256": "a67003eaff157b5f061ebd170f476eae4e1b753b9100ff6eebdeade5ee91da0c",
@@ -1528,6 +1563,10 @@
       "sha256": "3dc409e8dc71e8970b260f7d843ec0b1889703325d5b72dd1949668a159d2721",
       "span": 9
     },
+    "GatherItem.cs:529-532": {
+      "sha256": "2073777198ad5b471f42a55a63caae95cd850270c3ffcf29dec4726457450665",
+      "span": 4
+    },
     "GatherItem.cs:547-563": {
       "sha256": "7a9be68a766ca334cf505384f739aa80ffa90c9c055dc7ffb5581ccd834620b2",
       "span": 17
@@ -2507,6 +2546,10 @@
       "sha256": "d076a83557801368fd16bebfd2ab5caaf8c65f557c4313c067b2bb06e8c5bdbe",
       "span": 12
     },
+    "Pet.cs:2141-2154": {
+      "sha256": "2db1f2dad68f6b0ed354b0c54832a590adff6574d8fdcfb579a9ccdccb07d095",
+      "span": 14
+    },
     "Pet.cs:2141-2165": {
       "sha256": "5d7f4388a25f8041b961ec6e90d3275a0caf723aec076d9b31cf866c52e6a526",
       "span": 25
@@ -2829,6 +2872,10 @@
       "sha256": "8aacce02ea28ab54a904eb7c276793c8d05f5978fe5f597ae838ab20bf8b33ca",
       "span": 30
     },
+    "Player.cs:11973-11981": {
+      "sha256": "91d4c359df35716ecf8f2af1ed0bfcf5e5133018c463ad92bdc9f456538f56cc",
+      "span": 9
+    },
     "Player.cs:12077-12092": {
       "sha256": "dcc00f402cfe746ca29ba65cb33ab32c2b21eef89ad8b7cf28594b0a0c828c49",
       "span": 16
@@ -2925,6 +2972,10 @@
       "sha256": "ccaaf885b46dcf63a33f7cba33f95b289dc89bbe3b8119ea19cf75ef25c2e617",
       "span": 42
     },
+    "Player.cs:13706-13725": {
+      "sha256": "21a9787e4c2878b3ae9d3cd1a7e4d3802f9b38a3f88020692a5132d4f8cdea5e",
+      "span": 20
+    },
     "Player.cs:13706-13726": {
       "sha256": "6253b7821443f7271289f9e44398b3a1a47b65b0f3467a6f53200e41208ebaf9",
       "span": 21
@@ -3005,9 +3056,17 @@
       "sha256": "8daeb268ab002abf44f1b79fbcdffa421c641e0690a2ee067b0394f53eac5db7",
       "span": 17
     },
+    "Player.cs:14012-14039": {
+      "sha256": "2c7366512f9717434e9fd31e5e3fee8a6ebe38b6720d27d23a2df9d7dd147dfb",
+      "span": 28
+    },
     "Player.cs:14012-14047": {
       "sha256": "00c0a62de4ba425d1cf305b95995a510d04147726579596d7e68e26eb060ab14",
       "span": 36
+    },
+    "Player.cs:14012-14068": {
+      "sha256": "162aafbb6ec5b8fc0c9893de6b272af38fced4fa4de1ed68fea10a4fdfdabad8",
+      "span": 57
     },
     "Player.cs:14023": {
       "sha256": "21c547f691ea1dc2913bc23b37f7de8a67b828d84c677405bf07d136e81a41f6",
@@ -3716,6 +3775,10 @@
       "sha256": "2e2eee12ef42b7638c2cdf9adad50d925d9d1e0e284af4415353f4de638ce7b6",
       "span": 20
     },
+    "PlayerLooting.cs:177-182": {
+      "sha256": "a5e3eb01ba98967d36a7d7211294cef6c415eeb237056d2fbae81a04c3cca106",
+      "span": 6
+    },
     "PlayerLooting.cs:184-210": {
       "sha256": "57df9acd7801714ec1c8d24194be5eb74b139f23ebf2262db2d6603bc8cca105",
       "span": 27
@@ -4205,6 +4268,10 @@
     "PotionItem.cs:Use": {
       "span": 0
     },
+    "ProjectileSkillEffect.cs:196": {
+      "sha256": "056422138b62ac3082db1867236711edb670c8647478d53c70677c1bea3324d7",
+      "span": 1
+    },
     "ProjectileSkillEffect.cs:FixedUpdate": {
       "span": 0
     },
@@ -4657,6 +4724,10 @@
       "sha256": "a6c9dade3a44303f30b1ecbc55ddde8b181870f5a68b4e36ad7f1d40b09b503f",
       "span": 21
     },
+    "TargetBuffSkill.cs:453-456": {
+      "sha256": "d681f29772721ade3d285c46783ee352fdc82f69c5aaaf87a6430d24f4d2f75b",
+      "span": 4
+    },
     "TargetBuffSkill.cs:453-464": {
       "sha256": "f0d7421497c5fba571a354805bd1f4dff57b1f2454eb86f234ce4e9fb6884a13",
       "span": 12
@@ -4721,6 +4792,10 @@
       "sha256": "46a3025e79ff0ddff60658bfd6ad7ed31f57c15b667da8e9e8c2586ccb098363",
       "span": 4
     },
+    "TargetDamageSkill.cs:246-288": {
+      "sha256": "260b08276d5be81371c9c668b2202cfd3cf9539d4527067c3fd29387732e5fba",
+      "span": 43
+    },
     "TargetDamageSkill.cs:249": {
       "sha256": "a11f321c696e64c6ab4180ee34feeb7a932a73ff811860804657acd22ddd8476",
       "span": 1
@@ -4740,6 +4815,10 @@
       "sha256": "30cde2eb7d886606986baaf75597ec48b69a7c177dcffbce620558a6a22fbbaf",
       "span": 34
     },
+    "TargetDebuffSkill.cs:181-302": {
+      "sha256": "b9fb1752c631368772028499025ca8ed430bb61984eae13ae12980ed46038651",
+      "span": 122
+    },
     "TargetDebuffSkill.cs:218-243": {
       "sha256": "47c205912cf0e135511cba52935f80dcc034b156bbc55ac2bbf4a5c797d87546",
       "span": 26
@@ -4747,6 +4826,10 @@
     "TargetDebuffSkill.cs:247-259": {
       "sha256": "4b352ccdd63d61b6394c2cdadb7e0cb0018b787f44ebc8c586449ba0ff190fb9",
       "span": 13
+    },
+    "TargetDebuffSkill.cs:283-287": {
+      "sha256": "cc61fb7d689e8b186bd8b385445b38e2c4da106354b7c8e95dda730030b45d31",
+      "span": 5
     },
     "TargetDebuffSkill.cs:Apply": {
       "span": 0
@@ -5547,6 +5630,14 @@
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40": {
       "sha256": "df922b864fd95c98cc3102cc8e415f35d9788c3a278a0a043ac8605f4762e2dc",
       "span": 14
+    },
+    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:33-36": {
+      "sha256": "afe0787d0fa560859857936d2c3ede8782a7842b5f9756a3574c9f128000c24c",
+      "span": 4
+    },
+    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:38-41": {
+      "sha256": "6f8fc2e1ac8a19b65ea5f46c59f9d02f9373f9e207145bdccc264128cbda379d",
+      "span": 4
     },
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier": {
       "span": 0

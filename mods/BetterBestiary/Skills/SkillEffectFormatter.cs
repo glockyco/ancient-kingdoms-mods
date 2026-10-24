@@ -844,7 +844,7 @@ internal static class SkillEffectFormatter
         ["golden_whirl"] = "cosmetic visual effect",
         ["skyflare"] = "cosmetic visual effect",
         ["detect_traps"] = "reveal and disarm traps",
-        // Source: Player.cs:8425-8442 — Sharp Senses uses the same trap-detection gate.
+        // Source: server-scripts/Player.cs:HasDetectTraps — Sharp Senses uses the same trap-detection gate.
         ["sharp_senses"] = "reveal and disarm traps",
         ["halloween_event"] = "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",
         ["winter_festival"] = "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",

@@ -42,10 +42,9 @@ export function isAlchemyCraftable(
   return rawAlchemySuccessChance(level, skillPercent) >= ALCHEMY_SUCCESS_FLOOR;
 }
 
-// Displayed success chance (0..100). Below the craftable threshold it is 0% — you
-// cannot make it yet. The success roll applies to every alchemy output
-// (Player.cs:11438 is not gated on item type), so unlike cooking there is no
-// always-succeeds case for non-potion results.
+// Displayed success chance (0..100). It is 0% below the craftable threshold,
+// where the recipe cannot be made.
+// Source: server-scripts/Player.cs:13706-13725 — the success roll is not gated on item type, so unlike cooking there is no always-succeeds case for non-potion results.
 export function alchemySuccessPercent(
   level: number,
   skillPercent: number,
@@ -70,7 +69,7 @@ export function alchemySkillGainChancePercent(skillPercent: number): number {
 }
 
 // Source: server-scripts/Player.cs:13748 — num4 = Random.Range(1, 4) /
-// (successChanceProb * 1000). Note the 1000 divisor (cooking uses 3000). Skill
+// (successProbAlchemy * 1000). Note the 1000 divisor (cooking uses 3000). Skill
 // gain only happens when the recipe is craftable and still grants skill (not
 // "effortless"). Returns percentage-point bounds, or null when none applies.
 export function alchemySkillGainRange(
