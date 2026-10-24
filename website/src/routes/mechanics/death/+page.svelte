@@ -38,8 +38,8 @@
         <!-- Source: server-scripts/Experience.cs:Death; server-scripts/Player.cs:4108-4140 - death removes 10% of the bar requirement, rounded and limited to current XP, and one durability from every equipped item. -->
         <p>
           <span class="block"
-            >Death removes 10% of the XP needed to fill your current experience
-            bar, rounded, up to the XP you currently have.</span
+            >You lose 10% of the XP needed to fill your current experience bar,
+            rounded to whole XP. You cannot lose more XP than you have.</span
           >
           <span class="block"
             >Each equipped item loses one durability point.</span
