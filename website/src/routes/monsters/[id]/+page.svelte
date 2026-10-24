@@ -14,6 +14,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import AchievementReward from "$lib/components/AchievementReward.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -523,6 +524,11 @@
 
     return cols;
   });
+  const hasGold = $derived(
+    data.monster.gold_min !== null &&
+      data.monster.gold_max !== null &&
+      data.monster.gold_max > 0,
+  );
   const hasFatecharmChances = $derived(
     data.fatecharms.length > 0 &&
       data.drops.some(
@@ -1337,7 +1343,7 @@
   {/if}
 
   <!-- Loot Section -->
-  {#if (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
+  {#if hasGold || data.drops.length > 0 || data.achievements.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
@@ -1365,17 +1371,24 @@
         </p>
       {/if}
 
-      {#if data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0}
-        <div class="mb-4 bg-muted/30 rounded-md border p-4">
-          <div class="font-medium text-yellow-600 dark:text-yellow-400">
-            {data.monster.gold_min.toLocaleString()} - {data.monster.gold_max.toLocaleString()}
-            gold
-            {#if data.monster.probability_drop_gold < 1}
-              <span class="text-muted-foreground font-normal">
-                ({formatPercent(data.monster.probability_drop_gold)} chance)
-              </span>
-            {/if}
-          </div>
+      {#if hasGold || data.achievements.length > 0}
+        <div
+          class="mb-4 flex flex-wrap items-baseline gap-x-6 gap-y-2 rounded-md border bg-muted/30 p-4"
+        >
+          {#if data.monster.gold_min !== null && data.monster.gold_max !== null && hasGold}
+            <div class="font-medium text-yellow-600 dark:text-yellow-400">
+              {data.monster.gold_min.toLocaleString()} - {data.monster.gold_max.toLocaleString()}
+              gold
+              {#if data.monster.probability_drop_gold < 1}
+                <span class="text-muted-foreground font-normal">
+                  ({formatPercent(data.monster.probability_drop_gold)} chance)
+                </span>
+              {/if}
+            </div>
+          {/if}
+          {#if data.achievements.length > 0}
+            <AchievementReward achievements={data.achievements} />
+          {/if}
         </div>
       {/if}
 

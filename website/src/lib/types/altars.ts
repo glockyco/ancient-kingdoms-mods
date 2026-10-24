@@ -1,4 +1,5 @@
 import type { AltarThresholds } from "$lib/calculation/altar";
+import type { LinkedAchievement } from "./achievements";
 
 // Wave monster info (parsed from waves JSON)
 export interface AltarWaveMonster {
@@ -78,6 +79,8 @@ export interface AltarBoss {
 // Detail page data
 export interface AltarDetailPageData {
   altar: AltarInfo;
+  /** Restored Altar, for a Forgotten Altar. */
+  achievements: LinkedAchievement[];
   maxLevel: number;
   description: string;
   rewards: AltarReward[];

@@ -22,6 +22,7 @@ import type {
 import { monsterDescription } from "$lib/server/meta-description";
 import { formatPercent } from "$lib/utils/format";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
+import { getAchievementsLinkingTo } from "$lib/queries/achievements.server";
 import { MONSTER_ABILITIES_QUERY } from "$lib/skills/monsterAbilitiesQuery";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { statAtLevel } from "$lib/utils/monster-stats";
@@ -42,6 +43,7 @@ import {
   getMonsterRegionalInvasions,
   type RegionalInvasion,
 } from "$lib/queries/regional-events.server";
+import type { LinkedAchievement } from "$lib/types/achievements";
 
 export const prerender = true;
 
@@ -57,7 +59,12 @@ export const entries: EntryGenerator = () => {
 
 export const load: PageServerLoad = async ({
   params,
-}): Promise<MonsterDetailData & { regionalInvasions: RegionalInvasion[] }> => {
+}): Promise<
+  MonsterDetailData & {
+    regionalInvasions: RegionalInvasion[];
+    achievements: LinkedAchievement[];
+  }
+> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   // Get monster basic data with placeholder name
@@ -935,6 +942,7 @@ export const load: PageServerLoad = async ({
   return {
     monster,
     regionalInvasions: getMonsterRegionalInvasions(params.id),
+    achievements: getAchievementsLinkingTo(`/monsters/${params.id}`),
     factionIds: getFactionIdsByName(),
     description,
     drops,

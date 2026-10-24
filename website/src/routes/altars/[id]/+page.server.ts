@@ -3,6 +3,7 @@ import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import { altarDescription } from "$lib/server/meta-description";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { getAchievementsLinkingTo } from "$lib/queries/achievements.server";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import { distinctSubzoneName } from "$lib/utils/format";
 import { loadAcquisition } from "$lib/server/acquisition";
@@ -270,6 +271,9 @@ export const load: PageServerLoad = async ({
 
   return {
     altar,
+    // Restored Altar counts Forgotten Altar events only, and its relationship points at the altar list.
+    achievements:
+      altar.type === "forgotten" ? getAchievementsLinkingTo("/altars") : [],
     maxLevel: progression.max_level,
     description,
     rewards,

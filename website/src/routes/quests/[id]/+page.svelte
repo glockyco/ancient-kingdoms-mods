@@ -3,6 +3,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import AchievementReward from "$lib/components/AchievementReward.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
@@ -51,7 +52,8 @@
       data.quest.rewards.exp > 0 ||
       data.quest.rewards.items.length > 0 ||
       data.quest.increase_alchemy_skill > 0 ||
-      reputationRewards.length > 0,
+      reputationRewards.length > 0 ||
+      data.achievements.length > 0,
   );
 
   // Check if quest is part of a chain
@@ -653,6 +655,9 @@
                     +{(data.quest.increase_alchemy_skill * 100).toFixed(1)}%
                   </span>
                 </div>
+              {/if}
+              {#if data.achievements.length > 0}
+                <AchievementReward achievements={data.achievements} />
               {/if}
             </div>
             {#if data.quest.rewards.items.length > 0}

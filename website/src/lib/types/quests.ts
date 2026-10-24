@@ -1,3 +1,4 @@
+import type { LinkedAchievement } from "./achievements";
 import type { ObtainabilityNode } from "./recipes";
 
 // Quest reward item
@@ -139,6 +140,7 @@ export interface QuestInfo {
 // Detail page data
 export interface QuestDetailPageData {
   quest: QuestInfo;
+  achievements: LinkedAchievement[];
   /** Faction display name to route id, for linking out to `/factions/[id]`. */
   factionIds: Record<string, string>;
   description: string;

@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import { achievementAnchor } from "$lib/data/achievements/relationships";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -345,6 +346,15 @@
               </div>
             {/each}
           </div>
+          {#each data.achievements as achievement (achievement.id)}
+            <p class="mt-4 text-muted-foreground">
+              Completing the event also unlocks the <a
+                href="/achievements#{achievementAnchor(achievement.id)}"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >{achievement.name}</a
+              > achievement.
+            </p>
+          {/each}
         </Card.Content>
       </Card.Root>
     </section>

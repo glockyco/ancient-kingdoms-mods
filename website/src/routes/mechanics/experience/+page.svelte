@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import { achievementAnchor } from "$lib/data/achievements/relationships";
   import PageSections from "$lib/components/PageSections.svelte";
   import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import * as Card from "$lib/components/ui/card";
@@ -118,6 +119,38 @@
       extraHref: "/mechanics/character#skills-and-specializations",
     },
   ]);
+
+  // Source: server-scripts/Experience.cs:UserCode_TargetShowLevelUpChat__Int32__Int32__Int32 — leveling to 10, 30 and 50 unlocks these achievements.
+  // Source: server-scripts/Experience.cs:372-394 — each veteran point unlocks VETERAN_EDGE, so the first one earns it.
+  const MILESTONE_ACHIEVEMENTS: Record<
+    string,
+    { level: number; lead: string }
+  > = {
+    FIRST_STEPS: { level: 10, lead: "Unlocks the" },
+    CHAMPION_RISE: { level: 30, lead: "Unlocks the" },
+    TRUE_HERO: { level: 50, lead: "Unlocks the" },
+    VETERAN_EDGE: { level: 50, lead: "Your first veteran point unlocks the" },
+  };
+  const milestoneRows = $derived(
+    MILESTONES.map((row) => ({
+      level: row.level,
+      links: [
+        { text: row.unlock, href: row.href },
+        ...(row.extra && row.extraHref
+          ? [{ text: row.extra, href: row.extraHref }]
+          : []),
+        ...data.achievements
+          .filter(
+            (achievement) =>
+              MILESTONE_ACHIEVEMENTS[achievement.id]?.level === row.level,
+          )
+          .map((achievement) => ({
+            text: `${MILESTONE_ACHIEVEMENTS[achievement.id].lead} ${achievement.name} achievement.`,
+            href: `/achievements#${achievementAnchor(achievement.id)}`,
+          })),
+      ],
+    })),
+  );
 
   // Source: server-scripts/Experience.cs:38,51-52,372-407 — experience cost per Veteran Point.
   const MAX_VETERAN_POINTS = $derived(data.maxVeteranPoints);
@@ -484,22 +517,15 @@
               </tr>
             </thead>
             <tbody>
-              {#each MILESTONES as row (row.level)}
+              {#each milestoneRows as row (row.level)}
                 <tr class="border-b hover:bg-muted/30">
                   <td class="p-2 font-mono">{row.level}</td>
                   <td class="p-2">
-                    <a
-                      href={row.href}
-                      class="text-blue-600 dark:text-blue-400 hover:underline"
-                      >{row.unlock}</a
-                    >
-                    {#if row.extra}
-                      <a
-                        href={row.extraHref}
+                    {#each row.links as link, i (link.href)}{i > 0 ? " " : ""}<a
+                        href={link.href}
                         class="text-blue-600 dark:text-blue-400 hover:underline"
-                        >{row.extra}</a
-                      >
-                    {/if}
+                        >{link.text}</a
+                      >{/each}
                   </td>
                 </tr>
               {/each}

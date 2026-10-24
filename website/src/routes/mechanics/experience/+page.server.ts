@@ -1,6 +1,8 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { getAchievementsLinkingTo } from "$lib/queries/achievements.server";
+import type { LinkedAchievement } from "$lib/types/achievements";
 
 export const prerender = true;
 
@@ -25,6 +27,7 @@ interface ExperiencePageData {
   maxLevel: number;
   maxVeteranPoints: number;
   attributeGains: Array<{ className: string; gains: string[] }>;
+  achievements: LinkedAchievement[];
 }
 
 // Source: the export's game_config.json special_items — the game resolves these two
@@ -167,5 +170,9 @@ export const load: PageServerLoad = (): ExperiencePageData => {
     maxLevel: rules.max_level,
     maxVeteranPoints: rules.max_veteran_points,
     attributeGains,
+    achievements: [
+      ...getAchievementsLinkingTo("/mechanics/experience"),
+      ...getAchievementsLinkingTo("/mechanics/experience#veteran-points"),
+    ],
   };
 };

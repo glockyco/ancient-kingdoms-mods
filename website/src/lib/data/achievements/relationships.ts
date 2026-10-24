@@ -238,3 +238,17 @@ export const achievementRelationships: Record<
     },
   ],
 };
+
+const achievementIdsByHref = new Map<string, string[]>();
+for (const [id, relationships] of Object.entries(achievementRelationships)) {
+  for (const { href } of relationships) {
+    const ids = achievementIdsByHref.get(href) ?? [];
+    if (!ids.includes(id)) ids.push(id);
+    achievementIdsByHref.set(href, ids);
+  }
+}
+
+/** IDs of the achievements whose relationships point at a page, so the page can link back. */
+export function achievementIdsLinkingTo(href: string): string[] {
+  return achievementIdsByHref.get(href) ?? [];
+}

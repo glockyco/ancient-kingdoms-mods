@@ -21,6 +21,7 @@ import { loadAcquisition } from "$lib/server/acquisition";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
 import { questDescription } from "$lib/server/meta-description";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
+import { getAchievementsLinkingTo } from "$lib/queries/achievements.server";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 
 export const prerender = true;
@@ -490,6 +491,7 @@ export const load: PageServerLoad = async ({
 
   return {
     quest,
+    achievements: getAchievementsLinkingTo(`/quests/${quest.id}`),
     factionIds: getFactionIdsByName(),
     description,
     startNpcs,

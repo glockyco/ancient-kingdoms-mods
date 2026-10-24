@@ -1303,6 +1303,10 @@
       "sha256": "5845a8509bb5e7dbb68db2d5c5fe95c744d7601615720e0a4d1b1458cf199cfa",
       "span": 19
     },
+    "Experience.cs:372-394": {
+      "sha256": "249413aa24db4fa88c1a661e5f138952699c15f0ebc3850b22486deb78ac41e4",
+      "span": 23
+    },
     "Experience.cs:372-407": {
       "sha256": "d1c434a4a04c85ab6f9937e5219f46e54984ea279ed3b234425becbfc71a3b95",
       "span": 36
@@ -1365,6 +1369,9 @@
       "span": 0
     },
     "Experience.cs:ShowVeteranLevelUp": {
+      "span": 0
+    },
+    "Experience.cs:UserCode_TargetShowLevelUpChat__Int32__Int32__Int32": {
       "span": 0
     },
     "Experience.cs:current": {
