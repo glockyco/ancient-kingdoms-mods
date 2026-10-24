@@ -35,22 +35,23 @@
   <h3 class="font-semibold">Resist Chance</h3>
   <p class="text-muted-foreground">
     {#if debuffResistance}
-      Each point of the target's {debuffResistance} adds 0.05 percentage points to
-      the target's chance to resist this {skill.is_dispel ? "skill" : "debuff"}.
-      Each 1% of the caster's Accuracy subtracts 1 percentage point. Level
-      differences also apply. The final chance is limited to 0-90%. See
+      Each point of the target's {debuffResistance} gives it a 0.05% chance to resist
+      this {skill.is_dispel ? "skill" : "debuff"}. Each 1% of the caster's
+      Accuracy lowers that chance by 1%. A higher-level target gets 0.5% more
+      per level and a lower-level one 0.5% less, up to 10% either way. The
+      chance stays between 0% and 90%. See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#avoidance">resistance and avoidance</a
-      > for level adjustments.
+      >.
     {:else}
       The target gets no resist roll against this debuff.
     {/if}
   </p>
   {#if (skill.healing_per_second_bonus?.base_value ?? 0) < 0}
     <p class="text-muted-foreground">
-      Each point of the target's {tickStat} reduces each damage tick by 0.05% (5%
-      per 100 points), up to 90%, with the reduction rounded up. See
+      The target's {tickStat} reduces each damage tick by 0.05% per point, up to 90%.
+      See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#damage-over-time"

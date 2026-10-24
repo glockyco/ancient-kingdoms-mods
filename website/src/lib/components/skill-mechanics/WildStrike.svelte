@@ -7,8 +7,8 @@
   <p class="text-muted-foreground">
     Your next melee auto attack (Swift Slash) or bow auto attack (Archer Shot)
     consumes the buff, deals 10% more damage per Wild Strike rank and becomes
-    Magic damage. Each point of Magic Resist reduces the converted damage by
-    0.05% (5% per 100 points), up to 90%, with the reduction rounded up. See
+    Magic damage. The target's Magic Resist reduces the converted damage by
+    0.05% per point, up to 90%. See
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/mechanics/combat#wild-strike">Wild Strike</a

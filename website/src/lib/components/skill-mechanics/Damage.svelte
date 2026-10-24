@@ -105,15 +105,14 @@
     <!-- Source: server-scripts/Combat.cs:309-321,855-872,1550-1591 — the matching stat reduces damage by 0.0005 per point, at most 0.9, rounded up; Defense adds 0.0001 per point to blockChance, at most 0.8; a resist stat adds 0.0005 per point to the resist chance. -->
     <p class="text-muted-foreground">
       {#if damageMechanics.avoidance === "block"}
-        Each point of Armor Class reduces this damage by 0.05% (5% per 100
-        points), up to 90%, with the reduction rounded up. Physical hits can
-        also be blocked or missed.
+        The target's Armor Class reduces this damage by 0.05% per point, up to
+        90%. Physical hits can also be blocked or missed.
       {:else}
-        Each point of the target's {damageMechanics.stat} reduces this damage by 0.05%
-        (5% per 100 points), up to 90%, with the reduction rounded up. Each point
-        also adds 0.05 percentage points to the target's chance to resist the hit
-        entirely. Each 1% of the caster's Accuracy subtracts 1 percentage point. Level
-        differences also apply. The final resist chance is limited to 0-90%.
+        The target's {damageMechanics.stat} reduces this damage by 0.05% per point,
+        up to 90%. It also gives the target a 0.05% chance per point to resist the
+        hit outright. Each 1% of the caster's Accuracy lowers that chance by 1%. A
+        higher-level target gets 0.5% more per level and a lower-level one 0.5% less,
+        up to 10% either way. The chance stays between 0% and 90%.
       {/if}
       See
       <a

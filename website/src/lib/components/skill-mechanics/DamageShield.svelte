@@ -41,8 +41,7 @@
     {#if skill.damage_shield_type && skill.damage_shield_type !== "Unknown"}
       <span class="block">
         The attacker's {statName(mitigationStats[skill.damage_shield_type])}
-        reduces this shield's damage by 0.05% per point (5% per 100 points), at most
-        90%, with the reduction rounded up.
+        reduces this shield's damage by 0.05% per point, up to 90%.
       </span>
     {:else}
       <span class="block"

@@ -132,8 +132,10 @@
   <Topic id="mitigation">
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — stat reduction is clamped to 0–90% before prevented damage rounds up. -->
     <p>
-      A hit that lands loses 0.05% of its damage per point of the matching
-      defense (5% per 100 points), up to 90%.
+      Armor Class reduces physical damage by 0.05% per point, and each resist
+      does the same for its damage type. 400 Fire Resist cuts fire damage by
+      20%, and 499 cuts it by 24.95%. The reduction stops at 90%, which takes
+      1800 points.
     </p>
     <VariantPicker
       label="Your stat"
