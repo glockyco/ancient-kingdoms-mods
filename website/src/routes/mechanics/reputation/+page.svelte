@@ -374,12 +374,13 @@
           >nearby party player</a
         > receives the full reputation change from an NPC kill.
       </p>
-      <!-- Source: server-scripts/Player.cs:IsProtectedFriendlyNpc; UISettings.cs:ProtectFriendlyNpcs,InitializeFriendlyNpcToggle — the setting is on by default and blocks attacks on friendly NPCs; its protect_friendly_npcs label reads "Protect NPCs" in the English localization table, read in the running game. -->
+      <!-- Source: server-scripts/Player.cs:IsProtectedFriendlyNpc; UISettings.cs:ProtectFriendlyNpcs,InitializeFriendlyNpcToggle — the setting defaults on but exempts NPCs targeting the player, a party member or their pets; its protect_friendly_npcs label reads "Protect NPCs" in the English localization table, read in the running game. -->
       <p>
-        To attack an NPC that counts as <a
+        Turn off Protect NPCs in Settings to attack a <a
           href="/mechanics/combat#targets"
           class="text-blue-600 dark:text-blue-400 hover:underline">friendly</a
-        >, first turn off Protect NPCs in Settings.
+        > NPC. You can fight back without changing the setting if the NPC targets
+        you, a party member, or a summon belonging to either.
       </p>
     </Card.Content>
   </Card.Root>
