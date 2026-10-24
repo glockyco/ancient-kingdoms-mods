@@ -100,8 +100,7 @@
       <!-- Source: server-scripts/ZoneTrigger.cs:120-123,139-185 — a named area is recorded on first entry; discovery awards 10 city, 25 other, or 150 dungeon XP and increases Exploring. -->
       <p>
         <span class="block"
-          >Discovering a named area gives experience once per character and
-          advances
+          >Discovering a named area for the first time gives XP and advances
           <a
             href="/professions/exploring"
             class="text-blue-600 hover:underline dark:text-blue-400"
@@ -109,8 +108,8 @@
           >.</span
         >
         <span class="block"
-          >A city gives 10 XP, another area gives 25 XP, and a dungeon gives 150
-          XP.</span
+          >Each character earns 10 XP for a city, 150 XP for a dungeon, or 25 XP
+          for any other area.</span
         >
       </p>
       <!-- Source: server-scripts/UIMap.cs:changeMap — the game switches between its local and world maps. -->
