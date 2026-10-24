@@ -707,8 +707,8 @@
         </li>
         <li>
           <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — a failed inventory add keeps the loot slot and sends "Your inventory is full". -->When
-          the inventory is full, the item stays in the loot window and the game
-          reports that the inventory is full.
+          your inventory is full, the item stays in the loot window and you see
+          "Your inventory is full".
         </li>
         <li>
           <!-- Source: server-scripts/ChestLoot.cs:323-340 and Npc.cs:UserCode_CmdLootMonster — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
