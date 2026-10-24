@@ -965,8 +965,8 @@
         </div>
         <!-- Source: server-scripts/Skills.cs:hasDoubleExp; server-scripts/Monster.cs:OnDeath — any Double XP buff doubles the award once, then the Forgotten Altar multiplier applies. -->
         <p class="text-sm text-muted-foreground">
-          Multiple Double XP buffs do not stack. For monsters from a Forgotten
-          Altar, Double XP applies first, then the 40% bonus, rounded.
+          Multiple Double XP buffs do not stack. Forgotten Altar monsters give
+          40% more XP after Double XP, rounded to the nearest whole XP.
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,825 — double XP applies to gathering -->
@@ -978,11 +978,11 @@
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
           <span class="block"
-            >Double XP buffs apply to kills, gathering, alchemy, scribing,
-            cooking, crafting, and attaching augments.</span
+            >Double XP buffs double the XP you earn from kills, gathering,
+            alchemy, scribing, cooking, crafting, and attaching augments.</span
           >
           <span class="block"
-            >They do not apply to XP scrolls, quests, or zone discovery.</span
+            >They give no bonus to XP scrolls, quests, or zone discovery.</span
           >
         </p>
       </div>
