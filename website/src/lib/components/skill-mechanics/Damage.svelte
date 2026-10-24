@@ -109,10 +109,10 @@
         90%. Physical hits can also be blocked or missed.
       {:else}
         The target's {damageMechanics.stat} reduces this damage by 0.05% per point,
-        up to 90%. It also gives the target a 0.05% chance per point to resist the
-        hit outright. Each 1% of the caster's Accuracy lowers that chance by 1%. A
-        higher-level target gets 0.5% more per level and a lower-level one 0.5% less,
-        up to 10% either way. The chance stays between 0% and 90%.
+        up to 90%. Each point also adds 0.05 percentage points to the target's chance
+        to resist the hit outright. Each 1% of the caster's Accuracy subtracts 1 percentage
+        point. A higher-level target gains 0.5 percentage points per level and a lower-level
+        one loses 0.5, up to 10 either way. The chance stays between 0% and 90%.
       {/if}
       See
       <a

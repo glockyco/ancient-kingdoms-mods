@@ -35,11 +35,11 @@
   <h3 class="font-semibold">Resist Chance</h3>
   <p class="text-muted-foreground">
     {#if debuffResistance}
-      Each point of the target's {debuffResistance} gives it a 0.05% chance to resist
-      this {skill.is_dispel ? "skill" : "debuff"}. Each 1% of the caster's
-      Accuracy lowers that chance by 1%. A higher-level target gets 0.5% more
-      per level and a lower-level one 0.5% less, up to 10% either way. The
-      chance stays between 0% and 90%. See
+      Each point of the target's {debuffResistance} adds 0.05 percentage points to
+      its chance to resist this {skill.is_dispel ? "skill" : "debuff"}. Each 1%
+      of the caster's Accuracy subtracts 1 percentage point. A higher-level
+      target gains 0.5 percentage points per level and a lower-level one loses
+      0.5, up to 10 either way. The chance stays between 0% and 90%. See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#avoidance">resistance and avoidance</a
