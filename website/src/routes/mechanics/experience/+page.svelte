@@ -443,8 +443,8 @@
         </p>
         <!-- Source: server-scripts/Experience.cs:current — each class-growth column applies independently when the level is divisible by its number. -->
         <p class="text-sm text-muted-foreground">
-          Your class grants the attribute increases below at each matching
-          level. If several columns apply, you receive all of them.
+          Your class also grants the attribute increases below. At level 10, for
+          example, you receive both the "Every 2nd" and "Every 5th" increases.
         </p>
       </div>
 
