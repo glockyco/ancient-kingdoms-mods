@@ -156,7 +156,7 @@ namespace MapTeleporter
                 LoggerInstance.Msg($"Normalized: ({normalizedX:F3}, {normalizedY:F3})");
             }
 
-            // STEP 4: Get Cinemachine virtual camera (the full map camera)
+            // STEP 4: Get the Cinemachine camera that frames the full map
             if (uiMap.mapCamera == null)
             {
                 LoggerInstance.Error("mapCamera is null!");
@@ -164,7 +164,7 @@ namespace MapTeleporter
             }
 
             Vector3 cameraWorldPos = uiMap.mapCamera.transform.position;
-            float orthoSize = uiMap.mapCamera.m_Lens.OrthographicSize;
+            float orthoSize = uiMap.mapCamera.Lens.OrthographicSize;
 
             // STEP 5: Calculate world view bounds
             // Critical: Use TEXTURE aspect ratio (800×800 = 1.0), NOT display rect aspect (1200×1010 = 1.188)

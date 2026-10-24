@@ -88,12 +88,6 @@ public static class ScreenshotConfig
       <Private>False</Private>
     </Reference>
 
-    <!-- Cinemachine -->
-    <Reference Include="Il2CppCinemachine">
-      <HintPath>$(Il2CppAssembliesPath)\Il2CppCinemachine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-
     <!-- URP 2D Runtime (for Light2D) -->
     <Reference Include="Unity.RenderPipelines.Universal.2D.Runtime">
       <HintPath>$(Il2CppAssembliesPath)\Unity.RenderPipelines.Universal.2D.Runtime.dll</HintPath>

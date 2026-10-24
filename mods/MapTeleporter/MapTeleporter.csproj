@@ -67,8 +67,8 @@
     </Reference>
 
     <!-- Cinemachine -->
-    <Reference Include="Il2CppCinemachine">
-      <HintPath>$(Il2CppAssembliesPath)\Il2CppCinemachine.dll</HintPath>
+    <Reference Include="Unity.Cinemachine">
+      <HintPath>$(Il2CppAssembliesPath)\Unity.Cinemachine.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
