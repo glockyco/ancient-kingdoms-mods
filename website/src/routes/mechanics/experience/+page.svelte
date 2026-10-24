@@ -770,27 +770,30 @@
           >
           <span class="block"
             >When you fight alone outside a dungeon, a same-level monster grants
-            its base XP.</span
+            its base XP before bonuses.</span
           >
+          <!-- Source: server-scripts/Monster.cs:OnDeath — the highest-level nearby party player determines the level adjustment. -->
           <span class="block"
-            >Level difference and the modifiers below then change the award.</span
+            >In a party, the highest-level nearby player determines the level
+            adjustment.</span
           >
         </p>
         <!-- Source: server-scripts/Npc.cs:CalculateRewardExp,OnDeath — NPC base XP is rounded before halving and rounding again; sharing, level, dungeon, and Double XP rules follow. -->
         <p class="text-sm text-muted-foreground">
-          To find a hostile NPC's base XP, multiply 15 XP by 112% once for each
-          level above 1, then round, halve, and round again. NPCs use the same
-          level, dungeon, party, and Double XP modifiers, but receive no
-          Forgotten Altar bonus.
+          Hostile NPCs start at 15 XP, increasing by 12% for each level above 1.
+          Round that amount, halve it, then round again to get their base XP.
+          Level differences, dungeon kills, party sharing, and Double XP change
+          your reward just as they do for monsters. Forgotten Altars give no
+          bonus for NPC kills.
         </p>
         <!-- Source: server-scripts/PlayerParty.cs:GetMembersInProximity — party players observing the credited player and within 40 yd share rewards. -->
         <!-- Mirror.dll and Mirror.Components.dll in the server build of Steam build 25863605: NetworkServer.RebuildObserversCustom adds a player's own connection to its observers, so the credited player always counts. SpatialHashingInterestManagement (visRange 96 at runtime, 48-unit cells, 3×3 neighbourhood) makes every player closer than 40 yd an observer, rebuilt once per second. -->
         <p class="text-sm text-muted-foreground">
-          Kill XP is shared among <a
+          You share kill XP with <a
             href="/mechanics/party#shared-rewards"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >nearby party players</a
-          >. Use your own level and one player when alone.
+          >. When alone, enter your own level and 1 player in the calculator.
         </p>
       </div>
       <Calculation calculation={killExperience()} />

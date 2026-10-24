@@ -127,14 +127,14 @@ export function killExperience(): Calculation {
       {
         name: "Level adjustment",
         expression:
-          "Level-difference percentage for the highest level among nearby party players, plus 10 percentage points in a dungeon unless the monster is more than 20 levels lower",
+          "Use the highest-level nearby party player to find the level-difference percentage. In a dungeon, add 10 percentage points unless the monster is more than 20 levels lower",
       },
       {
         name: "Adjusted share",
         expression: "Base share × level adjustment",
         rounding: "nearest",
         limit:
-          "at least 1 XP, unless the monster is more than 20 levels lower, which gives no XP",
+          "0 XP if the monster is more than 20 levels lower, otherwise at least 1 XP",
       },
       {
         name: "Party bonus",
