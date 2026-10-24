@@ -139,6 +139,13 @@ export const MECHANICS_GROUPS = [
         summary: "Invasions and Prosperity",
       },
       {
+        title: "Seasonal Events",
+        href: "/mechanics/seasonal-events",
+        description:
+          "Halloween and the Winter Festival: dates, Double XP, and seasonal shops",
+        summary: "Halloween and Winter Festival",
+      },
+      {
         title: "Inventory",
         href: "/mechanics/inventory",
         description: "Storage, durability, armor sets, and merchants",

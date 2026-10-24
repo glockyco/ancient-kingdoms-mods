@@ -1332,7 +1332,7 @@
           <!-- Source: server-scripts/Monster.cs:Start,UpdateServer_DEAD,IsHourBetween; website/data/compendium.db:monsters — Halloween monsters start hidden and require the event and a 20:00–8:00 window. -->
           <span class="font-medium text-foreground">Seasonal monsters:</span>
           Halloween monsters spawn only during the <MechanicsLink
-            section="world#seasonal-events">Halloween event</MechanicsLink
+            section="seasonal-events#halloween">Halloween event</MechanicsLink
           >, and only between 20:00 and 8:00 game time (see the spawn windows
           above).
         </li>

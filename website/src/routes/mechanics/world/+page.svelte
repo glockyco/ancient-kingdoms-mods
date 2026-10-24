@@ -3,6 +3,7 @@
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
+  import { SEASONS } from "$lib/data/seasonal-events";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
 </script>
@@ -335,22 +336,12 @@
     <Card.Header>
       <Card.Title>Seasonal events</Card.Title>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/EnviromentSystem.cs:156-161,172-199; server-scripts/Monster.cs:2240-2250 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->
+    <Card.Content class="text-sm text-muted-foreground">
       <p>
-        <span class="font-medium text-foreground"
-          >Halloween: October 19 through November 1, inclusive (UTC).</span
-        >
-        Halloween monsters can appear only while the event is active. See <MechanicsLink
-          section="monster-spawns#other-spawns"
-          >seasonal monster spawns</MechanicsLink
-        >.
-      </p>
-      <!-- Source: server-scripts/EnviromentSystem.cs:156-161,172-199; server-scripts/Npc.cs:334-348,795-802,1436-1442 — the Winter Festival uses UTC dates, checked hourly, and gates Winter Festival NPCs. -->
-      <p>
-        <span class="font-medium text-foreground"
-          >Winter Festival: December 19 through January 6, inclusive (UTC).</span
-        > Winter Festival NPCs are unavailable outside the event.
+        Halloween runs from {SEASONS.halloween.dates} and the Winter Festival from
+        {SEASONS.christmas.dates}, by UTC date. See
+        <MechanicsLink section="seasonal-events">Seasonal Events</MechanicsLink>
+        for Double XP, seasonal monsters and visitors, and seasonal shops.
       </p>
     </Card.Content>
   </Card.Root>

@@ -974,13 +974,24 @@
                 >
                 <td class="p-2 text-right">40% more XP, rounded</td>
               </tr>
-              <tr class="hover:bg-muted/30">
+              <tr class="border-b hover:bg-muted/30">
                 <td class="p-2"
                   >Double XP buff: drink an <a
                     href="/items/elixir_of_enlightened_learning"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Elixir of Enlightened Learning</a
                   ></td
+                >
+                <td class="p-2 text-right">100% more XP</td>
+              </tr>
+              <!-- Source: server-scripts/EnviromentSystem.cs:CheckSpecialEvents; server-scripts/Player.cs:Start — during Halloween and the Winter Festival every online player gets the season's Double XP buff. -->
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2"
+                  >Double XP buff: <a
+                    href="/mechanics/seasonal-events#double-xp"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Halloween or the Winter Festival</a
+                  > gives it to all online players</td
                 >
                 <td class="p-2 text-right">100% more XP</td>
               </tr>

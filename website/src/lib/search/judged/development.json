@@ -734,7 +734,7 @@
   {
     "q": "seasonal events",
     "intent": "concept",
-    "expect": ["/mechanics/world", "/mechanics/world#seasonal-events"],
+    "expect": ["/mechanics/seasonal-events"],
     "k": 3
   },
   {

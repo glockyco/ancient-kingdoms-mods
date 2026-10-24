@@ -178,6 +178,8 @@ export interface MonsterInfo {
   is_elite: boolean;
   is_fabled: boolean;
   is_hunt: boolean;
+  /** Appears only during Halloween. */
+  is_halloween: boolean;
   is_summonable: boolean;
 
   // Combat stats (calculated at base level)

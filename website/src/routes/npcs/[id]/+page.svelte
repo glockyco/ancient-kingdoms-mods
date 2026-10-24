@@ -7,6 +7,7 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import { seasonHref } from "$lib/data/seasonal-events";
   import { base } from "$app/paths";
   import EntityCombatSummary from "$lib/components/EntityCombatSummary.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
@@ -541,8 +542,8 @@
       <RoleBadges roles={data.npc.roles} linked />
       {#if data.npc.is_christmas_npc}
         <a
-          href="/mechanics/world#seasonal-events"
-          title="Seasonal event dates"
+          href={seasonHref("christmas")}
+          title="Winter Festival dates and quests"
           class="{ICON_BADGE.base} {ICON_BADGE.link}"
         >
           <Snowflake class="{ICON_BADGE.iconSize} text-red-500" />

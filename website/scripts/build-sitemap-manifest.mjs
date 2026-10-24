@@ -916,6 +916,47 @@ function addMechanicsHashes(db, addHash, context) {
         };
         break;
       }
+      case "seasonal-events": {
+        const monsters = tableRows(db, "monsters", "WHERE is_halloween = 1");
+        const npcs = tableRows(db, "npcs", "WHERE is_christmas_npc = 1");
+        const memberships = all(
+          db,
+          "SELECT quest_id, npc_id, role, ordinal FROM npc_quest_memberships WHERE quest_id IN (SELECT m.quest_id FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.is_christmas_npc = 1) ORDER BY quest_id, role, ordinal, npc_id",
+        );
+        // Seasonal shop items, their currencies and the quest rewards.
+        const itemIds = all(
+          db,
+          "SELECT offered_item_id AS id FROM acquisition_vendor_details WHERE season != 'none' UNION SELECT i.item_id FROM acquisition_vendor_details v JOIN acquisition_cost_groups g ON g.method_id = v.id JOIN acquisition_inputs i ON i.cost_group_id = g.id WHERE v.season != 'none' AND i.item_id IS NOT NULL UNION SELECT r.item_id FROM quest_reward_slots r WHERE r.quest_id IN (SELECT quest_id FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.is_christmas_npc = 1) ORDER BY id",
+        ).map((row) => row.id);
+        rows = {
+          monsters,
+          monsterSpawns: tableRows(db, "monster_spawns").filter((row) =>
+            monsters.some((monster) => monster.id === row.monster_id),
+          ),
+          npcs,
+          npcSpawns: tableRows(db, "npc_spawns").filter((row) =>
+            npcs.some((npc) => npc.id === row.npc_id),
+          ),
+          memberships,
+          quests: rowsByIds(
+            db,
+            "quests",
+            memberships.map((row) => row.quest_id),
+          ),
+          questNpcs: rowsByIds(
+            db,
+            "npcs",
+            memberships.map((row) => row.npc_id),
+          ),
+          zones: tableRows(db, "zones"),
+          items: context.fingerprint("items", { itemIds }),
+          loot: context.fingerprint("monsters", {
+            monsterIds: monsters.map((monster) => monster.id),
+          }),
+          icons: tableRows(db, "visual_assets", "WHERE domain = 'item'"),
+        };
+        break;
+      }
       case "reputation":
         rows = {
           tiers: tableRows(db, "reputation_tiers"),

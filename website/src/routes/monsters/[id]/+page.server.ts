@@ -251,6 +251,7 @@ export const load: PageServerLoad = async ({
     is_fabled: Boolean(monsterRaw.is_fabled),
     is_elite: Boolean(monsterRaw.is_elite),
     is_hunt: Boolean(monsterRaw.is_hunt),
+    is_halloween: Boolean(monsterRaw.is_halloween),
     is_summonable: Boolean(monsterRaw.is_summonable),
     damage: (monsterRaw.damage as number) || 0,
     magic_damage: (monsterRaw.magic_damage as number) || 0,

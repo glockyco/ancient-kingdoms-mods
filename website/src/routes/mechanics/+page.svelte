@@ -12,6 +12,7 @@
   import HeartCrack from "@lucide/svelte/icons/heart-crack";
   import House from "@lucide/svelte/icons/house";
   import Music from "@lucide/svelte/icons/music";
+  import PartyPopper from "@lucide/svelte/icons/party-popper";
   import Shield from "@lucide/svelte/icons/shield";
   import Skull from "@lucide/svelte/icons/skull";
   import Swords from "@lucide/svelte/icons/swords";
@@ -35,6 +36,7 @@
     "/mechanics/guilds": Castle,
     "/mechanics/world": Globe,
     "/mechanics/regional-events": Globe,
+    "/mechanics/seasonal-events": PartyPopper,
     "/mechanics/monster-spawns": Skull,
     "/mechanics/reputation": Shield,
   };
@@ -42,7 +44,7 @@
 
 <Seo
   title="Game Mechanics - Ancient Kingdoms"
-  description="How Ancient Kingdoms works: character builds, combat, experience, death, Bard songs, mercenaries, crafting, parties, travel, regional events, monster spawns, and reputation."
+  description="How Ancient Kingdoms works: character builds, combat, experience, death, Bard songs, mercenaries, crafting, parties, travel, regional and seasonal events, monster spawns, and reputation."
   path="/mechanics"
 />
 

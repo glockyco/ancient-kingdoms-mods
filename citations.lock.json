@@ -1203,13 +1203,8 @@
     "Entity.cs:checkAggro": {
       "span": 0
     },
-    "EnviromentSystem.cs:156-161": {
-      "sha256": "6bb6b32396282cff86b00dde3f050a2e7e8a2603eacc641b636c700d598b15ab",
-      "span": 6
-    },
-    "EnviromentSystem.cs:172-199": {
-      "sha256": "01053c877f24ad6c6e71361e61050ddca4b752b1edad27b6eb76d1f7824aba1d",
-      "span": 28
+    "EnviromentSystem.cs:CheckSpecialEvents": {
+      "span": 0
     },
     "EquipItemQuest.cs:9-19": {
       "sha256": "d4d02cf5cadd5589ab5d45803bbf837660ef4d229cb4b06a4e3469204c4cc61a",
@@ -2025,10 +2020,6 @@
       "sha256": "c40805e2f98f8c8a229d240842850f0e2d9d0cd022d095cffd605b46d59d4844",
       "span": 7
     },
-    "Monster.cs:2240-2250": {
-      "sha256": "c3c5d59c1756ffeca92da04e8d4e39173a3268a95e619ede4804ef1258396571",
-      "span": 11
-    },
     "Monster.cs:2240-2260": {
       "sha256": "29694cd894759b96ac2bfa875654d5631f00370fe47cf038a7676353f459e630",
       "span": 21
@@ -2413,10 +2404,6 @@
       "sha256": "874f8a60e9b0ceee65469bdfed373b591a09254ceb7ae5d6a8b07aec61887956",
       "span": 7
     },
-    "Npc.cs:1436-1442": {
-      "sha256": "8fa2131bfc849e21f386d4f69896f1160569d40bfdebd4f142522cf1dd63ae57",
-      "span": 7
-    },
     "Npc.cs:1505-1510": {
       "sha256": "540a97600b7084cd05ee9174c6f8c1821287c53647f66fbb37f62afbc67fff2e",
       "span": 6
@@ -2489,17 +2476,9 @@
       "sha256": "acc1a20acf5567fe7946dae66dcfa60c71f9bbdd322661639ce2d35fe11fbaae",
       "span": 12
     },
-    "Npc.cs:334-348": {
-      "sha256": "4cd7bb4f89c2dcb76a710fba369684a8dfe2021805071e2d61f41bc235c3593b",
-      "span": 15
-    },
     "Npc.cs:671": {
       "sha256": "2b60aee24def2a704ca0494b5716ad3d6b885d5898497f2b1d45342c656da065",
       "span": 1
-    },
-    "Npc.cs:795-802": {
-      "sha256": "9b8640a25c024a996066862e340399c2561e5fac194cb7eaed9861ef9de95a24",
-      "span": 8
     },
     "Npc.cs:BarberPrice": {
       "span": 0
@@ -2519,6 +2498,9 @@
     "Npc.cs:OnInteract": {
       "span": 0
     },
+    "Npc.cs:Start": {
+      "span": 0
+    },
     "Npc.cs:UpdateServer_IDLE": {
       "span": 0
     },
@@ -2534,6 +2516,9 @@
     "NpcTeleport.cs:21-40": {
       "sha256": "a4f8eefb58fb027587e66275a13db2f1fd22377a42b908e4cebe6a9b57064104",
       "span": 20
+    },
+    "NpcTrading.cs:VisibleSaleItemsFor": {
+      "span": 0
     },
     "PackItem.cs:15": {
       "sha256": "9126d593ef4c607be0cb559afbf2e595a5f123ee62427fd2ddc3133e71245be8",
@@ -3354,6 +3339,9 @@
     "Player.cs:CanAttack": {
       "span": 0
     },
+    "Player.cs:CheckSpecialEvents": {
+      "span": 0
+    },
     "Player.cs:CmdBuyMercenary": {
       "span": 0
     },
@@ -3415,6 +3403,9 @@
       "span": 0
     },
     "Player.cs:ResurrectMercenaryNearOwner": {
+      "span": 0
+    },
+    "Player.cs:Start": {
       "span": 0
     },
     "Player.cs:TargetRpcHouse": {
@@ -4016,6 +4007,9 @@
     "PlayerQuests.cs:50-51": {
       "sha256": "2bbdcc72ccadd04db76b8eee1a53a6fa0e2b5cabf516463d28c4e47b7c7c1f8e",
       "span": 2
+    },
+    "PlayerQuests.cs:CanAcceptInternal": {
+      "span": 0
     },
     "PlayerQuests.cs:CountComplete": {
       "span": 0
