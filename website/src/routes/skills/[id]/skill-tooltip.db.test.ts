@@ -15,10 +15,10 @@ async function loadSkill(id: string): Promise<SkillDetailPageData> {
 
 describe("skill effect categories", () => {
   it("loads every other skill sharing a category without including itself", async () => {
-    const data = await loadSkill("ossuary_bulwark");
+    const data = await loadSkill("elixir_of_presence");
     expect(data.categorySkills.map((skill) => skill.id)).toEqual([
-      "frenzy_of_the_dead",
-      "undead_frenzy",
+      "greater_elixir_of_allure",
+      "potion_of_charisma",
     ]);
     expect((await loadSkill("archer_shot")).categorySkills).toEqual([]);
     const food = await loadSkill("bread");
