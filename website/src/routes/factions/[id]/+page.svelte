@@ -357,15 +357,19 @@
   {#if cell.column.id === "name"}
     <a
       href="/chests/{row.original.id}"
-      aria-label={`Chest ${row.original.id}`}
-      title={`Chest ${row.original.id}`}
+      aria-label={row.original.zone_name
+        ? `Chest in ${row.original.zone_name}`
+        : "Chest"}
+      title={row.original.zone_name
+        ? `Chest in ${row.original.zone_name}`
+        : "Chest"}
       class="inline-flex"
     >
       <EntityIcon
         src={row.original.visual_public_path
           ? `${base}/${row.original.visual_public_path}`
           : null}
-        alt={`Chest ${row.original.id} icon`}
+        alt=""
         fallback={Box}
         size={32}
       />
