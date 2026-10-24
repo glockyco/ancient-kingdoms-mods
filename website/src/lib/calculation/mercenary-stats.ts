@@ -43,15 +43,13 @@ export function mercenaryStats(
       },
       {
         name: `Base ${statName("health")}`,
-        expression:
-          "Class's level 1 Hit Points + its per-level Hit Points increase × (current level − 1)",
+        expression: `Level 1 Hit Points for ${cls} + Hit Points gained per level × (current level − 1)`,
       },
       ...(result.hasMana
         ? [
             {
               name: `Base ${statName("mana")}`,
-              expression:
-                "Class's level 1 Mana + its per-level Mana increase × (current level − 1)",
+              expression: `Level 1 Mana for ${cls} + Mana gained per level × (current level − 1)`,
             },
           ]
         : []),
@@ -116,8 +114,7 @@ export function mercenaryStats(
       },
       {
         name: statName("attack_power"),
-        expression:
-          "Permanent combat hire roll + total veteran points + Strength",
+        expression: "Combat hire roll + total veteran points + Strength",
       },
       {
         name: `${statName("intelligence")} contribution`,
@@ -127,7 +124,7 @@ export function mercenaryStats(
       {
         name: statName("spell_power"),
         expression:
-          "Permanent combat hire roll + total veteran points + Intelligence contribution",
+          "Combat hire roll + total veteran points + Intelligence contribution",
       },
     ],
     example: () => ({
