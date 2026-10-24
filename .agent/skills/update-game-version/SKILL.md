@@ -95,6 +95,10 @@ The pre-commit hooks read the working tree, not the staged change. A staged sour
 
 Use `skill://commit-policy`. Do not hold a completed concern for a later big-bang split.
 
-## Known runtime failure
+## Known runtime failures
 
 If MelonLoader reports a missing Unity dependency, install the matching `Managed.zip` as `UnityDependencies_<unity-version>.zip` in its IL2CPP generator dependency directory and rerun. If world entry crashes in `Class_GetFieldDefaultValue_Hook`, verify the existing `FieldDefaultValueHookFix` against the new build. Do not add another fallback while it works.
+
+An engine update can move the game to a Unity version the installed MelonLoader cannot load. Cpp2IL then reports an unsupported metadata version, or the log says `No Support Module Loaded!`. Set `debug_mode = true` in the game's `UserData/Loader.cfg` to log the support module's exception, and restore it afterwards. No export can run until the loader works, so check the MelonLoader, Cpp2IL and Il2CppInterop releases first. A locally patched loader is acceptable only after its class layout matches the il2cpp API at runtime, because a wrong offset corrupts data without crashing.
+
+Cpp2IL does not clear `MelonLoader/Dependencies/Il2CppAssemblyGenerator/Cpp2IL/cpp2il_out`. After an engine update, remove the files older than the last generation run, or interop generation resolves types from assemblies of the previous build.
