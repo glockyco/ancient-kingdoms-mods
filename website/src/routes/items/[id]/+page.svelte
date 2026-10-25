@@ -450,7 +450,8 @@
       data.item.id === "radiant_aether" ||
       (isAugment && !isArmorSetMetadata && data.augmenters.length > 0) ||
       data.packContents.length > 0 ||
-      computed.foundInPacks.length > 0,
+      computed.foundInPacks.length > 0 ||
+      data.sources.seasonal.length > 0,
   );
 
   function formatGold(amount: number): string {
@@ -1510,6 +1511,50 @@
           </Card.Content>
         </Card.Root>
       {/if}
+      <!-- Seasonal Shop -->
+      {#if data.sources.seasonal.length > 0}
+        <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — repair merchants add the seasonal items to their stock while the season runs. -->
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title level={2}>Seasonal Shop</Card.Title>
+          </Card.Header>
+          <Card.Content class="space-y-3">
+            <div class="space-y-2">
+              {#each data.sources.seasonal as offer (`${offer.season}_${offer.currency_item_id}_${offer.price}`)}
+                <div class="flex justify-between items-center">
+                  <a href={seasonHref(offer.season)} class={styles.link}>
+                    {SEASONS[offer.season].name}
+                  </a>
+                  <span class={styles.valueCurrency}>
+                    {#if offer.currency_item_id}
+                      {offer.price}
+                      <a
+                        href={resolve("/items/[id]", {
+                          id: offer.currency_item_id,
+                        })}
+                        class={styles.link}
+                      >
+                        {offer.currency_item_name}
+                      </a>
+                    {:else}
+                      {formatGold(offer.price)}g
+                    {/if}
+                    {#if offer.amount > 1}
+                      ({offer.amount}×)
+                    {/if}
+                  </span>
+                </div>
+              {/each}
+            </div>
+            <p class={styles.label}>
+              Every <a
+                href="/npcs?npcs.role_keys=can_repair_equipment"
+                class={styles.link}>repair merchant</a
+              > sells it while the event runs.
+            </p>
+          </Card.Content>
+        </Card.Root>
+      {/if}
     </div>
   {/if}
 
@@ -1875,51 +1920,6 @@
               </div>
             {/each}
           </div>
-        </Card.Content>
-      </Card.Root>
-    {/if}
-
-    <!-- Seasonal Shop -->
-    {#if data.sources.seasonal.length > 0}
-      <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — repair merchants add the seasonal items to their stock while the season runs. -->
-      <Card.Root class="bg-muted/30">
-        <Card.Header>
-          <Card.Title level={2}>Seasonal Shop</Card.Title>
-        </Card.Header>
-        <Card.Content class="space-y-3">
-          <div class="space-y-2">
-            {#each data.sources.seasonal as offer (`${offer.season}_${offer.currency_item_id}_${offer.price}`)}
-              <div class="flex justify-between items-center">
-                <a href={seasonHref(offer.season)} class={styles.link}>
-                  {SEASONS[offer.season].name}
-                </a>
-                <span class={styles.valueCurrency}>
-                  {#if offer.currency_item_id}
-                    {offer.price}
-                    <a
-                      href={resolve("/items/[id]", {
-                        id: offer.currency_item_id,
-                      })}
-                      class={styles.link}
-                    >
-                      {offer.currency_item_name}
-                    </a>
-                  {:else}
-                    {formatGold(offer.price)}g
-                  {/if}
-                  {#if offer.amount > 1}
-                    ({offer.amount}×)
-                  {/if}
-                </span>
-              </div>
-            {/each}
-          </div>
-          <p class={styles.label}>
-            Every <a
-              href="/npcs?npcs.role_keys=can_repair_equipment"
-              class={styles.link}>repair merchant</a
-            > sells it while the event runs.
-          </p>
         </Card.Content>
       </Card.Root>
     {/if}
