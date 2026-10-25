@@ -12,7 +12,7 @@
 
   type MapTarget = Pick<
     ComponentProps<typeof MapLink>,
-    "entityId" | "entityType"
+    "entityId" | "entityType" | "name"
   >;
 
   /**
@@ -84,7 +84,9 @@
 {/snippet}
 
 <section class="space-y-3">
-  <h2 class="font-semibold leading-none">{title} ({rows.length})</h2>
+  <h2 id="{urlKey}-title" class="font-semibold leading-none">
+    {title} ({rows.length})
+  </h2>
   {#if description}
     <div class="text-sm text-muted-foreground">{@render description()}</div>
   {/if}
@@ -99,5 +101,6 @@
     zebraStripe={true}
     paginateStaticHtml={true}
     class="bg-muted/30"
+    labelledBy="{urlKey}-title"
   />
 </section>
