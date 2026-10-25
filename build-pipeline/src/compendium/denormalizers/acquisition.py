@@ -1880,6 +1880,135 @@ def _derived_state(conn: sqlite3.Connection) -> dict[str, tuple[int, int | None]
     return {method: (int(method in rooted), hints.get(method)) for method in methods}
 
 
+# Provider tables whose entity can be seasonal, and the query giving each
+# provider row's season. Any other provider is present all year.
+_SEASONAL_PROVIDERS = {
+    "acquisition_providers_npcs": """
+        SELECT p.method_id, n.season, NULL AS item_id FROM acquisition_providers_npcs p
+        JOIN npcs n ON n.id = p.npc_id""",
+    "acquisition_providers_monster_spawns": """
+        SELECT p.method_id, m.season, NULL AS item_id
+        FROM acquisition_providers_monster_spawns p
+        JOIN monster_spawns s ON s.id = p.monster_spawn_id
+        JOIN monsters m ON m.id = s.monster_id""",
+    # A carried or placed item is seasonal when the item itself is seasonal-only.
+    "acquisition_providers_items": """
+        SELECT method_id, NULL AS season, item_id FROM acquisition_providers_items""",
+    "acquisition_home_providers": """
+        SELECT method_id, NULL AS season, structure_item_id AS item_id
+        FROM acquisition_home_providers""",
+}
+
+
+def _item_seasons(conn: sqlite3.Connection) -> dict[str, set[str]]:
+    """The seasons an item can only be obtained in, for items that need a season.
+
+    A method needs a season when the game offers it only in that season, when every
+    provider is a seasonal NPC, a seasonal monster's spawn or a seasonal-only item,
+    when it completes a quest that only seasonal methods offer, or when a required
+    cost is a seasonal-only item. An item needs a season when every rooted method
+    that delivers or offers it does, and its seasons are the union of theirs.
+    """
+    rooted = {
+        row["id"]: row["kind"]
+        for row in _rows(conn, "SELECT id,kind FROM acquisition_methods WHERE rooted=1")
+    }
+    own: dict[str, set[str]] = defaultdict(set)
+    for row in _rows(
+        conn,
+        "SELECT id,season FROM acquisition_vendor_details WHERE season IS NOT NULL",
+    ):
+        own[row["id"]].add(row["season"])
+    providers: dict[str, list[tuple[str | None, str | None]]] = defaultdict(list)
+    provider_tables = [
+        row["name"]
+        for row in _rows(
+            conn,
+            """SELECT name FROM sqlite_master WHERE type='table'
+            AND (name GLOB 'acquisition_providers_*' OR name='acquisition_home_providers')""",
+        )
+    ]
+    for table in provider_tables:
+        sql = _SEASONAL_PROVIDERS.get(
+            table, f"SELECT method_id, NULL AS season, NULL AS item_id FROM {table}"
+        )
+        for row in _rows(conn, sql):
+            providers[row["method_id"]].append((row["season"], row["item_id"]))
+    accepts: dict[str, list[str]] = defaultdict(list)
+    completes: dict[str, str] = {}
+    for row in _rows(conn, "SELECT id,quest_id,phase FROM acquisition_quest_details"):
+        if row["phase"] == "accept":
+            accepts[row["quest_id"]].append(row["id"])
+        else:
+            completes[row["id"]] = row["quest_id"]
+    cost_groups: dict[str, dict[str, list[str | None]]] = defaultdict(dict)
+    alternatives: dict[str, set[str]] = defaultdict(set)
+    for row in _rows(
+        conn,
+        """SELECT g.method_id,g.id AS group_id,g.selection_rule,i.item_id
+        FROM acquisition_cost_groups g JOIN acquisition_inputs i ON i.cost_group_id=g.id
+        WHERE i.resource_kind='item'""",
+    ):
+        cost_groups[row["method_id"]].setdefault(row["group_id"], []).append(
+            row["item_id"]
+        )
+        if row["selection_rule"] in CHEST_COST_ALTERNATIVES:
+            alternatives[row["method_id"]].add(row["group_id"])
+    awards: dict[str, set[str]] = defaultdict(set)
+    for row in _rows(
+        conn,
+        """SELECT method_id,item_id FROM acquisition_outputs
+        WHERE item_id IS NOT NULL AND withheld=0
+        AND delivery IN ('inventory','corpse','placed_structure')""",
+    ):
+        if row["method_id"] in rooted:
+            awards[row["item_id"]].add(row["method_id"])
+    for row in _rows(conn, "SELECT id,offered_item_id FROM acquisition_vendor_details"):
+        if row["id"] in rooted:
+            awards[row["offered_item_id"]].add(row["id"])
+
+    items: dict[str, set[str]] = {}
+
+    def method_seasons(method: str) -> set[str]:
+        seasons = set(own[method])
+        rows = providers[method]
+        provider_seasons = [
+            {season} if season else items.get(item, set()) if item else set()
+            for season, item in rows
+        ]
+        if rows and all(provider_seasons):
+            seasons.update(*provider_seasons)
+        quest = completes.get(method)
+        if quest is not None:
+            accepted = [method_seasons(accept) for accept in accepts[quest]]
+            if accepted and all(accepted):
+                seasons.update(*accepted)
+        required: list[set[str]] = []
+        optional: list[set[str]] = []
+        for group, group_items in cost_groups[method].items():
+            group_seasons = set().union(
+                *(items.get(item, set()) for item in group_items if item)
+            )
+            (optional if group in alternatives[method] else required).append(
+                group_seasons
+            )
+        seasons.update(*required)
+        if optional and all(optional):
+            seasons.update(*optional)
+        return seasons
+
+    changed = True
+    while changed:
+        changed = False
+        for item, methods in awards.items():
+            per_method = [method_seasons(method) for method in methods]
+            seasons = set().union(*per_method) if all(per_method) else set()
+            if seasons and seasons != items.get(item):
+                items[item] = seasons
+                changed = True
+    return items
+
+
 def derive(conn: sqlite3.Connection) -> None:
     """Build the item output index and fixed-point opportunity metadata after closure."""
     conn.execute(
@@ -1924,6 +2053,9 @@ def derive(conn: sqlite3.Connection) -> None:
             "UPDATE acquisition_methods SET rooted=?,source_level_hint=? WHERE id=?",
             (rooted, hint, method),
         )
+    for item, seasons in sorted(_item_seasons(conn).items()):
+        for season in sorted(seasons):
+            _insert(conn, "item_seasons", item_id=item, season_id=season)
 
 
 def validate(conn: sqlite3.Connection) -> None:

@@ -109,6 +109,8 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
         ("gathering_resources", "tool_required_id"),
         ("items", "buy_token_id"),
         ("items", "weapon_required_ammo_id"),
+        ("item_seasons", "item_id"),
+        ("item_seasons", "season_id"),
         ("monster_skills", "monster_id"),
         ("monsters", "season"),
         ("npcs", "faction"),

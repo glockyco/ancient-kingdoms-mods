@@ -60,6 +60,7 @@ DERIVED_TABLES = frozenset(
         "acquisition_providers_treasure_locations",
         "acquisition_home_providers",
         "acquisition_method_fishing_rules",
+        "item_seasons",
         "loot_pools",
         "loot_pool_entries",
         "loot_monster_rules",

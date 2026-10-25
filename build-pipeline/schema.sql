@@ -1614,6 +1614,14 @@ CREATE TABLE acquisition_outputs (
     CHECK (slot IS NULL OR (delivery='equipment' AND slot>=0)),
     CHECK (condition_slot IS NULL OR condition_slot>=0)
 );
+-- Items that can only be obtained through seasonal content, with the seasons that
+-- offer them. Derived from rooted methods, so an item obtained only by opening a
+-- seasonal quest reward is seasonal too. Year-round items have no rows.
+CREATE TABLE item_seasons (
+    item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    season_id TEXT NOT NULL REFERENCES seasons(id) DEFERRABLE INITIALLY DEFERRED,
+    PRIMARY KEY (item_id, season_id)
+);
 CREATE TABLE acquisition_faction_effects (
     id TEXT PRIMARY KEY,
     method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,

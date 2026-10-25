@@ -68,13 +68,20 @@ def inputs(conn, method_id, item_ids):
 
 
 def vendor(
-    conn, method_id, offered, awarded=None, *, delivery="inventory", npc="merchant"
+    conn,
+    method_id,
+    offered,
+    awarded=None,
+    *,
+    delivery="inventory",
+    npc="merchant",
+    season=None,
 ):
     method(conn, method_id, "vendor")
     conn.execute(
         """INSERT INTO acquisition_vendor_details (id, npc_id, offered_item_id, season)
-        VALUES (?, ?, ?, NULL)""",
-        (method_id, npc, offered),
+        VALUES (?, ?, ?, ?)""",
+        (method_id, npc, offered, season),
     )
     conn.execute(
         """INSERT INTO acquisition_providers_npcs (id, method_id, npc_id, offer_index)
@@ -370,3 +377,116 @@ def test_quest_reward_takes_the_recommended_level_not_the_acceptance_gate(conn):
     derive(conn)
 
     assert state(conn, "hunt_reward") == (1, 40)
+
+
+def seasons(conn):
+    conn.executescript("""
+        INSERT INTO skills (id, name, skill_type) VALUES
+            ('halloween_event', 'Halloween Event', 'target_buff'),
+            ('winter_festival', 'Winter Festival', 'target_buff');
+        INSERT INTO seasons (id, ordinal, buff_skill_id) VALUES
+            ('halloween', 0, 'halloween_event'),
+            ('christmas', 1, 'winter_festival');
+    """)
+
+
+def item_seasons(conn):
+    result: dict[str, set[str]] = {}
+    for item_id, season in conn.execute("SELECT item_id, season_id FROM item_seasons"):
+        result.setdefault(item_id, set()).add(season)
+    return result
+
+
+def kill(conn, monster_id, season, drop):
+    conn.execute(
+        "INSERT INTO monsters (id, name, level, season) VALUES (?, ?, 10, ?)",
+        (monster_id, monster_id, season),
+    )
+    conn.execute(
+        "INSERT INTO loot_pools (id, kind) VALUES (?, 'monster')",
+        (f"{monster_id}_pool",),
+    )
+    method(conn, f"{monster_id}_kill", "kill", "monster_loot")
+    conn.execute(
+        """INSERT INTO acquisition_kill_details
+        (id, monster_id, loot_pool_id, loot_zone_number, respawn, exp_multiplier, is_boss,
+         is_elite, is_hunt, is_summoned_pet, event_kind, gold_min, gold_max, gold_probability)
+        VALUES (?, ?, ?, 1, 1, 1, 0, 0, 0, 0, 'authored', 0, 0, 0)""",
+        (f"{monster_id}_kill", monster_id, f"{monster_id}_pool"),
+    )
+    conn.execute(
+        "INSERT INTO monster_spawns (id, monster_id, zone_id, level) VALUES (?, ?, 'town', 10)",
+        (f"{monster_id}_spawn", monster_id),
+    )
+    conn.execute(
+        """INSERT INTO acquisition_providers_monster_spawns (id, method_id, monster_spawn_id)
+        VALUES (?, ?, ?)""",
+        (f"{monster_id}_kill:provider", f"{monster_id}_kill", f"{monster_id}_spawn"),
+    )
+    output(conn, f"{monster_id}_kill", drop)
+
+
+def test_seasonal_offers_and_drops_make_their_items_seasonal(conn):
+    seasons(conn)
+    for item_id in ("treat", "fireworks", "bread", "token", "candle"):
+        item(conn, item_id)
+    vendor(conn, "treat_sale", "treat", season="halloween")
+    vendor(conn, "fireworks_halloween", "fireworks", season="halloween")
+    vendor(conn, "fireworks_winter", "fireworks", season="christmas")
+    vendor(conn, "bread_sale", "bread")
+    kill(conn, "pumpkin", "halloween", "token")
+    # A seasonal drop does not make an item seasonal when it is also sold all year.
+    kill(conn, "witch", "halloween", "candle")
+    vendor(conn, "candle_sale", "candle")
+
+    derive(conn)
+
+    assert item_seasons(conn) == {
+        "treat": {"halloween"},
+        "fireworks": {"halloween", "christmas"},
+        "token": {"halloween"},
+    }
+
+
+def test_a_seasonal_name_does_not_make_an_item_seasonal(conn):
+    seasons(conn)
+    item(conn, "christmas_hat")
+    vendor(conn, "hat_sale", "christmas_hat")
+
+    derive(conn)
+
+    assert item_seasons(conn) == {}
+
+
+def test_a_seasonal_quest_reward_and_its_pack_contents_are_seasonal(conn):
+    seasons(conn)
+    for item_id in ("coin_pack", "coin"):
+        item(conn, item_id)
+    conn.executescript("""
+        INSERT INTO npcs (id, name, roles, season) VALUES
+            ('santa', 'Santa', '{"is_quest_giver":true}', 'christmas'),
+            ('grimnir', 'Grimnir', '{"is_quest_giver":true}', NULL);
+        INSERT INTO npc_spawns (id, npc_id, zone_id) VALUES
+            ('santa_spawn', 'santa', 'town'), ('grimnir_spawn', 'grimnir', 'town');
+        INSERT INTO quests (id, name, quest_type) VALUES ('wish', 'Wish', 'location');
+    """)
+    for method_id, phase, npc in (
+        ("wish_accept", "accept", "santa"),
+        ("wish_complete", "complete", "grimnir"),
+    ):
+        method(conn, method_id, f"quest_{phase}")
+        conn.execute(
+            "INSERT INTO acquisition_quest_details (id, quest_id, phase) VALUES (?, 'wish', ?)",
+            (method_id, phase),
+        )
+        conn.execute(
+            """INSERT INTO acquisition_providers_npcs (id, method_id, npc_id, offer_index)
+            VALUES (?, ?, ?, 0)""",
+            (f"{method_id}:provider", method_id, npc),
+        )
+    output(conn, "wish_complete", "coin_pack")
+    transform(conn, "open_coin_pack", "coin_pack", "coin")
+
+    derive(conn)
+
+    assert item_seasons(conn) == {"coin_pack": {"christmas"}, "coin": {"christmas"}}
