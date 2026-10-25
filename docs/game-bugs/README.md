@@ -17,6 +17,8 @@ Defects in this repository do not belong here. Fix those in the code that owns t
 | [Bandages promises twice the healing it delivers](bandages-tooltip-promises-twice-the-healing.md) | The item promises 250 Health but adds only 125 beyond natural regeneration in two measured uses. | Yes |
 | [Light of the Heavens does not heal players](light-of-the-heavens-does-not-heal-players.md) | The Cleric's "all nearby allies" heal restores nearby mercenaries but excludes their injured owner. | Yes |
 | [Shadowstrike excludes half the offhand from its advertised attack-power percentage](shadowstrike-excludes-half-the-offhand-from-its-percentage.md) | A Rogue with 120 attack power and a 51-damage offhand dagger gets rank-1 damage computed from 190 before mitigation, not the advertised 240. | Yes |
+| [Fisherman's Hat and Trousers label their slot as Chest](fishermans-hat-and-trousers-label-their-slot-as-chest.md) | Two inventory tooltips say Chest although the costumes equip to Head and Legs. | Yes |
+| [Beryllium Pickaxe's description misspells intricate](beryllium-pickaxe-description-misspells-intricate.md) | The English item description says `intrincate` instead of `intricate`. | Yes |
 
 Each report states the game version and Steam build it was observed on. The Archer Shot, Bandages, Light of the Heavens and Shadowstrike reports were observed on 0.9.35.5, Steam build 25927597. The resurrection, two-point veteran skill and dungeon potion reports were observed on 0.9.35.1, Steam build 25863605. The Adventurer's Guide and backpack reports were observed on 0.9.34.0, Steam build 25548782. The two earlier character-creation and mercenary reports were observed on 0.9.31.0, Steam build 24925347.
 
