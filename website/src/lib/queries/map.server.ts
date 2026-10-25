@@ -6,6 +6,7 @@ import Database from "better-sqlite3";
 import { resolve } from "path";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
+import type { Season } from "$lib/data/seasonal-events";
 import type {
   MapEntityData,
   MonsterMapEntity,
@@ -31,6 +32,10 @@ import type {
   MethodView,
   ProviderRef,
 } from "$lib/acquisition/types";
+import {
+  projectMethodSeasons,
+  projectProviderMethods,
+} from "$lib/acquisition/projections";
 
 /**
  * Compute level ranges from loaded entity data
@@ -78,6 +83,7 @@ export async function loadAllMapEntitiesServer(): Promise<MapEntityData> {
       UNION ALL SELECT 'resource_spawns', id FROM gathering_resource_spawns
       UNION ALL SELECT 'chests', id FROM chests
       UNION ALL SELECT 'altars', id FROM altars
+      UNION ALL SELECT 'npcs', id FROM npcs
     `,
       )
       .all() as ProviderRef[];
@@ -87,6 +93,34 @@ export async function loadAllMapEntitiesServer(): Promise<MapEntityData> {
     });
     applyAcquisitionCounts(model, monsters, gathering, chests);
     appendEventMonsterMarkers(model, monsters);
+    for (const npc of npcs) {
+      const methods = projectProviderMethods(model, {
+        kind: "npcs",
+        id: npc.id,
+      });
+      npc.itemsSoldCount = new Set(
+        methods
+          .filter(
+            (method) =>
+              method.kind === "vendor" &&
+              !method.costGroups.some((group) =>
+                group.inputs.some((input) => input.withheld),
+              ),
+          )
+          .map((method) => {
+            const inputs = method.costGroups.flatMap((group) => group.inputs);
+            const cost =
+              inputs.find((input) => input.resource_kind === "item") ??
+              inputs.find((input) => input.resource_kind === "gold");
+            return JSON.stringify([
+              method.detail.offered_item_id,
+              cost?.amount ?? 0,
+              cost?.item_id ?? null,
+              projectMethodSeasons(model, method),
+            ]);
+          }),
+      ).size;
+    }
 
     const levelRanges = computeLevelRanges(monsters, gathering);
 
@@ -352,6 +386,7 @@ interface MonsterSpawnRow {
   id: string;
   monster_id: string;
   name: string;
+  season: Season | null;
   position_x: number | null;
   position_y: number | null;
   zone_id: string | null;
@@ -408,6 +443,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       ms.id,
       ms.monster_id,
       m.name,
+      m.season,
       ms.position_x,
       ms.position_y,
       ms.zone_id,
@@ -455,6 +491,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       m.id as id,
       m.id as monster_id,
       m.name,
+      m.season,
       NULL as position_x,
       NULL as position_y,
       NULL as zone_id,
@@ -526,6 +563,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       monsterId: r.monster_id,
       type,
       name: r.name,
+      season: r.season,
       position:
         r.position_x !== null && r.position_y !== null
           ? [r.position_x, -r.position_y]
@@ -576,6 +614,7 @@ interface NpcSpawnRow {
   id: string | null;
   npc_id: string;
   name: string;
+  season: Season | null;
   position_x: number | null;
   position_y: number | null;
   zone_id: string | null;
@@ -588,7 +627,6 @@ interface NpcSpawnRow {
   patrol_waypoints: string | null;
   move_distance: number;
   quest_count: number;
-  items_sold_count: number;
   teleport_zone_id: string | null;
   teleport_zone_name: string | null;
   teleport_destination_x: number | null;
@@ -604,6 +642,7 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
       ns.id,
       n.id as npc_id,
       n.name,
+      n.season,
       ns.position_x,
       ns.position_y,
       ns.zone_id,
@@ -617,9 +656,6 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
       ns.move_distance,
       (SELECT COUNT(*) FROM npc_quest_memberships membership
        WHERE membership.npc_id = n.id AND membership.role = 'offer') AS quest_count,
-      (SELECT COUNT(*) FROM acquisition_providers_npcs provider
-       JOIN acquisition_methods method ON method.id = provider.method_id
-       WHERE provider.npc_id = n.id AND method.kind = 'vendor' AND method.rooted = 1) AS items_sold_count,
       ns.teleport_zone_id,
       tz.name as teleport_zone_name,
       ns.teleport_destination_x,
@@ -654,6 +690,7 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
       id: r.npc_id,
       type: "npc" as const,
       name: r.name,
+      season: r.season,
       position:
         r.position_x !== null && r.position_y !== null
           ? [r.position_x, -r.position_y]
@@ -675,7 +712,7 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
       patrolWaypoints,
       moveDistance: r.move_distance ?? 0,
       questCount: r.quest_count,
-      itemsSoldCount: r.items_sold_count,
+      itemsSoldCount: 0,
       hasTeleport: r.teleport_zone_id !== null,
       teleportDestName: r.teleport_zone_name,
       teleportZoneId: r.teleport_zone_id,

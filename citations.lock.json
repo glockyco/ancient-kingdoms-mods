@@ -2501,6 +2501,9 @@
     "Npc.cs:Start": {
       "span": 0
     },
+    "Npc.cs:UpdateServer_DEAD": {
+      "span": 0
+    },
     "Npc.cs:UpdateServer_IDLE": {
       "span": 0
     },

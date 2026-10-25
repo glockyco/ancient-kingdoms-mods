@@ -11,7 +11,6 @@ import type {
   AcquisitionRequest,
   AcquisitionModel,
   DirectLocation,
-  MethodView,
 } from "$lib/acquisition/types";
 
 export const MAP_PROVIDER_CATEGORY = {
@@ -35,10 +34,6 @@ export async function loadBrowserAcquisition(
 ): Promise<AcquisitionModel> {
   return assembleAcquisitionModel(await queryAcquisitionRows(execute, request));
 }
-/** Seasonal vendor offers are outside the map's source presentation. */
-export function mapMethodIsVisible(method: MethodView): boolean {
-  return method.kind !== "vendor" || method.detail.season === null;
-}
 
 /** Award, offer and use locations stay distinct, but all can be selected on the map. */
 export function itemMapLocations(
@@ -53,14 +48,6 @@ export function itemMapLocations(
   const seen = new Set<string>();
   return locations.filter((location) => {
     if (location.geometryVisibility !== "visible" || !location.position)
-      return false;
-    if (
-      location.methodIds.length &&
-      !location.methodIds.some((id) => {
-        const method = model.methodViews.get(id);
-        return method && mapMethodIsVisible(method);
-      })
-    )
       return false;
     const key = `${location.purpose}:${location.provider.kind}:${location.provider.id}:${location.position.x}:${location.position.y}:${location.position.z}`;
     if (seen.has(key)) return false;

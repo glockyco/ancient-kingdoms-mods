@@ -5,6 +5,8 @@
   import MapItemLink from "$lib/components/map/MapItemLink.svelte";
   import MapEntityLink from "$lib/components/map/MapEntityLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import { SEASON_ORDER, type Season } from "$lib/data/seasonal-events";
   import { formatAltarRewardTier } from "$lib/calculation/altar";
   import {
     toRomanNumeral,
@@ -83,6 +85,10 @@
     onHoverZone,
     mode = "card",
   }: Props = $props();
+
+  const seasons = (Object.keys(SEASON_ORDER) as Season[]).sort(
+    (a, b) => SEASON_ORDER[a] - SEASON_ORDER[b],
+  );
 
   // Lazy-loaded details state
   let monsterDetails = $state<MonsterPopupDetails | null>(null);
@@ -515,16 +521,25 @@
       </div>
     {/if}
 
+    {#if monster.season}
+      <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD — Halloween monsters cannot respawn outside Halloween. -->
+      <div
+        class="flex items-center gap-1 rounded bg-muted px-2 py-1 text-sm text-muted-foreground"
+      >
+        <SeasonLabel season={monster.season} /> only
+      </div>
+    {/if}
+
     <!-- Spawn time window (only if limited) - shown prominently -->
     {@const spawnWindow = formatSpawnTimeWindow(
       monster.spawnTimeStart,
       monster.spawnTimeEnd,
     )}
     {#if spawnWindow}
-      <div class="rounded bg-sky-500/20 px-2 py-1 text-sky-300">
-        <span class="text-sky-400">Active</span>
-        <span class="text-sky-200">{spawnWindow}</span>
-        <span class="text-sky-400">only</span>
+      <div
+        class="rounded bg-sky-500/20 px-2 py-1 text-sky-800 dark:text-sky-300"
+      >
+        Active {spawnWindow} only
       </div>
     {/if}
 
@@ -767,6 +782,15 @@
   {#if entity.type === "npc"}
     {@const npc = entity as NpcMapEntity}
 
+    {#if npc.season}
+      <!-- Source: server-scripts/Npc.cs:UpdateServer_DEAD — Christmas NPCs remain hidden outside the Winter Festival. -->
+      <div
+        class="flex items-center gap-1 rounded bg-muted px-2 py-1 text-sm text-muted-foreground"
+      >
+        <SeasonLabel season={npc.season} /> only
+      </div>
+    {/if}
+
     <!-- Teleport destination -->
     {#if npc.hasTeleport && npc.teleportDestName}
       <div class="flex justify-between">
@@ -894,27 +918,80 @@
       <div class="py-2 text-center text-xs text-muted-foreground">
         Loading...
       </div>
-    {:else if npcDetails && npcDetails.itemsSold.length > 0}
+    {:else if npcDetails && npcDetails.itemsSold.some((item) => item.seasons.length === 0)}
       <div class="border-t pt-2">
         <div class="mb-1 text-xs font-medium text-muted-foreground">
           Items for Sale
         </div>
         <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
-          {#each npcDetails.itemsSold as item, i (i)}
-            <div>
+          {#each npcDetails.itemsSold.filter((item) => item.seasons.length === 0) as item, i (i)}
+            <div
+              class="flex flex-col gap-0.5 rounded bg-muted/40 px-2 py-1 text-sm"
+            >
               <MapItemLink
                 itemId={item.itemId}
                 itemName={item.itemName}
                 tooltipHtml={itemIconPaths ? item.tooltipHtml : null}
                 imageAvailable={itemIconPaths?.[item.itemId]}
                 colorClass={getQualityTextColorClass(item.quality)}
-                class="truncate"
                 onSelect={onSelectItem}
               />
+              <span class="shrink-0 text-muted-foreground">
+                {formatNumber(item.price)}
+                {#if item.currencyItemId && item.currencyItemName}
+                  <MapItemLink
+                    itemId={item.currencyItemId}
+                    itemName={item.currencyItemName}
+                    onSelect={onSelectItem}
+                  />
+                {:else}g{/if}
+              </span>
             </div>
           {/each}
         </div>
       </div>
+    {/if}
+    {#if npcDetails}
+      {#each seasons as season (season)}
+        {@const stock = npcDetails.itemsSold.filter((item) =>
+          item.seasons.includes(season),
+        )}
+        {#if stock.length > 0}
+          <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — Repair merchants add the active season's items to their stock. -->
+          <div class="border-t pt-2 text-sm">
+            <div class="mb-1 font-medium text-muted-foreground">
+              Seasonal stock
+            </div>
+            <SeasonLabel {season} />
+            <div class="mt-1 max-h-48 space-y-1 overflow-y-auto pr-2">
+              {#each stock as item, i (i)}
+                <div
+                  class="flex flex-col gap-0.5 rounded bg-muted/40 px-2 py-1"
+                >
+                  <MapItemLink
+                    itemId={item.itemId}
+                    itemName={item.itemName}
+                    tooltipHtml={itemIconPaths ? item.tooltipHtml : null}
+                    imageAvailable={itemIconPaths?.[item.itemId]}
+                    colorClass={getQualityTextColorClass(item.quality)}
+                    onSelect={onSelectItem}
+                  />
+                  <span class="shrink-0 text-muted-foreground">
+                    {formatNumber(item.price)}
+                    {#if item.currencyItemId && item.currencyItemName}
+                      <MapItemLink
+                        itemId={item.currencyItemId}
+                        itemName={item.currencyItemName}
+                        onSelect={onSelectItem}
+                      />
+                    {:else}g{/if}
+                  </span>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      {/each}
     {/if}
   {/if}
 

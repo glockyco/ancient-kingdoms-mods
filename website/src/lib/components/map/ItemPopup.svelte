@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteMap } from "svelte/reactivity";
   import PopupCard from "./PopupCard.svelte";
   import ItemTooltip from "$lib/components/ItemTooltip.svelte";
   import DropChance from "$lib/components/DropChance.svelte";
@@ -7,10 +8,13 @@
   import { buildEntityUrl } from "$lib/map/url-state";
   import { formatAltarRewardTier } from "$lib/calculation/altar";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import { SEASON_ORDER, type Season } from "$lib/data/seasonal-events";
   import {
     loadItemPopupDetails,
     loadMapItemIconPaths,
     type ItemPopupDetails,
+    type ItemPopupVendor,
   } from "$lib/queries/popup";
   import {
     getQualityTextColorClass,
@@ -59,6 +63,28 @@
     onSelectItem,
     mode = "card",
   }: Props = $props();
+
+  const seasons = (Object.keys(SEASON_ORDER) as Season[]).sort(
+    (a, b) => SEASON_ORDER[a] - SEASON_ORDER[b],
+  );
+
+  function groupVendors(vendors: ItemPopupVendor[]) {
+    const groups = new SvelteMap<
+      string,
+      { offer: ItemPopupVendor; merchants: ItemPopupVendor[] }
+    >();
+    for (const offer of vendors) {
+      const key = JSON.stringify([
+        offer.price,
+        offer.currencyItemId,
+        offer.resultAmount,
+      ]);
+      const group = groups.get(key);
+      if (group) group.merchants.push(offer);
+      else groups.set(key, { offer, merchants: [offer] });
+    }
+    return [...groups.values()];
+  }
 
   function formatFishingChanceRange(
     minChance: number | null,
@@ -136,6 +162,13 @@
     onFocusClick={details.canFocus ? onFocusClick : undefined}
     {mode}
   >
+    {#if details.seasons.length > 0}
+      <div class="flex flex-wrap gap-2">
+        {#each details.seasons as season (season)}
+          <SeasonLabel {season} />
+        {/each}
+      </div>
+    {/if}
     <!-- Dropped by -->
     {#if details.droppers.length > 0}
       <div>
@@ -144,8 +177,10 @@
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.droppers as dropper (dropper.monsterId)}
-            <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-1 min-w-0">
+            <div
+              class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm"
+            >
+              <div class="flex flex-wrap items-center gap-1 min-w-0">
                 <MonsterTypeIcon
                   isBoss={dropper.isBoss}
                   isFabled={dropper.isFabled}
@@ -165,9 +200,12 @@
                 >
                   <span class="truncate">{dropper.monsterName}</span>
                 </MapEntityLink>
+                {#each dropper.seasons as season (season)}
+                  <SeasonLabel {season} />
+                {/each}
               </div>
               <div
-                class="flex items-center gap-2 shrink-0 text-xs text-muted-foreground"
+                class="flex items-center gap-2 shrink-0 text-sm text-muted-foreground"
               >
                 <span>Lv {dropper.level}</span>
                 <span>
@@ -186,13 +224,13 @@
     {/if}
 
     <!-- Sold by -->
-    {#if details.vendors.length > 0}
+    {#if details.vendors.some((vendor) => vendor.seasons.length === 0)}
       <div class={details.droppers.length > 0 ? "border-t pt-2" : ""}>
         <div class="mb-1 text-xs font-medium text-muted-foreground">
           Sold by
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
-          {#each details.vendors as vendor, i (i)}
+          {#each details.vendors.filter((vendor) => vendor.seasons.length === 0) as vendor, i (i)}
             <div class="flex items-center justify-between gap-2">
               <MapEntityLink
                 href={buildEntityUrl(vendor.npcId, "npc")}
@@ -212,6 +250,70 @@
                   ({vendor.resultAmount}×)
                 {/if}
               </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    {#if details.vendors.some((vendor) => vendor.seasons.length > 0)}
+      <div class="border-t pt-2 text-sm">
+        <div class="mb-1 font-medium text-muted-foreground">Seasonal shop</div>
+        {#each seasons as season (season)}
+          {@const vendors = details.vendors.filter((vendor) =>
+            vendor.seasons.includes(season),
+          )}
+          {#if vendors.length > 0}
+            <div class="mt-2 space-y-1">
+              <SeasonLabel {season} />
+              {#each groupVendors(vendors) as { offer, merchants }, i (i)}
+                <div class="text-muted-foreground">
+                  {formatNumber(offer.price)}
+                  {#if offer.currencyItemId && offer.currencyItemName}
+                    <MapItemLink
+                      itemId={offer.currencyItemId}
+                      itemName={offer.currencyItemName}
+                      onSelect={onSelectItem}
+                    />
+                  {:else}g{/if}
+                  {#if offer.resultAmount && offer.resultAmount > 1}
+                    for {offer.resultAmount}
+                  {/if}
+                </div>
+                <div class="max-h-40 space-y-1 overflow-y-auto pr-2">
+                  {#each merchants as vendor (vendor.npcId)}
+                    <div>
+                      <MapEntityLink
+                        href={buildEntityUrl(vendor.npcId, "npc")}
+                        onSelect={() => onSelectNpc(vendor.npcId)}
+                        onHoverStart={() => onHoverNpc?.(vendor.npcId)}
+                        onHoverEnd={() => onHoverNpc?.(null)}
+                        >{vendor.npcName}</MapEntityLink
+                      >
+                    </div>
+                  {/each}
+                </div>
+              {/each}
+            </div>
+          {/if}
+        {/each}
+      </div>
+    {/if}
+
+    {#if details.packSources.length > 0}
+      <div class="border-t pt-2 text-sm">
+        <div class="mb-1 font-medium text-muted-foreground">Opened from</div>
+        <div class="max-h-32 space-y-1 overflow-y-auto pr-2">
+          {#each details.packSources as pack (pack.itemId)}
+            <div class="flex items-start justify-between gap-2">
+              <MapItemLink
+                itemId={pack.itemId}
+                itemName={pack.itemName}
+                onSelect={onSelectItem}
+              />
+              <span class="shrink-0 text-muted-foreground"
+                >{pack.resultAmount}x</span
+              >
             </div>
           {/each}
         </div>
@@ -381,14 +483,19 @@
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.questRewards as quest (quest.questId)}
-            <div class="flex items-center justify-between gap-2">
+            <div
+              class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm"
+            >
               <MapEntityLink
                 href={buildEntityUrl(quest.questId, "quest")}
                 onSelect={() => onSelectQuest(quest.questId)}
               >
                 <span class="truncate">{quest.questName}</span>
               </MapEntityLink>
-              <span class="shrink-0 text-xs text-muted-foreground">
+              {#each quest.seasons as season (season)}
+                <SeasonLabel {season} />
+              {/each}
+              <span class="shrink-0 text-sm text-muted-foreground">
                 Lv {quest.levelRecommended}
               </span>
             </div>

@@ -27,6 +27,87 @@ const db = new Database("data/compendium.db", { readonly: true });
 afterAll(() => db.close());
 
 describe("compact map popups on canonical acquisition", () => {
+  test("Festive Cookie keeps all seasonal merchants and eligible focus geometry", async () => {
+    const popup = await loadItemPopupDetails("festive_cookie");
+    expect(popup).not.toBeNull();
+    expect(popup!.vendors).toHaveLength(13);
+    expect(
+      popup!.vendors.every(
+        (offer) =>
+          offer.seasons.length === 1 &&
+          offer.seasons[0] === "christmas" &&
+          offer.price > 0 &&
+          offer.currencyItemId === "winter_festival_coin",
+      ),
+    ).toBe(true);
+    expect(popup!.canFocus).toBe(true);
+    const model = await loadBrowserAcquisition({
+      kind: "items",
+      itemIds: ["festive_cookie"],
+    });
+    const merchants = itemMapLocations(model, "festive_cookie").filter(
+      (location) => location.provider.kind === "npcs",
+    );
+    expect(
+      new Set(merchants.map((location) => location.provider.id)).size,
+    ).toBe(13);
+    expect(await getItemMapBounds("festive_cookie")).not.toBeNull();
+    const selection = await resolveVirtualSelection("item", "festive_cookie");
+    expect(selection.highlight).not.toBeNull();
+  });
+
+  test("repair merchants retain both seasons and item-currency prices", async () => {
+    const popup = await loadNpcPopupDetails("adventurer_argosh");
+    for (const season of ["halloween", "christmas"]) {
+      expect(popup.itemsSold).toContainEqual(
+        expect.objectContaining({
+          itemId: "pack_10_skyflares",
+          seasons: [season],
+          currencyItemId: "festival_token",
+          price: expect.any(Number),
+        }),
+      );
+    }
+    expect(popup.itemsSold).toContainEqual(
+      expect.objectContaining({
+        itemId: "festive_cookie",
+        seasons: ["christmas"],
+        currencyItemId: "winter_festival_coin",
+        price: 1,
+      }),
+    );
+    const pyra = await loadNpcPopupDetails("pyra_vex");
+    expect(
+      pyra.itemsSold.some(
+        (offer) => offer.currencyItemId === "soul_ember" && offer.price > 0,
+      ),
+    ).toBe(true);
+  });
+
+  test("Winter Festival Coin lists its carried pack and delivered quantity", async () => {
+    const popup = await loadItemPopupDetails("winter_festival_coin");
+    expect(popup!.packSources).toEqual([
+      {
+        itemId: "pack_3_winter_festival_coin",
+        itemName: "Pack 3 Winter Festival Coin",
+        resultAmount: 3,
+      },
+    ]);
+  });
+
+  test("seasonal drop and quest reward rows retain their seasons", async () => {
+    const token = await loadItemPopupDetails("spook_token");
+    expect(token!.droppers.length).toBeGreaterThan(0);
+    expect(
+      token!.droppers.every((row) => row.seasons.join(",") === "halloween"),
+    ).toBe(true);
+    const pack = await loadItemPopupDetails("pack_3_winter_festival_coin");
+    expect(pack!.questRewards).toHaveLength(3);
+    expect(
+      pack!.questRewards.every((row) => row.seasons.join(",") === "christmas"),
+    ).toBe(true);
+  });
+
   test("pack vendors deliver arrows while NPC and pack popups list the offered pack", async () => {
     const arrows = await loadItemPopupDetails("arrow");
     const pack = await loadItemPopupDetails("pack_25_arrows");

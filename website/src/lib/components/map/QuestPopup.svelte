@@ -3,6 +3,7 @@
   import MapEntityLink from "./MapEntityLink.svelte";
   import MapItemLink from "./MapItemLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
   import {
     loadQuestPopupDetails,
     loadMapItemIconPaths,
@@ -137,6 +138,19 @@
     onFocusClick={hasHighlightedEntities ? onFocusClick : undefined}
     {mode}
   >
+    {#if details.seasons.length > 0}
+      <!-- Source: server-scripts/Npc.cs:UpdateServer_DEAD — Santa is hidden outside the Winter Festival, so his quests can only be accepted during it. -->
+      <div
+        class="flex flex-wrap items-center gap-1 rounded bg-muted px-2 py-1 text-sm text-muted-foreground"
+      >
+        Accepted during
+        {#each details.seasons as season (season)}
+          <SeasonLabel {season} />
+        {/each}
+        only
+      </div>
+    {/if}
+
     <!-- NPCs -->
     {#if adventurerNpcs.length > 0}
       <!-- Adventurer quests: list of NPCs (all are giver+turn-in) -->

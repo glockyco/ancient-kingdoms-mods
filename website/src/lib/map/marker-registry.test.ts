@@ -26,6 +26,7 @@ const monster = (flags: Partial<MonsterMapEntity> = {}): MonsterMapEntity => ({
   id: "spawn",
   type: "monster",
   name: "Test Creature",
+  season: null,
   position: [1, 2],
   zoneId: "zone",
   zoneName: "Zone",

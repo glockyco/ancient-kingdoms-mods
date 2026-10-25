@@ -22,6 +22,7 @@
     trapDisplayName,
   } from "$lib/map/marker-registry";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
 
   interface Props {
     entity: AnyMapEntity;
@@ -118,6 +119,12 @@
   {#if entity.type === "npc"}
     {@const npc = entity as NpcMapEntity}
     {@const roles = getNpcRoles(npc.roleBitmask)}
+    {#if npc.season}
+      <!-- Source: server-scripts/Npc.cs:UpdateServer_DEAD — Christmas NPCs remain hidden outside the Winter Festival. -->
+      <div class="flex items-center gap-1 text-sm text-muted-foreground">
+        <SeasonLabel season={npc.season} /> only
+      </div>
+    {/if}
     {#if roles.length > 0}
       <div class="mt-0.5 flex flex-wrap gap-1">
         {#each roles as role (role)}
@@ -157,6 +164,12 @@
     {#if monster.spawnType === "placeholder" && monster.sourceMonsterName}
       <div class="text-sm text-cyan-400">
         Spawns after killing {monster.sourceMonsterName}
+      </div>
+    {/if}
+    {#if monster.season}
+      <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD — Halloween monsters cannot respawn outside Halloween. -->
+      <div class="flex items-center gap-1 text-sm text-muted-foreground">
+        <SeasonLabel season={monster.season} /> only
       </div>
     {/if}
     {#if monster.isPatrolling}

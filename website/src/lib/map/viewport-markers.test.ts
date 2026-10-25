@@ -145,6 +145,7 @@ describe("accessible viewport markers", () => {
     const npc: NpcMapEntity = {
       id: "npc",
       name: "npc",
+      season: null,
       type: "npc",
       position: [0, 0],
       zoneId: "zone",

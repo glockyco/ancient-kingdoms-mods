@@ -2,6 +2,7 @@
  * Entity types that can appear on the map
  */
 import type { TrapType } from "$lib/constants/traps";
+import type { Season } from "$lib/data/seasonal-events";
 
 export type EntityType =
   | "monster"
@@ -55,6 +56,7 @@ export interface MonsterMapEntity extends MapEntity {
   type: "monster" | "boss" | "fabled" | "elite" | "hunt";
   monsterId: string; // Original monster ID (id field is spawn ID for individual tracking)
   level: number;
+  season: Season | null;
   isBoss: boolean;
   isWorldBoss: boolean;
   isElite: boolean;
@@ -123,6 +125,7 @@ export const NPC_ROLE_BITS = {
  */
 export interface NpcMapEntity extends MapEntity {
   type: "npc";
+  season: Season | null;
   roleBitmask: number;
   isNotable: boolean;
   renewalDungeonName: string | null;

@@ -62,6 +62,7 @@ describe("map selection", () => {
       id: "northern",
       monsterId: "mummy",
       name: "Mummy",
+      season: null,
       type: "monster",
       position: [1, 2],
       zoneId: "north",

@@ -187,6 +187,7 @@ describe("map golden invariants", () => {
       id,
       type: "npc",
       name: id,
+      season: null,
       position: [1, 2],
       zoneId: "zone",
       zoneName: "Zone",

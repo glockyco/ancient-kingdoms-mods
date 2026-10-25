@@ -4,16 +4,14 @@ import type { AltarThresholds } from "$lib/calculation/altar";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import { monsterFatecharm, type FatecharmItem } from "$lib/utils/fatecharm";
 import { triggerAreaRing } from "$lib/map/trigger-area";
-import {
-  loadBrowserAcquisition,
-  itemMapLocations,
-  mapMethodIsVisible,
-} from "$lib/map/acquisition";
+import { loadBrowserAcquisition, itemMapLocations } from "$lib/map/acquisition";
 import {
   projectItemSources,
   projectItemUsages,
   projectMonsterLoot,
   projectProviderMethods,
+  projectMethodSeasons,
+  projectItemSeasons,
 } from "$lib/acquisition/projections";
 import {
   BASELINE_ASSUMPTIONS,
@@ -34,6 +32,7 @@ import {
   fishEscapeChancePerHook,
   fishLowerTierFishChancePerHook,
 } from "$lib/utils/fishing";
+import type { Season } from "$lib/data/seasonal-events";
 
 const itemIconPathCache = new Map<string, string | null>();
 export async function loadMapItemIconPaths(
@@ -90,6 +89,9 @@ export interface PopupItemSoldInfo {
   quality: number;
   price: number;
   tooltipHtml: string | null;
+  currencyItemId: string | null;
+  currencyItemName: string | null;
+  seasons: readonly Season[];
 }
 
 export interface PopupAltarReward extends AltarThresholds {
@@ -192,6 +194,7 @@ export interface ItemPopupDropper {
   isDistributionRoll?: boolean;
   requiresQuest?: boolean;
   zoneName: string | null;
+  seasons: readonly Season[];
 }
 
 export interface ItemPopupAltarSource extends AltarThresholds {
@@ -216,12 +219,14 @@ export interface ItemPopupVendor {
   resultAmount: number | null;
   currencyItemId: string | null;
   currencyItemName: string | null;
+  seasons: readonly Season[];
 }
 
 export interface ItemPopupQuestReward {
   questId: string;
   questName: string;
   levelRecommended: number;
+  seasons: readonly Season[];
 }
 
 export interface ItemPopupGatherSource {
@@ -254,6 +259,12 @@ export interface ItemPopupMergeSource {
   itemName: string;
 }
 
+export interface ItemPopupPackSource {
+  itemId: string;
+  itemName: string;
+  resultAmount: number;
+}
+
 export interface ItemPopupTreasureMapSource {
   mapItemId: string;
   mapItemName: string;
@@ -275,6 +286,7 @@ export interface ItemPopupDetails {
   name: string;
   quality: number;
   canFocus: boolean;
+  seasons: readonly Season[];
   tooltipHtml: string | null;
   visualAsset: Pick<
     EntityVisualAsset,
@@ -288,6 +300,7 @@ export interface ItemPopupDetails {
   chestSources: ItemPopupChestSource[];
   craftingSources: ItemPopupCraftSource[];
   mergeSources: ItemPopupMergeSource[];
+  packSources: ItemPopupPackSource[];
   /** Treasure maps that lead to this item as a reward */
   treasureMapSources: ItemPopupTreasureMapSource[];
   /** Treasure location info for items that ARE treasure maps */
@@ -332,6 +345,7 @@ export interface QuestPopupDetails {
   isEpicQuest: boolean;
   isAdventurerQuest: boolean;
   isRepeatable: boolean;
+  seasons: readonly Season[];
   gold: number;
   exp: number;
   rewardItems: QuestRewardItem[];
@@ -552,7 +566,7 @@ async function providerModel(provider: ProviderRef) {
   });
   return {
     model,
-    methods: projectProviderMethods(model, provider).filter(mapMethodIsVisible),
+    methods: projectProviderMethods(model, provider),
   };
 }
 function altarThresholds(altar: DataRow): AltarThresholds {
@@ -684,19 +698,25 @@ export async function loadNpcPopupDetails(
   );
   // A vendor row is the offered item, as the trade window shows it. The game's
   // sale list can repeat an identical offer, which the popup lists once.
-  const offers = new Map<string, PopupDropItem & { price: number }>();
+  const offers = new Map<string, PopupItemSoldInfo>();
   for (const method of methods) {
     if (method.kind !== "vendor") continue;
     const offeredId = String(method.detail.offered_item_id);
-    const gold = method.costGroups
-      .flatMap((group) => group.inputs)
-      .find((input) => input.resource_kind === "gold");
-    const price = gold?.amount ?? 0;
-    offers.set(`${offeredId}:${price}`, {
+    const inputs = method.costGroups.flatMap((group) => group.inputs);
+    if (inputs.some((input) => input.withheld)) continue;
+    const cost =
+      inputs.find((input) => input.resource_kind === "item") ??
+      inputs.find((input) => input.resource_kind === "gold");
+    const price = cost?.amount ?? 0;
+    const currencyItemId = cost?.item_id ?? null;
+    const currency = entity(model, "items", currencyItemId);
+    const seasons = projectMethodSeasons(model, method);
+    offers.set(`${offeredId}:${price}:${currencyItemId}:${seasons.join(",")}`, {
       ...itemFields(model, offeredId),
-      dropRate: 1,
-      isBestiary: Boolean(entity(model, "items", offeredId)?.is_bestiary_drop),
       price,
+      currencyItemId,
+      currencyItemName: currency ? String(currency.name) : null,
+      seasons,
     });
   }
   const itemsSold = [...offers.values()].sort(
@@ -983,7 +1003,7 @@ export async function loadItemPopupDetails(
   const item = entity(model, "items", itemId);
   if (!item) return null;
   const source = projectItemSources(model, itemId);
-  const methods = source.methods.filter(mapMethodIsVisible);
+  const methods = source.methods;
   const droppers: ItemPopupDropper[] = [];
   const altarSources: ItemPopupAltarSource[] = [];
   const vendors: ItemPopupVendor[] = [];
@@ -992,19 +1012,17 @@ export async function loadItemPopupDetails(
   const chestSources: ItemPopupChestSource[] = [];
   const craftingSources: ItemPopupCraftSource[] = [];
   const mergeSources: ItemPopupMergeSource[] = [];
+  const packSources: ItemPopupPackSource[] = [];
   const treasureMapSources: ItemPopupTreasureMapSource[] = [];
   let level: number | null = null;
   // A distribution item is never an award output: list the parent awards that roll it.
   const wrapperAwards = source.inspection.parentAwards.filter(
-    (method) =>
-      mapMethodIsVisible(method) &&
-      !methods.some((other) => other.methodId === method.methodId),
+    (method) => !methods.some((other) => other.methodId === method.methodId),
   );
   // A pack is offered rather than delivered: list the vendors and recipes that offer it, as its page does.
   const offers = source.inspection.offeredAssets.filter(
     (method) =>
       method.rooted &&
-      mapMethodIsVisible(method) &&
       !methods.some((other) => other.methodId === method.methodId),
   );
   const recipeVariants = new Map<string, number>();
@@ -1074,6 +1092,7 @@ export async function loadItemPopupDetails(
           isElite: Boolean(monster.is_elite),
           ...rates,
           zoneName: zone ? String(zone.name) : null,
+          seasons: projectMethodSeasons(model, method),
         };
         const previous = droppers.find(
           (dropper) => dropper.monsterId === monster.id,
@@ -1093,13 +1112,15 @@ export async function loadItemPopupDetails(
       const output = method.outputs.find((output) => output.item_id === itemId);
       const resultAmount =
         output?.quantity.kind === "exact" ? output.quantity.value : null;
+      const seasons = projectMethodSeasons(model, method);
       if (
         !vendors.some(
           (vendor) =>
             vendor.npcId === npc.id &&
             vendor.currencyItemId === (cost?.item_id ?? null) &&
             vendor.price === (cost?.amount ?? 0) &&
-            vendor.resultAmount === resultAmount,
+            vendor.resultAmount === resultAmount &&
+            vendor.seasons.join(",") === seasons.join(","),
         )
       ) {
         vendors.push({
@@ -1109,6 +1130,7 @@ export async function loadItemPopupDetails(
           resultAmount,
           currencyItemId: cost?.item_id ?? null,
           currencyItemName: currency ? String(currency.name) : null,
+          seasons,
         });
       }
     } else if (method.kind === "quest_complete") {
@@ -1118,6 +1140,7 @@ export async function loadItemPopupDetails(
           questId: quest.id,
           questName: String(quest.name),
           levelRecommended: Number(quest.level_recommended),
+          seasons: projectMethodSeasons(model, method),
         });
     } else if (method.kind === "gather") {
       const resource = entity(
@@ -1212,6 +1235,20 @@ export async function loadItemPopupDetails(
             : [],
         ),
       });
+    } else if (method.kind === "pack_use") {
+      const pack = entity(model, "items", method.detail.item_id);
+      const output = method.outputs.find((output) => output.item_id === itemId);
+      if (
+        pack &&
+        output?.quantity.kind === "exact" &&
+        !packSources.some((source) => source.itemId === pack.id)
+      ) {
+        packSources.push({
+          itemId: pack.id,
+          itemName: String(pack.name),
+          resultAmount: output.quantity.value,
+        });
+      }
     } else if (method.kind === "merge" || method.kind === "fragment") {
       if (
         method.costGroups.some((group) =>
@@ -1278,6 +1315,7 @@ export async function loadItemPopupDetails(
       typeof item.tooltip_html === "string" ? item.tooltip_html : null,
     visualAsset: visualAsset ?? null,
     canFocus: itemMapLocations(model, itemId).length > 0,
+    seasons: projectItemSeasons(model, itemId),
     droppers: droppers.sort(
       (a, b) => b.dropRate - a.dropRate || a.level - b.level,
     ),
@@ -1288,6 +1326,7 @@ export async function loadItemPopupDetails(
     chestSources,
     craftingSources,
     mergeSources,
+    packSources,
     treasureMapSources,
     treasureDestination:
       destination && zone
@@ -1476,6 +1515,11 @@ export async function loadQuestPopupDetailsBatch(
       isEpicQuest: Boolean(quest.is_epic_quest),
       isAdventurerQuest: Boolean(quest.is_adventurer_quest),
       isRepeatable: Boolean(quest.is_repeatable),
+      seasons: [
+        ...new Set(
+          methods.flatMap((method) => projectMethodSeasons(model, method)),
+        ),
+      ],
       gold: Number(quest.reward_gold ?? 0),
       exp: Number(quest.reward_experience ?? 0),
       canFocus: focusableQuests.has(questId),
