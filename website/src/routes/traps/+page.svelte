@@ -96,8 +96,9 @@
     },
     {
       id: "location",
-      header: "Location",
-      size: 90,
+      header: "Map",
+      // Grows for "No in-game map", which does not fit beside a button-sized column.
+      minSize: 90,
       enableSorting: false,
     },
   ];
@@ -107,7 +108,7 @@
     mechanics: "Mechanics",
     type: "Type",
     zone: "Zone",
-    location: "Location",
+    location: "Map",
   };
 </script>
 

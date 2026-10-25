@@ -136,7 +136,7 @@
               effect.factions.includes(data.faction.name),
           )?.amount_max ?? 0,
       },
-      { id: "location", header: "Location", size: 90, enableSorting: false },
+      { id: "location", header: "Map", size: 90, enableSorting: false },
     ];
   }
 
@@ -157,7 +157,7 @@
               effect.factions.includes(data.faction.name),
           )?.amount_max ?? 0,
       },
-      { id: "location", header: "Location", size: 90, enableSorting: false },
+      { id: "location", header: "Map", size: 90, enableSorting: false },
     ];
   }
 
@@ -175,7 +175,7 @@
       accessorFn: (row) => row.zone_name ?? "",
     },
     { id: "amount", header: "On loot", size: 130, enableSorting: false },
-    { id: "location", header: "Location", size: 90, enableSorting: false },
+    { id: "location", header: "Map", size: 90, enableSorting: false },
   ];
 
   const questGrantColumns: ColumnDef<FactionQuestGrantRow>[] = [
@@ -192,13 +192,13 @@
     { accessorKey: "name", header: "NPC", minSize: 220 },
     { accessorKey: "level", header: "Level", size: 110 },
     { id: "roles", header: "Roles", minSize: 220, enableSorting: false },
-    { id: "location", header: "Location", size: 90, enableSorting: false },
+    { id: "location", header: "Map", size: 90, enableSorting: false },
   ];
 
   const vendorColumns: ColumnDef<FactionVendorRow>[] = [
     { accessorKey: "name", header: "NPC", minSize: 260 },
     { id: "requires", header: "Requires", minSize: 200, enableSorting: false },
-    { id: "location", header: "Location", size: 90, enableSorting: false },
+    { id: "location", header: "Map", size: 90, enableSorting: false },
   ];
 
   const gatedItemColumns: ColumnDef<FactionGatedItemRow>[] = [
@@ -222,7 +222,7 @@
     },
     { accessorKey: "base_price", header: "Price", size: 140 },
     { accessorKey: "faction_required", header: "Requires", size: 200 },
-    { id: "location", header: "Location", size: 90, enableSorting: false },
+    { id: "location", header: "Map", size: 90, enableSorting: false },
   ];
 
   const questRequirementColumns: ColumnDef<FactionQuestRequirementRow>[] = [

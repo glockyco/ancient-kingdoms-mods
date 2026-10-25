@@ -96,7 +96,7 @@
     {
       id: "key",
       header: "Key",
-      size: 230,
+      minSize: 180,
       accessorFn: (row) => row.tool_or_key_name || "",
       getUniqueValues: (row) =>
         row.tool_or_key_id ? [row.tool_or_key_id] : [],
@@ -109,7 +109,7 @@
     {
       id: "gold",
       header: "Gold",
-      size: 130,
+      size: 140,
       accessorFn: (row) => {
         if (row.gold_min > 0 || row.gold_max > 0) {
           return row.gold_min === row.gold_max
@@ -123,20 +123,20 @@
     {
       id: "item",
       header: "Item",
-      minSize: 180,
+      minSize: 200,
       accessorFn: (row) => row.item_reward_name || "",
     },
     {
       id: "chance",
       header: "Reward Chance",
-      size: 170,
+      size: 150,
       accessorFn: (row) => chestRewardChance(row),
       sortingFn: "basic",
     },
     {
       id: "drops",
       header: "Random Drops",
-      size: 170,
+      size: 150,
       accessorFn: (row) => row.drops.length,
     },
     {
@@ -158,14 +158,14 @@
     },
     {
       id: "location",
-      header: "Location",
-      size: 120,
+      header: "Map",
+      size: 100,
     },
   ];
 
   const columnLabels: Record<string, string> = {
     zone: "Zone",
-    location: "Location",
+    location: "Map",
     name: "Icon",
     respawn_time: "Respawn",
     key: "Key",
