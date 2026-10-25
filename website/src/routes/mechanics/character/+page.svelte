@@ -564,10 +564,12 @@
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Create and save</h3>
         <!-- Source: server-scripts/UISkillbar.cs:Awake,OpenMacroMenu; server-scripts/UISkillbarSlot.cs:OnPointerClick; server-scripts/UISkillbarMacros.cs:Open,OpenEditor,Save,Delete — right-click an empty slot to create a macro or an existing macro to edit or delete it. -->
+        <!-- Source: server-scripts/UISkillbarMacros.cs:BuildIconSelector,Save — the editor's icon button opens a searchable icon list with a no-icon choice, and Save stores the choice. -->
         <p>
           Right-click an empty skillbar slot and choose Create Macro. Enter a
-          name and commands, then Save. Right-click an existing macro to open
-          its editor, where you can change it or choose Delete.
+          name and commands, optionally pick an icon, then Save. Right-click an
+          existing macro to open its editor, where you can change it or choose
+          Delete.
         </p>
         <!-- Source: server-scripts/SkillbarMacro.cs:Validate; server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/UISkillbarMacros.cs:Build — names allow 1-24 characters, with up to 5 lines of 240 characters each and at least one nonblank command. -->
         <p>

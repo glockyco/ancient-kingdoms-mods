@@ -5739,6 +5739,9 @@
     "UISkillbarMacros.cs:Build": {
       "span": 0
     },
+    "UISkillbarMacros.cs:BuildIconSelector": {
+      "span": 0
+    },
     "UISkillbarMacros.cs:Open": {
       "span": 0
     },
