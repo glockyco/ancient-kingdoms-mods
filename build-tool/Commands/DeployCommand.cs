@@ -34,7 +34,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
     internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
         ExecuteAsync(null!, settings, cancellationToken);
 
-    protected override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         Console.WriteLine("Deploying Ancient Kingdoms mods...");
 

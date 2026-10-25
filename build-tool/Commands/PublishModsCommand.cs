@@ -37,7 +37,7 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
     internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
         ExecuteAsync(null!, settings, cancellationToken);
 
-    protected override async Task<int> ExecuteAsync(
+    public override async Task<int> ExecuteAsync(
         CommandContext context,
         Settings settings,
         CancellationToken cancellationToken)

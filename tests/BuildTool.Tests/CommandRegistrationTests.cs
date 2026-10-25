@@ -59,7 +59,14 @@ public class CommandRegistrationTests
     }
 
     [Theory]
+    [InlineData("build")]
+    [InlineData("deploy")]
+    [InlineData("deploy-host")]
     [InlineData("export")]
+    [InlineData("launch")]
+    [InlineData("publish-mods")]
+    [InlineData("setup")]
+    [InlineData("update")]
     public void AKnownVerbIsAcceptedByTheConfiguredApplication(string verb)
     {
         var app = new CommandApp();
