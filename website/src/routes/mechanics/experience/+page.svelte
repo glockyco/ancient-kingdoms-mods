@@ -721,7 +721,7 @@
           20&#8239;000 XP. Resetting refunds only 1 of the 2 points.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:11238-11273; server-scripts/Npc.cs:1832-1850; server-scripts/PlayerSkills.cs:1906-1933 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
+          <!-- Source: server-scripts/Player.cs:11239-11274; server-scripts/Npc.cs:1832-1850; server-scripts/PlayerSkills.cs:1906-1933 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
           {#if data.veteranMaster}
             <a
               href="/npcs/{data.veteranMaster.id}"
@@ -976,13 +976,14 @@
                 >
                 <td class="p-2 text-right">40% more XP, rounded</td>
               </tr>
+              <!-- Source: server-scripts/PotionItem.cs:CanUse — a Double XP potion cannot be used while the season's Double XP buff is active. -->
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2"
                   >Double XP buff: drink an <a
                     href="/items/elixir_of_enlightened_learning"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Elixir of Enlightened Learning</a
-                  ></td
+                  >, except during Halloween or the Winter Festival</td
                 >
                 <td class="p-2 text-right">100% more XP</td>
               </tr>
@@ -1022,8 +1023,8 @@
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,826 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:13757-13770 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:13765-13770 — double XP applies to scribing -->
+        <!-- Source: server-scripts/Player.cs:13758-13771 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:13766-13771 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — Double XP applies to attaching augments. -->
         <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
@@ -1279,7 +1280,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13757-13764 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:13758-13765 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1344,8 +1345,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13996-14002 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:14012-14047 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:13997-14003 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:14013-14048 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1384,7 +1385,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13996-14002 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:13997-14003 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">

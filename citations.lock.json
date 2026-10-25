@@ -2890,13 +2890,13 @@
       "sha256": "a3f6c4de4ec66e0a32376498dff63f94c012243d7223bc84d99bcd9d60b14aed",
       "span": 7
     },
-    "Player.cs:11238-11273": {
-      "sha256": "f53056706469121055c796b2304e2396d6601aad47d957cd91e812b54906b754",
-      "span": 36
-    },
     "Player.cs:11239-11273": {
       "sha256": "879280b9de98b7130c70500b3d9819446d761c22250b087dcdbac12416e981de",
       "span": 35
+    },
+    "Player.cs:11239-11274": {
+      "sha256": "ca1d2469230762267161b1d3d4c2870af0d198961c89612bfd31bb2a7e2b0919",
+      "span": 36
     },
     "Player.cs:11324-11342": {
       "sha256": "7da1db0db8095a816801e1ecb8c6a702007cda4308c36cd65c81d2d89dab15d4",
@@ -3062,21 +3062,13 @@
       "sha256": "004ed169341daf2954fb2bf45e18780dd60339db52f9dfa227934ceec379e111",
       "span": 1
     },
-    "Player.cs:13757-13764": {
-      "sha256": "85fcc69ffa2f6d15b37a0b1ff680f5d7f0ae915d4c4d7644091d3a3f96ae4709",
+    "Player.cs:13758-13765": {
+      "sha256": "5d19432cbe24e5d2c74c87f33eb4edd6208b5994dda3b65635994b15bd19b16f",
       "span": 8
-    },
-    "Player.cs:13757-13770": {
-      "sha256": "a619ac871928406032c66cc99a0f7c6ca16918fb80039072d13a8fa54fbd088f",
-      "span": 14
     },
     "Player.cs:13758-13771": {
       "sha256": "1a246fc3b6f0d53673e7638620620ecc4c263ab074d1682e58a03cb2ba77129d",
       "span": 14
-    },
-    "Player.cs:13765-13770": {
-      "sha256": "1281a375f9d72debbf2712f6f1b64ef03952594d61e73406373b8de173b31153",
-      "span": 6
     },
     "Player.cs:13766-13771": {
       "sha256": "65c6e5bfcbc1b54f1b7bb2fca0c0403d8377ec656a3471ef4326ad8b735e8ce9",
@@ -3114,10 +3106,6 @@
       "sha256": "773490ff73f5c3858f25a56f887e131e97d5f1c920ce31022f6c59d1cd12e7ff",
       "span": 3
     },
-    "Player.cs:13996-14002": {
-      "sha256": "10fbc8368e02b36f825313c9bd9873e9fe45950053d69d7a92e8f35805d0325b",
-      "span": 7
-    },
     "Player.cs:13997-14003": {
       "sha256": "2be5114f52ec07bc062b05921b2f565db5a4702ce08187384bf235258adcb9f0",
       "span": 7
@@ -3126,13 +3114,13 @@
       "sha256": "8daeb268ab002abf44f1b79fbcdffa421c641e0690a2ee067b0394f53eac5db7",
       "span": 17
     },
-    "Player.cs:14012-14047": {
-      "sha256": "9b16c1c6d3481ebe930b7c464ca027d75733ba5c9f5a9aadbd18863dcd43870b",
-      "span": 36
-    },
     "Player.cs:14013-14040": {
       "sha256": "2c7366512f9717434e9fd31e5e3fee8a6ebe38b6720d27d23a2df9d7dd147dfb",
       "span": 28
+    },
+    "Player.cs:14013-14048": {
+      "sha256": "00c0a62de4ba425d1cf305b95995a510d04147726579596d7e68e26eb060ab14",
+      "span": 36
     },
     "Player.cs:14013-14069": {
       "sha256": "162aafbb6ec5b8fc0c9893de6b272af38fced4fa4de1ed68fea10a4fdfdabad8",
@@ -4376,6 +4364,9 @@
     "PotionItem.cs:99-107": {
       "sha256": "c31f72bc11bb8af9ab4ddd998754068f6e5e52dc38a4298ccae8843881773489",
       "span": 9
+    },
+    "PotionItem.cs:CanUse": {
+      "span": 0
     },
     "PotionItem.cs:GetBuffLevelWithElixirEndurance": {
       "span": 0

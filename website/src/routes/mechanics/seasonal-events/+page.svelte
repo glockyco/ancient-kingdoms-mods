@@ -384,9 +384,10 @@
           gathering, fishing, crafting, cooking, alchemy, scribing and augmenting.
           Quest XP, exploration XP and profession skill gains are not doubled.
         </p>
+        <!-- Source: server-scripts/PotionItem.cs:CanUse — a Double XP potion cannot be used while the season's Double XP buff is active. -->
         <!-- Source: server-scripts/Skills.cs:hasDoubleExp — Double XP is a single boolean bonus, so multiple Double XP buffs add nothing. -->
         {@render note(
-          "Double XP buffs do not stack, so an Elixir of Enlightened Learning drunk during an event adds nothing.",
+          "An Elixir of Enlightened Learning cannot be drunk while either event runs. One drunk before adds nothing during the event, because Double XP buffs do not stack.",
         )}
       </Card.Content>
     </Card.Root>

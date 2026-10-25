@@ -74,6 +74,8 @@ export const load: PageServerLoad = async ({
     hasKnownSource: boolean;
     acquisitionNotes: string[];
     foodBuffUsesTavernSpirit: boolean;
+    /** A Double XP potion, which the game refuses while a seasonal Double XP event runs. */
+    blockedDuringSeasons: boolean;
     /** Effect summary of the potion or food buff at the rank the item applies. */
     consumableBuffEffect: string | null;
     /** Cooking requests the item counts for as a dish, or feeds as meat. */
@@ -391,16 +393,18 @@ export const load: PageServerLoad = async ({
   let buffDurationSeconds: number | null = null;
   let relicIsCleanse = false;
   let foodBuffUsesTavernSpirit = false;
+  let blockedDuringSeasons = false;
   if (buffId) {
     const row = db
       .prepare(
-        "SELECT duration_base, is_cleanse, buff_category FROM skills WHERE id = ?",
+        "SELECT duration_base, is_cleanse, buff_category, is_double_exp_spell FROM skills WHERE id = ?",
       )
       .get(buffId) as
       | {
           duration_base: number;
           is_cleanse: number;
           buff_category: string | null;
+          is_double_exp_spell: number;
         }
       | undefined;
     buffDurationSeconds = row?.duration_base ?? null;
@@ -408,6 +412,10 @@ export const load: PageServerLoad = async ({
     foodBuffUsesTavernSpirit = Boolean(
       item.food_buff_id &&
       (row?.buff_category === "Food" || row?.buff_category === "Drink"),
+    );
+    // Source: server-scripts/PotionItem.cs:CanUse — a Double XP potion cannot be used while Halloween or the Winter Festival grants its own Double XP buff.
+    blockedDuringSeasons = Boolean(
+      item.potion_buff_id && row?.is_double_exp_spell,
     );
   }
   const scrollSkillMaxRank = item.scroll_skill_id
@@ -519,6 +527,7 @@ export const load: PageServerLoad = async ({
     hasKnownSource,
     acquisitionNotes,
     foodBuffUsesTavernSpirit,
+    blockedDuringSeasons,
     hasMapLocation,
     mapLinks,
     fishing_role: fishingRole,

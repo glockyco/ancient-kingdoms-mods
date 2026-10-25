@@ -1670,6 +1670,14 @@
             > raises this buff's rank to one more than its own rank.
           </p>
         {/if}
+        {#if data.blockedDuringSeasons}
+          <p class="mt-2 text-sm text-muted-foreground">
+            Cannot be used during <a
+              href="/mechanics/seasonal-events#double-xp"
+              class={styles.link}>Halloween or the Winter Festival</a
+            >, which give everyone Double XP.
+          </p>
+        {/if}
       </Card.Content>
     </Card.Root>
   {/if}
