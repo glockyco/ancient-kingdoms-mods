@@ -64,6 +64,7 @@
   } from "$lib/data/regional-events";
   import {
     formatDuration,
+    formatNumber,
     formatPercent as formatFraction,
   } from "$lib/utils/format";
   import { chestRewardChance } from "$lib/utils/chest-reward";
@@ -315,7 +316,7 @@
       row.original.health_base +
       row.original.health_per_level * (row.original.level_min - 1)}
     <span class="ml-auto">
-      {minHealth.toLocaleString()}<span
+      {formatNumber(minHealth)}<span
         class={anyMonsterHasVariance
           ? hasVariance
             ? ""
@@ -587,7 +588,7 @@
       {#if data.zone.discovery_exp > 0}
         <span
           >Discovery XP: <MechanicsLink section="experience"
-            >{data.zone.discovery_exp.toLocaleString()}</MechanicsLink
+            >{formatNumber(data.zone.discovery_exp)}</MechanicsLink
           ></span
         >
       {/if}
@@ -597,9 +598,10 @@
     </div>
   </div>
   {#if !data.zone.has_map_bounds}
-    <p class="rounded-md border bg-muted/30 p-4 text-muted-foreground">
-      At the developers' request, the compendium shows no positions in
-      {data.zone.name}, so nothing in this zone appears on the map.
+    <p
+      class="rounded-md border bg-muted/30 p-4 text-pretty text-muted-foreground"
+    >
+      At the developers' request, nothing in {data.zone.name} is shown on the map.
     </p>
   {/if}
 
@@ -731,7 +733,7 @@
             {#if data.renewalSage.gold_cost > 0}
               The base fee is <span
                 class="whitespace-nowrap text-yellow-600 dark:text-yellow-400"
-                >{data.renewalSage.gold_cost.toLocaleString()} gold</span
+                >{formatNumber(data.renewalSage.gold_cost)} gold</span
               > before your Charisma discount (up to 25%).
             {/if}
           </span>
