@@ -1,10 +1,10 @@
-# Mods
+# Ancient Kingdoms Mods
 
-The mods in this repository, grouped by who uses them.
+MelonLoader mods for Ancient Kingdoms players and for building the game's compendium. This unofficial collection separates published player downloads from gameplay experiments and internal tooling.
 
 ## Player installation
 
-Install MelonLoader, then put the downloaded DLLs in the game's `Mods` folder with FieldDefaultValueHookFix. Only the first group is published as downloads.
+Install [MelonLoader](https://github.com/LavaGang/MelonLoader) in Ancient Kingdoms, then put the downloaded DLLs in the game's `Mods` folder with FieldDefaultValueHookFix to prevent a crash on world entry. Each published mod's README below covers its controls, settings, and limits.
 
 ## Published player mods
 
@@ -33,4 +33,10 @@ Install MelonLoader, then put the downloaded DLLs in the game's `Mods` folder wi
 | [HotReplCommands](HotReplCommands/README.md) | Adds the HotRepl commands that drive the game. |
 | [HierarchyLogger](HierarchyLogger/README.md) | Writes the World scene's hierarchy to a file. |
 
-Building and deploying is in [CONTRIBUTING.md](../CONTRIBUTING.md).
+## Development
+
+[CONTRIBUTING.md](../CONTRIBUTING.md) covers build requirements, deployment, and checks.
+
+## License
+
+MIT. See [LICENSE](../LICENSE).
