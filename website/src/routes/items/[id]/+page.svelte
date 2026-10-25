@@ -680,8 +680,8 @@
   type OpensChestRow = (typeof computed.opensChests)[number];
   const opensChestColumns: ColumnDef<OpensChestRow>[] = [
     { accessorKey: "zone_name", header: "Chest", minSize: TEXT },
-    // A grouped range such as "1 000 - 1 199" needs more room than a percentage.
-    { accessorKey: "gold_min", header: "Gold", size: 160 },
+    // Fits a grouped range such as "4 000 - 5 999", which is wider than a percentage.
+    { accessorKey: "gold_min", header: "Gold", size: 140 },
     { accessorKey: "item_reward_name", header: "Reward", minSize: TEXT },
   ];
 
@@ -1126,14 +1126,13 @@
     {/if}
   {:else if cell.column.id === "item_reward_name"}
     {#if chest.item_reward_id}
+      <!-- Chest pages show an item reward above one as a range from one, so this row matches them. -->
       <span class={styles.wrapCell}
         ><a
           href={resolve("/items/[id]", { id: chest.item_reward_id })}
           class={styles.link}>{chest.item_reward_name}</a
-        >
-        <!-- Chest pages show an item reward above one as a range from one, so this row matches them. -->
-        <span class="tabular-nums text-muted-foreground"
-          >×{chest.item_reward_amount > 1
+        ><span class="tabular-nums text-muted-foreground"
+          >&nbsp;×{chest.item_reward_amount > 1
             ? formatRange(1, chest.item_reward_amount)
             : 1}</span
         ></span
