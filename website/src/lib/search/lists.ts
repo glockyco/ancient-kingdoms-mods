@@ -4,11 +4,18 @@
  * lands on the filtered list. Names are reviewed plurals in the game's terms;
  * `aliases` are extra words that should find the list.
  */
+import { SEASONS, type Season } from "$lib/data/seasonal-events";
+
 export type ListFilter =
   | { readonly kind: "item-slot"; readonly value: string }
   | { readonly kind: "item-type"; readonly value: string }
   | { readonly kind: "npc-role"; readonly value: string }
-  | { readonly kind: "monster-class"; readonly value: string };
+  | { readonly kind: "monster-class"; readonly value: string }
+  | {
+      readonly kind:
+        "item-season" | "monster-season" | "npc-season" | "quest-season";
+      readonly value: Season;
+    };
 
 export interface FilteredList {
   readonly name: string;
@@ -43,6 +50,30 @@ const TABLES: Record<
     urlKey: "monsters",
     column: "classification",
     label: "Monster list",
+  },
+  "item-season": {
+    page: "/items",
+    urlKey: "items",
+    column: "season",
+    label: "Item list",
+  },
+  "monster-season": {
+    page: "/monsters",
+    urlKey: "monsters",
+    column: "season",
+    label: "Monster list",
+  },
+  "npc-season": {
+    page: "/npcs",
+    urlKey: "npcs",
+    column: "season",
+    label: "NPC list",
+  },
+  "quest-season": {
+    page: "/quests",
+    urlKey: "quests",
+    column: "season",
+    label: "Quest list",
   },
 };
 
@@ -151,4 +182,17 @@ export const FILTERED_LISTS: readonly FilteredList[] = [
   monsterClass("boss", "Bosses"),
   monsterClass("fabled", "Fabled Monsters"),
   monsterClass("elite", "Elite Monsters"),
+  ...(
+    [
+      ["halloween", "monster-season", "monsters"],
+      ["halloween", "item-season", "items"],
+      ["christmas", "npc-season", "NPCs"],
+      ["christmas", "quest-season", "quests"],
+      ["christmas", "item-season", "items"],
+    ] as const
+  ).map(([season, kind, family]) => ({
+    name: `${SEASONS[season].name} ${family}`,
+    filter: { kind, value: season },
+    aliases: `${season} ${family}`,
+  })),
 ];

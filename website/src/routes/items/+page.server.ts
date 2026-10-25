@@ -16,6 +16,7 @@ export const load: PageServerLoad = async () => {
     initial: firstPageCandidates(payload),
     total: payload.items.length,
     allClasses,
+    seasons: [...new Set(Object.values(payload.itemSeasons).flat())],
     collection: payload.items.map((item) => ({ id: item.id, name: item.name })),
   };
 };

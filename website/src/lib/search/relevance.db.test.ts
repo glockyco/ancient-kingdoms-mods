@@ -15,6 +15,7 @@ import {
 import {
   DEVELOPMENT_CASES,
   HELD_OUT_CASES,
+  TUNING_CASES,
   type JudgedCase,
 } from "./judged/cases";
 import { FILTERED_LISTS } from "./lists";
@@ -52,7 +53,7 @@ function sectionWords(): string[] {
 
 function passing(cases: readonly JudgedCase[]): JudgedCase[] {
   return cases.filter((judged) =>
-    search(judged.q)
+    search(judged.q, "palette", Math.max(10, judged.k))
       .slice(0, judged.k)
       .some((doc) => judged.expect.includes(doc.href)),
   );
@@ -107,6 +108,16 @@ describe("judged relevance", () => {
       }).toMatchObject(RECORDED_ENTITY_PASSES[name]);
     },
   );
+  test.each([
+    ["development", DEVELOPMENT_CASES],
+    ["tuning", TUNING_CASES],
+    ["held-out", HELD_OUT_CASES],
+  ] as const)("%s seasonal cases all pass", (_name, cases) => {
+    const seasonal = cases.filter((judged) => judged.intent === "seasonal");
+    expect(seasonal.length).toBe(10);
+    const passed = new Set(passing(seasonal));
+    expect(seasonal.filter((judged) => !passed.has(judged))).toEqual([]);
+  });
 
   test("every guide article title returns its own section first three", () => {
     const articles = db
@@ -282,6 +293,27 @@ describe("search scopes", () => {
 });
 
 describe("indexed content", () => {
+  test("seasonal entities carry season terms and result details", () => {
+    for (const [kind, id, season] of [
+      ["monster", "pumpkin_head", "Halloween"],
+      ["monster", "witch", "Halloween"],
+      ["npc", "santa_claus", "Winter Festival"],
+      ["quest", "keeping_the_winter_peace", "Winter Festival"],
+      ["item", "spook_token", "Halloween"],
+      ["item", "winter_festival_coin", "Winter Festival"],
+    ]) {
+      const doc = docs.find((doc) => doc.kind === kind && doc.id === id);
+      expect(doc, `${kind}:${id}`).toMatchObject({ detail: season });
+      expect(doc?.keywords.toLowerCase()).toContain(season.toLowerCase());
+      if (season === "Winter Festival")
+        expect(doc?.keywords).toContain("christmas");
+    }
+    expect(
+      docs.find(
+        (doc) => doc.id === "christmas_deer_costume" && doc.kind === "item",
+      ),
+    ).toMatchObject({ detail: null });
+  });
   test("every Notable NPC is found and carries its classification", () => {
     const notable = (
       db.prepare("SELECT id FROM npcs WHERE is_notable = 1").all() as Array<{
@@ -434,6 +466,20 @@ describe("indexed content", () => {
           `SELECT count(*) FROM monsters WHERE CASE
              WHEN is_fabled THEN 'fabled' WHEN is_boss THEN 'boss'
              WHEN is_elite THEN 'elite' ELSE 'regular' END = ?`,
+          value,
+        ),
+      "item-season": (value) =>
+        countRows(
+          "SELECT count(*) FROM item_seasons WHERE season_id = ?",
+          value,
+        ),
+      "monster-season": (value) =>
+        countRows("SELECT count(*) FROM monsters WHERE season = ?", value),
+      "npc-season": (value) =>
+        countRows("SELECT count(*) FROM npcs WHERE season = ?", value),
+      "quest-season": (value) =>
+        countRows(
+          "SELECT count(DISTINCT m.quest_id) FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.season = ?",
           value,
         ),
     };

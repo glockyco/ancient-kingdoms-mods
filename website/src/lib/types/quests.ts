@@ -171,6 +171,7 @@ export interface QuestDetailPageData {
 export interface QuestListView {
   id: string;
   name: string;
+  seasons: readonly Season[];
   quest_type: string;
   display_type: string;
   level_required: number;

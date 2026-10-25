@@ -1,6 +1,8 @@
 <script lang="ts">
   import Skull from "@lucide/svelte/icons/skull";
   import EntityLink from "$lib/components/EntityLink.svelte";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import { SEASONS } from "$lib/data/seasonal-events";
   import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
@@ -181,6 +183,13 @@
       },
     },
     {
+      accessorKey: "season",
+      header: "Season",
+      enableHiding: false,
+      filterFn: (row, columnId, values: string[]) =>
+        !values?.length || values.includes(row.getValue(columnId)),
+    },
+    {
       id: "zone_ids",
       accessorKey: "zone_ids",
       header: "Zone Filter",
@@ -213,6 +222,7 @@
     zones: "Zones",
     classification: "Classification",
     zone_ids: "Zone Filter",
+    season: "Season",
   };
 
   function formatNumber(n: number): string {
@@ -246,18 +256,23 @@
       />
     </div>
   {:else if cell.column.id === "name"}
-    <EntityLink
-      href="/monsters/{row.original.id}"
-      name={row.original.name}
-      variant="reference"
-      domain="monster"
-      entityId={row.original.id}
-      imageKind="primary"
-      imageAvailable={row.original.visual_public_path}
-      fallback={Skull}
-      size={32}
-      class="flex whitespace-nowrap"
-    />
+    <div class="flex flex-wrap items-center gap-2">
+      <EntityLink
+        href="/monsters/{row.original.id}"
+        name={row.original.name}
+        variant="reference"
+        domain="monster"
+        entityId={row.original.id}
+        imageKind="primary"
+        imageAvailable={row.original.visual_public_path}
+        fallback={Skull}
+        size={32}
+        class="flex whitespace-nowrap"
+      />
+      {#if row.original.season}
+        <SeasonLabel season={row.original.season} variant="inline" />
+      {/if}
+    </div>
   {:else if cell.column.id === "level_min"}
     {@const hasVariance = row.original.level_min !== row.original.level_max}
     <span class="ml-auto"
@@ -310,6 +325,7 @@
   {@const classificationCol = table.getColumn("classification")}
   {@const zoneIdsCol = table.getColumn("zone_ids")}
   {@const levelCol = table.getColumn("level_min")}
+  {@const seasonCol = table.getColumn("season")}
   {#if classificationCol}
     <DataTableFacetedFilter
       column={classificationCol}
@@ -334,6 +350,17 @@
   {/if}
   {#if levelCol}
     <DataTableRangeFilter column={levelCol} title="Level" />
+  {/if}
+  {#if seasonCol}
+    <DataTableFacetedFilter
+      column={seasonCol}
+      title="Season"
+      options={Object.entries(SEASONS)
+        .filter(([value]) =>
+          data.monsters.some((monster) => monster.season === value),
+        )
+        .map(([value, season]) => ({ value, label: season.name }))}
+    />
   {/if}
 {/snippet}
 
@@ -374,6 +401,7 @@
       disease_resist: false,
       classification: false,
       zone_ids: false,
+      season: false,
     }}
     urlKey="monsters"
     showPagination={true}

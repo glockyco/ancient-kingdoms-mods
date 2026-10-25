@@ -1056,5 +1056,65 @@
     "intent": "guide-title",
     "expect": ["/mechanics/inventory#bank"],
     "k": 1
+  },
+  {
+    "q": "halloween",
+    "intent": "seasonal",
+    "expect": ["/mechanics/seasonal-events#halloween"],
+    "k": 3
+  },
+  {
+    "q": "halloween",
+    "intent": "seasonal",
+    "expect": ["/monsters/pumpkin_head"],
+    "k": 10
+  },
+  {
+    "q": "halloween",
+    "intent": "seasonal",
+    "expect": ["/monsters/witch"],
+    "k": 10
+  },
+  {
+    "q": "christmas",
+    "intent": "seasonal",
+    "expect": ["/mechanics/seasonal-events#winter-festival"],
+    "k": 10
+  },
+  {
+    "q": "christmas",
+    "intent": "seasonal",
+    "expect": ["/npcs/santa_claus"],
+    "k": 10
+  },
+  {
+    "q": "winter festival",
+    "intent": "seasonal",
+    "expect": ["/npcs/santa_claus"],
+    "k": 20
+  },
+  {
+    "q": "santa",
+    "intent": "seasonal",
+    "expect": ["/npcs/santa_claus"],
+    "k": 1
+  },
+  {
+    "q": "spook token",
+    "intent": "seasonal",
+    "expect": ["/items/spook_token"],
+    "k": 1
+  },
+  {
+    "q": "festival token",
+    "intent": "seasonal",
+    "expect": ["/items/festival_token"],
+    "k": 1
+  },
+  {
+    "q": "halloween items",
+    "intent": "seasonal",
+    "expect": ["/items?items.season=halloween"],
+    "k": 1
   }
 ]

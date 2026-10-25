@@ -1,4 +1,5 @@
 import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
+import type { Season } from "$lib/data/seasonal-events";
 
 /** Rows per page in the item overview. */
 export const ITEMS_PAGE_SIZE = 20;
@@ -10,6 +11,8 @@ export interface ItemListPayload {
   itemStatValues: Record<string, Record<string, number>>;
   itemClassKeys: Record<string, string[]>;
   itemZones: ItemZoneInfo[];
+  /** Sparse entries for items whose every acquisition depends on a season. */
+  itemSeasons: Record<string, readonly Season[]>;
 }
 
 /**
@@ -34,5 +37,6 @@ export function firstPageCandidates(payload: ItemListPayload): ItemListPayload {
     itemStatValues: pick(payload.itemStatValues),
     itemClassKeys: pick(payload.itemClassKeys),
     itemZones: payload.itemZones.filter((zone) => ids.has(zone.item_id)),
+    itemSeasons: pick(payload.itemSeasons),
   };
 }

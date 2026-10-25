@@ -207,6 +207,7 @@ export interface NpcListView {
   id: string;
   name: string;
   visual_public_path: string | null;
+  season: Season | null;
   faction: string | null;
   race: string | null;
   is_notable: boolean;

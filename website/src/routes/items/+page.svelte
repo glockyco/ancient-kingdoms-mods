@@ -32,6 +32,8 @@
   import { ITEMS_PAGE_SIZE, type ItemListPayload } from "$lib/utils/item-list";
   import { getItemTooltips } from "$lib/queries/items";
   import { formatStatField, statField, statFieldName } from "$lib/stats";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import { SEASONS } from "$lib/data/seasonal-events";
 
   let { data } = $props();
 
@@ -192,6 +194,7 @@
   const dataWithVirtual = $derived(
     list.items.map((item) => ({
       ...item,
+      seasons: list.itemSeasons[item.id] ?? [],
       zone_ids: Array.from(
         new Set((itemZoneMap.get(item.id) ?? []).map((z) => z.zone_id)),
       ),
@@ -332,6 +335,16 @@
         return zoneIds.some((z) => filterValue.includes(z));
       },
     },
+    {
+      id: "season",
+      accessorFn: (row) => row.seasons,
+      header: "Season",
+      enableHiding: false,
+      getUniqueValues: (row) => [...row.seasons],
+      filterFn: (row, _columnId, values: string[]) =>
+        !values?.length ||
+        row.original.seasons.some((season) => values.includes(season)),
+    },
   ]);
 
   const columnLabels = $derived<Record<string, string>>({
@@ -345,6 +358,7 @@
     item_type: "Type",
     stats: "Stats",
     zone_ids: "Zone Filter",
+    season: "Season",
     ...Object.fromEntries(
       selectedStats.map((stat) => [
         `stat_${stat}`,
@@ -381,17 +395,22 @@
       {qualities[q]?.name ?? `Q${q}`}
     </span>
   {:else if cell.column.id === "name"}
-    <ItemLink
-      itemId={row.original.id}
-      itemName={row.original.name}
-      quality={row.original.quality}
-      tooltipHtml={tooltips.get(row.original.id)}
-      imageAvailable={row.original.visual_public_path}
-      fallback={Package}
-      variant="reference"
-      imageKind="icon"
-      class="whitespace-nowrap"
-    />
+    <div class="flex flex-wrap items-center gap-2">
+      <ItemLink
+        itemId={row.original.id}
+        itemName={row.original.name}
+        quality={row.original.quality}
+        tooltipHtml={tooltips.get(row.original.id)}
+        imageAvailable={row.original.visual_public_path}
+        fallback={Package}
+        variant="reference"
+        imageKind="icon"
+        class="whitespace-nowrap"
+      />
+      {#each row.original.seasons as season (season)}
+        <SeasonLabel {season} variant="inline" />
+      {/each}
+    </div>
   {:else if cell.column.id === "item_level"}
     <span class="ml-auto">{row.original.item_level || "-"}</span>
   {:else if cell.column.id === "level_required"}
@@ -432,6 +451,7 @@
   {@const zoneIdsCol = table.getColumn("zone_ids")}
   {@const levelCol = table.getColumn("level_required")}
   {@const statsCol = table.getColumn("stats")}
+  {@const seasonCol = table.getColumn("season")}
   {@const facetedItemIds = (() => {
     // Get item IDs from faceted rows (filtered by everything except stats filter)
     const facetedRows = statsCol?.getFacetedRowModel()?.rows ?? [];
@@ -488,6 +508,15 @@
         label: z.zone_name,
         value: z.zone_id,
       }))}
+    />
+  {/if}
+  {#if seasonCol}
+    <DataTableFacetedFilter
+      column={seasonCol}
+      title="Season"
+      options={Object.entries(SEASONS)
+        .filter(([value]) => data.seasons.some((season) => season === value))
+        .map(([value, season]) => ({ value, label: season.name }))}
     />
   {/if}
   {#if statsCol}
@@ -548,6 +577,7 @@
       item_type: false,
       stats: false,
       zone_ids: false,
+      season: false,
     }}
     urlKey="items"
     showPagination={true}

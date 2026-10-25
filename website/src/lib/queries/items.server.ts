@@ -5,7 +5,11 @@ import { itemListType } from "$lib/utils/format";
 import type { ItemListPayload } from "$lib/utils/item-list";
 import { loadAcquisition } from "$lib/server/acquisition";
 import type { AcquisitionQuery } from "$lib/acquisition/types";
-import { projectDirectGeometry } from "$lib/acquisition/projections";
+import {
+  projectDirectGeometry,
+  projectItemSeasons,
+} from "$lib/acquisition/projections";
+import type { Season } from "$lib/data/seasonal-events";
 
 /**
  * Get all items with fields for list view (server-side, for prerendering).
@@ -99,25 +103,29 @@ export async function getItemListPayload(): Promise<ItemListPayload> {
     augment_is_defensive: item.augment_is_defensive,
     augment_armor_set_name: item.augment_armor_set_name,
   }));
+  const locations = await (itemLocations ??= computeItemLocations());
   return {
     items,
     itemStatKeys,
     itemStatValues,
     itemClassKeys,
-    itemZones: await getItemZones(),
+    itemZones: locations.zones,
+    itemSeasons: locations.seasons,
   };
 }
 
-// getDb() keeps one connection per process, so its zone attribution is fixed for that process.
-let itemZones: Promise<ItemZoneInfo[]> | null = null;
+// getDb() keeps one connection per process, so these projections share one model load.
+let itemLocations: Promise<{
+  zones: ItemZoneInfo[];
+  seasons: Record<string, readonly Season[]>;
+}> | null = null;
 
 /** Get direct award locations for the item overview's zone filter. */
-export function getItemZones(): Promise<ItemZoneInfo[]> {
-  itemZones ??= computeItemZones();
-  return itemZones;
+export async function getItemZones(): Promise<ItemZoneInfo[]> {
+  return (await (itemLocations ??= computeItemLocations())).zones;
 }
 
-async function computeItemZones(): Promise<ItemZoneInfo[]> {
+async function computeItemLocations() {
   const db = getDb();
   const execute: AcquisitionQuery = async (sql, params) =>
     db.prepare(sql).all(...params) as Record<string, unknown>[];
@@ -148,11 +156,22 @@ async function computeItemZones(): Promise<ItemZoneInfo[]> {
         });
     }
   }
-  return result.sort(
-    (a, b) =>
-      a.zone_name.localeCompare(b.zone_name) ||
-      a.item_id.localeCompare(b.item_id),
-  );
+  return {
+    zones: result.sort(
+      (a, b) =>
+        a.zone_name.localeCompare(b.zone_name) ||
+        a.item_id.localeCompare(b.item_id),
+    ),
+    seasons: Object.fromEntries(
+      [
+        ...new Set(
+          (model.rows.facts.item_seasons ?? []).map((row) =>
+            String(row.item_id),
+          ),
+        ),
+      ].map((id) => [id, projectItemSeasons(model, id)]),
+    ),
+  };
 }
 
 /**

@@ -1,6 +1,8 @@
 <script lang="ts">
   import Users from "@lucide/svelte/icons/users";
   import EntityLink from "$lib/components/EntityLink.svelte";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import { SEASONS } from "$lib/data/seasonal-events";
   import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
@@ -167,6 +169,13 @@
         return filterValue.includes(faction);
       },
     },
+    {
+      accessorKey: "season",
+      header: "Season",
+      enableHiding: false,
+      filterFn: (row, columnId, values: string[]) =>
+        !values?.length || values.includes(row.getValue(columnId)),
+    },
   ];
 
   const columnLabels: Record<string, string> = {
@@ -179,6 +188,7 @@
     role_keys: "Role Filter",
     classification: "Classification",
     faction_filter: "Faction Filter",
+    season: "Season",
   };
 </script>
 
@@ -214,6 +224,9 @@
       {#if row.original.is_notable}
         <IconBadge icon={Sparkles} iconClass="text-amber-500">Notable</IconBadge
         >
+      {/if}
+      {#if row.original.season}
+        <SeasonLabel season={row.original.season} variant="inline" />
       {/if}
     </div>
   {:else if cell.column.id === "faction"}
@@ -254,6 +267,7 @@
   {@const factionCol = table.getColumn("faction_filter")}
   {@const roleKeysCol = table.getColumn("role_keys")}
   {@const zoneIdsCol = table.getColumn("zone_ids")}
+  {@const seasonCol = table.getColumn("season")}
   {#if classificationCol}
     <DataTableFacetedFilter
       column={classificationCol}
@@ -294,6 +308,15 @@
       }))}
     />
   {/if}
+  {#if seasonCol}
+    <DataTableFacetedFilter
+      column={seasonCol}
+      title="Season"
+      options={Object.entries(SEASONS)
+        .filter(([value]) => data.npcs.some((npc) => npc.season === value))
+        .map(([value, season]) => ({ value, label: season.name }))}
+    />
+  {/if}
 {/snippet}
 
 <Seo
@@ -323,6 +346,7 @@
       role_keys: false,
       classification: false,
       faction_filter: false,
+      season: false,
     }}
     urlKey="npcs"
     showPagination={true}

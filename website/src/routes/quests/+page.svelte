@@ -18,6 +18,8 @@
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import { QUEST_FLAG_CONFIG } from "$lib/utils/quests";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import { SEASONS } from "$lib/data/seasonal-events";
 
   let { data } = $props();
 
@@ -49,7 +51,10 @@
 
   // Add virtual columns for filtering
   const isRegularQuest = (q: (typeof data.quests)[number]) =>
-    !q.is_main_quest && !q.is_epic_quest && !q.is_adventurer_quest;
+    !q.is_main_quest &&
+    !q.is_epic_quest &&
+    !q.is_adventurer_quest &&
+    q.seasons.length === 0;
 
   const dataWithVirtual = $derived(
     data.quests.map((q) => ({
@@ -167,6 +172,16 @@
         return flags.some((f) => filterValue.includes(f));
       },
     },
+    {
+      id: "season",
+      accessorFn: (row) => row.seasons,
+      header: "Season",
+      enableHiding: false,
+      getUniqueValues: (row) => [...row.seasons],
+      filterFn: (row, _columnId, values: string[]) =>
+        !values?.length ||
+        row.original.seasons.some((season) => values.includes(season)),
+    },
   ];
 
   const columnLabels: Record<string, string> = {
@@ -179,6 +194,7 @@
     quest_giver: "Quest Giver",
     display_type_filter: "Type Filter",
     flags_filter: "Categories Filter",
+    season: "Season",
   };
 </script>
 
@@ -200,12 +216,17 @@
   row: Row<QuestRow>;
 })}
   {#if cell.column.id === "name"}
-    <a
-      href="/quests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-    >
-      {row.original.name}
-    </a>
+    <div class="flex flex-wrap items-center gap-2">
+      <a
+        href="/quests/{row.original.id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+      >
+        {row.original.name}
+      </a>
+      {#each row.original.seasons as season (season)}
+        <SeasonLabel {season} variant="inline" />
+      {/each}
+    </div>
   {:else if cell.column.id === "display_type"}
     <QuestTypeBadge type={row.original.display_type} />
   {:else if cell.column.id === "level_required"}
@@ -254,6 +275,7 @@
   {@const flagsCol = table.getColumn("flags_filter")}
   {@const classCol = table.getColumn("class")}
   {@const levelCol = table.getColumn("level_required")}
+  {@const seasonCol = table.getColumn("season")}
   {#if typeCol}
     <DataTableFacetedFilter
       column={typeCol}
@@ -287,6 +309,19 @@
   {#if levelCol}
     <DataTableRangeFilter column={levelCol} title="Level" />
   {/if}
+  {#if seasonCol}
+    <DataTableFacetedFilter
+      column={seasonCol}
+      title="Season"
+      options={Object.entries(SEASONS)
+        .filter(([value]) =>
+          data.quests.some((quest) =>
+            quest.seasons.some((season) => season === value),
+          ),
+        )
+        .map(([value, season]) => ({ value, label: season.name }))}
+    />
+  {/if}
 {/snippet}
 
 <Seo
@@ -313,6 +348,7 @@
     initialColumnVisibility={{
       display_type_filter: false,
       flags_filter: false,
+      season: false,
     }}
     urlKey="quests"
     showPagination={true}

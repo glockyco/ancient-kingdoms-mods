@@ -19,7 +19,7 @@
 
 - [x] 4.1 Derive `item_seasons` in the acquisition reachability fixed point per design decision 4, with tests for a direct seasonal shop item, a Halloween drop, an item obtained only from a seasonal pack, an item sold in both seasons, and a year-round item with a seasonal name. Verify the rebuilt database lists exactly the 30 seasonal items from the audit.
 - [x] 4.2 Exclude seasonal monsters from zone level range and median in `denormalizers/zones/levels.py`, with a test. Verify The Lone-lands median is 19 and the other five Halloween zones are unchanged. Review the resulting `source_level_hint` changes in the data diff.
-- [ ] 4.3 Add season keywords ("halloween", or "winter festival christmas") to seasonal monsters, NPCs, quests and items in `denormalizers/search/keywords.py`, with a test. Verify the keywords in the rebuilt database.
+- [x] 4.3 Add season terms to seasonal monster, NPC, quest and item keywords in `website/src/lib/server/search/documents.ts`, reading names from `SEASONS` and seasons from the published database, with a test. Verify the generated search documents.
 
 ## 5. Shared reader
 
@@ -50,8 +50,8 @@
 
 ## 9. Lists and search
 
-- [ ] 9.1 Add a Season facet and labels to the monster, NPC, quest and item lists. For the item list, keep the first page fully populated at first paint and fetch only what it needs. Verify each list filtered to Halloween and to the Winter Festival in the browser.
-- [ ] 9.2 Add per-season filtered lists to `website/src/lib/search/lists.ts`, season details on seasonal result rows, and judged cases for halloween, christmas, winter festival, santa, spook token, festival token and halloween items. Verify the search relevance tests and the held-out pass count.
+- [x] 9.1 Add a Season facet and labels to the monster, NPC, quest and item lists. Offer only the seasons that occur in each list. For the item list, keep the first page fully populated at first paint and fetch only what it needs. Verify each list filtered to Halloween and to the Winter Festival in the browser.
+- [x] 9.2 Add per-season filtered lists to `website/src/lib/search/lists.ts` for the families each season gates, season details on seasonal result rows, and judged cases for halloween, christmas, winter festival, santa, spook token, festival token and halloween items. Verify the search relevance tests and the held-out pass count.
 
 ## 10. Seasonal Events page
 

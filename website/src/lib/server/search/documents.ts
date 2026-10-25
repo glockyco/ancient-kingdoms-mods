@@ -12,6 +12,11 @@ import { FILTERED_LISTS, listHref, listTableLabel } from "$lib/search/lists";
 import { nameKey } from "$lib/search/normalize";
 import { loadAcquisition } from "$lib/server/acquisition";
 import type { AcquisitionQuery } from "$lib/acquisition/types";
+import { SEASONS, seasonHref, type Season } from "$lib/data/seasonal-events";
+import {
+  projectItemSeasons,
+  projectQuestSeasons,
+} from "$lib/acquisition/projections";
 
 /** Text of one entity before its destination and artwork are resolved. */
 interface EntityText {
@@ -437,21 +442,64 @@ async function entityDocs(db: Database.Database): Promise<IndexedDoc[]> {
       { public_path: string } | undefined;
     return row ? `/${row.public_path}` : null;
   };
+  const seasonsByEntity = new Map<string, readonly Season[]>();
+  for (const [kind, table] of [
+    ["monster", "monsters"],
+    ["npc", "npcs"],
+  ] as const) {
+    const seasonal = db
+      .prepare(`SELECT id, season FROM ${table} WHERE season IS NOT NULL`)
+      .all() as Array<{ id: string; season: Season }>;
+    for (const row of seasonal)
+      seasonsByEntity.set(`${kind}:${row.id}`, [row.season]);
+  }
+  const itemIds = (
+    db
+      .prepare("SELECT DISTINCT item_id FROM item_seasons ORDER BY item_id")
+      .all() as Array<{ item_id: string }>
+  ).map((row) => row.item_id);
+  const questIds = (
+    db
+      .prepare(
+        `SELECT DISTINCT m.quest_id FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.season IS NOT NULL ORDER BY m.quest_id`,
+      )
+      .all() as Array<{ quest_id: string }>
+  ).map((row) => row.quest_id);
+  const execute: AcquisitionQuery = async (sql, params) =>
+    db.prepare(sql).all(...params) as Record<string, unknown>[];
+  const itemModel = await loadAcquisition(execute, { kind: "items", itemIds });
+  for (const id of itemIds)
+    seasonsByEntity.set(`item:${id}`, projectItemSeasons(itemModel, id));
+  const questModel = await loadAcquisition(execute, {
+    kind: "requirements",
+    entities: questIds.map((id) => ({ kind: "quest", id })),
+  });
+  for (const id of questIds)
+    seasonsByEntity.set(`quest:${id}`, projectQuestSeasons(questModel, id));
 
   const docs: IndexedDoc[] = [];
   for (const kind of searchableEntities) {
     const def = entityRegistry[kind];
     for (const text of await builders[kind](db)) {
+      const seasons = seasonsByEntity.get(`${kind}:${text.entityId}`) ?? [];
+      const seasonNames = seasons
+        .map((season) => SEASONS[season].name)
+        .join(", ");
+      const seasonTerms = seasons
+        .map((season) => `${SEASONS[season].name} ${season}`)
+        .join(" ");
       docs.push({
         kind,
         id: text.entityId,
         name: text.name,
-        aliases: text.aliases,
+        // A season also names its actors, not just the rewards they provide.
+        aliases:
+          `${text.aliases} ${kind === "monster" || kind === "npc" ? seasonTerms : ""}`.trim(),
         href: def.detailHref(text.entityId),
         label: def.label,
-        detail: text.detail,
+        detail: seasonNames || text.detail,
         image: imageFor(def, text.entityId),
-        keywords: `${text.keywords} ${text.detail ?? ""}`.trim(),
+        keywords: `${text.keywords} ${text.detail ?? ""} ${seasonTerms}`.trim(),
         content: text.content,
       });
     }
@@ -523,6 +571,9 @@ function withSections(docs: readonly IndexedDoc[]): IndexedDoc[] {
     for (const section of MECHANICS_SECTIONS[mechanics.href]) {
       const href = `${path}#${section.id}`;
       const at = articleAt.get(href);
+      const season = (Object.keys(SEASONS) as Season[]).find(
+        (season) => seasonHref(season) === href,
+      );
       if (at === undefined) {
         result.push({
           kind: "section",
@@ -532,8 +583,8 @@ function withSections(docs: readonly IndexedDoc[]): IndexedDoc[] {
           label: entityRegistry.guide_topic.label,
           detail: mechanics.title,
           image: null,
-          aliases: "",
-          keywords: mechanics.title,
+          aliases: season ?? "",
+          keywords: `${mechanics.title} ${season ?? ""}`,
           content: "",
         });
       } else {

@@ -361,6 +361,7 @@ export interface MonsterListView extends RespawnInfo {
   id: string;
   name: string;
   visual_public_path: string | null;
+  season: Season | null;
   level: number;
   level_min: number;
   level_max: number;

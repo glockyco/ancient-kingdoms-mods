@@ -18,6 +18,7 @@ export const load: PageServerLoad = (): MonstersPageData => {
     SELECT
       m.id,
       m.name,
+      m.season,
       va.public_path as visual_public_path,
       m.level,
       m.level_min,
