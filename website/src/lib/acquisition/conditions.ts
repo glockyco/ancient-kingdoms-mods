@@ -2,6 +2,7 @@ import {
   PROFESSION_MECHANICS,
   rawTierSuccessChance,
 } from "../data/professions/mechanics";
+import { SEASONS, seasonDates, seasonIncludes } from "../data/seasonal-events";
 import { toRomanNumeral } from "../utils/format";
 import type {
   AcquisitionRows,
@@ -96,6 +97,7 @@ const PREDICATE_FIELDS: Record<
     numbers: ["startHour", "endHour"],
     booleans: ["includeStart", "includeEnd"],
   },
+  season_active: { strings: ["season"], numbers: [] },
   altar_tier: { strings: ["altarId"], numbers: ["tier", "minimumScore"] },
   house_owned: { strings: [], numbers: [] },
   home_station: { strings: ["structureItemId", "componentPath"], numbers: [] },
@@ -184,6 +186,7 @@ function validatePredicate(predicate: RequirementPredicate): void {
       values: ["essence_ui", "essence_server"],
     },
     withheld: { field: "reason", values: ["unpublished_target"] },
+    season_active: { field: "season", values: Object.keys(SEASONS) },
   };
   const enumeration = enums[predicate.kind];
   if (
@@ -486,6 +489,13 @@ function evaluatePredicate(
         const before = p.includeEnd ? h <= p.endHour : h < p.endHour;
         return p.startHour <= p.endHour ? after && before : after || before;
       });
+    case "season_active":
+      return compare(facts.nowUtc, (value) => {
+        const instant = new Date(value);
+        if (!Number.isFinite(instant.getTime()))
+          dataError("season", "invalid UTC timestamp");
+        return seasonIncludes(p.season, instant);
+      });
     case "altar_tier": {
       const level = s?.metrics?.level,
         veteran = s?.metrics?.total_veteran_points;
@@ -651,6 +661,8 @@ function describePredicate(
         : `At least ${p.cycle === "repeat_8h" ? 8 : 24} hours since completing ${requirementName(names, "quests", p.questId)}`;
     case "game_clock_window":
       return `Game time ${p.includeStart ? "from" : "after"} ${p.startHour}:00 ${p.includeEnd ? "through" : "until"} ${p.endHour}:00`;
+    case "season_active":
+      return `During ${SEASONS[p.season].name}, ${seasonDates(p.season)} (UTC dates)`;
     case "altar_tier":
       return `Activating player's level plus total veteran points ${
         p.maximumScore === null

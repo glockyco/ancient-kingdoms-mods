@@ -23,7 +23,7 @@
 
 ## 5. Shared reader
 
-- [ ] 5.1 Add the `season_active` predicate to `website/src/lib/acquisition/types.ts`, `conditions.ts` (fields, validation, evaluation with the year-end wrap, description) and `fingerprint.ts`. Move the season dates, icons and tones into `website/src/lib/data/seasonal-events.ts`. Verify condition tests cover January 3, December 18, November 1 and a missing current time.
+- [x] 5.1 Add the `season_active` predicate to `website/src/lib/acquisition/types.ts` and `conditions.ts` (fields, validation, evaluation with the year-end wrap, description). The fingerprint needs no change, because the predicate names no entity. Define each season in `website/src/lib/data/seasonal-events.ts` by its UTC date window and derive the displayed dates from it. Verify condition tests cover January 3, December 18, November 1 and 2, and a missing current time.
 - [ ] 5.2 Attach season roots in `assemble.ts` to seasonal vendor offers and to placements of seasonal monsters and NPCs, and load `item_seasons`. Verify a model test shows Grimnir's completion of A Wish for the Winter Heart has no season root.
 - [ ] 5.3 Add the method and item season projection to `projections.ts`. Verify tests return Halloween for Spook Token's drops, the Winter Festival for Santa's quest rewards and Winter Festival Coin, and both seasons for Pack 10 Skyflares. Add a database test that `SEASONS` keys equal the `seasons` table.
 
@@ -35,7 +35,7 @@
 
 ## 7. Season label and detail pages
 
-- [ ] 7.1 Add a `SeasonLabel` component that reads icon, name and link from `SEASONS`, and replace the existing monster and NPC badges with it. Verify both pages in light and dark mode.
+- [ ] 7.1 Add a `SeasonLabel` component that owns each season's icon and tone and reads name and link from `SEASONS`, and replace the existing monster and NPC badges with it. The season module stays free of components because Node scripts import it through the acquisition model. Verify both pages in light and dark mode.
 - [ ] 7.2 Item page: label Dropped by, Rewarded by Quests and Found in Packs rows with their seasons, and keep the Seasonal Shop card at 14 px or more. Verify `/items/pumpkin_costume`, `/items/winter_festival_coin`, `/items/pack_10_skyflares` and `/items/haunted_chews` in light and dark mode at desktop and phone widths.
 - [ ] 7.3 Monster and NPC pages: one sentence under the header stating the season, and seasons in the spawn table's Active column. NPC pages: a "Seasonal stock" card per season on repair merchants, with the season in the dedupe key, and the quests completed at the NPC. Verify `/monsters/witch`, `/npcs/santa_claus`, `/npcs/grimnir_stonehammer` and one other repair merchant in the browser.
 - [ ] 7.4 Quest pages: season label, a timing box saying the quest can be accepted only during the Winter Festival and repeated 8 hours after completion, and a labeled Santa in the NPCs section. Verify the three Santa quests in the browser.

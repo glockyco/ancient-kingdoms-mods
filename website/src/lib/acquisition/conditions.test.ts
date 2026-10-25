@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   combine,
+  describeRequirement,
   evaluateRequirement,
   predicate,
   skillLearningAtRank,
@@ -296,6 +297,55 @@ describe("three-valued requirements", () => {
       },
     });
     expect(evaluateRequirement(gate, facts).status).toBe("unmet");
+  });
+});
+
+describe("season conditions", () => {
+  function season(name: "halloween" | "christmas"): RequirementRoot {
+    return {
+      phase: "purchase",
+      subject: "current_world",
+      enforcement: "server",
+      expression: predicate(
+        { kind: "season_active", season: name },
+        "current_world",
+      ),
+    };
+  }
+  const at = (nowUtc: string): RequirementFacts => ({
+    nowUtc: { known: true, value: nowUtc, provenance: "entered" },
+  });
+
+  it("wraps the Winter Festival across the new year", () => {
+    expect(
+      evaluateRequirement(season("christmas"), at("2027-01-03T12:00:00Z"))
+        .status,
+    ).toBe("met");
+    expect(
+      evaluateRequirement(season("christmas"), at("2026-12-18T23:59:00Z"))
+        .status,
+    ).toBe("unmet");
+  });
+
+  it("includes the last day of Halloween", () => {
+    expect(
+      evaluateRequirement(season("halloween"), at("2026-11-01T23:00:00Z"))
+        .status,
+    ).toBe("met");
+    expect(
+      evaluateRequirement(season("halloween"), at("2026-11-02T00:00:00Z"))
+        .status,
+    ).toBe("unmet");
+  });
+
+  it("is unknown without a current time", () => {
+    expect(evaluateRequirement(season("halloween"), {}).status).toBe("unknown");
+  });
+
+  it("names the season and its dates", () => {
+    expect(describeRequirement(season("christmas"))[0].text).toBe(
+      "During Winter Festival, December 19 to January 6 (UTC dates)",
+    );
   });
 });
 

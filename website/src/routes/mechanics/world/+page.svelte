@@ -3,7 +3,7 @@
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
-  import { SEASONS } from "$lib/data/seasonal-events";
+  import { seasonDates } from "$lib/data/seasonal-events";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
 </script>
@@ -338,8 +338,8 @@
     </Card.Header>
     <Card.Content class="text-sm text-muted-foreground">
       <p>
-        Halloween runs from {SEASONS.halloween.dates} and the Winter Festival from
-        {SEASONS.christmas.dates}, by UTC date. See
+        Halloween runs from {seasonDates("halloween")} and the Winter Festival from
+        {seasonDates("christmas")}, by UTC date. See
         <MechanicsLink section="seasonal-events">Seasonal Events</MechanicsLink>
         for Double XP, seasonal monsters and visitors, and seasonal shops.
       </p>

@@ -29,7 +29,7 @@ The exporter writes `season` on monsters (`"halloween"` when `isHalloween`) and 
 
 Alternatives: deriving the columns in the pipeline from the existing booleans keeps a hand-maintained buff link, and the owner chose the export. A `'none'` sentinel avoids touching call sites but keeps a CHECK list as a second key domain. Null with a foreign key gives referential integrity and matches the website's existing `Season | null` shape.
 
-Season dates are constants in `CheckSpecialEvents`, not exportable data. They stay in `website/src/lib/data/seasonal-events.ts` with the display name, anchor, icon and tone, cited to the game code. A database test asserts that its keys equal the `seasons` table.
+Season dates are constants in `CheckSpecialEvents`, not exportable data. They stay in `website/src/lib/data/seasonal-events.ts` as UTC date windows beside the display name and anchor, cited to the game code, and the displayed dates are derived from the windows. A database test asserts that its keys equal the `seasons` table.
 
 ### 2. A season is a `season_active` world condition
 
@@ -59,7 +59,7 @@ Alternative: recursive loading in the website. It keeps one implementation but e
 
 ### 5. Presentation shares one season label
 
-A `SeasonLabel` component renders the season's icon and name and links to its section. Detail pages put it in the header badge row and in source rows. Lists use it in the name cell and offer a Season facet. The map uses it in tooltips, popup callouts and source rows. Icons and tones come from `SEASONS`, so Ghost for Halloween and Snowflake for the Winter Festival are not chosen per page. The item source summary keeps a `seasonal` type for shop offers, labelled "Seasonal shop", and other rows carry their seasons.
+A `SeasonLabel` component renders the season's icon and name and links to its section. Detail pages put it in the header badge row and in source rows. Lists use it in the name cell and offer a Season facet. The map uses it in tooltips, popup callouts and source rows. The component owns each season's icon and tone, so Ghost for Halloween and Snowflake for the Winter Festival are not chosen per page. The season module stays free of components, because Node scripts import it through the acquisition model. The item source summary keeps a `seasonal` type for shop offers, labelled "Seasonal shop", and other rows carry their seasons.
 
 ### 6. The map presents seasonal content as row data
 

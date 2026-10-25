@@ -7,7 +7,7 @@
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
-  import { SEASONS, type Season } from "$lib/data/seasonal-events";
+  import { SEASONS, seasonDates, type Season } from "$lib/data/seasonal-events";
   import { getQualityTextColorClass } from "$lib/utils/format";
   import type { PageData } from "./$types";
 
@@ -125,7 +125,7 @@
                     >{season.name}</a
                   ></td
                 >
-                <td class="p-3">{season.dates}</td>
+                <td class="p-3">{seasonDates(key as Season)}</td>
               </tr>
             {/each}
           </tbody>

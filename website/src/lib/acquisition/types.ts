@@ -366,6 +366,8 @@ export type PredicatePayload =
       includeStart: boolean;
       includeEnd: boolean;
     }
+  /** The game runs this season, judged by the current UTC date. */
+  | { kind: "season_active"; season: Season }
   | {
       kind: "altar_tier";
       altarId: string;
