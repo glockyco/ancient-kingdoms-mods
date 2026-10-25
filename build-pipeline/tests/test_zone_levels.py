@@ -55,3 +55,10 @@ def test_a_zone_with_only_seasonal_spawns_has_no_year_round_levels(conn):
     spawn(conn, "pumpkin_haunt", "pumpkin", "haunt", 50)
     levels.run(conn)
     assert zone_levels(conn, "haunt") == (None, None, None)
+
+
+def test_an_odd_number_of_spawns_takes_the_middle_level(conn):
+    for ordinal, level in enumerate((10, 20, 60)):
+        spawn(conn, f"wolf_{ordinal}", "wolf", "lands", level)
+    levels.run(conn)
+    assert zone_levels(conn, "lands") == (10, 60, 20)

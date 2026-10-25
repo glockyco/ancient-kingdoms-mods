@@ -24,7 +24,7 @@ YEAR_ROUND_SPAWNS = """year_round_spawns AS (
 def run(conn: sqlite3.Connection) -> None:
     """Compute zone level ranges and median from monster spawn levels.
 
-    For each zone, calculates the min/max/median level across all spawns.
+    For each zone, calculates the min/max/median level across year-round spawns.
     Excludes critters (type_name='Critter') from the calculation,
     falling back to include critters only if no other monsters exist.
 
@@ -107,7 +107,7 @@ def run(conn: sqlite3.Connection) -> None:
         non_critter_medians AS (
             SELECT zone_id, CAST(ROUND(AVG(level), 0) AS INTEGER) as median_level
             FROM spawn_levels
-            WHERE rn IN (cnt / 2, cnt / 2 + 1)
+            WHERE rn IN ((cnt + 1) / 2, (cnt + 2) / 2)
             GROUP BY zone_id
         ),
         critter_fallback AS (
@@ -124,7 +124,7 @@ def run(conn: sqlite3.Connection) -> None:
         critter_medians AS (
             SELECT zone_id, CAST(ROUND(AVG(level), 0) AS INTEGER) as median_level
             FROM critter_fallback
-            WHERE rn IN (cnt / 2, cnt / 2 + 1)
+            WHERE rn IN ((cnt + 1) / 2, (cnt + 2) / 2)
             GROUP BY zone_id
         )
         SELECT zone_id, median_level FROM non_critter_medians
