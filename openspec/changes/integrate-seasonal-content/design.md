@@ -73,7 +73,7 @@ A `SeasonLabel` component renders the season's icon and name and links to its se
 
 The page is ordered by the questions a player arrives with: when the events run, what applies to both, then what each event adds.
 
-1. A Dates card first. One column per season gives its dates, one sentence on what it adds, and a link to its section. Facts in a lead paragraph above cards go unread, so nothing the player needs lives there.
+1. A Dates card first. One column per season gives its dates, whether it is running and when it starts or ends in the reader's time zone, one sentence on what it adds, and a link to its section. The status comes from the reader's clock after the page mounts, as the Adventuring reset timer does, so the prerendered page never shows a stale status. Facts in a lead paragraph above cards go unread, so nothing the player needs lives there.
 2. A "Both events" section with Double XP, Currencies and the Seasonal shop. A heading names the scope, because shared content placed after a season reads as part of it. The Currencies table shows what earns each token and what it buys, which makes the Festival Token's place in both events visible.
 3. One section per season, with its dates beside the heading: Halloween has Spawns, Drops and Treats, and the Winter Festival has Santa Claus's quests and Treats. Each season's earning and its treats sit together.
 
@@ -81,9 +81,9 @@ Layout rules:
 
 - One type scale: 36 px page title, 24 px section heading, 16 px card titles and every paragraph, 14 px for tables, tiles and notes. A size changes only when the role changes.
 - No accent tints, title icons or callout boxes. A pitfall is a 14 px note with a warning icon beside the choice it concerns. The season icon appears only in SeasonLabel.
-- Every link uses the site's link blue or the item quality color, so a reader can see what is a link. Link a name only where the target adds something, once per section. In-page links lead from the Dates card and the shop into the season sections.
+- Every link uses the site's link blue or the item quality color, so a reader can see what is a link. Link a name only where the target adds something, once per section. In-page links lead from the Dates card and the shop into the season sections. Places a player must go get one "Show on the map" line: the Halloween spawns, Santa Claus and each quest's locations select that entity on the map, and the repair merchant link shows the map with only repair merchants on.
 - Use a table only when rows are compared across columns: spawn counts per zone, token chances per monster, and currencies by source and use. Costume pieces are listed per monster with the shared chance stated once, because a table of them would be mostly empty cells.
-- Show shop items as tiles with icon, name, effect and price. Show prices as amount plus currency icon. Fireworks appear once, in the shared shop.
+- Show shop items as tiles with icon, name, effect and price. A price names its currency next to the currency icon, because the icons alone are hard to tell apart. Fireworks appear once, in the shared shop.
 - Check light and dark mode at 1440×900 and 390×844 without horizontal scrolling.
 
 Other surfaces follow the same priority: year-round content first, seasonal content after it. On an NPC page the seasonal stock follows the items for sale, and on a zone page the seasonal section follows regional events.

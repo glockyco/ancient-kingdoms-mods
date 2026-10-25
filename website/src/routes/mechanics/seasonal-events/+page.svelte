@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import MapPin from "@lucide/svelte/icons/map-pin";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
@@ -14,6 +16,7 @@
     SEASONS,
     seasonDates,
     seasonInSentence,
+    seasonOccurrence,
     type Season,
   } from "$lib/data/seasonal-events";
   import {
@@ -25,6 +28,49 @@
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
+
+  // The reader's clock is known only in the browser, so the prerendered page
+  // shows no status and the browser fills it in after mount.
+  let now = $state<Date | null>(null);
+  onMount(() => {
+    now = new Date();
+    const interval = window.setInterval(() => (now = new Date()), 60_000);
+    return () => window.clearInterval(interval);
+  });
+
+  const MS_PER_DAY = 86_400_000;
+  /** Whole days while two or more remain, then hours and minutes. */
+  const timeUntil = (target: Date, from: Date) => {
+    const ms = Math.max(0, target.getTime() - from.getTime());
+    if (ms >= 2 * MS_PER_DAY) return `${Math.floor(ms / MS_PER_DAY)} days`;
+    const minutes = Math.floor(ms / 60_000);
+    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+  };
+  const localTime = (date: Date) =>
+    new Intl.DateTimeFormat(undefined, {
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
+    }).format(date);
+  /** Whether the season runs at an instant, and when it next starts or ends in the reader's time zone. */
+  const status = (season: Season, at: Date) => {
+    const run = seasonOccurrence(season, at);
+    return run.start <= at
+      ? {
+          running: true,
+          text: `Ends in ${timeUntil(run.end, at)}, on ${localTime(run.end)}.`,
+        }
+      : {
+          running: false,
+          text: `Starts in ${timeUntil(run.start, at)}, on ${localTime(run.start)}.`,
+        };
+  };
+
+  const REPAIR_MERCHANTS_MAP = "/map?layers=tiles,npcRepair";
+  const mapHref = (id: string, type: "monster" | "npc" | "quest") =>
+    `/map?entity=${id}&etype=${type}`;
 
   const LINK = "text-blue-600 hover:underline dark:text-blue-400";
   const TABLE =
@@ -158,17 +204,27 @@
 {/snippet}
 
 {#snippet price(offer: SeasonalShopOffer)}
-  <span
-    class="inline-flex shrink-0 items-center gap-2 font-medium text-foreground"
-    title={data.items[offer.currency_id].name}
-  >
-    {offer.price}
+  {@const currency = data.items[offer.currency_id]}
+  <p class="flex items-center gap-1.5 text-sm">
     {#if data.itemIconPaths[offer.currency_id]}<img
         src="/{data.itemIconPaths[offer.currency_id]}"
-        alt={data.items[offer.currency_id].name}
-        class="size-6 object-contain"
-      />{:else}{data.items[offer.currency_id].name}{/if}
-  </span>
+        alt=""
+        class="size-5 object-contain"
+      />{/if}
+    <span class="font-medium text-foreground">{offer.price}</span>
+    {currency.name}
+  </p>
+{/snippet}
+
+{#snippet mapLinks(links: { href: string; label: string }[])}
+  <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+    <span class="inline-flex items-center gap-1"
+      ><MapPin class="size-4" aria-hidden="true" />Show on the map:</span
+    >
+    {#each links as link (link.href)}<a href={link.href} class={LINK}
+        >{link.label}</a
+      >{/each}
+  </p>
 {/snippet}
 
 {#snippet note(text: string)}
@@ -182,14 +238,10 @@
 {/snippet}
 
 {#snippet offerTile(offer: SeasonalShopOffer, detail: string | null)}
-  <div
-    class="flex min-w-0 items-start justify-between gap-3 rounded-lg border p-3"
-  >
-    <div class="min-w-0 space-y-1">
-      <div class="font-medium">{@render itemLink(offer.received_id)}</div>
-      {#if detail}<p class="text-sm">{detail}</p>{/if}
-    </div>
-    {@render price(offer)}
+  <div class="flex min-w-0 flex-col gap-1 rounded-lg border p-3">
+    <div class="font-medium">{@render itemLink(offer.received_id)}</div>
+    {#if detail}<p class="text-sm">{detail}</p>{/if}
+    <div class="mt-auto pt-1">{@render price(offer)}</div>
   </div>
 {/snippet}
 
@@ -259,6 +311,20 @@
             <p class="font-medium text-foreground">
               {seasonDates(entry.season)}
             </p>
+            <p class="min-h-5 text-sm">
+              {#if now}
+                {@const current = status(entry.season, now)}
+                {#if current.running}
+                  <span
+                    class="font-medium text-emerald-600 dark:text-emerald-400"
+                    >Running now.</span
+                  >
+                  {current.text}
+                {:else}
+                  {current.text}
+                {/if}
+              {/if}
+            </p>
             <p>{entry.gist}</p>
             <a href="#{SEASONS[entry.season].anchor}" class={LINK}
               >{entry.more}</a
@@ -269,7 +335,7 @@
       <!-- Source: server-scripts/EnviromentSystem.cs:OnStartServer,CheckSpecialEvents — seasons use inclusive UTC dates and the flags refresh hourly. -->
       <p class="text-sm">
         UTC dates, both days included. Each event can start and end up to an
-        hour after midnight UTC.
+        hour after midnight UTC. Times are shown in your time zone.
       </p>
     </Card.Content>
   </Card.Root>
@@ -348,6 +414,9 @@
             {@render offerTile(offer, `${offer.amount} per purchase`)}
           {/each}
         </div>
+        {@render mapLinks([
+          { href: REPAIR_MERCHANTS_MAP, label: "Repair merchants" },
+        ])}
       </Card.Content>
     </Card.Root>
   </section>
@@ -392,6 +461,12 @@
             {/each}
           </tbody>
         </table>
+        {@render mapLinks(
+          data.monsters.map((monster) => ({
+            href: mapHref(monster.id, "monster"),
+            label: monster.name,
+          })),
+        )}
       </Card.Content>
     </Card.Root>
 
@@ -470,10 +545,10 @@
           <p>
             {npc.name} offers these quests in {npc.zone_name}. You can accept
             each again 8 hours after completing it.
-            <a href="/map?entity={npc.id}&etype=npc" class={LINK}
-              >Show {npc.name} on the map</a
-            >.
           </p>
+          {@render mapLinks([
+            { href: mapHref(npc.id, "npc"), label: npc.name },
+          ])}
           <div class="grid gap-3">
             <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/KillQuest.cs:IsFulfilled; server-scripts/GatherInventoryQuest.cs:IsFulfilled — quests use their configured objectives and award shared and class-specific rewards on completion. -->
             {#each data.quests as quest (quest.id)}
@@ -509,6 +584,12 @@
                       name={quest.completer_name}
                     />.
                   </p>
+                  {@render mapLinks([
+                    {
+                      href: mapHref(quest.id, "quest"),
+                      label: "Quest locations",
+                    },
+                  ])}
                 </div>
                 <div class="space-y-3 text-sm sm:border-l sm:pl-4">
                   <p class="text-foreground">

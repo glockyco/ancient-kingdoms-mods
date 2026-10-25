@@ -114,7 +114,13 @@ The page of a season's Double XP buff SHALL state that every online player has t
 
 ### Requirement: The Seasonal Events page answers player questions
 
-The Seasonal Events page SHALL state, from the shared data: each season's dates, before any other content; what Double XP covers and that it does not stack; what earns each seasonal currency and what it buys; where seasonal monsters spawn by zone with level ranges, spawn hours in game and real time, and the chance of each seasonal drop, including costume pieces; where the seasonal NPC stands and each quest's objective, recommended level, rewards and repeat interval; and every seasonal shop item with its effect and price. A fact shared by both seasons SHALL appear once, in a section whose heading says it applies to both.
+The Seasonal Events page SHALL state, from the shared data: each season's dates, before any other content, and in the reader's browser whether it is running and when it starts or ends in the reader's time zone; what Double XP covers and that it does not stack; what earns each seasonal currency and what it buys; where seasonal monsters spawn by zone with level ranges, spawn hours in game and real time, and the chance of each seasonal drop, including costume pieces; where the seasonal NPC stands and each quest's objective, recommended level, rewards and repeat interval; and every seasonal shop item with its effect and its price, naming the currency. Places a player must go, the seasonal monsters' spawns, the seasonal NPC, each seasonal quest and the repair merchants, SHALL link to the map. A fact shared by both seasons SHALL appear once, in a section whose heading says it applies to both.
+
+#### Scenario: Checking whether an event is running
+
+- **WHEN** a player opens the page during Halloween
+- **THEN** the Halloween dates say it is running and when it ends in the player's time zone
+- **AND** the Winter Festival dates say when it starts
 
 #### Scenario: Choosing where to hunt
 

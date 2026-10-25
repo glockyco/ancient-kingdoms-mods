@@ -77,16 +77,32 @@ export function seasonDates(season: Season): string {
 }
 
 /**
- * Whether a UTC instant falls inside the season. Both end dates are included,
- * and a season whose end comes before its start wraps the year boundary.
+ * The season's current run, or its next one when it is not running. A run
+ * starts at midnight UTC on its first date and ends at midnight UTC after its
+ * last date, and a season whose end comes before its start wraps the year.
  */
+export function seasonOccurrence(
+  season: Season,
+  instant: Date,
+): { start: Date; end: Date } {
+  const { start, end }: SeasonDefinition = SEASONS[season];
+  const wraps =
+    end.month < start.month ||
+    (end.month === start.month && end.day < start.day);
+  const year = instant.getUTCFullYear();
+  for (const startYear of [year - 1, year, year + 1]) {
+    const run = {
+      start: new Date(Date.UTC(startYear, start.month - 1, start.day)),
+      end: new Date(
+        Date.UTC(startYear + (wraps ? 1 : 0), end.month - 1, end.day + 1),
+      ),
+    };
+    if (run.end > instant) return run;
+  }
+  throw new Error(`${season} has no run after ${instant.toISOString()}`);
+}
+
+/** Whether a UTC instant falls inside the season, both end dates included. */
 export function seasonIncludes(season: Season, instant: Date): boolean {
-  const { start, end } = SEASONS[season];
-  const key = (month: number, day: number) => month * 100 + day;
-  const today = key(instant.getUTCMonth() + 1, instant.getUTCDate());
-  const first = key(start.month, start.day);
-  const last = key(end.month, end.day);
-  return first <= last
-    ? today >= first && today <= last
-    : today >= first || today <= last;
+  return seasonOccurrence(season, instant).start <= instant;
 }
