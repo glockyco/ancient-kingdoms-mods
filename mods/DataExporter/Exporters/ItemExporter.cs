@@ -79,6 +79,7 @@ public class ItemExporter : BaseExporter
     public override void Export()
     {
         Logger.Msg("Exporting items...");
+        RequireEnglishLocale("Item names");
 
         var type = Il2CppType.Of<Il2Cpp.ScriptableItem>();
         var items = Resources.FindObjectsOfTypeAll(type);
@@ -103,7 +104,10 @@ public class ItemExporter : BaseExporter
             var itemData = new ItemData
             {
                 id = SanitizeId(scriptableItem.name),
-                name = scriptableItem.nameItem ?? scriptableItem.name,
+                // Players see the English localized name, which replaces nameItem for a few
+                // items such as the four Regalia armor sets.
+                // Source: server-scripts/ScriptableItem.cs:LocalizedName — reads the item's localized .name entry and falls back to nameItem.
+                name = scriptableItem.LocalizedName(),
                 item_type = DetermineItemType(scriptableItem),
                 quality = scriptableItem.quality,
                 level_required = 0,
@@ -548,7 +552,12 @@ public class ItemExporter : BaseExporter
             resist_fear_chance = augmentItem.resistFearChanceBonus
         };
 
-        itemData.augment_armor_set_name = augmentItem.nameArmorSet ?? "";
+        // A set piece's tooltip names its set by this augment's localized name. The game never
+        // shows nameArmorSet.
+        // Source: server-scripts/EquipmentItem.cs:ToolTip — the set line renders augmentArmorBonusSet.LocalizedName() with the equipped piece count.
+        itemData.augment_armor_set_name = string.IsNullOrEmpty(augmentItem.nameArmorSet)
+            ? ""
+            : augmentItem.LocalizedName();
 
         if (augmentItem.armorSet != null)
         {

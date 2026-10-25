@@ -115,6 +115,20 @@ Rationale: a gather item carries an authored display name and its own object nam
 - **WHEN** the only field holding a value is one a lifecycle method overwrites
 - **THEN** the export fails and names the field
 
+### Requirement: Items carry the names players see
+
+The export SHALL publish an item's English localized name, the one the game renders, rather than its raw name field. It SHALL name an armor set by its set augment's localized name, because a set piece's tooltip renders that name and the game never shows the augment's `nameArmorSet`. The export SHALL fail unless the game runs in English.
+
+#### Scenario: Localization renames a set
+
+- **WHEN** the export reads the Cryptcaller set augment, whose raw name is "Cryptcaller Armor Bonus Set" and whose English name is "Cryptcaller Regalia"
+- **THEN** the item's name and its set name are "Cryptcaller Regalia"
+
+#### Scenario: A set without a localized name
+
+- **WHEN** the export reads the Cinderchant set augment, whose English name equals its raw name "Cinderchant Armor Bonus Set"
+- **THEN** its set name is "Cinderchant Armor Bonus Set", as the set piece tooltip shows, not its unused `nameArmorSet` "Cinderchant Regalia"
+
 ### Requirement: The export declares the session state its values assume
 
 The export SHALL record the session state that its values depend on, and the build SHALL fail when that state is not the state the published data assumes.

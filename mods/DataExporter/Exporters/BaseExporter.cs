@@ -143,6 +143,19 @@ public abstract class BaseExporter
     /// </summary>
     protected static string SanitizeId(string input) => GameIds.Sanitize(input);
 
+    /// <summary>
+    /// Fails unless the game runs in English, because the export publishes the names and
+    /// labels an English-speaking player sees.
+    /// </summary>
+    protected static void RequireEnglishLocale(string purpose)
+    {
+        var code = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
+        if (string.IsNullOrEmpty(code))
+            throw new InvalidOperationException($"{purpose} requires an English selected locale, but no locale is selected.");
+        if (code != "en" && !code.StartsWith("en-", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"{purpose} requires an English selected locale, got '{code}'.");
+    }
+
     protected void WriteJson<T>(T data, string filename)
     {
         var filePath = Path.Combine(ExportPath, filename);

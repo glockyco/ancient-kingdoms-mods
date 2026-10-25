@@ -13,12 +13,7 @@ public sealed class StatExporter : BaseExporter
     public override void Export()
     {
         StatCatalog.Validate();
-        var locale = LocalizationSettings.SelectedLocale;
-        if (locale == null)
-            throw new InvalidOperationException("Stat vocabulary requires an English selected locale, but no locale is selected.");
-        var code = locale.Identifier.Code;
-        if (string.IsNullOrEmpty(code) || (code != "en" && !code.StartsWith("en-", StringComparison.OrdinalIgnoreCase)))
-            throw new InvalidOperationException($"Stat vocabulary requires an English selected locale, got '{code}'.");
+        RequireEnglishLocale("Stat vocabulary");
 
         var stats = StatCatalog.Stats.Select(stat =>
         {

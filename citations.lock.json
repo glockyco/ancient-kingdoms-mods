@@ -4596,6 +4596,9 @@
       "sha256": "062626187f5bf897164e783144c81703879d5861c3cc0941d205a0d2c13cf65c",
       "span": 1
     },
+    "ScriptableItem.cs:LocalizedName": {
+      "span": 0
+    },
     "ScriptableItem.cs:LocalizedStatLabel": {
       "span": 0
     },
