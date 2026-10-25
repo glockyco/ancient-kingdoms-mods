@@ -12,7 +12,7 @@ Use this for any work on Ancient Kingdoms save data, especially `game.dat` in th
 - Never include the SQLCipher key in skills, docs, commits, issue text, or final reports.
 - Never run exploratory writes against the live database. Inspect a copied/plaintext export first.
 - Never trust a single check. Verify with SQLite/SQLCipher integrity checks and, when practical, HotRepl/runtime load checks.
-- Never call game APIs that save or update `lastsaved` just to inspect data unless the user explicitly accepts that mutation.
+- Ask before calling game APIs that save or update `lastsaved` just to inspect data.
 
 ## Locate the save
 
@@ -22,7 +22,7 @@ Back up before anything else. Copy `game.dat` and each sidecar that exists into 
 
 ## Find the SQLCipher key
 
-Do not ask the user for the key and do not record it in repo files. Derive it from current game/decompiled code:
+Derive the key from current game/decompiled code rather than asking for it. Do not record it in repo files:
 
 - Search `server-scripts/Database.cs` for `new SQLiteConnection(GameManager.pathFileDB, ...)` or `PRAGMA key`.
 - If server scripts are stale, update/decompile scripts first using the game-version workflow, then inspect `Database.ConnectInternal`.
@@ -32,7 +32,7 @@ The key must be set before the first database read. Test it with a harmless sche
 
 ## Unpack for analysis
 
-The plaintext export is sensitive. Keep it inside the timestamped work/backup directory, mention its path to the user, and do not commit.
+The plaintext export is sensitive. Keep it inside the timestamped work/backup directory, report its path, and do not commit.
 
 ## Inspect character corruption
 
