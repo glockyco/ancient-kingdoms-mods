@@ -148,12 +148,13 @@
   />
 
   <h1 class="text-4xl font-bold">Regional Event Mechanics</h1>
-  <!-- Source: server-scripts/RegionalEventText.cs:Notice,TrackingSummary — the map shows the regional objective, time, progress, contribution and completion rewards. -->
+  <!-- Source: server-scripts/UIQuestTracking.cs:LateUpdate; server-scripts/RegionalEventText.cs:TrackingSummary — while a player is in the event's region, quest tracking shows the objective, progress, contribution and time left. -->
   <p class="text-muted-foreground">
     Regional events, also called Dynamic Events, ask everyone in a region for
-    help: gather supplies, hunt, cook, or defend a city from invaders. The map
-    shows the goal, the time left, and your progress. Help at least 3 times to
-    earn a reward, and the whole region prospers when the goal is reached.
+    help: gather supplies, hunt, cook, or defend a city from invaders. While you
+    are in the region, your quest tracker shows the goal, your progress, and the
+    time left. Help at least 3 times to earn a reward, and the whole region
+    prospers when the goal is reached.
   </p>
 
   <PageSections sections={MECHANICS_SECTIONS["/mechanics/regional-events"]} />
@@ -241,9 +242,11 @@
             </section>
           {/each}
         </div>
+        <!-- Source: server-scripts/RegionalInvasions.cs:FailIfCityDefeated; server-scripts/RegionalEventProgress.cs:FailInvasion — an active invasion fails as soon as every townsperson in the city is dead. -->
         <p class="flex items-start gap-2 text-sm">
           <TimerOff class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           If a stage runs out of time, the event ends with no reward and no penalty.
+          An invasion also fails at once if every townsperson in the city dies.
         </p>
       </div>
       {#if !data.settings.enabled}

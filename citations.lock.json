@@ -4422,6 +4422,9 @@
       "sha256": "70095ec2c612f117425fad10e5c5d69e18b51b0e69b67f116775e169a3588cb8",
       "span": 31
     },
+    "RegionalEventProgress.cs:FailInvasion": {
+      "span": 0
+    },
     "RegionalEventSettings.cs:6-10": {
       "sha256": "de297eea064239fff42a3bb28b8f0ae207ec8213bc595f74de6783900b30525d",
       "span": 5
@@ -4435,6 +4438,9 @@
       "span": 10
     },
     "RegionalEventText.cs:Notice": {
+      "span": 0
+    },
+    "RegionalEventText.cs:TrackingSummary": {
       "span": 0
     },
     "RegionalEvents.cs:120-125": {
@@ -4534,6 +4540,9 @@
       "span": 30
     },
     "RegionalInvasions.cs:Definitions": {
+      "span": 0
+    },
+    "RegionalInvasions.cs:FailIfCityDefeated": {
       "span": 0
     },
     "RegionalInvasions.cs:Tick": {
