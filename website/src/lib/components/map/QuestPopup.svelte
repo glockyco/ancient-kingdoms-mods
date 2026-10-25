@@ -214,7 +214,8 @@
         </div>
         <div class="space-y-0.5">
           {#each details.objectives as obj, i (i)}
-            <div class="flex items-center gap-1">
+            <!-- Baseline alignment keeps the dotted-underline item links level with the verb and amount. -->
+            <div class="flex items-baseline gap-1">
               {#if obj.type === "kill"}
                 <span class="text-muted-foreground">Kill</span>
                 <span>{obj.amount}×</span>

@@ -73,7 +73,11 @@
   const href = $derived(buildEntityUrl(itemId, "item"));
 </script>
 
-<span class="min-w-0">
+<!--
+  The wrapper takes the caller's layout classes, such as truncate, and the
+  anchor stays inline so the name sits on the baseline of the row around it.
+-->
+<span class="min-w-0 {className}">
   {#if showTooltip}
     <HoverCard.Root
       openDelay={200}
@@ -82,13 +86,16 @@
       onOpenChange={handleOpenChange}
     >
       <HoverCard.Trigger>
-        <a
-          {href}
-          onclick={handleClick}
-          class="inline-block max-w-full cursor-pointer text-left underline decoration-dotted hover:decoration-solid {effectiveColorClass} {className}"
-        >
-          {itemName}
-        </a>
+        {#snippet child({ props })}
+          <a
+            {...props}
+            {href}
+            onclick={handleClick}
+            class="cursor-pointer underline decoration-dotted hover:decoration-solid {effectiveColorClass}"
+          >
+            {itemName}
+          </a>
+        {/snippet}
       </HoverCard.Trigger>
       <HoverCard.Content
         class="w-80 border-0 p-0 overflow-hidden shadow-lg"
@@ -102,7 +109,7 @@
     <a
       {href}
       onclick={handleClick}
-      class="inline-block max-w-full cursor-pointer text-left underline hover:opacity-80 {effectiveColorClass} {className}"
+      class="cursor-pointer underline hover:opacity-80 {effectiveColorClass}"
     >
       {itemName}
     </a>
