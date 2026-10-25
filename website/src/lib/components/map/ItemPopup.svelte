@@ -105,6 +105,45 @@
   }
 
   let details = $state<ItemPopupDetails | null>(null);
+  /** A row names its seasons only when they differ from the seasons in the popup header. */
+  function seasonsBeyondHeader(seasons: readonly Season[]): readonly Season[] {
+    const header = details?.seasons ?? [];
+    const same =
+      seasons.length === header.length &&
+      seasons.every((season) => header.includes(season));
+    return same ? [] : seasons;
+  }
+  /**
+   * Seasonal offers grouped by price and merchants. Seasons that sell the same
+   * offer at the same merchants share one group instead of repeating the list.
+   */
+  const shopGroups = $derived.by(() => {
+    const groups = new SvelteMap<
+      string,
+      {
+        seasons: Season[];
+        offer: ItemPopupVendor;
+        merchants: ItemPopupVendor[];
+      }
+    >();
+    for (const season of seasons) {
+      const vendors = (details?.vendors ?? []).filter((vendor) =>
+        vendor.seasons.includes(season),
+      );
+      for (const { offer, merchants } of groupVendors(vendors)) {
+        const key = JSON.stringify([
+          offer.price,
+          offer.currencyItemId,
+          offer.resultAmount,
+          merchants.map((merchant) => merchant.npcId).sort(),
+        ]);
+        const group = groups.get(key);
+        if (group) group.seasons.push(season);
+        else groups.set(key, { seasons: [season], offer, merchants });
+      }
+    }
+    return [...groups.values()];
+  });
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let itemIconPaths = $state<Record<string, string | null> | null>(null);
@@ -139,6 +178,15 @@
       });
   });
 </script>
+
+{#snippet rowSeasons(seasons: readonly Season[], indent = "")}
+  {@const shown = seasonsBeyondHeader(seasons)}
+  {#if shown.length > 0}
+    <div class="flex flex-wrap gap-x-3 gap-y-1 {indent}">
+      {#each shown as season (season)}<SeasonLabel {season} />{/each}
+    </div>
+  {/if}
+{/snippet}
 
 {#if isLoading}
   <PopupCard title="Loading..." {onClose} {mode}>
@@ -180,29 +228,29 @@
             <div
               class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm"
             >
-              <div class="flex flex-wrap items-center gap-1 min-w-0">
-                <MonsterTypeIcon
-                  isBoss={dropper.isBoss}
-                  isFabled={dropper.isFabled}
-                  isElite={dropper.isElite}
-                  class="h-3.5 w-3.5 shrink-0"
-                />
-                <MapEntityLink
-                  href={buildEntityUrl(dropper.monsterId, "monster")}
-                  onSelect={() => onSelectMonster(dropper.monsterId)}
-                  onHoverStart={() => onHoverMonster?.(dropper.monsterId)}
-                  onHoverEnd={() => onHoverMonster?.(null)}
-                  class={dropper.isBoss
-                    ? "text-cyan-400"
-                    : dropper.isElite
-                      ? "text-purple-400"
-                      : "text-red-400"}
-                >
-                  <span class="truncate">{dropper.monsterName}</span>
-                </MapEntityLink>
-                {#each dropper.seasons as season (season)}
-                  <SeasonLabel {season} />
-                {/each}
+              <div class="min-w-0">
+                <div class="flex items-center gap-1 min-w-0">
+                  <MonsterTypeIcon
+                    isBoss={dropper.isBoss}
+                    isFabled={dropper.isFabled}
+                    isElite={dropper.isElite}
+                    class="h-3.5 w-3.5 shrink-0"
+                  />
+                  <MapEntityLink
+                    href={buildEntityUrl(dropper.monsterId, "monster")}
+                    onSelect={() => onSelectMonster(dropper.monsterId)}
+                    onHoverStart={() => onHoverMonster?.(dropper.monsterId)}
+                    onHoverEnd={() => onHoverMonster?.(null)}
+                    class={dropper.isBoss
+                      ? "text-cyan-400"
+                      : dropper.isElite
+                        ? "text-purple-400"
+                        : "text-red-400"}
+                  >
+                    <span class="truncate">{dropper.monsterName}</span>
+                  </MapEntityLink>
+                </div>
+                {@render rowSeasons(dropper.seasons, "pl-[1.125rem]")}
               </div>
               <div
                 class="flex items-center gap-2 shrink-0 text-sm text-muted-foreground"
@@ -256,46 +304,39 @@
       </div>
     {/if}
 
-    {#if details.vendors.some((vendor) => vendor.seasons.length > 0)}
+    {#if shopGroups.length > 0}
       <div class="border-t pt-2 text-sm">
         <div class="mb-1 font-medium text-muted-foreground">Seasonal shop</div>
-        {#each seasons as season (season)}
-          {@const vendors = details.vendors.filter((vendor) =>
-            vendor.seasons.includes(season),
-          )}
-          {#if vendors.length > 0}
-            <div class="mt-2 space-y-1">
-              <SeasonLabel {season} />
-              {#each groupVendors(vendors) as { offer, merchants }, i (i)}
-                <div class="text-muted-foreground">
-                  {formatNumber(offer.price)}
-                  {#if offer.currencyItemId && offer.currencyItemName}
-                    <MapItemLink
-                      itemId={offer.currencyItemId}
-                      itemName={offer.currencyItemName}
-                      onSelect={onSelectItem}
-                    />
-                  {:else}g{/if}
-                  {#if offer.resultAmount && offer.resultAmount > 1}
-                    for {offer.resultAmount}
-                  {/if}
-                </div>
-                <div class="max-h-40 space-y-1 overflow-y-auto pr-2">
-                  {#each merchants as vendor (vendor.npcId)}
-                    <div>
-                      <MapEntityLink
-                        href={buildEntityUrl(vendor.npcId, "npc")}
-                        onSelect={() => onSelectNpc(vendor.npcId)}
-                        onHoverStart={() => onHoverNpc?.(vendor.npcId)}
-                        onHoverEnd={() => onHoverNpc?.(null)}
-                        >{vendor.npcName}</MapEntityLink
-                      >
-                    </div>
-                  {/each}
+        {#each shopGroups as group, i (i)}
+          <div class="mt-2 space-y-1">
+            {@render rowSeasons(group.seasons)}
+            <div class="text-muted-foreground">
+              {formatNumber(group.offer.price)}
+              {#if group.offer.currencyItemId && group.offer.currencyItemName}
+                <MapItemLink
+                  itemId={group.offer.currencyItemId}
+                  itemName={group.offer.currencyItemName}
+                  onSelect={onSelectItem}
+                />
+              {:else}g{/if}
+              {#if group.offer.resultAmount && group.offer.resultAmount > 1}
+                for {group.offer.resultAmount}
+              {/if}
+            </div>
+            <div class="max-h-40 space-y-1 overflow-y-auto pr-2">
+              {#each group.merchants as vendor (vendor.npcId)}
+                <div>
+                  <MapEntityLink
+                    href={buildEntityUrl(vendor.npcId, "npc")}
+                    onSelect={() => onSelectNpc(vendor.npcId)}
+                    onHoverStart={() => onHoverNpc?.(vendor.npcId)}
+                    onHoverEnd={() => onHoverNpc?.(null)}
+                    >{vendor.npcName}</MapEntityLink
+                  >
                 </div>
               {/each}
             </div>
-          {/if}
+          </div>
         {/each}
       </div>
     {/if}
@@ -486,15 +527,15 @@
             <div
               class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm"
             >
-              <MapEntityLink
-                href={buildEntityUrl(quest.questId, "quest")}
-                onSelect={() => onSelectQuest(quest.questId)}
-              >
-                <span class="truncate">{quest.questName}</span>
-              </MapEntityLink>
-              {#each quest.seasons as season (season)}
-                <SeasonLabel {season} />
-              {/each}
+              <div class="min-w-0">
+                <MapEntityLink
+                  href={buildEntityUrl(quest.questId, "quest")}
+                  onSelect={() => onSelectQuest(quest.questId)}
+                >
+                  <span class="truncate">{quest.questName}</span>
+                </MapEntityLink>
+                {@render rowSeasons(quest.seasons)}
+              </div>
               <span class="shrink-0 text-sm text-muted-foreground">
                 Lv {quest.levelRecommended}
               </span>
