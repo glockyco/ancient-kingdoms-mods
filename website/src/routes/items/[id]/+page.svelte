@@ -1526,13 +1526,31 @@
           </p>
         {/if}
         {#if isPet}
-          <p class="text-muted-foreground">
-            Whistles summon a friendly follower that does not fight. See
-            <a href="/summons#how-summons-work" class={styles.link}>
-              friendly follower rules
-            </a>
-            for the follower limit and naming.
-          </p>
+          <div class="space-y-2 text-muted-foreground">
+            <!-- Source: server-scripts/Player.cs:4254-4284 — using the item summons the pet, or dismisses the one it already summoned. -->
+            <p>
+              Use the whistle to summon the pet. Using it again dismisses that
+              pet. Three pets can follow you at once.
+            </p>
+            <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:16-23,58-80 — name rules and the default name. -->
+            <p>
+              Right-click the whistle in your inventory to name the pet. A name
+              holds up to 20 characters and accepts letters, spaces,
+              apostrophes, and hyphens. Without a name the pet is called
+              "&lt;your character&gt;'s pet".
+            </p>
+            <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
+            <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454 — a follower without its inventory whistle is removed. -->
+            <p>
+              The pet follows you and catches up when it falls far behind. It
+              leaves if its whistle is not in your inventory. It is cosmetic and
+              takes no part in combat. See
+              <a href="/summons#how-summons-work" class={styles.link}>
+                friendly follower rules
+              </a>
+              for how pets compare with other followers.
+            </p>
+          </div>
         {/if}
       </Card.Content>
     </Card.Root>
@@ -1903,34 +1921,6 @@
               </div>
             {/each}
           </div>
-        </Card.Content>
-      </Card.Root>
-    {/if}
-
-    <!-- Pet mechanics -->
-    {#if isPet}
-      <Card.Root class="bg-muted/30">
-        <Card.Header>
-          <Card.Title level={2}>Mechanics</Card.Title>
-        </Card.Header>
-        <Card.Content class="space-y-3 text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:4254-4284 — using the item summons the pet, or dismisses the one it already summoned. -->
-          <p>
-            Use the whistle to summon the pet. Using it again dismisses that
-            pet. Three pets can follow you at once.
-          </p>
-          <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:16-23,58-80 — name rules and the default name. -->
-          <p>
-            Right-click the whistle in your inventory to name the pet. A name
-            holds up to 20 characters and accepts letters, spaces, apostrophes,
-            and hyphens. Without a name the pet is called "&lt;your
-            character&gt;'s pet".
-          </p>
-          <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-          <p>
-            The pet follows you and catches up when it falls far behind. It is
-            cosmetic and takes no part in combat.
-          </p>
         </Card.Content>
       </Card.Root>
     {/if}
