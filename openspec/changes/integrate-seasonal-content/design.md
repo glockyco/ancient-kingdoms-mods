@@ -71,16 +71,18 @@ A `SeasonLabel` component renders the season's icon and name and links to its se
 
 ### 8. The Seasonal Events page is rebuilt from player questions
 
-Order: two season summary cards side by side (icon, dates, what changes), Double XP, Halloween, Winter Festival, Fireworks, Currencies. Layout rules:
+The page follows the Regional Events page, which readers accept: a lead paragraph under the title, the section list, then plain cards. Order: lead with both seasons' dates, Double XP, Halloween, Winter Festival, Fireworks, Currencies. Layout rules:
 
-- Use a table only when rows are compared across columns. The dates become summary cards. The Halloween hunt table lists zones by level with Pumpkin Head and Witch spawn counts, so shared facts (season, hours, drops) are stated once above it instead of repeated per row.
-- Show items as tiles with icon, name, effect and price, in a responsive grid. Avoid wide two-column tables that leave the price far from its item.
+- The lead answers when the events run and what they change. No summary cards restate the sections below.
+- One type scale: 36 px page title, 24 px season heading, 16 px card titles and every paragraph, 14 px for tables, tiles and notes. A size changes only when the role changes.
+- No accent tints, title icons or callout boxes. A pitfall is a 14 px note with a warning icon, like the timeout note on Regional Events. The season icon appears only in SeasonLabel.
+- Every link uses the site's link blue or the item quality color, so a reader can see what is a link. Link a name only where the target adds something, once per section. A season does not link to its own section on this page.
+- Use a table only when rows are compared across columns. The Halloween spawn table lists zones by level with Pumpkin Head and Witch spawn counts, so shared facts (season, hours, drops) are stated once above it. It fits a phone without scrolling.
+- Show items as tiles with icon, name, effect and price, in a responsive grid. Show prices as amount plus currency icon.
 - Show each shared fact once. Fireworks get one card for both seasons.
-- Link a name only where the target adds something. Show prices as amount plus currency icon, not a repeated underlined link.
-- Keep text at 14 px or more and use the `ui` table, card and badge primitives, following `consolidate-website-design-system`.
-- Check light and dark mode at 1440×900 and 390×844 without horizontal scrolling for the summary, tiles and quest cards.
+- Check light and dark mode at 1440×900 and 390×844 without horizontal scrolling.
 
-Copy follows the reader-facing-copy requirements in this change. Concretely, the page says "30 real minutes in every hour" for the 20:00 to 08:00 window, "about 5 kills per Spook Token", "Eating another treat ends the first", and "Festival Tokens work in both events". It says nothing about server checks or stock lists.
+Copy follows the reader-facing-copy requirements in this change. Headings name their content in the site's terms, such as "Spawns" and "Treats". The page says "30 real minutes in every hour" for the 20:00 to 08:00 window, "about 5 kills per token", and that eating another seasonal treat ends the first. Each currency says what it buys and in which events. It says nothing about server checks or stock lists.
 
 ### 9. NPC pages show quests completed there
 

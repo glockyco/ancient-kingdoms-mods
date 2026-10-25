@@ -106,10 +106,11 @@ export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
       { id: "invasions", label: "City invasions" },
     ],
     "/mechanics/seasonal-events": [
-      { id: "schedule", label: "When they run" },
       { id: "double-xp", label: "Double XP" },
       { id: "halloween", label: "Halloween" },
       { id: "winter-festival", label: "Winter Festival" },
+      { id: "fireworks", label: "Fireworks" },
+      { id: "currencies", label: "Currencies" },
     ],
     "/mechanics/inventory": [
       { id: "overview", label: "Storage at a glance" },

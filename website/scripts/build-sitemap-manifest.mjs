@@ -15,6 +15,7 @@ import { assembleAcquisitionModel } from "../src/lib/acquisition/assemble.ts";
 import { publicAcquisitionFingerprint } from "../src/lib/acquisition/fingerprint.ts";
 import { projectItemSources } from "../src/lib/acquisition/projections.ts";
 import { PAGE_FINGERPRINT_FIELDS } from "./page-fingerprint-fields.mjs";
+import { getSeasonalEvents } from "../src/lib/queries/seasonal-events.server.ts";
 
 const SITE_URL = "https://ancient-kingdoms.compendiums.org";
 const DB_PATH = resolve("data/compendium.db");
@@ -671,7 +672,7 @@ export async function computeHashes() {
         context.fingerprint("recipes", { recipeIds: [id] }),
       );
     addOverviewHashes(db, addHash, context);
-    addMechanicsHashes(db, addHash, context);
+    await addMechanicsHashes(db, addHash, context);
     addProfessionHashes(db, addHash, context);
     addHash("/achievements", {
       rows: tableRows(db, "achievements"),
@@ -810,7 +811,7 @@ function pageSources(section, slug) {
     ...(parts.length ? { parts: Object.fromEntries(parts) } : {}),
   };
 }
-function addMechanicsHashes(db, addHash, context) {
+async function addMechanicsHashes(db, addHash, context) {
   for (const slug of staticSectionPages("mechanics")) {
     let rows;
     switch (slug) {
@@ -917,47 +918,24 @@ function addMechanicsHashes(db, addHash, context) {
         break;
       }
       case "seasonal-events": {
-        const monsters = tableRows(
-          db,
-          "monsters",
-          "WHERE season = 'halloween'",
+        const data = await getSeasonalEvents(async (sql, params) =>
+          all(db, sql, ...params),
         );
-        const npcs = tableRows(db, "npcs", "WHERE season = 'christmas'");
-        const memberships = all(
-          db,
-          "SELECT quest_id, npc_id, role, ordinal FROM npc_quest_memberships WHERE quest_id IN (SELECT m.quest_id FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.season = 'christmas') ORDER BY quest_id, role, ordinal, npc_id",
-        );
-        // Seasonal shop items, their currencies and the quest rewards.
-        const itemIds = all(
-          db,
-          "SELECT offered_item_id AS id FROM acquisition_vendor_details WHERE season IS NOT NULL UNION SELECT i.item_id FROM acquisition_vendor_details v JOIN acquisition_cost_groups g ON g.method_id = v.id JOIN acquisition_inputs i ON i.cost_group_id = g.id WHERE v.season IS NOT NULL AND i.item_id IS NOT NULL UNION SELECT r.item_id FROM quest_reward_slots r WHERE r.quest_id IN (SELECT quest_id FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.season = 'christmas') ORDER BY id",
-        ).map((row) => row.id);
+        const itemIds = Object.keys(data.items);
         rows = {
-          monsters,
-          monsterSpawns: tableRows(db, "monster_spawns").filter((row) =>
-            monsters.some((monster) => monster.id === row.monster_id),
-          ),
-          npcs,
-          npcSpawns: tableRows(db, "npc_spawns").filter((row) =>
-            npcs.some((npc) => npc.id === row.npc_id),
-          ),
-          memberships,
-          quests: rowsByIds(
+          page: data,
+          effects: rowsByIds(
             db,
-            "quests",
-            memberships.map((row) => row.quest_id),
+            "skills",
+            Object.values(data.items).flatMap((item) =>
+              item.food_buff_id ? [item.food_buff_id] : [],
+            ),
           ),
-          questNpcs: rowsByIds(
+          icons: all(
             db,
-            "npcs",
-            memberships.map((row) => row.npc_id),
+            "SELECT entity_id, public_path FROM visual_assets WHERE domain = 'item' AND kind = 'icon' AND entity_id IN (SELECT value FROM json_each(?)) ORDER BY entity_id",
+            JSON.stringify(itemIds),
           ),
-          zones: tableRows(db, "zones"),
-          items: context.fingerprint("items", { itemIds }),
-          loot: context.fingerprint("monsters", {
-            monsterIds: monsters.map((monster) => monster.id),
-          }),
-          icons: tableRows(db, "visual_assets", "WHERE domain = 'item'"),
         };
         break;
       }

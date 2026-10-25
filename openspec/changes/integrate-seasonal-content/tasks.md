@@ -31,7 +31,7 @@
 
 - [ ] 6.1 Make `item-sources.ts`, `item-usages.ts`, `item-source-summary.ts` and `obtainability.ts` read seasons from the projection, carrying seasons on drop, quest and pack rows. Delete every `season === "none"` filter. Verify existing tests pass and new tests cover a seasonal drop row and a seasonal quest row.
 - [ ] 6.2 Add season clauses to item, monster, NPC, quest and skill meta descriptions in `meta-description.ts`, stating the season and the amount and price where relevant. Verify description tests for Festive Cookie, Spook Token, Pumpkin Head, Santa Claus and Keeping the Winter Peace.
-- [ ] 6.3 Replace the raw SQL in `website/src/lib/queries/seasonal-events.server.ts` with the shared reader and update the `seasonal-events` case in `website/scripts/build-sitemap-manifest.mjs` and `page-fingerprint-fields.mjs` for the new columns. Verify the sitemap manifest builds.
+- [x] 6.3 Replace the raw SQL in `website/src/lib/queries/seasonal-events.server.ts` with the shared reader and update the `seasonal-events` case in `website/scripts/build-sitemap-manifest.mjs` and `page-fingerprint-fields.mjs` for the new columns. Verify the sitemap manifest builds.
 
 ## 7. Season label and detail pages
 
@@ -55,7 +55,7 @@
 
 ## 10. Seasonal Events page
 
-- [ ] 10.1 Rebuild `website/src/routes/mechanics/seasonal-events/+page.svelte` per design decision 8 and the seasonal-content requirement "The Seasonal Events page answers player questions", with copy following the new reader-facing-copy requirements. Update `mechanics-sections.ts` for the new sections. Verify at 1440×900 and 390×844 in light and dark mode that nothing scrolls horizontally except the hunt table, text is 14 px or more, and every number matches the database.
+- [x] 10.1 Rebuild `website/src/routes/mechanics/seasonal-events/+page.svelte` per design decision 8 and the seasonal-content requirement "The Seasonal Events page answers player questions", with copy following the new reader-facing-copy requirements. Update `mechanics-sections.ts` for the new sections. Verify at 1440×900 and 390×844 in light and dark mode that nothing scrolls horizontally, text is 14 px or more, and every number matches the database.
 
 ## 11. Integration
 

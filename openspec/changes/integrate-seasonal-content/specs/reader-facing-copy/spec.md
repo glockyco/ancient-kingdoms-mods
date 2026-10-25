@@ -21,6 +21,22 @@ Copy SHALL open with what the player gets, does or must avoid, in the game's voc
 - **WHEN** a currency drops with a 20% chance per kill
 - **THEN** the copy gives the chance and the average of 5 kills per token
 
+### Requirement: Headings and sentences state facts plainly
+
+A heading SHALL name its content in the terms the site already uses for it. Copy SHALL state facts in the third person or as conditions, and SHALL NOT address the reader with slogans, advice or marketing imperatives. A label SHALL say what a value is, so no footnote has to explain a column.
+
+#### Scenario: A card holds a spawn table
+
+- **WHEN** a card shows where seasonal monsters spawn
+- **THEN** its heading is "Spawns", as on monster pages
+- **AND** it is not a question or a call to action such as "Where to hunt"
+
+#### Scenario: A summary describes a currency
+
+- **WHEN** a page says what a seasonal currency is for
+- **THEN** it says what the currency buys and during which events
+- **AND** it does not use a vague verb such as "works" or an imperative such as "Spend tokens on treats"
+
 ### Requirement: Pitfalls are stated where the choice is made
 
 Copy SHALL state a rule that wastes a player's resource or time beside the place where the player makes that choice.

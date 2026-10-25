@@ -12,8 +12,11 @@
 
   interface Props {
     season: Season;
-    /** A header badge, or a label inside a row or a sentence. */
-    variant?: "badge" | "inline";
+    /**
+     * A header badge, a label inside a row or a sentence, or the unlinked
+     * heading of the season's own section.
+     */
+    variant?: "badge" | "inline" | "title";
     /** Put the article a sentence needs before the name, as in "the Winter Festival". */
     inSentence?: boolean;
   }
@@ -30,16 +33,26 @@
   const article = $derived(inSentence ? SEASONS[season].article : null);
 </script>
 
-{#if article}{`${article} `}{/if}<a
-  href={seasonHref(season)}
-  title="{SEASONS[season].name}, {seasonDates(season)} (UTC dates)"
-  class={variant === "badge"
-    ? `${ICON_BADGE.base} ${ICON_BADGE.link}`
-    : "inline-flex items-center gap-1 whitespace-nowrap text-sm text-muted-foreground hover:text-foreground hover:underline"}
->
+{#snippet content()}
   <Icon
-    class="{ICON_BADGE.iconSize} shrink-0 {PRESENTATION[season].tone}"
+    class="{variant === 'title'
+      ? 'size-6'
+      : ICON_BADGE.iconSize} shrink-0 {PRESENTATION[season].tone}"
     aria-hidden="true"
   />
   {SEASONS[season].name}
-</a>
+{/snippet}
+
+{#if article}{`${article} `}{/if}{#if variant === "title"}
+  <span class="inline-flex items-center gap-2">{@render content()}</span>
+{:else}
+  <a
+    href={seasonHref(season)}
+    title="{SEASONS[season].name}, {seasonDates(season)} (UTC dates)"
+    class={variant === "badge"
+      ? `${ICON_BADGE.base} ${ICON_BADGE.link}`
+      : "inline-flex items-center gap-1 whitespace-nowrap text-sm text-muted-foreground hover:text-foreground hover:underline"}
+  >
+    {@render content()}
+  </a>
+{/if}
