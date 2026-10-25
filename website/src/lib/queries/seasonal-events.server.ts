@@ -42,8 +42,15 @@ export async function getSeasonalEvents(execute: AcquisitionQuery) {
       `SELECT * FROM ${table} WHERE ${column} IN (SELECT value FROM json_each(?)) ORDER BY id`,
       [JSON.stringify(ids)],
     );
-  const seasons = await select<{ id: Season; buff_skill_id: string }>(
-    "SELECT id, buff_skill_id FROM seasons ORDER BY ordinal",
+  const seasons = await select<{
+    id: Season;
+    buff_skill_id: string;
+    buff_skill_name: string;
+  }>(
+    `SELECT s.id, s.buff_skill_id, k.name AS buff_skill_name
+     FROM seasons s
+     JOIN skills k ON k.id = s.buff_skill_id
+     ORDER BY s.ordinal`,
   );
   const monsters = await select<{
     id: string;

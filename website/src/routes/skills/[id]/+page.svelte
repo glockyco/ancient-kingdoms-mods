@@ -3,7 +3,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
-  import { seasonInSentence } from "$lib/data/seasonal-events";
+  import { seasonHref, seasonInSentence } from "$lib/data/seasonal-events";
   import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
@@ -306,6 +306,11 @@
           Double XP buffs do not stack. Drinking an Elixir of Enlightened
           Learning during the season adds no XP bonus.
         </p>
+        <a
+          href={seasonHref(data.season)}
+          class="inline-block text-blue-600 hover:underline dark:text-blue-400"
+          >How seasonal events work</a
+        >
       </Card.Content>
     </Card.Root>
   {/if}

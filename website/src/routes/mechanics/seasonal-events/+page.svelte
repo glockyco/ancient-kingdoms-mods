@@ -368,7 +368,17 @@
         <!-- Source: server-scripts/Monster.cs:OnDeath; server-scripts/Npc.cs:OnDeath; server-scripts/GatherItem.cs:OnInteractServer,OnInteractFishServer; server-scripts/Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String,UserCode_CmdCraftItem__NetworkIdentity__Int32 — hasDoubleExp doubles character XP from kills, gathering, fishing, alchemy, scribing, augments and crafting, including cooking. -->
         <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/Player.cs:UserCode_CmdGetExperienceNewZone__Int64 — quest and exploration XP are awarded without Double XP. -->
         <p>
-          Every online player has Double XP while either event runs. It doubles
+          Every online player has a Double XP buff while either event runs:
+          {#each data.seasons as season, i (season.id)}{i
+              ? " and "
+              : ""}<EntityLink
+              href="/skills/{season.buff_skill_id}"
+              name={season.buff_skill_name}
+              domain="skill"
+              entityId={season.buff_skill_id}
+              variant="text"
+              class={LINK}
+            /> during {seasonInSentence(season.id)}{/each}. The buff doubles
           <MechanicsLink section="experience">character XP</MechanicsLink> from kills,
           gathering, fishing, crafting, cooking, alchemy, scribing and augmenting.
           Quest XP, exploration XP and profession skill gains are not doubled.

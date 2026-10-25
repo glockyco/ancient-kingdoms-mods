@@ -12,8 +12,16 @@ describe("Seasonal Events page data", () => {
         db.prepare(sql).all(...params) as Record<string, unknown>[],
     );
     expect(data.seasons).toEqual([
-      { id: "halloween", buff_skill_id: "halloween_event" },
-      { id: "christmas", buff_skill_id: "winter_festival" },
+      {
+        id: "halloween",
+        buff_skill_id: "halloween_event",
+        buff_skill_name: "Halloween Event",
+      },
+      {
+        id: "christmas",
+        buff_skill_id: "winter_festival",
+        buff_skill_name: "Winter Festival",
+      },
     ]);
     expect(data.offers).toHaveLength(12);
     expect(data.offers.filter((o) => o.seasons.length === 2)).toHaveLength(4);
