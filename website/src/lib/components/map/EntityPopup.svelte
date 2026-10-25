@@ -16,6 +16,7 @@
     getQualityTextColorClass,
     formatGatheringRespawn,
     formatNumber,
+    formatRange,
   } from "$lib/utils/format";
   import { statName, formatStat } from "$lib/stats";
   import { hasNpcRole, getNpcRoles } from "$lib/utils/tooltip";
@@ -317,12 +318,15 @@
   function formatChanceRange(min: number, max: number): string {
     if (Math.abs(min - max) < 0.000001)
       return formatPercent(min, { decimals: 1, trailingZeros: true });
-    return `${formatPercent(min, { decimals: 1, trailingZeros: true })}–${formatPercent(max, { decimals: 1, trailingZeros: true })}`;
+    return formatRange(
+      formatPercent(min, { decimals: 1, trailingZeros: true }),
+      formatPercent(max, { decimals: 1, trailingZeros: true }),
+    );
   }
 
   function getFallbackFishLabel(level: number): string {
     if (level <= 1) return "Tier I fallback fish";
-    return `Tier I–${toRomanNumeral(level - 1)} fallback fish`;
+    return `Tier ${formatRange("I", toRomanNumeral(level - 1))} fallback fish`;
   }
 
   function getEntityUrl(entity: AnyMapEntity): string | null {
@@ -1490,21 +1494,22 @@
               <span class="shrink-0 text-muted-foreground">
                 {#if drop.amountMin !== undefined && drop.amountMax !== undefined}
                   <span class="mr-1">
-                    ×{formatNumber(
-                      drop.amountMin,
-                    )}{#if drop.amountMax !== drop.amountMin}–{formatNumber(
-                        drop.amountMax,
-                      )}{/if}
+                    ×{drop.amountMax !== drop.amountMin
+                      ? formatRange(drop.amountMin, drop.amountMax)
+                      : formatNumber(drop.amountMin)}
                   </span>
                 {/if}
                 {#if drop.dropRateMax !== undefined}
-                  {formatPercent(drop.dropRate, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })} – {formatPercent(drop.dropRateMax, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}
+                  {formatRange(
+                    formatPercent(drop.dropRate, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    }),
+                    formatPercent(drop.dropRateMax, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    }),
+                  )}
                 {:else}
                   {formatPercent(drop.dropRate, {
                     decimals: 1,

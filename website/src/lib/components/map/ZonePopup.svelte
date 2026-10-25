@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import PopupCard from "./PopupCard.svelte";
   import MapEntityLink from "./MapEntityLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
@@ -70,7 +70,7 @@
   ): string | null {
     if (min === null && max === null) return null;
     if (min === max) return `${min}`;
-    return `${min ?? "?"} – ${max ?? "?"}`;
+    return formatRange(min ?? "?", max ?? "?");
   }
 
   let levelRange = $derived(formatLevelRange(zone.levelMin, zone.levelMax));

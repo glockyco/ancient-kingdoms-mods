@@ -426,7 +426,7 @@
               href="/mechanics/reputation#pets"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >Petting</a
-            > gives 1–4 faction standing.
+            > gives 1 - 4 faction standing.
           </li>
         </ul>
       </div>

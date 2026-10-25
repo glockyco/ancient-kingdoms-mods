@@ -35,6 +35,7 @@
     formatSkillType,
     formatSpawnTimeWindow,
     spawnWindowRealMinutes,
+    formatRange,
   } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
@@ -75,7 +76,7 @@
     formatSpawnTimeWindow(
       data.monster.spawn_time_start,
       data.monster.spawn_time_end,
-    )?.replace("-", " to "),
+    ),
   );
   const hasSpawnsOnDeath = $derived(
     data.monster.placeholder_monster_id !== null,
@@ -856,7 +857,7 @@
       <span
         >Level {data.monster.level_min === data.monster.level_max
           ? data.monster.level_min
-          : `${data.monster.level_min}-${data.monster.level_max}`}</span
+          : formatRange(data.monster.level_min, data.monster.level_max)}</span
       >
       {#if data.monster.base_exp > 0}
         <span
@@ -1418,9 +1419,7 @@
         >
           {#if data.monster.gold_min !== null && data.monster.gold_max !== null && hasGold}
             <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              {formatNumber(data.monster.gold_min)} - {formatNumber(
-                data.monster.gold_max,
-              )}
+              {formatRange(data.monster.gold_min, data.monster.gold_max)}
               gold
               {#if data.monster.probability_drop_gold < 1}
                 <span class="text-muted-foreground font-normal">

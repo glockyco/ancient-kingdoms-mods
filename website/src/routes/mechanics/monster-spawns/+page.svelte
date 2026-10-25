@@ -3,6 +3,7 @@
     formatDuration,
     formatNumber,
     formatPercent,
+    formatRange,
   } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -77,7 +78,10 @@
       ...(boss.spawn_time_start !== 0 || boss.spawn_time_end !== 0
         ? [
             {
-              text: `${formatGameHour(boss.spawn_time_start)}–${formatGameHour(boss.spawn_time_end)}`,
+              text: formatRange(
+                formatGameHour(boss.spawn_time_start),
+                formatGameHour(boss.spawn_time_end),
+              ),
               href: "#spawn-windows",
             },
           ]
@@ -918,8 +922,9 @@
                   {:else}Unknown{/each}
                 </td>
                 <td class="py-2 pr-4 font-mono"
-                  >{formatGameHour(monster.spawn_time_start)}–{formatGameHour(
-                    monster.spawn_time_end,
+                  >{formatRange(
+                    formatGameHour(monster.spawn_time_start),
+                    formatGameHour(monster.spawn_time_end),
                   )}</td
                 >
                 <td class="py-2 text-right whitespace-nowrap"

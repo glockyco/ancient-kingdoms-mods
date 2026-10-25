@@ -8,6 +8,7 @@
     formatDuration,
     formatNumber,
     formatPercent as formatFraction,
+    formatRange,
   } from "$lib/utils/format";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
@@ -151,9 +152,7 @@
               {#if data.chest.gold_min === data.chest.gold_max}
                 {formatNumber(data.chest.gold_min)} gold
               {:else}
-                {formatNumber(data.chest.gold_min)} - {formatNumber(
-                  data.chest.gold_max,
-                )} gold
+                {formatRange(data.chest.gold_min, data.chest.gold_max)} gold
               {/if}
             </div>
           </div>
@@ -171,7 +170,7 @@
               </a>
               {#if data.chest.item_reward_amount > 1}
                 <span class="text-muted-foreground">
-                  ×1–{formatNumber(data.chest.item_reward_amount)}
+                  ×{formatRange(1, data.chest.item_reward_amount)}
                 </span>
               {:else}
                 <span class="text-muted-foreground"> ×1 </span>

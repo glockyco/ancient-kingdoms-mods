@@ -1,3 +1,5 @@
+import { formatRange } from "$lib/utils/format";
+
 /** A calendar date without a year, in UTC. */
 interface MonthDay {
   readonly month: number;
@@ -73,7 +75,7 @@ const formatMonthDay = ({ month, day }: MonthDay) =>
 /** The season's dates as a reader sees them, for example "October 19 to November 1". */
 export function seasonDates(season: Season): string {
   const { start, end } = SEASONS[season];
-  return `${formatMonthDay(start)} to ${formatMonthDay(end)}`;
+  return formatRange(formatMonthDay(start), formatMonthDay(end));
 }
 
 /**

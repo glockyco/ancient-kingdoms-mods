@@ -4,7 +4,14 @@ import {
   formatGatheringRespawn,
   formatNumber,
   formatPercent,
+  formatRange,
 } from "./format";
+
+test("formats numeric, grouped and string ranges with a spaced hyphen", () => {
+  expect(formatRange(25, 38)).toBe("25 - 38");
+  expect(formatRange(1000, 1199)).toBe("1\u202F000 - 1\u202F199");
+  expect(formatRange("1h 30m", "3h")).toBe("1h 30m - 3h");
+});
 
 describe("formatPercent", () => {
   test.each([
@@ -126,6 +133,6 @@ describe("duration precision", () => {
   });
 
   test("keeps a mineral's fractional half-time boundary", () => {
-    expect(formatGatheringRespawn("Mineral", 301)).toBe("2m 30.5s – 5m 1s");
+    expect(formatGatheringRespawn("Mineral", 301)).toBe("2m 30.5s - 5m 1s");
   });
 });

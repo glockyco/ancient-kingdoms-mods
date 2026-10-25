@@ -344,7 +344,7 @@ describe("season conditions", () => {
 
   it("names the season and its dates", () => {
     expect(describeRequirement(season("christmas"))[0].text).toBe(
-      "During the Winter Festival, December 19 to January 6",
+      "During the Winter Festival, December 19 - January 6",
     );
   });
 });

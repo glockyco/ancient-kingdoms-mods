@@ -1,5 +1,6 @@
 import type { ColumnDef } from "$lib/components/ui/data-table";
 import type { RespawnInfo } from "$lib/types/respawn";
+import { formatRange } from "$lib/utils/format";
 
 /**
  * Creates respawn-related column definitions for monster tables.
@@ -32,7 +33,10 @@ export function createRespawnColumns<T extends RespawnInfo>(): ColumnDef<T>[] {
       size: 120,
       accessorFn: (row) => {
         if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) {
-          return `${row.spawn_time_start}:00-${row.spawn_time_end}:00`;
+          return formatRange(
+            `${row.spawn_time_start}:00`,
+            `${row.spawn_time_end}:00`,
+          );
         }
         if (row.special_spawn_type === "altar") return "Altar";
         if (row.special_spawn_type === "summon") return "Blocked";

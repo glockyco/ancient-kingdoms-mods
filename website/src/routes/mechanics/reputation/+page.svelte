@@ -433,7 +433,7 @@
     <Card.Header>
       <Card.Title>Petting Animals</Card.Title>
       <Card.Description>
-        Petting a friendly animal grants 1-4 reputation with its faction.
+        Petting a friendly animal grants 1 - 4 reputation with its faction.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">

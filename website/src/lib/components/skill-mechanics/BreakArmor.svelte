@@ -21,8 +21,8 @@
       >When it triggers, the game picks one random equipment slot on the target.</span
     >
     <span class="block"
-      >If that slot contains an item with durability remaining, the item loses
-      1–4 <a
+      >If that slot contains an item with durability remaining, the item loses 1
+      - 4 <a
         href="/mechanics/inventory#durability-and-repair"
         class="text-blue-600 dark:text-blue-400 hover:underline">durability</a
       >.</span

@@ -28,8 +28,8 @@
     </p>
     <p class="text-muted-foreground">
       If the dispel lands, each buff has a separate removal chance of 100% minus
-      its Cleanse Resist, plus any reduction described below, limited to 0-100%.
-      A buff with 0% Cleanse Resist is always removed{!skill.is_scroll &&
+      its Cleanse Resist, plus any reduction described below, limited to 0% -
+      100%. A buff with 0% Cleanse Resist is always removed{!skill.is_scroll &&
       skill.skill_type === "target_debuff"
         ? " unless your Accuracy is negative"
         : ""}.

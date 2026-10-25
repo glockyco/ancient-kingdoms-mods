@@ -14,6 +14,7 @@ import {
   formatNumber,
   formatSkillType,
   formatPercent,
+  formatRange,
 } from "$lib/utils/format";
 
 import { QUALITY_NAMES } from "$lib/constants/quality";
@@ -844,7 +845,7 @@ export function monsterDescription(
   const range =
     monster.level_min === monster.level_max
       ? `${monster.level_min}`
-      : `${monster.level_min}-${monster.level_max}`;
+      : formatRange(monster.level_min, monster.level_max);
 
   const zones = [...new Set(zoneNames)];
   let origin = zones.length
@@ -1039,7 +1040,7 @@ export function zoneDescription(
     levelPhrase =
       zone.level_min === zone.level_max
         ? `level ${zone.level_min}`
-        : `levels ${zone.level_min}-${zone.level_max}`;
+        : `levels ${formatRange(zone.level_min, zone.level_max)}`;
   }
 
   const median =
@@ -1378,7 +1379,7 @@ export function chestDescription(chest: ChestDescriptionInput): string {
     rewards.push(
       chest.gold_min === goldMax
         ? `${formatNumber(goldMax)} gold`
-        : `${formatNumber(chest.gold_min)}-${formatNumber(goldMax)} gold`,
+        : `${formatRange(chest.gold_min, goldMax)} gold`,
     );
   }
   if (chest.item_reward_name) rewards.push(chest.item_reward_name);
@@ -1453,7 +1454,7 @@ export function gatheringResourceDescription(
   const rewardMin = resource.item_reward_amount_min ?? 1;
   const amount =
     rewardAmount > rewardMin
-      ? `${formatNumber(rewardMin)}-${formatNumber(rewardAmount)}`
+      ? formatRange(rewardMin, rewardAmount)
       : `${formatNumber(rewardAmount)}`;
   const rewardPhrase = resource.is_radiant_spark
     ? rewardName &&

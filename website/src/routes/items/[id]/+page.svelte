@@ -26,6 +26,7 @@
     itemListType,
     formatPercent,
     formatNumber,
+    formatRange,
   } from "$lib/utils/format";
   import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
   import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
@@ -109,7 +110,7 @@
     const maxPercent = percent(maxChance);
     return minPercent === maxPercent
       ? minPercent
-      : `${minPercent} to ${maxPercent}`;
+      : formatRange(minPercent, maxPercent);
   }
 
   const romanNumerals = ["I", "II", "III", "IV", "V"];
@@ -775,7 +776,7 @@
     {@render number(
       drop.monster_level_min === drop.monster_level_max
         ? drop.monster_level_min
-        : `${drop.monster_level_min}-${drop.monster_level_max}`,
+        : formatRange(drop.monster_level_min, drop.monster_level_max),
     )}
   {:else if cell.column.id === "zone"}
     {@render zoneList(drop.zones)}
@@ -946,7 +947,7 @@
       {@render number(
         gather.amount_min === gather.amount_max
           ? gather.amount_max
-          : `${formatNumber(gather.amount_min)}-${formatNumber(gather.amount_max)}`,
+          : formatRange(gather.amount_min, gather.amount_max),
       )}
     {/if}
   {:else if cell.column.id === "zone"}

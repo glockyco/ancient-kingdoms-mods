@@ -1,4 +1,4 @@
-import { formatNumber } from "$lib/utils/format";
+import { formatNumber, formatRange } from "$lib/utils/format";
 import { iround } from "$lib/calculation/unity-math";
 
 export type KillReputationDirection = "improve" | "decrease";
@@ -75,7 +75,10 @@ function monsterReputationAmount(
     amount:
       min === max
         ? formatNumber(min, { decimals: 2 })
-        : `${formatNumber(min, { decimals: 2 })}-${formatNumber(max, { decimals: 2 })}`,
+        : formatRange(
+            formatNumber(min, { decimals: 2 }),
+            formatNumber(max, { decimals: 2 }),
+          ),
     amount_min: min,
     amount_max: max,
   };

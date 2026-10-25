@@ -14,7 +14,7 @@
     hasLinearValue,
     convertTooltip,
   } from "$lib/skills/skill-format";
-  import { formatNumber, formatPercent } from "$lib/utils/format";
+  import { formatNumber, formatPercent, formatRange } from "$lib/utils/format";
   import { spellInterval } from "$lib/calculation/combat";
   import { skillFacts } from "$lib/skills/skill-facts";
   import { mechanicsSections } from "$lib/skills/mechanics-sections";
@@ -1401,7 +1401,7 @@
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
-                Enraged monsters with less than 10% health deal 50–75% more
+                Enraged monsters with less than 10% health deal 50% - 75% more
                 damage with non-spell skills.
               </p>
             {/if}
@@ -1676,7 +1676,7 @@
               <span class="text-muted-foreground text-sm">
                 Lv {monster.level_min === monster.level_max
                   ? monster.level_min
-                  : `${monster.level_min}-${monster.level_max}`}
+                  : formatRange(monster.level_min, monster.level_max)}
               </span>
             </div>
           {/each}

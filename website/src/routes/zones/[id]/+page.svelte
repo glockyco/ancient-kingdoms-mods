@@ -66,6 +66,7 @@
     formatDuration,
     formatNumber,
     formatPercent as formatFraction,
+    formatRange,
   } from "$lib/utils/format";
   import { chestRewardChance } from "$lib/utils/chest-reward";
   import { base } from "$app/paths";
@@ -475,7 +476,7 @@
       </a>
       {#if row.original.item_reward_amount > 1}
         <span class="text-muted-foreground"
-          >&nbsp;×1–{formatNumber(row.original.item_reward_amount)}</span
+          >&nbsp;×{formatRange(1, row.original.item_reward_amount)}</span
         >
       {:else}
         <span class="text-muted-foreground">&nbsp;×1</span>
@@ -580,7 +581,10 @@
           Level: {#if data.zone.level_min === data.zone.level_max}
             {data.zone.level_min}
           {:else}
-            {data.zone.level_min ?? "?"} – {data.zone.level_max ?? "?"}
+            {formatRange(
+              data.zone.level_min ?? "?",
+              data.zone.level_max ?? "?",
+            )}
             {#if data.zone.level_median !== null}
               (median {data.zone.level_median})
             {/if}

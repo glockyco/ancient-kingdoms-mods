@@ -3,7 +3,7 @@
  */
 
 import type { NpcRoles } from "$lib/types/npcs";
-import { formatNumber } from "$lib/utils/format";
+import { formatNumber, formatRange } from "$lib/utils/format";
 
 /** Role category for icon grouping */
 export type RoleCategory =
@@ -190,7 +190,7 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_skill_master: {
     description: "Resets your class skill points.",
     details: [
-      `The reset costs 100 gold at levels 1-9, 250 at 10-19, 500 at 20-29, ${formatNumber(1000)} at 30-39, or ${formatNumber(3000)} at 40+.`,
+      `The reset costs 100 gold at levels ${formatRange(1, 9)}, 250 at ${formatRange(10, 19)}, 500 at ${formatRange(20, 29)}, ${formatNumber(1000)} at ${formatRange(30, 39)}, or ${formatNumber(3000)} at 40+.`,
     ],
   },
   is_veteran_master: {
@@ -203,7 +203,7 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_reset_attributes: {
     description: "Resets attribute points for your current specialization.",
     details: [
-      `The reset costs 100 gold at levels 1-9, 250 at 10-19, 500 at 20-29, ${formatNumber(1000)} at 30-39, or ${formatNumber(3000)} at 40+.`,
+      `The reset costs 100 gold at levels ${formatRange(1, 9)}, 250 at ${formatRange(10, 19)}, 500 at ${formatRange(20, 29)}, ${formatNumber(1000)} at ${formatRange(30, 39)}, or ${formatNumber(3000)} at 40+.`,
       "A curse or debuff prevents the reset.",
     ],
   },
@@ -227,7 +227,7 @@ export const ROLE_DESCRIPTIONS: Partial<
     description: "You can hire and manage up to 10 mercenaries here.",
     details: [
       "You must reach level 10 to hire mercenaries.",
-      "You can have 1 active mercenary at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+.",
+      `You can have 1 active mercenary at levels ${formatRange(10, 19)}, 2 at ${formatRange(20, 29)}, 3 at ${formatRange(30, 39)}, and 4 at 40+.`,
     ],
   },
   // Source: server-scripts/Npc.cs:1876-1890

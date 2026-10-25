@@ -1,6 +1,6 @@
 import type { DamageTerm, DamageType, LinearValue } from "$lib/types/skills";
 import { iround, multiplyF32 } from "$lib/calculation/unity-math";
-import { formatDuration, formatNumber } from "$lib/utils/format";
+import { formatDuration, formatNumber, formatRange } from "$lib/utils/format";
 
 /** Returns true when a LinearValue field has at least one non-zero component.
  * The DB stores all LinearValue fields as JSON objects even when both components
@@ -620,7 +620,7 @@ function formatCrowdControl(
   // Source: server-scripts/Combat.cs:DealDamageAt — a hit that is not avoided may take 1-4 durability from one random equipped item of a player or mercenary.
   if (skill.break_armor_prob && skill.break_armor_prob > 0) {
     parts.push(
-      `${formatPercent(skill.break_armor_prob)} chance a random equipped item loses 1-4 durability`,
+      `${formatPercent(skill.break_armor_prob)} chance a random equipped item loses ${formatRange(1, 4)} durability`,
     );
   }
 
@@ -640,8 +640,8 @@ function formatCrowdControl(
     const durSuffix = !fearDur
       ? ""
       : fearDur.bonus_per_level === 0
-        ? ` (${formatNumber(fearDur.base_value / 2)}-${formatNumber(fearDur.base_value)}s)`
-        : ` (50-100% of ${formatLinearDuration(fearDur.base_value, fearDur.bonus_per_level)})`;
+        ? ` (${formatRange(`${formatNumber(fearDur.base_value / 2)}s`, `${formatNumber(fearDur.base_value)}s`)})`
+        : ` (${formatRange("50%", "100%")} of ${formatLinearDuration(fearDur.base_value, fearDur.bonus_per_level)})`;
     parts.push(
       `${stun ? "else " : ""}${formatLinearPercent(fear, options)} fear${durSuffix}`,
     );
@@ -1079,7 +1079,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   symbiosis:
     "pet gets 10% × rank of your attributes, AC & resistances when summoned (max 50%)",
   // Source: server-scripts/SummonSkillMonsters.cs:Apply — a target more than 3 yd and less than the cast range away is warped to the caster and stunned for 2s.
-  summon_player: "pulls a target 3-15 yd away to the caster, stun (2s)",
+  summon_player: `pulls a target ${formatRange(3, 15)} yd away to the caster, stun (2s)`,
   // Source: server-scripts/Trap.cs:OnInteractServer; Player.cs:HasDetectTraps — disarming needs Detect Traps or Sharp Senses.
   disarm_trap: "disarm traps (needs Detect Traps or Sharp Senses)",
   alchemy: "craft potions and elixirs",
@@ -1260,7 +1260,7 @@ export function formatSkillEffect(
   // changes no damage.
   // Source: server-scripts/Combat.cs:850-893 (enrage scan and damage bonus, non-spell hits only)
   if (skill.skill_type === "passive" && skill.is_enrage) {
-    parts.push("+50-75% non-spell dmg below 10% hp");
+    parts.push(`+${formatRange("50%", "75%")} non-spell dmg below 10% hp`);
   }
   if (skill.is_bard_song) parts.push(qualify("Bard song", notes.is_bard_song));
   if (skill.is_bard_charm) {

@@ -54,8 +54,8 @@ describe("altarRewardTier", () => {
 describe("formatAltarRequirement", () => {
   test.each<[AltarRewardTier, string]>([
     ["common", "Below level 40"],
-    ["magic", "Level 40 to 49"],
-    ["epic", "Level 50, 0 to 99 veteran points"],
+    ["magic", "Level 40 - 49"],
+    ["epic", "Level 50, 0 - 99 veteran points"],
     ["legendary", "Level 50, 100 or more veteran points"],
   ])("formats %s", (tier, text) => {
     expect(formatAltarRequirement(tier, thresholds, 50)).toBe(text);
@@ -68,16 +68,16 @@ describe("formatAltarRequirement", () => {
       legendary_reward_threshold: 90,
     };
     expect(formatAltarRequirement("magic", changed, 50)).toBe(
-      "Level 20 to 49, or level 50 with 0 to 19 veteran points",
+      "Level 20 - 49, or level 50 with 0 - 19 veteran points",
     );
     expect(formatAltarRequirement("epic", changed, 50)).toBe(
-      "Level 50, 20 to 39 veteran points",
+      "Level 50, 20 - 39 veteran points",
     );
     expect(formatAltarRequirement("legendary", changed, 50)).toBe(
       "Level 50, 40 or more veteran points",
     );
     expect(formatAltarRequirement("legendary", thresholds, 200)).toBe(
-      "Level 150 to 199, or level 200 with 0 or more veteran points",
+      "Level 150 - 199, or level 200 with 0 or more veteran points",
     );
   });
 
@@ -91,7 +91,7 @@ describe("formatAltarRequirement", () => {
         { ...thresholds, magic_reward_threshold: 70 },
         50,
       ),
-    ).toBe("Below level 50, or level 50 with 0 to 19 veteran points");
+    ).toBe("Below level 50, or level 50 with 0 - 19 veteran points");
   });
 
   test("missing fields fail with their names", () => {

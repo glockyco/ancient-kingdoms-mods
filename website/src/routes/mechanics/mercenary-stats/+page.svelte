@@ -496,14 +496,12 @@
                   {#if r.eligible}
                     {#each cols as k (k)}
                       {@const cell = statRange(r, k)}
+                      {@const low = formatStat(STAT_IDS[k], cell[0])}
+                      {@const high = formatStat(STAT_IDS[k], cell[1])}
                       <td class="cell">
                         <div class="cell-val">
-                          <span class="lo"
-                            >{formatStat(STAT_IDS[k], cell[0])}</span
-                          ><span class="dash">–</span>{formatStat(
-                            STAT_IDS[k],
-                            cell[1],
-                          )}
+                          <!-- The lower bound and separator are muted, so this range spells out formatRange's " - ". -->
+                          <span class="lo">{low} - </span>{high}
                         </div>
                         <div class="bar">
                           <span style={barStyle(cell, dom[k], STAT_HUE[k])}
@@ -926,10 +924,6 @@
   }
   .cell-val .lo {
     color: var(--muted-foreground);
-  }
-  .cell-val .dash {
-    color: var(--muted-foreground);
-    margin: 0 0.15rem;
   }
   .bar {
     position: relative;

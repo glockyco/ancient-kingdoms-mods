@@ -174,7 +174,7 @@ test("chest metadata converts exclusive gold bounds exactly once", () => {
     respawn_time: 0,
     chest_reward_probability: 0.75,
   });
-  assert.ok(out.includes("5-14"));
+  assert.ok(out.includes("5 - 14"));
   assert.ok(!out.includes("15"));
   assert.ok(out.includes("75%"));
 });
@@ -193,7 +193,7 @@ test("gathering metadata retains the base yield range", () => {
     },
     ["Twilight Forest"],
   );
-  assert.ok(out.includes("1-2"));
+  assert.ok(out.includes("1 - 2"));
 });
 
 test("treasure map metadata uses its actual reward", () => {

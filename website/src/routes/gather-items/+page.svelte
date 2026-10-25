@@ -19,7 +19,11 @@
     ResourceDropListView,
   } from "$lib/types/gather-items";
   import type { ResourceZoneInfo } from "$lib/queries/gather-items.server";
-  import { formatGatheringRespawn, formatNumber } from "$lib/utils/format";
+  import {
+    formatGatheringRespawn,
+    formatNumber,
+    formatRange,
+  } from "$lib/utils/format";
 
   let { data } = $props();
 
@@ -240,7 +244,7 @@
       </a>
       {#if row.original.item_reward_amount > 1}
         <span class="text-muted-foreground"
-          >&nbsp;×1–{row.original.item_reward_amount}</span
+          >&nbsp;×{formatRange(1, row.original.item_reward_amount)}</span
         >
       {:else}
         <span class="text-muted-foreground">&nbsp;×1</span>

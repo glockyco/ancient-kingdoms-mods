@@ -1,4 +1,5 @@
 <script lang="ts" generics="TData, TValue">
+  import { formatRange } from "$lib/utils/format";
   import CirclePlusIcon from "@lucide/svelte/icons/circle-plus";
   import XIcon from "@lucide/svelte/icons/x";
   import type { Column } from "@tanstack/table-core";
@@ -57,10 +58,10 @@
     column?.setFilterValue(undefined);
   }
 
-  function formatRange(): string {
+  function formatFilterRange(): string {
     if (!filterValue) return "";
     const [min, max] = filterValue;
-    if (min !== null && max !== null) return `${min}-${max}`;
+    if (min !== null && max !== null) return formatRange(min, max);
     if (min !== null) return `${min}+`;
     if (max !== null) return `≤${max}`;
     return "";
@@ -82,7 +83,7 @@
           {#if hasFilter}
             <Separator orientation="vertical" class="mx-2 h-4" />
             <Badge variant="secondary" class="rounded-sm px-1 font-normal">
-              {formatRange()}
+              {formatFilterRange()}
             </Badge>
           {/if}
         </Button>

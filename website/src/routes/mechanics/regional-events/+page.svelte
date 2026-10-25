@@ -19,7 +19,7 @@
     huntPlayers,
     needsLevel35Player,
   } from "$lib/data/regional-events";
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -381,11 +381,11 @@
           <h3 class="font-semibold text-foreground">
             Supply, hunting, and cooking requests
           </h3>
-          <p>12 actions, plus 3 for each extra player (12 to 24)</p>
+          <p>12 actions, plus 3 for each extra player (12 - 24)</p>
         </div>
         <div class="rounded-md border bg-muted/30 p-4">
           <h3 class="font-semibold text-foreground">City invasions</h3>
-          <p>60 invaders, plus 10 for each extra player (60 to 100)</p>
+          <p>60 invaders, plus 10 for each extra player (60 - 100)</p>
         </div>
       </div>
       <!-- Source: server-scripts/RegionalEventProgress.cs:84-113,139-154; server-scripts/RegionalEvents.cs:316-344 — three contributions qualify for rewards, computed from the first contribution's level and XP requirement, and only connected players in the region at completion receive them. -->
@@ -453,7 +453,10 @@
                   ></td
                 >
                 <td class="p-3 whitespace-nowrap"
-                  >{invasion.minimum_level} to {invasion.maximum_level}</td
+                  >{formatRange(
+                    invasion.minimum_level,
+                    invasion.maximum_level,
+                  )}</td
                 >
                 <td class="p-3 whitespace-nowrap"
                   >{invasion.health_multiplier === 1

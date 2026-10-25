@@ -81,7 +81,7 @@ internal static class SkillEffectFormatter
         // changes no damage.
         // Source: server-scripts/Combat.cs:850-893 (enrage scan and damage bonus, non-spell hits only)
         if (skill.skill_type == "passive" && skill.is_enrage)
-            parts.Add("+50-75% non-spell dmg below 10% hp");
+            parts.Add("+50% - 75% non-spell dmg below 10% hp");
         if (skill.is_bard_song)
             parts.Add(Qualify("Bard song", Note(notes, "is_bard_song")));
         if (skill.is_bard_charm)
@@ -309,7 +309,7 @@ internal static class SkillEffectFormatter
             parts.Add($"{FormatLinearPercent(lifetap)} lifetap");
 
         if (skill.break_armor_prob is > 0)
-            parts.Add($"{FormatPercent(skill.break_armor_prob.Value)} chance a random equipped item loses 1-4 durability");
+            parts.Add($"{FormatPercent(skill.break_armor_prob.Value)} chance a random equipped item loses 1 - 4 durability");
 
         var stun = ParseLinearValue(skill.stun_chance);
         if (stun != null)
@@ -328,8 +328,8 @@ internal static class SkillEffectFormatter
             var durSuffix = fearDur == null
                 ? ""
                 : fearDur.bonus_per_level == 0
-                    ? $" ({JsNum(fearDur.base_value / 2)}-{JsNum(fearDur.base_value)}s)"
-                    : $" (50-100% of {FormatLinearDuration(fearDur.base_value, fearDur.bonus_per_level)})";
+                    ? $" ({JsNum(fearDur.base_value / 2)}s - {JsNum(fearDur.base_value)}s)"
+                    : $" (50% - 100% of {FormatLinearDuration(fearDur.base_value, fearDur.bonus_per_level)})";
             parts.Add($"{(stun != null ? "else " : "")}{FormatLinearPercent(fear)} fear{durSuffix}");
         }
 
@@ -829,7 +829,7 @@ internal static class SkillEffectFormatter
         ["veteran_awareness"] = "reveals nearby monsters on minimap (not in Temple of Valaark)",
         ["parry"] = "while casting, blocks your target's physical melee hits & counters 50% (max 5,000)",
         ["symbiosis"] = "pet gets 10% × rank of your attributes, AC & resistances when summoned (max 50%)",
-        ["summon_player"] = "pulls a target 3-15 yd away to the caster, stun (2s)",
+        ["summon_player"] = "pulls a target 3 - 15 yd away to the caster, stun (2s)",
         ["disarm_trap"] = "disarm traps (needs Detect Traps or Sharp Senses)",
         ["alchemy"] = "craft potions and elixirs",
         ["baking"] = "craft food and consumables",

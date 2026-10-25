@@ -1,6 +1,6 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import {
     DataTable,
     type Cell,
@@ -74,7 +74,10 @@
     if (!effect) return "-";
     return effect.amount_min === effect.amount_max
       ? formatNumber(effect.amount_min, { decimals: 2 })
-      : `${formatNumber(effect.amount_min, { decimals: 2 })}-${formatNumber(effect.amount_max, { decimals: 2 })}`;
+      : formatRange(
+          formatNumber(effect.amount_min, { decimals: 2 }),
+          formatNumber(effect.amount_max, { decimals: 2 }),
+        );
   }
 
   function npcAmount(
@@ -91,7 +94,7 @@
   function monsterLevel(monster: FactionMonsterRow): string {
     return monster.level_min === monster.level_max
       ? `${monster.level_min}`
-      : `${monster.level_min}–${monster.level_max}`;
+      : formatRange(monster.level_min, monster.level_max);
   }
 
   function monsterRank(monster: FactionMonsterRow): string {

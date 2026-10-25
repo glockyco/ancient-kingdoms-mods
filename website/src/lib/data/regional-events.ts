@@ -1,3 +1,5 @@
+import { formatRange } from "$lib/utils/format";
+
 // Code rules that the export cannot carry. The export holds what the game
 // discovers per region: fishing, hunting and cooking requests.
 
@@ -19,11 +21,13 @@ export const needsLevel35Player = (zoneNumber: number) =>
   zoneNumber === NORTHERN_WASTES;
 
 /**
- * The player counts at which a hunt can ask for an animal, such as "1–2
+ * The player counts at which a hunt can ask for an animal, such as "1 - 2
  * players", or null when any count qualifies. More players raise the goal,
  * and an animal that respawns too slowly for it drops out.
  */
 export function huntPlayers(maxPlayers: number): string | null {
   if (maxPlayers >= MAX_COUNTED_PLAYERS) return null;
-  return maxPlayers === 1 ? "1 player" : `1–${maxPlayers} players`;
+  return maxPlayers === 1
+    ? "1 player"
+    : `${formatRange(1, maxPlayers)} players`;
 }

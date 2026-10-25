@@ -25,6 +25,7 @@
     formatSpawnTimeWindow,
     getQualityTextColorClass,
     spawnWindowRealMinutes,
+    formatRange,
   } from "$lib/utils/format";
   import type { SeasonalShopOffer } from "$lib/queries/seasonal-events.server";
   import type { PageData } from "./$types";
@@ -484,7 +485,7 @@
               <tr class="border-b last:border-0">
                 <td><a href="/zones/{zone.id}" class={LINK}>{zone.name}</a></td>
                 <td class="whitespace-nowrap"
-                  >{zone.level_min} to {zone.level_max}</td
+                  >{formatRange(zone.level_min, zone.level_max)}</td
                 >
                 {#each data.monsters as monster (monster.id)}
                   <td class="text-right tabular-nums"

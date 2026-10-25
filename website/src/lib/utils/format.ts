@@ -72,6 +72,19 @@ export function formatNumber(
 }
 
 /**
+ * Format a range of two displayed values as "25 - 38". The spaces keep the hyphen
+ * apart from grouped bounds such as 1 000, and every range uses them so columns match.
+ */
+export function formatRange(
+  min: number | string,
+  max: number | string,
+): string {
+  const low = typeof min === "number" ? formatNumber(min) : min;
+  const high = typeof max === "number" ? formatNumber(max) : max;
+  return `${low} - ${high}`;
+}
+
+/**
  * Format a duration in the reader's units, retaining seconds after whole minutes and hours.
  */
 export function formatDuration(seconds: number): string {
@@ -219,7 +232,7 @@ export function formatSpawnTimeWindow(
   // 0-0 or both same means no restriction (24h spawn)
   if ((start === 0 && end === 0) || start === end) return null;
   const formatHour = (h: number) => `${h.toString().padStart(2, "0")}:00`;
-  return `${formatHour(start)}-${formatHour(end)}`;
+  return formatRange(formatHour(start), formatHour(end));
 }
 
 /**
@@ -279,13 +292,13 @@ export function formatGatheringRespawn(
 ): string {
   // Source: server-scripts/GatherItem.cs:286-289,379-382 — Random.Range(100f, 3600f)
   if (type === "gathering_spark" || type === "Radiant Spark") {
-    return "1m40s – 1h";
+    return formatRange("1m40s", "1h");
   }
   // Source: server-scripts/GatherItem.cs:866-874 — mineral and plant readiness uses Random.Range with half and full timeToWaitReady
   if ((type === "gathering_mineral" || type === "Mineral") && respawnTime > 0) {
     const min = formatDuration(respawnTime / 2);
     const max = formatDuration(respawnTime);
-    return `${min} – ${max}`;
+    return formatRange(min, max);
   }
   return formatDuration(respawnTime);
 }

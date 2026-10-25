@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import {
     DataTable,
     type ColumnDef,
@@ -192,7 +192,7 @@
         {#if row.original.level_min === row.original.level_max}
           {row.original.level_min}
         {:else}
-          {row.original.level_min} to {row.original.level_max}
+          {formatRange(row.original.level_min, row.original.level_max)}
         {/if}
       {:else}
         <span class="text-muted-foreground">-</span>

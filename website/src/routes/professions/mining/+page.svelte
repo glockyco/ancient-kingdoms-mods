@@ -8,7 +8,11 @@
   import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import { formatGatheringRespawn, formatNumber } from "$lib/utils/format";
+  import {
+    formatGatheringRespawn,
+    formatNumber,
+    formatRange,
+  } from "$lib/utils/format";
   import {
     DWARF_STARTING_MINING_PERCENT,
     MINING_SUCCESS_FLOOR,
@@ -57,8 +61,8 @@
   // each tier stops granting mastery, paired with the tiers it silences.
   const NO_GAIN_BANDS = [
     { from: 0.25, label: "I" },
-    { from: 0.5, label: "I–II" },
-    { from: 0.75, label: "I–III" },
+    { from: 0.5, label: formatRange("I", "II") },
+    { from: 0.75, label: formatRange("I", "III") },
   ];
 
   const curveSeries = $derived(
@@ -375,7 +379,10 @@
               </td>
               <td class="p-3 text-right tabular-nums text-muted-foreground">
                 {#if gain}
-                  {gain.min.toFixed(2)}–{gain.max.toFixed(2)}%
+                  {formatRange(
+                    `${gain.min.toFixed(2)}%`,
+                    `${gain.max.toFixed(2)}%`,
+                  )}
                 {:else}
                   —
                 {/if}

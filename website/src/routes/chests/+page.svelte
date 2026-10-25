@@ -26,6 +26,7 @@
     formatDuration,
     formatNumber,
     formatPercent as formatFraction,
+    formatRange,
   } from "$lib/utils/format";
   import { chestRewardChance } from "$lib/utils/chest-reward";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
@@ -266,13 +267,9 @@
   {:else if cell.column.id === "gold"}
     {#if row.original.gold_min > 0 || row.original.gold_max > 0}
       <span class="text-yellow-600 dark:text-yellow-400">
-        {#if row.original.gold_min === row.original.gold_max}
-          {formatNumber(row.original.gold_min)}
-        {:else}
-          {formatNumber(row.original.gold_min)}–{formatNumber(
-            row.original.gold_max,
-          )}
-        {/if}
+        {row.original.gold_min === row.original.gold_max
+          ? formatNumber(row.original.gold_min)
+          : formatRange(row.original.gold_min, row.original.gold_max)}
       </span>
     {:else}
       <span class="text-muted-foreground">-</span>
@@ -283,15 +280,12 @@
         href="/items/{row.original.item_reward_id}"
         class="text-blue-600 dark:text-blue-400 hover:underline"
       >
-        {row.original.item_reward_name}
-      </a>
-      {#if row.original.item_reward_amount > 1}
-        <span class="text-muted-foreground"
-          >&nbsp;×1–{formatNumber(row.original.item_reward_amount)}</span
-        >
-      {:else}
-        <span class="text-muted-foreground">&nbsp;×1</span>
-      {/if}
+        {row.original.item_reward_name}</a
+      ><span class="text-muted-foreground"
+        >&nbsp;×{row.original.item_reward_amount > 1
+          ? formatRange(1, row.original.item_reward_amount)
+          : 1}</span
+      >
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}

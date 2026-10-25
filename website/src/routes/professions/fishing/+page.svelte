@@ -31,6 +31,7 @@
     formatNumber,
     getQualityTextColorClass,
     toRomanNumeral,
+    formatRange,
   } from "$lib/utils/format";
   import type { PageData } from "./$types";
 
@@ -235,7 +236,7 @@
   function getFallbackTierLabelsForSpot(level: number): string {
     if (level <= 0) return "—";
     if (level === 1) return "Tier I fish";
-    return `Tier I–${toRomanNumeral(level - 1)} fish`;
+    return `Tier ${formatRange("I", toRomanNumeral(level - 1))} fish`;
   }
 
   function getFallbackSummaryForSpot(level: number): string {
@@ -436,8 +437,8 @@
           <!-- Source: server-scripts/GatherItem.cs:1103-1121 — the second interaction must fall inside the tier's bite window. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
-              After the {castDelay.min}–{castDelay.max} second cast delay, interact
-              with the spot again.
+              After the {formatRange(castDelay.min, castDelay.max)} second cast delay,
+              interact with the spot again.
             </span>
             <span class="block">
               The response window lasts 2 seconds at Tier I, 1.5 at Tier II, 1
@@ -480,7 +481,7 @@
             </span>
             <span class="block">
               Tier II spots can catch Tier I fish, Tier III spots can catch Tier
-              I–II fish, and Tier IV spots can catch Tier I–III fish.
+              I - II fish, and Tier IV spots can catch Tier I - III fish.
             </span>
           </p>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
@@ -712,9 +713,10 @@
           </div>
           <div class="text-2xl font-semibold">
             {#if masteryGainChance > 0}
-              {masteryGainRange.min.toFixed(2)}% – {masteryGainRange.max.toFixed(
-                2,
-              )}%
+              {formatRange(
+                `${masteryGainRange.min.toFixed(2)}%`,
+                `${masteryGainRange.max.toFixed(2)}%`,
+              )}
             {:else if skillLevel >= 100}
               <span class="text-base">No further skill gain</span>
             {:else}
@@ -731,7 +733,7 @@
         <div class="rounded-lg border p-4">
           <div class="text-sm text-muted-foreground">Cast delay</div>
           <div class="text-2xl font-semibold">
-            {castDelay.min}–{castDelay.max}s
+            {formatRange(`${castDelay.min}s`, `${castDelay.max}s`)}
           </div>
         </div>
       </div>

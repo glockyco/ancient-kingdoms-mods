@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import { iround } from "$lib/calculation/unity-math";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
@@ -293,14 +293,16 @@
               <div>No further skill gain</div>
             {:else}
               <div>
-                Craft: {CRAFT_MASTERY_GAIN_MIN.toFixed(
-                  2,
-                )}%–{CRAFT_MASTERY_GAIN_MAX.toFixed(2)}%
+                Craft: {formatRange(
+                  `${CRAFT_MASTERY_GAIN_MIN.toFixed(2)}%`,
+                  `${CRAFT_MASTERY_GAIN_MAX.toFixed(2)}%`,
+                )}
               </div>
               <div>
-                Use: {USE_MASTERY_GAIN_MIN.toFixed(
-                  2,
-                )}%–{USE_MASTERY_GAIN_MAX.toFixed(2)}%
+                Use: {formatRange(
+                  `${USE_MASTERY_GAIN_MIN.toFixed(2)}%`,
+                  `${USE_MASTERY_GAIN_MAX.toFixed(2)}%`,
+                )}
               </div>
             {/if}
           </div>

@@ -1,4 +1,5 @@
 import { iround } from "$lib/calculation/unity-math";
+import { formatRange } from "$lib/utils/format";
 
 export type AltarRewardTier = "common" | "magic" | "epic" | "legendary";
 
@@ -55,21 +56,23 @@ export function formatAltarRequirement(
   const lower = index === 0 ? 1 : bounds[index - 1];
   const upper = index === 3 ? Infinity : bounds[index] - 1;
   if (upper < levelCap) {
-    return lower === upper ? `Level ${lower}` : `Level ${lower} to ${upper}`;
+    return lower === upper
+      ? `Level ${lower}`
+      : `Level ${formatRange(lower, upper)}`;
   }
   const minimumVeteran = Math.max(0, lower - levelCap);
   const veteranRange =
     upper === Infinity
       ? `${minimumVeteran} or more veteran points`
-      : `${minimumVeteran} to ${upper - levelCap} veteran points`;
+      : `${formatRange(minimumVeteran, upper - levelCap)} veteran points`;
   // Source: server-scripts/Experience.cs:49-51 — veteran points are earned only at the level cap.
   if (tier === "common")
     return `Below level ${levelCap}, or level ${levelCap} with ${veteranRange}`;
   if (lower >= levelCap) return `Level ${levelCap}, ${veteranRange}`;
-  return `Level ${lower} to ${levelCap - 1}, or level ${levelCap} with ${veteranRange}`;
+  return `Level ${formatRange(lower, levelCap - 1)}, or level ${levelCap} with ${veteranRange}`;
 }
 
-/** The compact tier label used in source lists, such as "Lv 40–49" or "Lv 50, Vet 0–99". */
+/** The compact tier label used in source lists, such as "Lv 40 - 49" or "Lv 50, Vet 0 - 99". */
 export function formatAltarRewardTier(
   tier: AltarRewardTier,
   altar: AltarThresholds,
@@ -85,11 +88,12 @@ export function formatAltarRewardTier(
   const upper =
     tier === "magic" ? epic - 1 : tier === "epic" ? legendary - 1 : Infinity;
   if (upper < levelCap)
-    return lower === upper ? `Lv ${lower}` : `Lv ${lower}–${upper}`;
-  const levels = lower < levelCap ? `${lower}–${levelCap}` : String(levelCap);
+    return lower === upper ? `Lv ${lower}` : `Lv ${formatRange(lower, upper)}`;
+  const levels =
+    lower < levelCap ? formatRange(lower, levelCap) : String(levelCap);
   const veterans =
     upper === Infinity
       ? `${Math.max(0, lower - levelCap)}+`
-      : `${Math.max(0, lower - levelCap)}–${upper - levelCap}`;
+      : formatRange(Math.max(0, lower - levelCap), upper - levelCap);
   return `Lv ${levels}, Vet ${veterans}`;
 }

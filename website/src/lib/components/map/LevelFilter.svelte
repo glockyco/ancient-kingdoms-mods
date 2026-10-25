@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Slider } from "$lib/components/ui/slider";
-  import { toRomanNumeral } from "$lib/utils/format";
+  import { toRomanNumeral, formatRange } from "$lib/utils/format";
 
   interface Props {
     label: string;
@@ -37,7 +37,7 @@
   <div class="flex items-center justify-between text-sm">
     <span class="text-muted-foreground">{label}</span>
     <span class="font-mono text-muted-foreground">
-      {formatValue(value[0])} – {formatValue(value[1])}
+      {formatRange(formatValue(value[0]), formatValue(value[1]))}
     </span>
   </div>
   {#key `${min}-${max}`}

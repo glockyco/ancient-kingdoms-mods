@@ -23,6 +23,7 @@
     formatDuration,
     formatNumber,
     getQualityTextColorClass,
+    formatRange,
   } from "$lib/utils/format";
   import {
     fishFallbackPoolForSpotTier,
@@ -541,11 +542,13 @@
         <span>Tier {resource.level}</span>
       {/if}
       {#if resource.is_radiant_spark}
-        <span>Respawn: 1m40s – 1h (random)</span>
+        <span>Respawn: {formatRange("1m40s", "1h")} (random)</span>
       {:else if resource.is_mineral && resource.respawn_time > 0}
         <span>
-          Respawn: {formatDuration(Math.floor(resource.respawn_time / 2))} –
-          {formatDuration(resource.respawn_time)}
+          Respawn: {formatRange(
+            formatDuration(Math.floor(resource.respawn_time / 2)),
+            formatDuration(resource.respawn_time),
+          )}
         </span>
       {:else if resource.respawn_time > 0}
         <span>Respawn: {formatDuration(resource.respawn_time)}</span>
@@ -695,10 +698,16 @@
               {#if !canAttempt || effortless || skillLevel >= 100}
                 <span class="text-muted-foreground">—</span>
               {:else if resource.is_radiant_spark}
-                {skillGain[0].toFixed(2)}% – {skillGain[1].toFixed(2)}%
+                {formatRange(
+                  `${skillGain[0].toFixed(2)}%`,
+                  `${skillGain[1].toFixed(2)}%`,
+                )}
                 <span class="text-muted-foreground text-xs">(fixed)</span>
               {:else if successChance > 0}
-                {skillGain[0].toFixed(2)}% – {skillGain[1].toFixed(2)}%
+                {formatRange(
+                  `${skillGain[0].toFixed(2)}%`,
+                  `${skillGain[1].toFixed(2)}%`,
+                )}
               {:else}
                 <span class="text-muted-foreground">—</span>
               {/if}
@@ -877,7 +886,7 @@
           </a>
           {#if resource.item_reward_amount > 1}
             <span class="text-muted-foreground">
-              ×1–{formatNumber(resource.item_reward_amount)}
+              ×{formatRange(1, resource.item_reward_amount)}
             </span>
           {:else}
             <span class="text-muted-foreground"> ×1 </span>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import {
     DataTable,
     type ColumnDef,
@@ -841,9 +841,7 @@
           <div class="mt-4 pt-4 border-t">
             <div class="text-sm text-muted-foreground mb-1">Gold Drop</div>
             <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              {formatNumber(data.npc.gold_min)} - {formatNumber(
-                data.npc.gold_max,
-              )}
+              {formatRange(data.npc.gold_min, data.npc.gold_max)}
               gold
               {#if data.npc.probability_drop_gold < 1}
                 <span class="text-muted-foreground font-normal">

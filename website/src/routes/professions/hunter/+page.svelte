@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -160,9 +160,10 @@
         <span>Skill gain:</span>
         <span class="font-mono text-foreground">
           {#if getSkillGainChance() > 0}
-            {getSkillGainAmount(monsterLevel)[0].toFixed(3)}% – {getSkillGainAmount(
-              monsterLevel,
-            )[1].toFixed(3)}%
+            {formatRange(
+              `${getSkillGainAmount(monsterLevel)[0].toFixed(3)}%`,
+              `${getSkillGainAmount(monsterLevel)[1].toFixed(3)}%`,
+            )}
           {:else}
             —
           {/if}
@@ -207,7 +208,10 @@
               <td class="p-3 text-right">
                 <span class="font-mono">
                   {#if maxGain > 0}
-                    {minGain.toFixed(3)}% – {maxGain.toFixed(3)}%
+                    {formatRange(
+                      `${minGain.toFixed(3)}%`,
+                      `${maxGain.toFixed(3)}%`,
+                    )}
                   {:else}
                     —
                   {/if}

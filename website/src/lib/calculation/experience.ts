@@ -7,7 +7,7 @@ import {
   iround,
   multiplyF32,
 } from "$lib/calculation/unity-math";
-import { formatNumber, formatPercent } from "$lib/utils/format";
+import { formatNumber, formatPercent, formatRange } from "$lib/utils/format";
 import {
   situational,
   TOTAL_VETERAN_POINTS,
@@ -19,12 +19,12 @@ export function levelExperience(costs: readonly number[]): Calculation {
   return {
     steps: [
       {
-        name: "XP to next level, levels 1 to 40",
+        name: `XP to next level, levels ${formatRange(1, 40)}`,
         expression: "78 XP × (125.8% to the power of (your level − 1))",
         rounding: "nearest",
       },
       {
-        name: "XP to next level, levels 41 to 49",
+        name: `XP to next level, levels ${formatRange(41, 49)}`,
         expression: `${formatNumber(602060)} XP (the level 40 requirement) × (118% to the power of (your level − 40))`,
         rounding: "nearest",
       },

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -414,7 +414,10 @@
           <div class="p-3 border-t">
             {#if skillGain}
               <span class="font-mono"
-                >{skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%</span
+                >{formatRange(
+                  `${skillGain.min.toFixed(2)}%`,
+                  `${skillGain.max.toFixed(2)}%`,
+                )}</span
               >
             {:else}
               <span class="text-muted-foreground">—</span>
@@ -550,7 +553,10 @@
           <div {...cellProps(canExpand, recipe.id)}>
             {#if skillGain}
               <span class="font-mono">
-                {skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%
+                {formatRange(
+                  `${skillGain.min.toFixed(2)}%`,
+                  `${skillGain.max.toFixed(2)}%`,
+                )}
               </span>
             {:else}
               <span class="text-muted-foreground">—</span>

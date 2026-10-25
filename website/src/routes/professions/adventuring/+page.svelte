@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import { onMount } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
   import Seo from "$lib/components/Seo.svelte";
@@ -112,7 +112,7 @@
     const min = Math.min(...levels);
     const max = Math.max(...levels);
 
-    return min === max ? String(min) : `${min}-${max}`;
+    return min === max ? String(min) : formatRange(min, max);
   });
 
   const typeOptions = $derived([

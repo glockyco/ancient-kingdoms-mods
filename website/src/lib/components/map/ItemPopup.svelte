@@ -20,6 +20,7 @@
     getQualityTextColorClass,
     formatPercent,
     formatNumber,
+    formatRange,
   } from "$lib/utils/format";
 
   interface Props {
@@ -94,7 +95,7 @@
     if (Math.abs(minChance - maxChance) < 0.000001) {
       return `${formatPercent(minChance, { decimals: 1, trailingZeros: true })} per cast`;
     }
-    return `${formatPercent(minChance, { decimals: 1, trailingZeros: true })}–${formatPercent(maxChance, { decimals: 1, trailingZeros: true })} per cast`;
+    return `${formatRange(formatPercent(minChance, { decimals: 1, trailingZeros: true }), formatPercent(maxChance, { decimals: 1, trailingZeros: true }))} per cast`;
   }
 
   function formatFishingSourceLabel(

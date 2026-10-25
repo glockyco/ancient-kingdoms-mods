@@ -1,5 +1,5 @@
 import type { RespawnInfo } from "$lib/types/respawn";
-import { formatDuration } from "./format";
+import { formatDuration, formatRange } from "./format";
 
 /**
  * Display names for special spawn types
@@ -32,7 +32,10 @@ export function formatRespawnChance(info: RespawnInfo): string {
  */
 export function formatSpecialSpawn(info: RespawnInfo): string {
   if (info.spawn_time_start !== 0 || info.spawn_time_end !== 0) {
-    return `${info.spawn_time_start}:00-${info.spawn_time_end}:00`;
+    return formatRange(
+      `${info.spawn_time_start}:00`,
+      `${info.spawn_time_end}:00`,
+    );
   }
   if (info.special_spawn_type) {
     return (

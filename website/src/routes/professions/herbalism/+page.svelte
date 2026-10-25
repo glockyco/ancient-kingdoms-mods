@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -218,7 +218,10 @@
               <span class="text-muted-foreground">—</span>
             {:else}
               <span class="font-mono"
-                >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
+                >{formatRange(
+                  `${minGain.toFixed(2)}%`,
+                  `${maxGain.toFixed(2)}%`,
+                )}</span
               >
             {/if}
           </div>
@@ -283,7 +286,10 @@
               <span class="text-muted-foreground">—</span>
             {:else}
               <span class="font-mono">
-                {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
+                {formatRange(
+                  `${minGain.toFixed(2)}%`,
+                  `${maxGain.toFixed(2)}%`,
+                )}
               </span>
             {/if}
           </div>

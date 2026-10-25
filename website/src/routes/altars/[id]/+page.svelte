@@ -105,7 +105,6 @@
     return formatAltarRequirement(tier, data.altar, data.maxLevel)
       .replace("Below level ", "Lv < ")
       .replaceAll("Level ", "Lv ")
-      .replaceAll(" to ", "–")
       .replace(" or more veteran points", "+")
       .replace(" veteran points", "")
       .replace(", ", ", Vet ");
@@ -319,7 +318,7 @@
           <!-- Source: server-scripts/DefaultEvent.cs:229-239 — reward quality uses player level plus total veteran points, with thresholds at 40, 50, and 150 -->
           <p class="text-muted-foreground mb-4">
             Your level plus your total veteran points determines the reward:
-            below 40 gives common, 40–49 magic, 50–149 epic, and 150 or more
+            below 40 gives common, 40 - 49 magic, 50 - 149 epic, and 150 or more
             legendary.
           </p>
           <div class="grid gap-4 sm:grid-cols-2">

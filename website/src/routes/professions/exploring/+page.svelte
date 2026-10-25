@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, formatRange } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
@@ -110,8 +110,9 @@
               <td class="p-3">{area.name}</td>
               <td class="p-3 text-right">
                 {#if area.level_min !== null && area.level_max !== null}
-                  {area.level_min}{#if area.level_max !== area.level_min}
-                    to {area.level_max}{/if}
+                  {area.level_max !== area.level_min
+                    ? formatRange(area.level_min, area.level_max)
+                    : area.level_min}
                 {:else}
                   <span class="text-muted-foreground">Unknown</span>
                 {/if}

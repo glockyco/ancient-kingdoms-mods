@@ -27,6 +27,20 @@ The website SHALL group the integer portion of every displayed numeric quantity 
 - **WHEN** an item tooltip shows a sell price of 12345
 - **THEN** it uses `12 345` with the same separator as the item's price elsewhere on the site
 
+### Requirement: Ranges use one separator
+
+Every displayed range SHALL join its two bounds with a hyphen and a space on each side, as in `25 - 38`, and SHALL NOT use an en dash, a closed hyphen or the word "to" between bounds. Each bound SHALL keep its own unit and the grouping of the quantity rule. Prose that reads "from X to Y" MAY keep its words.
+
+#### Scenario: A column mixes small and grouped ranges
+
+- **WHEN** a gold column shows chests worth 600 to 799 and 1000 to 1199 gold
+- **THEN** the cells read `600 - 799` and `1 000 - 1 199`, with U+202F only inside the grouped numbers
+
+#### Scenario: A range has units
+
+- **WHEN** a fishing chance varies from 0.6% to 1.9% per cast
+- **THEN** the cell reads `0.6% - 1.9%`
+
 ### Requirement: Numeric presentation does not depend on rendering locale
 
 Prerendered HTML and browser-rendered content SHALL use the same numeric display convention regardless of the build environment's locale or the visitor's language settings. Changing page, sorting, filtering or updating a calculator SHALL NOT change the convention.

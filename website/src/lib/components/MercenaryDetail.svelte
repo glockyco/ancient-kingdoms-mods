@@ -9,7 +9,7 @@
   import Seo from "$lib/components/Seo.svelte";
   import { detailTitle } from "$lib/seo/title";
   import { formatSeconds } from "$lib/calculation/format";
-  import { formatPercent, formatNumber } from "$lib/utils/format";
+  import { formatPercent, formatNumber, formatRange } from "$lib/utils/format";
   import { statName, formatStat } from "$lib/stats";
   import type { StatId } from "$lib/generated/stat-vocabulary";
   import { iround, multiplyF32 } from "$lib/calculation/unity-math";
@@ -78,7 +78,7 @@
   const range = (id: StatId, [lo, hi]: [number, number]) =>
     lo === hi
       ? formatStat(id, lo)
-      : `${formatStat(id, lo)}–${formatStat(id, hi)}`;
+      : formatRange(formatStat(id, lo), formatStat(id, hi));
 
   const ATTRIBUTES: Record<string, StatId> = {
     STR: "strength",
