@@ -20,8 +20,8 @@ class RedactionConfig:
     mechanisms that name it:
 
     - ``suppress_position_zone_ids`` keeps every entity of the zone and removes
-      its geometry, for a released zone in which the game itself withholds
-      positional information from the player.
+      its geometry, for a released zone whose positions the compendium leaves
+      out at the developers' request.
     - ``exclude_zone_ids`` removes the zone and everything related to it, for a
       zone that has not shipped.
 

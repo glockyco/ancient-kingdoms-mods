@@ -59,8 +59,8 @@ export const load: PageServerLoad = async ({
       z.level_max,
       z.level_median,
       z.description,
-      -- Redaction removes the map geometry of zones whose positions the game
-      -- withholds (redactions.toml [zones.suppress_positions]).
+      -- Redaction removes the map geometry of zones whose positions are left
+      -- out at the developers' request (redactions.toml [zones.suppress_positions]).
       z.bounds_min_x IS NOT NULL AS has_map_bounds
     FROM zones z
     WHERE z.id = ?

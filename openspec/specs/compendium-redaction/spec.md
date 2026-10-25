@@ -8,7 +8,7 @@ Governs how configured redactions keep private or unreleased game content out of
 
 The pipeline SHALL provide two separately configured zone mechanisms, and a zone SHALL be subject only to the mechanisms that name it.
 
-- **Position suppression** applies to a released zone in which the game withholds positional information from the player. It preserves every entity and removes geometry, so the compendium discloses no more than the game does.
+- **Position suppression** applies to a released zone whose positions the developers asked the compendium not to publish. It preserves every entity and removes geometry.
 - **Unreleased-zone exclusion** applies to a zone that has not shipped. It removes everything related to the zone.
 
 Each mechanism SHALL accept an arbitrary set of zone identifiers from configuration. Neither mechanism SHALL hardcode a zone identifier.

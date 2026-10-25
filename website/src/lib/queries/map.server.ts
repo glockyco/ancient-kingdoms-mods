@@ -317,8 +317,8 @@ export function loadZoneListServer(): ZoneListItem[] {
   try {
     // A zone the map cannot focus on does not belong in the focus dropdown.
     // The build removes an unreleased zone entirely, and it removes the
-    // geometry of a zone whose positions the game withholds, so the data says
-    // which zones those are.
+    // geometry of a zone whose positions the compendium leaves out at the
+    // developers' request, so the data says which zones those are.
     const rows = db
       .prepare(
         `

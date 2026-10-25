@@ -172,7 +172,7 @@ export interface ZoneDetailData {
     level_median: number | null;
     discovery_exp: number;
     description: string;
-    /** False where the game withholds positions, so nothing in the zone is mapped. */
+    /** False where positions are left out at the developers' request, so nothing in the zone is mapped. */
     has_map_bounds: boolean;
   };
   description: string;

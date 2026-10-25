@@ -598,8 +598,8 @@
   </div>
   {#if !data.zone.has_map_bounds}
     <p class="rounded-md border bg-muted/30 p-4 text-muted-foreground">
-      The game withholds positions in {data.zone.name}, so nothing in this zone
-      has a map position.
+      At the developers' request, the compendium shows no positions in
+      {data.zone.name}, so nothing in this zone appears on the map.
     </p>
   {/if}
 

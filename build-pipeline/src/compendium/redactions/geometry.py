@@ -1,8 +1,8 @@
-"""Remove the geometry of a zone that withholds positions from the player.
+"""Remove the geometry of a zone whose positions are left out on request.
 
-Some released zones withhold positional information by design. In such a zone
-the client closes the live map, refuses teleport items, and returns the player
-to the bind point. Published coordinates would disclose what the game denies.
+The developers asked the compendium not to publish positions in some released
+zones. The game also keeps their layout from players: the client closes the
+live map, refuses teleport items, and returns the player to the bind point.
 Every entity of the zone stays published, and all of its geometry is removed.
 
 The zones come from configuration and the columns come from the schema. A new
