@@ -500,8 +500,8 @@
                       {@const high = formatStat(STAT_IDS[k], cell[1])}
                       <td class="cell">
                         <div class="cell-val">
-                          <!-- The lower bound and separator are muted, so this range spells out formatRange's " - ". -->
-                          <span class="lo">{low} - </span>{high}
+                          <!-- The lower bound and separator are muted, so this range spells out formatRange's " - ". The outer span keeps the spaces, which a flex item would trim. -->
+                          <span><span class="lo">{low} -</span> {high}</span>
                         </div>
                         <div class="bar">
                           <span style={barStyle(cell, dom[k], STAT_HUE[k])}
