@@ -209,7 +209,7 @@
   row: Row<NpcRow>;
 })}
   {#if cell.column.id === "name"}
-    <div class="flex items-center gap-2 whitespace-nowrap">
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-1 whitespace-nowrap">
       <EntityLink
         href="/npcs/{row.original.id}"
         name={row.original.name}

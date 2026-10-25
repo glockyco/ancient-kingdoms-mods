@@ -583,14 +583,33 @@
         return visibleColumnIds.has(id as string);
       })
       // A minSize column grows to its content. Equal 1fr shares would widen every
-      // flexible column to the widest one's content.
+      // flexible column to the widest one's content. Its cells carry the minimum width,
+      // so the track never shrinks below a cell that cannot wrap and the table scrolls
+      // instead of letting text run into the next column.
       .map((col) => {
         if (col.size) return `${col.size}px`;
-        if (col.minSize) return `minmax(${col.minSize}px, auto)`;
+        if (col.minSize) return "minmax(min-content, auto)";
         return "auto";
       })
       .join(" "),
   );
+  // TanStack fills a default size into every column, so the declared columns say
+  // which ones are flexible.
+  const cellMinWidths = $derived(
+    new Map(
+      columns.flatMap((col) =>
+        col.minSize && !col.size
+          ? [
+              [
+                String("accessorKey" in col ? col.accessorKey : col.id),
+                `--cell-min: ${col.minSize}px`,
+              ],
+            ]
+          : [],
+      ),
+    ),
+  );
+  const cellMinWidth = (column: { id: string }) => cellMinWidths.get(column.id);
 
   // On phones a leading name column followed by a fixed-width value column takes
   // the width the value leaves, so each row shows its name and value before any
@@ -618,7 +637,7 @@
       .map((col, index) => {
         if (index === identifierIndex && !col.size) return identifierWidth;
         if (col.size) return `${col.size}px`;
-        if (col.minSize) return `minmax(${col.minSize}px, auto)`;
+        if (col.minSize) return "minmax(min-content, auto)";
         return "auto";
       })
       .join(" ");
@@ -723,6 +742,7 @@
                 identifierColumnId
                   ? 'identifier-cell'
                   : ''}"
+                style={cellMinWidth(header.column)}
                 aria-sort={sorting[0]?.id === header.column.id
                   ? sorting[0].desc
                     ? "descending"
@@ -786,6 +806,7 @@
                   identifierColumnId
                     ? 'identifier-cell'
                     : ''}"
+                  style={cellMinWidth(cell.column)}
                 >
                   {#if renderCell}
                     {@render renderCell({ cell, row })}
@@ -875,6 +896,11 @@
     scroll-margin-top: 6rem;
     /* Keep boundary scrolling inside the table so the page does not shift sideways. */
     overscroll-behavior-x: none;
+  }
+
+  .data-table-container :global([data-slot="table-head"]),
+  .data-table-container :global([data-slot="table-cell"]) {
+    min-width: var(--cell-min, auto);
   }
 
   @media (max-width: 639px) {
