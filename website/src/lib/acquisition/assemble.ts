@@ -30,7 +30,7 @@ import {
   professionAttempt,
   CODE_DEFINED_RULES,
 } from "./rules";
-import { SEASONS } from "../data/seasonal-events";
+import { SEASONS, type Season } from "../data/seasonal-events";
 const DETAIL_KIND: Record<MethodRow["kind"], string> = {
   kill: "kill",
   vendor: "vendor",
@@ -1015,6 +1015,18 @@ export function assembleAcquisitionModel(
             }),
           );
         add(parts, "normal_ui");
+        // Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — a seasonal offer exists only while its season runs.
+        if (detail.season !== null)
+          add(
+            [
+              predicate(
+                { kind: "season_active", season: detail.season as Season },
+                "current_world",
+              ),
+            ],
+            "server",
+            "current_world",
+          );
         break;
       }
       case "kill":
@@ -1123,6 +1135,22 @@ export function assembleAcquisitionModel(
               expression: combine("any", alternatives),
             });
           }
+          // Source: server-scripts/Monster.cs:UpdateServer_DEAD; server-scripts/Npc.cs:UpdateServer_IDLE — a seasonal monster or NPC is present only while its season runs.
+          const season = (domain === "monster_spawns" ? parent : entity)
+            ?.season as Season | null | undefined;
+          if (
+            (domain === "monster_spawns" || domain === "npcs") &&
+            season != null
+          )
+            providerRequirements.push({
+              phase: "activate",
+              subject: "current_world",
+              enforcement: "server",
+              expression: predicate(
+                { kind: "season_active", season },
+                "current_world",
+              ),
+            });
           const visible =
             typeof x === "number" &&
             typeof y === "number" &&

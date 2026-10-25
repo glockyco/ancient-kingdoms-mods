@@ -1618,9 +1618,10 @@ CREATE TABLE acquisition_outputs (
 -- offer them. Derived from rooted methods, so an item obtained only by opening a
 -- seasonal quest reward is seasonal too. Year-round items have no rows.
 CREATE TABLE item_seasons (
+    id TEXT PRIMARY KEY,
     item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
     season_id TEXT NOT NULL REFERENCES seasons(id) DEFERRABLE INITIALLY DEFERRED,
-    PRIMARY KEY (item_id, season_id)
+    UNIQUE (item_id, season_id)
 );
 CREATE TABLE acquisition_faction_effects (
     id TEXT PRIMARY KEY,

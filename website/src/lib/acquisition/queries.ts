@@ -80,6 +80,7 @@ const FACT_TABLES = [
   "acquisition_global_roots",
   "luck_tokens",
   "summon_trigger_placeholders",
+  "item_seasons",
 ] as const;
 export function dataError(context: string, message: string): never {
   throw new Error(`acquisition: ${context}: ${message}`);
@@ -578,6 +579,7 @@ export async function queryAcquisitionRows(
       if (table === "items") {
         await select("item_class_requirements", "item_id", next);
         await select("item_pool_definitions", "item_id", next);
+        await select("item_seasons", "item_id", next);
       }
       if (table === "skills") {
         await select("skill_predecessors", "skill_id", next);

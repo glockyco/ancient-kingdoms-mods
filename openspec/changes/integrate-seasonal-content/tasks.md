@@ -24,8 +24,8 @@
 ## 5. Shared reader
 
 - [x] 5.1 Add the `season_active` predicate to `website/src/lib/acquisition/types.ts` and `conditions.ts` (fields, validation, evaluation with the year-end wrap, description). The fingerprint needs no change, because the predicate names no entity. Define each season in `website/src/lib/data/seasonal-events.ts` by its UTC date window and derive the displayed dates from it. Verify condition tests cover January 3, December 18, November 1 and 2, and a missing current time.
-- [ ] 5.2 Attach season roots in `assemble.ts` to seasonal vendor offers and to placements of seasonal monsters and NPCs, and load `item_seasons`. Verify a model test shows Grimnir's completion of A Wish for the Winter Heart has no season root.
-- [ ] 5.3 Add the method and item season projection to `projections.ts`. Verify tests return Halloween for Spook Token's drops, the Winter Festival for Santa's quest rewards and Winter Festival Coin, and both seasons for Pack 10 Skyflares. Add a database test that `SEASONS` keys equal the `seasons` table.
+- [x] 5.2 Attach season roots in `assemble.ts` to seasonal vendor offers and to placements of seasonal monsters and NPCs, and load `item_seasons`, which takes an `id` like the other fact tables because the loader keys rows by id. Verify a model test shows Grimnir's completion of A Wish for the Winter Heart has no season root.
+- [x] 5.3 Add the method and item season projection to `projections.ts`. Verify tests return Halloween for Spook Token's drops, the Winter Festival for Santa's quest rewards and Winter Festival Coin, and both seasons for Pack 10 Skyflares. Add a database test that `SEASONS` keys equal the `seasons` table.
 
 ## 6. Server consumers
 

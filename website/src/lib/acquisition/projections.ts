@@ -14,6 +14,7 @@ import type {
 import { dataError, text } from "./queries";
 import type { RecipeTeachingItemRow } from "./queries";
 import { CODE_DEFINED_RULES } from "./rules";
+import { SEASON_ORDER, type Season } from "../data/seasonal-events";
 
 const entityNames = new WeakMap<
   AcquisitionModel,
@@ -722,4 +723,65 @@ export function projectItemUsages(
   freeze(uses);
   index.itemUsages.set(itemId, uses);
   return uses;
+}
+
+/** Season conditions a root demands, read through its required (all) branches. */
+function rootSeasons(root: RequirementRoot): Season[] {
+  const seasons: Season[] = [];
+  const pending = [root.expression];
+  while (pending.length) {
+    const expression = pending.pop()!;
+    if (expression.kind === "predicate") {
+      if (expression.predicate.kind === "season_active")
+        seasons.push(expression.predicate.season);
+    } else if (expression.kind === "all") pending.push(...expression.operands);
+  }
+  return seasons;
+}
+
+const bySeasonOrder = (seasons: Iterable<Season>): readonly Season[] =>
+  Object.freeze(
+    [...new Set(seasons)].sort((a, b) => SEASON_ORDER[a] - SEASON_ORDER[b]),
+  );
+
+/**
+ * The seasons a method needs, empty when it is available all year: its own season
+ * conditions, a season every provider needs, and for a quest completion the
+ * seasons of the NPCs that offer the quest, when every one of them is seasonal.
+ */
+export function projectMethodSeasons(
+  model: AcquisitionModel,
+  method: MethodView,
+): readonly Season[] {
+  const seasons = method.requirements.flatMap(rootSeasons);
+  const providerSeasons = method.providers.map((provider) =>
+    provider.requirements.flatMap(rootSeasons),
+  );
+  if (providerSeasons.length && providerSeasons.every((list) => list.length))
+    seasons.push(...providerSeasons.flat());
+  if (method.kind === "quest_complete") {
+    const questId = String(method.detail.quest_id);
+    const offerSeasons = (model.rows.facts.npc_quest_memberships ?? [])
+      .filter((row) => row.quest_id === questId && row.role === "offer")
+      .map(
+        (row) =>
+          model.entities.get("npcs")?.get(String(row.npc_id))?.season as
+            Season | null | undefined,
+      );
+    if (offerSeasons.length && offerSeasons.every((season) => season != null))
+      seasons.push(...(offerSeasons as Season[]));
+  }
+  return bySeasonOrder(seasons);
+}
+
+/** The seasons an item can only be obtained in, empty when it can be obtained all year. */
+export function projectItemSeasons(
+  model: AcquisitionModel,
+  itemId: string,
+): readonly Season[] {
+  return bySeasonOrder(
+    (model.rows.facts.item_seasons ?? [])
+      .filter((row) => row.item_id === itemId)
+      .map((row) => row.season_id as Season),
+  );
 }

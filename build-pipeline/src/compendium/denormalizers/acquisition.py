@@ -2055,7 +2055,13 @@ def derive(conn: sqlite3.Connection) -> None:
         )
     for item, seasons in sorted(_item_seasons(conn).items()):
         for season in sorted(seasons):
-            _insert(conn, "item_seasons", item_id=item, season_id=season)
+            _insert(
+                conn,
+                "item_seasons",
+                id=f"{item}:{season}",
+                item_id=item,
+                season_id=season,
+            )
 
 
 def validate(conn: sqlite3.Connection) -> None:
