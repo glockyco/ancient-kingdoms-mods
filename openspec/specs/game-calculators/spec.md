@@ -1,6 +1,7 @@
 # game-calculators Specification
 
 ## Purpose
+
 Keeps the compendium's interactive calculators faithful to the formulas the game code applies, so a player can trust a previewed number.
 
 ## Requirements
@@ -53,7 +54,7 @@ Profession calculators SHALL show no further skill gain at the profession's mast
 
 ### Requirement: Fishing source chances use the same rolls on each surface
 
-Item sources and fishing spot outcomes SHALL compute per-cast fish chances from the configured fish probability, uniform fish selection, bite chance, skill and costume bonuses, and applicable lower-tier fallback pools. They SHALL state that displayed bounds compare the required rod at minimum usable skill without costume bonuses with the best rod at 100% Fishing and three Fisherman costume pieces, assuming a timely click and inventory space. These bounds SHALL NOT be described as extrema over every possible loadout.
+Item sources and fishing spot outcomes SHALL compute per-cast fish chances from the configured fish probability, uniform fish selection, bite chance, skill and costume bonuses, and applicable lower-tier fallback pools. A displayed range SHALL give the chance with the required rod at minimum usable skill and no costume pieces first, and the chance with the best rod at 100% Fishing and three Fisherman costume pieces second, and SHALL say so briefly in player terms. The range SHALL NOT be described as extrema over every possible loadout.
 
 #### Scenario: Player compares a fish source with its spot
 

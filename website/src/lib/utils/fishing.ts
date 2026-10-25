@@ -524,9 +524,9 @@ export interface FishingRoleRangeParams {
   fallbackPoolSize: number;
 }
 
-/** The loadouts behind every per-cast range from `fishingRangeForRole`, for display beside the range. */
+/** Explains the two numbers of every per-cast range from `fishingRangeForRole`, for display beside the range. */
 export const FISHING_RANGE_ASSUMPTIONS =
-  "The reference loadouts are the spot's minimum rod at the lowest Fishing skill that works here, without Fisherman costume pieces, and the best rod at 100% Fishing with all three pieces. The range spans their chances, which can decrease for lower-tier fish and trash. Both assume you click in time and have inventory space.";
+  "The first chance is with the weakest rod and Fishing skill that can fish here. The second is with the best rod, 100% Fishing and the full Fisherman costume.";
 
 // Single entry point that picks the right per-cast range helper for a fishing
 // source role, so consumers never re-decide the formula.
