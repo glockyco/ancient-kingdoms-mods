@@ -342,15 +342,16 @@
             </div>
           {/if}
           {#each regularRewards as item, i (i)}
-            <MapItemLink
-              itemId={item.itemId}
-              itemName={item.itemName}
-              tooltipHtml={item.tooltipHtml}
-              imageAvailable={itemIconPaths?.[item.itemId]}
-              colorClass={getQualityTextColorClass(item.quality)}
-              class="truncate"
-              onSelect={onSelectItem}
-            />
+            <div class="truncate">
+              <MapItemLink
+                itemId={item.itemId}
+                itemName={item.itemName}
+                tooltipHtml={item.tooltipHtml}
+                imageAvailable={itemIconPaths?.[item.itemId]}
+                colorClass={getQualityTextColorClass(item.quality)}
+                onSelect={onSelectItem}
+              />
+            </div>
           {/each}
         </div>
       </div>

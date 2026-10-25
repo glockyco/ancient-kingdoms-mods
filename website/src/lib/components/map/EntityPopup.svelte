@@ -962,7 +962,7 @@
           {#if stock.length > 0}
             <div class="mt-2">
               <SeasonLabel {season} />
-              <div class="mt-1 max-h-48 space-y-1 overflow-y-auto pr-2">
+              <div class="mt-1 space-y-1">
                 {#each stock as item, i (i)}
                   <div
                     class="flex flex-col gap-0.5 rounded bg-muted/40 px-2 py-1"

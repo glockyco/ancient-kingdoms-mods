@@ -255,7 +255,11 @@
               <div
                 class="flex items-center gap-2 shrink-0 text-sm text-muted-foreground"
               >
-                <span>Lv {dropper.level}</span>
+                <span
+                  >Lv {dropper.levelMin}{dropper.levelMax !== dropper.levelMin
+                    ? `-${dropper.levelMax}`
+                    : ""}</span
+                >
                 <span>
                   <DropChance
                     chance={dropper.dropRate}

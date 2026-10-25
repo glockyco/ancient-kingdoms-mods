@@ -17,6 +17,7 @@ import type {
 } from "$lib/types/quests";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import { distinctSubzoneName } from "$lib/utils/format";
+import { shareRewardsGivenToEveryClass } from "$lib/utils/quests";
 import { loadAcquisition } from "$lib/server/acquisition";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
 import { questDescription } from "$lib/server/meta-description";
@@ -169,37 +170,14 @@ export const load: PageServerLoad = async ({
   const classNames = (
     db.prepare("SELECT name FROM classes").all() as { name: string }[]
   ).map((row) => row.name);
-  for (let index = 0; index < rewardItems.length; index++) {
-    const reward = rewardItems[index];
-    if (reward.class_specific === null) continue;
-    const equivalents = rewardItems.filter(
-      (item) =>
-        item.item_id === reward.item_id && item.amount === reward.amount,
-    );
-    if (
-      !classNames.every((name) =>
-        equivalents.some((item) => item.class_specific === name),
-      )
-    )
-      continue;
-    reward.class_specific = null;
-    for (
-      let duplicate = rewardItems.length - 1;
-      duplicate > index;
-      duplicate--
-    ) {
-      if (
-        rewardItems[duplicate].class_specific !== null &&
-        rewardItems[duplicate].item_id === reward.item_id &&
-        rewardItems[duplicate].amount === reward.amount
-      )
-        rewardItems.splice(duplicate, 1);
-    }
-  }
   const rewards: QuestRewards = {
     gold: Number(questRaw.reward_gold),
     exp: Number(questRaw.reward_experience),
-    items: rewardItems,
+    items: shareRewardsGivenToEveryClass(rewardItems, classNames, {
+      key: (item) => `${item.item_id}:${item.amount}`,
+      className: (item) => item.class_specific,
+      shared: (item) => ({ ...item, class_specific: null }),
+    }),
   };
   const locationTargets = db
     .prepare(

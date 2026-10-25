@@ -33,6 +33,7 @@ import {
   fishLowerTierFishChancePerHook,
 } from "$lib/utils/fishing";
 import type { Season } from "$lib/data/seasonal-events";
+import { shareRewardsGivenToEveryClass } from "$lib/utils/quests";
 
 const itemIconPathCache = new Map<string, string | null>();
 export async function loadMapItemIconPaths(
@@ -184,7 +185,9 @@ export interface AltarBasicInfo {
 export interface ItemPopupDropper {
   monsterId: string;
   monsterName: string;
-  level: number;
+  /** Lowest and highest level among the monster's spawns that drop the item. */
+  levelMin: number;
+  levelMax: number;
   isBoss: boolean;
   isFabled: boolean;
   isElite: boolean;
@@ -1086,7 +1089,8 @@ export async function loadItemPopupDetails(
         const row = {
           monsterId: monster.id,
           monsterName: String(monster.name),
-          level: Math.min(...levels),
+          levelMin: Math.min(...levels),
+          levelMax: Math.max(...levels),
           isBoss: Boolean(monster.is_boss),
           isFabled: Boolean(monster.is_fabled),
           isElite: Boolean(monster.is_elite),
@@ -1317,7 +1321,7 @@ export async function loadItemPopupDetails(
     canFocus: itemMapLocations(model, itemId).length > 0,
     seasons: projectItemSeasons(model, itemId),
     droppers: droppers.sort(
-      (a, b) => b.dropRate - a.dropRate || a.level - b.level,
+      (a, b) => b.dropRate - a.dropRate || a.levelMin - b.levelMin,
     ),
     altarSources,
     vendors: vendors.sort((a, b) => a.npcName.localeCompare(b.npcName)),
@@ -1469,6 +1473,9 @@ export async function loadQuestPopupDetailsBatch(
     });
     objectivesByQuest.set(String(objective.quest_id), objectives);
   }
+  const classNames = (
+    await query<{ name: string }>("SELECT name FROM classes")
+  ).map((row) => row.name);
   for (const questId of ids) {
     const quest = entity(model, "quests", questId);
     if (!quest) continue;
@@ -1524,7 +1531,11 @@ export async function loadQuestPopupDetailsBatch(
       exp: Number(quest.reward_experience ?? 0),
       canFocus: focusableQuests.has(questId),
       objectives,
-      rewardItems,
+      rewardItems: shareRewardsGivenToEveryClass(rewardItems, classNames, {
+        key: (item) => item.itemId,
+        className: (item) => item.classSpecific,
+        shared: (item) => ({ ...item, classSpecific: null }),
+      }),
       npcs,
     });
   }

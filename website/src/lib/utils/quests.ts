@@ -109,3 +109,42 @@ export function getQuestFlagConfig(key: string): QuestFlagConfig | undefined {
 export function getQuestFlagLabel(key: string): string {
   return getQuestFlagConfig(key)?.label ?? key;
 }
+
+/**
+ * Replace class rewards that every class receives with one shared reward. A
+ * quest that gives each class the same item is giving that item to anyone,
+ * so listing it once per class only repeats it.
+ */
+export function shareRewardsGivenToEveryClass<T>(
+  rewards: readonly T[],
+  classNames: readonly string[],
+  reward: {
+    /** Identifies the same reward across class slots, such as item and amount. */
+    key: (reward: T) => string;
+    /** The class a slot is for, or null for a shared reward. */
+    className: (reward: T) => string | null;
+    /** The reward as a shared one. */
+    shared: (reward: T) => T;
+  },
+): T[] {
+  const classesByKey = new Map<string, Set<string>>();
+  for (const item of rewards) {
+    const className = reward.className(item);
+    if (className === null) continue;
+    const key = reward.key(item);
+    classesByKey.set(key, (classesByKey.get(key) ?? new Set()).add(className));
+  }
+  const everyClass = new Set(
+    [...classesByKey]
+      .filter(([, classes]) => classNames.every((name) => classes.has(name)))
+      .map(([key]) => key),
+  );
+  const emitted = new Set<string>();
+  return rewards.flatMap((item) => {
+    const key = reward.key(item);
+    if (reward.className(item) === null || !everyClass.has(key)) return [item];
+    if (emitted.has(key)) return [];
+    emitted.add(key);
+    return [reward.shared(item)];
+  });
+}
