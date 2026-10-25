@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,7 +55,7 @@ public static class ExportJson
                 .ToList();
         }
 
-        private static int InheritanceDepth(Type type)
+        private static int InheritanceDepth(Type? type)
         {
             var depth = 0;
             for (var current = type?.BaseType; current != null; current = current.BaseType)
@@ -65,10 +67,14 @@ public static class ExportJson
         {
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
                 | BindingFlags.DeclaredOnly;
-            var members = property.DeclaringType.GetMember(property.UnderlyingName, flags);
+            var declaringType = property.DeclaringType
+                ?? throw new InvalidOperationException($"Property '{property.PropertyName}' has no declaring type.");
+            var underlyingName = property.UnderlyingName
+                ?? throw new InvalidOperationException($"Property '{property.PropertyName}' has no underlying member name.");
+            var members = declaringType.GetMember(underlyingName, flags);
             if (members.Length != 1)
                 throw new InvalidOperationException(
-                    $"{property.DeclaringType.Name}.{property.UnderlyingName}: expected one member, found {members.Length}.");
+                    $"{declaringType.Name}.{underlyingName}: expected one member, found {members.Length}.");
             return members[0].MetadataToken;
         }
     }

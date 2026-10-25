@@ -10,14 +10,14 @@ public class ExportJsonTests
 {
     private class BaseRow
     {
-        public string id { get; set; }
-        public string zone_id { get; set; }
+        public required string id { get; set; }
+        public string? zone_id { get; set; }
     }
 
     private sealed class DerivedRow : BaseRow
     {
         public int level { get; set; }
-        public string name { get; set; }
+        public required string name { get; set; }
     }
 
     [Fact]

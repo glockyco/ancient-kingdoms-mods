@@ -100,11 +100,10 @@ public sealed class ConfiguredWorldSnapshot
                     throw new InvalidOperationException("Configured monster has no identity. Reload World.");
                 if (!definitions.ContainsKey(monsterId))
                     definitions.Add(monsterId, MonsterExporter.BuildDefinition(monster, monsterId));
-                var spawn = new MonsterSpawnData
+                var spawn = new MonsterSpawnData(
+                    PlacementId($"{monsterId}_{zone.ZoneId}", placed), monsterId, zone.ZoneId, Point(placed))
                 {
-                    id = PlacementId($"{monsterId}_{zone.ZoneId}", placed),
-                    monster_id = monsterId, zone_id = zone.ZoneId, sub_zone_id = zone.SubZoneId,
-                    position = Point(placed), level = monster.level.current,
+                    sub_zone_id = zone.SubZoneId, level = monster.level.current,
                     health = monster.health?.max ?? 0, damage = monster.combat?.damage ?? 0,
                     magic_damage = monster.combat?.magicDamage ?? 0, defense = monster.combat?.defense ?? 0,
                     magic_resist = monster.combat?.magicResist ?? 0, poison_resist = monster.combat?.poisonResist ?? 0,
@@ -125,9 +124,8 @@ public sealed class ConfiguredWorldSnapshot
                 {
                     if (drop == null)
                         throw new InvalidOperationException($"{spawn.id}: missing configured drop {spawn.loot_drops.Count}. Reload World.");
-                    spawn.loot_drops.Add(new ItemDrop
+                    spawn.loot_drops.Add(new ItemDrop(RequiredItem(drop.item, $"{spawn.id} drop {spawn.loot_drops.Count}"))
                     {
-                        item_id = RequiredItem(drop.item, $"{spawn.id} drop {spawn.loot_drops.Count}"),
                         rate = drop.probability
                     });
                 }
@@ -168,7 +166,7 @@ public sealed class ConfiguredWorldSnapshot
                     tier = tier, experience = experience, is_cooking_oven = station.isCookingOven,
                     materials = materials, station_type = station.isCookingOven ? "cooking" : "crafting"
                 });
-                offers.Add(new RecipeOfferData { definition_key = key, offer_index = offers.Count });
+                offers.Add(new RecipeOfferData(key) { offer_index = offers.Count });
             }
             return offers;
         }
@@ -203,7 +201,7 @@ public sealed class ConfiguredWorldSnapshot
                         tier = native.level, experience = experience,
                         materials = ingredients.Select(value => new AlchemyMaterial { item_id = value.ItemId, amount = value.Amount }).ToList()
                     });
-                offers.Add(new RecipeOfferData { definition_key = key, offer_index = offers.Count });
+                offers.Add(new RecipeOfferData(key) { offer_index = offers.Count });
             }
             return offers;
         }
@@ -263,14 +261,13 @@ public sealed class ConfiguredWorldSnapshot
             var from = GetZoneInfoFromPosition(placed);
             var to = GetZoneInfoFromPosition(destination.position);
             var id = PlacementId($"{(interactable ? "iportal" : "portal")}_{from.ZoneId}_to_{to.ZoneId}", placed);
-            return new PortalData
+            return new PortalData(id, from.ZoneId, Point(placed), to.ZoneId, Point(destination.position),
+                new Position(orientation.x, orientation.y, 0))
             {
-                id = id, is_interactable = interactable, from_zone_id = from.ZoneId,
-                from_sub_zone_id = from.SubZoneId, to_zone_id = to.ZoneId, to_sub_zone_id = to.SubZoneId,
-                position = Point(placed), destination = Point(destination.position),
+                is_interactable = interactable,
+                from_sub_zone_id = from.SubZoneId, to_sub_zone_id = to.SubZoneId,
                 required_item_id = key == null ? null : RequiredItem(key, id),
                 level_required = level, item_level_required = itemLevel,
-                orientation = new Position(orientation.x, orientation.y, 0),
                 need_monster_dead_id = monster == null ? null : SanitizeId(monster.name),
                 need_monster_dead_spawn_id = RequiredMonster(monster, id),
                 requires_everyone_key = everyone, is_closed = closed
@@ -309,11 +306,11 @@ public sealed class ConfiguredWorldSnapshot
                     throw new InvalidOperationException("Configured NPC has no identity. Reload World.");
                 var followOrigin = npc.originFollowPosition == Vector2.zero
                     ? new Vector2(placed.x, placed.y) : npc.originFollowPosition;
-                var spawn = new NpcSpawnData
+                var spawn = new NpcSpawnData(
+                    PlacementId($"{name}_{zone.ZoneId}", placed), name, zone.ZoneId, Point(placed),
+                    new Position(followOrigin.x, followOrigin.y, 0))
                 {
-                    id = PlacementId($"{name}_{zone.ZoneId}", placed), npc_id = name,
-                    zone_id = zone.ZoneId, sub_zone_id = zone.SubZoneId, position = Point(placed),
-                    origin_follow_position = new Position(followOrigin.x, followOrigin.y, 0),
+                    sub_zone_id = zone.SubZoneId,
                     follow_distance = npc.followDistance, move_distance = npc.moveDistance,
                     move_probability = npc.moveProbability
                 };
@@ -344,16 +341,14 @@ public sealed class ConfiguredWorldSnapshot
             {
                 if (trigger.summonEntity == null || trigger.placeHolders == null || trigger.placeHolders.Count == 0)
                     throw new InvalidOperationException($"Summon trigger {trigger.name}: missing configured target or guard group. Reload World.");
-                var row = new SummonTriggerData { spawn_position = Point(trigger.transform.position) };
+                SummonTriggerData row;
                 var monster = trigger.summonEntity.TryCast<Il2Cpp.Monster>();
                 var npc = trigger.summonEntity.TryCast<Il2Cpp.Npc>();
                 if (monster != null)
                 {
-                    row.summoned_entity_type = "Monster";
-                    row.summoned_entity_name = monster.name;
-                    row.summoned_entity_id = SanitizeId(monster.name);
+                    row = new SummonTriggerData("Monster", SanitizeId(monster.name), monster.name,
+                        Point(trigger.transform.position), monster.summonMessage ?? "");
                     row.summoned_monster_spawn_id = RequiredMonster(monster, $"Summon trigger {trigger.name}");
-                    row.summon_message = monster.summonMessage ?? "";
                     row.summoned_is_summonable = monster.isSummonable;
                     row.summoned_respawn_time = monster.respawnTime;
                     row.summoned_respawn_probability = monster.probabilityRespawn;
@@ -363,18 +358,15 @@ public sealed class ConfiguredWorldSnapshot
                 {
                     if (!_npcIds.TryGetValue(npc.GetInstanceID(), out var spawnId))
                         throw new InvalidOperationException($"Summon trigger {trigger.name}: NPC target is not an authored captured placement. Reload World.");
-                    row.summoned_entity_type = "Npc";
-                    row.summoned_entity_name = npc.name;
-                    row.summoned_entity_id = SanitizeId(npc.name);
+                    row = new SummonTriggerData("Npc", SanitizeId(npc.name), npc.name,
+                        Point(trigger.transform.position), "");
                     row.summoned_npc_spawn_id = spawnId;
-                    row.summon_message = "";
                     row.summoned_is_summonable = npc.isSummonable;
                     row.summoned_respawn_time = npc.respawnTime;
                     row.summoned_respawn_probability = npc.probabilityRespawn;
                 }
                 else
                     throw new InvalidOperationException($"Summon trigger {trigger.name}: unsupported target type. Reload World.");
-                row.id = $"summon_{row.summoned_entity_id}";
                 if (!ids.Add(row.id))
                     throw new InvalidOperationException($"Conflicting summon trigger ID {row.id}. Reload World.");
                 foreach (var placeholder in trigger.placeHolders)
@@ -428,18 +420,16 @@ public sealed class ConfiguredWorldSnapshot
                 var id = RequiredItem(item, "HousingManager.strucItems");
                 if (item.struc == null)
                     throw new InvalidOperationException($"Housing catalog {id}: missing structure prefab. Reload World.");
-                var row = new HousingCatalogData { item_id = id };
+                var row = new HousingCatalogData(id);
                 foreach (var station in item.struc.GetComponentsInChildren<Il2Cpp.CraftingStation>(true))
-                    row.workstations.Add(new HomeWorkstationData
+                    row.workstations.Add(new HomeWorkstationData(ComponentPath(item.struc.transform, station), "crafting")
                     {
-                        component_path = ComponentPath(item.struc.transform, station), kind = "crafting",
                         recipe_offers = CraftingOffers(station, $"housing {id}")
                     });
                 foreach (var table in item.struc.GetComponentsInChildren<Il2Cpp.Table>(true))
-                    row.workstations.Add(new HomeWorkstationData
+                    row.workstations.Add(new HomeWorkstationData(
+                        ComponentPath(item.struc.transform, table), table.isScribingTable ? "scribing" : "alchemy")
                     {
-                        component_path = ComponentPath(item.struc.transform, table),
-                        kind = table.isScribingTable ? "scribing" : "alchemy",
                         recipe_offers = TableOffers(table, $"housing {id}")
                     });
                 catalog.Add(row);

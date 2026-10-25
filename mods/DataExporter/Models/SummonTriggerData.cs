@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -5,17 +7,28 @@ namespace DataExporter.Models;
 
 public class SummonTriggerData
 {
+    public SummonTriggerData(string summoned_entity_type, string summoned_entity_id, string summoned_entity_name,
+        Position spawn_position, string summon_message)
+    {
+        id = $"summon_{summoned_entity_id}";
+        this.summoned_entity_type = summoned_entity_type;
+        this.summoned_entity_id = summoned_entity_id;
+        this.summoned_entity_name = summoned_entity_name;
+        this.spawn_position = spawn_position;
+        this.summon_message = summon_message;
+    }
+
     public string id { get; set; }
     public string summoned_entity_type { get; set; }  // "Monster" or "Npc"
     public string summoned_entity_id { get; set; }
     [JsonProperty(NullValueHandling = NullValueHandling.Include)]
-    public string summoned_monster_spawn_id { get; set; }
+    public string? summoned_monster_spawn_id { get; set; }
     [JsonProperty(NullValueHandling = NullValueHandling.Include)]
-    public string summoned_npc_spawn_id { get; set; }
+    public string? summoned_npc_spawn_id { get; set; }
     public string summoned_entity_name { get; set; }
     public string summon_message { get; set; }
     public Position spawn_position { get; set; }
-    public string zone_id { get; set; }
+    public string? zone_id { get; set; }
     public List<string> placeholder_monster_ids { get; set; } = new();
 
     /// <summary>isSummonable of the placed Monster or Npc the trigger references. A trigger only
