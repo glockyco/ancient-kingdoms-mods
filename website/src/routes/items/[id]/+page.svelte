@@ -1675,7 +1675,7 @@
             Cannot be used during <a
               href="/mechanics/seasonal-events#double-xp"
               class={styles.link}>Halloween or the Winter Festival</a
-            >, which give everyone Double XP.
+            >, when everyone already has Double XP.
           </p>
         {/if}
       </Card.Content>
@@ -1786,8 +1786,8 @@
       <Card.Header>
         <Card.Title level={2}>Passive Effects</Card.Title>
         <Card.Description>
-          Works while Radiant Aether is in one of your first 24 carry slots.
-          Each activation uses one.
+          Works only while it is in your main inventory, not in a backpack. Each
+          activation uses one.
         </Card.Description>
       </Card.Header>
       <Card.Content>
@@ -1795,11 +1795,9 @@
           <div class={styles.proseFact}>
             <dt class={styles.label}>Your Ability Lands a Critical Hit</dt>
             <dd>
-              15% chance to
-              <span class={styles.valuePositive}
-                >raise the critical multiplier from ×1.5 to ×3</span
-              >
-              before Critical Resist.
+              15% chance that the hit deals
+              <span class={styles.valuePositive}>×3 critical damage</span>
+              instead of ×1.5, before the target's Critical Resist.
               <p class="mt-1 text-sm italic text-muted-foreground">
                 "Radiant Aether surges - your strike rends the heavens!"
               </p>
@@ -1819,11 +1817,11 @@
           <div class={styles.proseFact}>
             <dt class={styles.label}>An Enemy Area Skill Targets You</dt>
             <dd>
+              15% chance to
               <span class={styles.valuePositive}
-                >Cancels the skill for every target</span
-              >. A lone carrier has a 15% chance. With two or more carriers
-              targeted, each has the lower of 10% or 25% divided by their
-              number.
+                >cancel the skill for everyone it targets</span
+              >. When several targets carry Radiant Aether, each has a smaller
+              chance: 10% with two, 8.3% with three, 6.25% with four.
               <p class="mt-1 text-sm italic text-muted-foreground">
                 "Radiant Aether flares brightly - your party withstand [skill
                 name]!"

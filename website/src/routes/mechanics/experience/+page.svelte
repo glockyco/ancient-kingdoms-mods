@@ -979,11 +979,11 @@
               <!-- Source: server-scripts/PotionItem.cs:CanUse — a Double XP potion cannot be used while the season's Double XP buff is active. -->
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2"
-                  >Double XP buff: drink an <a
+                  >Double XP buff: use an <a
                     href="/items/elixir_of_enlightened_learning"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Elixir of Enlightened Learning</a
-                  >, except during Halloween or the Winter Festival</td
+                  > (not during Halloween or the Winter Festival)</td
                 >
                 <td class="p-2 text-right">100% more XP</td>
               </tr>

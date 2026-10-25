@@ -313,9 +313,10 @@
           )}.
         </p>
         <!-- Source: server-scripts/Skills.cs:hasDoubleExp — multiple Double XP buffs still give only one doubling. -->
+        <!-- Source: server-scripts/PotionItem.cs:CanUse — a Double XP potion cannot be used while the season's Double XP buff is active. -->
         <p>
-          Double XP buffs do not stack. Drinking an Elixir of Enlightened
-          Learning during the season adds no XP bonus.
+          Double XP buffs do not stack, and an Elixir of Enlightened Learning
+          cannot be used during {seasonInSentence(data.season)}.
         </p>
         <a
           href={seasonHref(data.season)}
@@ -1013,24 +1014,21 @@
           <!-- Source: server-scripts/Skills.cs:AddOrRefreshBuff — a new buff expires existing buffs with the same category. -->
           <p class="text-sm">
             {#if data.categorySkills.length <= 6}
-              Only one of this effect{#each data.categorySkills as other, index (other.id)}{index ===
-                data.categorySkills.length - 1
-                  ? " and "
-                  : ", "}<a
+              Does not stack with {#each data.categorySkills as other, index (other.id)}{#if index > 0}{index ===
+                  data.categorySkills.length - 1
+                    ? " or "
+                    : ", "}{/if}<a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   href="{base}/skills/{other.id}">{other.name}</a
-                >{/each}
-              lasts on a character at a time.
+                >{/each}.
             {:else}
-              Only one of this effect and {formatNumber(
-                data.categorySkills.length,
-              )} other
-              {skill.buff_category} effects lasts on a character at a time.
+              Does not stack with the {formatNumber(data.categorySkills.length)}
+              other {skill.buff_category} effects.
             {/if}
-            The newest ends the others.
+            The newest one replaces the others.
             {#if groupHasMercenaryAreaBuff}
-              A mercenary's area buff is the exception. It skips characters who
-              already have one of these effects.
+              Exception: a mercenary's area buff skips anyone who already has
+              one of these effects.
             {/if}
             <a
               class="text-blue-600 dark:text-blue-400 hover:underline"

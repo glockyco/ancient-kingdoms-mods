@@ -121,7 +121,7 @@ Copy SHALL open with what the player gets, does or must avoid, in the game's voc
 
 ### Requirement: Headings and sentences state facts plainly
 
-A heading SHALL name its content in the terms the site already uses for it. Copy SHALL state facts in the third person or as conditions, and SHALL NOT address the reader with slogans, advice or marketing imperatives. A label SHALL say what a value is, so no footnote has to explain a column.
+A heading SHALL name its content in the terms the site already uses for it. Copy SHALL state facts in the third person or as conditions, and SHALL NOT address the reader with slogans, advice or marketing imperatives. A label SHALL say what a value is, so no footnote has to explain a column. Copy SHALL use the words players and the game use for an action or effect, such as using an item, looting a corpse or a buff that does not stack, and SHALL NOT use literary verbs or internal terms where a plain word exists.
 
 #### Scenario: A card holds a spawn table
 
@@ -134,6 +134,16 @@ A heading SHALL name its content in the terms the site already uses for it. Copy
 - **WHEN** a page says what a seasonal currency is for
 - **THEN** it says what the currency buys and during which events
 - **AND** it does not use a vague verb such as "works" or an imperative such as "Spend tokens on treats"
+
+#### Scenario: A potion's restriction
+
+- **WHEN** a page says a potion is unavailable during an event
+- **THEN** it says the potion cannot be used, not that it cannot be drunk
+
+#### Scenario: Effects that replace each other
+
+- **WHEN** a skill page says which effects replace each other
+- **THEN** it says the effect does not stack with them, not that it shares an overwrite group
 
 ### Requirement: Pitfalls are stated where the choice is made
 
