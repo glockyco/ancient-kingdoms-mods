@@ -70,12 +70,17 @@ A zone's level range and median SHALL exclude spawns of seasonal monsters. Zone 
 
 ### Requirement: Repair merchants show seasonal stock
 
-An NPC page and its map popup SHALL list the NPC's seasonal stock separately from its year-round stock, naming each offer's season, price and currency in the form the surface uses for year-round stock. Offers of the same item in two seasons SHALL remain two rows.
+An NPC page and its map popup SHALL list the NPC's seasonal stock separately from and after its year-round stock, naming each offer's season, price and currency in the form the surface uses for year-round stock. Offers of the same item in two seasons SHALL remain two rows.
 
 #### Scenario: A firework pack in both seasons
 
 - **WHEN** a repair merchant sells Pack 10 Skyflares during Halloween and during the Winter Festival
 - **THEN** the seasonal stock lists it once for each season with its price
+
+#### Scenario: A repair merchant outside the events
+
+- **WHEN** a player opens a repair merchant's page to see what it sells
+- **THEN** the items for sale all year come before the seasonal stock
 
 ### Requirement: Lists filter by season
 

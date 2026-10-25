@@ -10,6 +10,7 @@
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
   import {
     SEASON_ORDER,
+    SEASONAL_EVENTS_HREF,
     seasonInSentence,
     type Season,
   } from "$lib/data/seasonal-events";
@@ -56,6 +57,7 @@
   import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
   import { getNpcSpecialMechanics } from "$lib/special-mechanics";
   import Cog from "@lucide/svelte/icons/cog";
+  import CircleHelp from "@lucide/svelte/icons/circle-help";
 
   const categoryColors: Record<RoleCategory, string> = {
     quest: "text-orange-500",
@@ -1001,29 +1003,6 @@
     </section>
   {/if}
 
-  {#if seasonalRows.length > 0}
-    <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <ShoppingBag class="h-5 w-5 text-green-500" />
-        Seasonal Stock ({seasonalRows.length})
-      </h2>
-      <DataTable
-        data={seasonalRows}
-        columns={seasonalColumns}
-        renderCell={renderItemSoldCell}
-        renderHeader={renderItemSoldHeader}
-        initialSorting={[
-          { id: "season", desc: false },
-          { id: "item_name", desc: false },
-        ]}
-        urlKey="npc-{data.npc.id}-seasonal"
-        pageSize={10}
-        zebraStripe={true}
-        class="bg-muted/30"
-      />
-    </section>
-  {/if}
-
   <!-- Items for Sale Section -->
   {#if data.itemsSold.length > 0}
     <section>
@@ -1038,6 +1017,39 @@
         renderHeader={renderItemSoldHeader}
         initialSorting={[{ id: "item_name", desc: false }]}
         urlKey="npc-{data.npc.id}-items"
+        pageSize={10}
+        zebraStripe={true}
+        class="bg-muted/30"
+      />
+    </section>
+  {/if}
+
+  <!-- Seasonal stock follows the year-round stock because it is on sale only during events. -->
+  {#if seasonalRows.length > 0}
+    <section>
+      <div class="mb-4 flex items-center gap-2">
+        <h2 class="flex items-center gap-2 text-xl font-semibold">
+          <ShoppingBag class="h-5 w-5 text-green-500" />
+          Seasonal Stock ({seasonalRows.length})
+        </h2>
+        <a
+          href={SEASONAL_EVENTS_HREF}
+          class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
+        >
+          <CircleHelp class="h-4 w-4" />
+          How seasonal events work
+        </a>
+      </div>
+      <DataTable
+        data={seasonalRows}
+        columns={seasonalColumns}
+        renderCell={renderItemSoldCell}
+        renderHeader={renderItemSoldHeader}
+        initialSorting={[
+          { id: "season", desc: false },
+          { id: "item_name", desc: false },
+        ]}
+        urlKey="npc-{data.npc.id}-seasonal"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"

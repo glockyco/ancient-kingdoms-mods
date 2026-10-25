@@ -972,60 +972,6 @@
     </section>
   {/if}
 
-  {#if data.monsters.some((monster) => monster.season) || data.npcs.some((npc) => npc.season)}
-    <section class="mb-8">
-      <div class="mb-4 flex items-center gap-2">
-        <h2 class="flex items-center gap-2 text-xl font-semibold">
-          <CalendarDays class="h-5 w-5 text-violet-500" />
-          Seasonal Events
-        </h2>
-        <a
-          href={SEASONAL_EVENTS_HREF}
-          class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
-        >
-          <CircleHelp class="h-4 w-4" />
-          How seasonal events work
-        </a>
-      </div>
-      <div class="space-y-3 rounded-md border bg-muted/30 p-4">
-        {#each SEASON_ORDER_LIST.filter((season) => data.monsters.some((m) => m.season === season) || data.npcs.some((n) => n.season === season)) as season (season)}
-          <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD; server-scripts/Npc.cs:Start,UpdateServer_IDLE — seasonal monsters and NPCs are present only during their season. -->
-          <p class="text-muted-foreground">
-            Only during {seasonInSentence(season)}:
-          </p>
-          <ul class="list-disc space-y-1 pl-5">
-            {#each data.monsters.filter((m) => m.season === season) as monster (monster.id)}
-              <li>
-                <a
-                  href="/monsters/{monster.id}"
-                  class="text-blue-600 hover:underline dark:text-blue-400"
-                  >{monster.name}</a
-                >, level {monster.level_min}{monster.level_max !==
-                monster.level_min
-                  ? ` to ${monster.level_max}`
-                  : ""}, {monster.spawn_count}
-                {monster.spawn_count === 1 ? "spawn" : "spawns"}
-              </li>
-            {/each}
-            {#each data.npcs.filter((n) => n.season === season) as npc (npc.id)}
-              <li>
-                <a
-                  href="/npcs/{npc.id}"
-                  class="text-blue-600 hover:underline dark:text-blue-400"
-                  >{npc.name}</a
-                >{#if getActiveRoles(npc.roles).length}, {getActiveRoles(
-                    npc.roles,
-                  )
-                    .map((role) => role.label.toLowerCase())
-                    .join(", ")}{/if}
-              </li>
-            {/each}
-          </ul>
-        {/each}
-      </div>
-    </section>
-  {/if}
-
   {#if data.eventRegion || data.prosperityRegion}
     <section>
       <div class="mb-4 flex items-center gap-2">
@@ -1123,6 +1069,61 @@
             > after a regional event, monsters here give 15% more XP.
           </p>
         {/if}
+      </div>
+    </section>
+  {/if}
+
+  <!-- Seasonal actors follow regional events because they exist only during their season. -->
+  {#if data.monsters.some((monster) => monster.season) || data.npcs.some((npc) => npc.season)}
+    <section>
+      <div class="mb-4 flex items-center gap-2">
+        <h2 class="flex items-center gap-2 text-xl font-semibold">
+          <CalendarDays class="h-5 w-5 text-violet-500" />
+          Seasonal Events
+        </h2>
+        <a
+          href={SEASONAL_EVENTS_HREF}
+          class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
+        >
+          <CircleHelp class="h-4 w-4" />
+          How seasonal events work
+        </a>
+      </div>
+      <div class="space-y-3 rounded-md border bg-muted/30 p-4">
+        {#each SEASON_ORDER_LIST.filter((season) => data.monsters.some((m) => m.season === season) || data.npcs.some((n) => n.season === season)) as season (season)}
+          <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD; server-scripts/Npc.cs:Start,UpdateServer_IDLE — seasonal monsters and NPCs are present only during their season. -->
+          <p class="text-muted-foreground">
+            Only during {seasonInSentence(season)}:
+          </p>
+          <ul class="list-disc space-y-1 pl-5">
+            {#each data.monsters.filter((m) => m.season === season) as monster (monster.id)}
+              <li>
+                <a
+                  href="/monsters/{monster.id}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >{monster.name}</a
+                >, level {monster.level_min}{monster.level_max !==
+                monster.level_min
+                  ? ` to ${monster.level_max}`
+                  : ""}, {monster.spawn_count}
+                {monster.spawn_count === 1 ? "spawn" : "spawns"}
+              </li>
+            {/each}
+            {#each data.npcs.filter((n) => n.season === season) as npc (npc.id)}
+              <li>
+                <a
+                  href="/npcs/{npc.id}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >{npc.name}</a
+                >{#if getActiveRoles(npc.roles).length}, {getActiveRoles(
+                    npc.roles,
+                  )
+                    .map((role) => role.label.toLowerCase())
+                    .join(", ")}{/if}
+              </li>
+            {/each}
+          </ul>
+        {/each}
       </div>
     </section>
   {/if}
