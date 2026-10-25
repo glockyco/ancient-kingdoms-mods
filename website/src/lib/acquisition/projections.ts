@@ -531,8 +531,13 @@ export function projectItemUsages(
     });
   }
   for (const method of index.uses.get(itemId) ?? []) {
+    // The map shows where a treasure map is dug, where a key opens a placed chest and
+    // where an activation item starts a placed altar.
     const useLocations =
-      method.kind === "treasure_dig" && method.detail.map_item_id === itemId
+      (method.kind === "treasure_dig" &&
+        method.detail.map_item_id === itemId) ||
+      method.kind === "world_chest" ||
+      method.kind === "altar_activate"
         ? locations([method], "use")
         : [];
     let hasCost = false;
@@ -552,7 +557,8 @@ export function projectItemUsages(
               : { kind: "exact", value: input.amount },
           consumed: true,
           requirements: method.requirements,
-          useLocations,
+          // Lockpicks are not listed as opening chests, so the map leaves those chests out.
+          useLocations: input.role === "lockpick" ? [] : useLocations,
           entity: null,
         });
       }

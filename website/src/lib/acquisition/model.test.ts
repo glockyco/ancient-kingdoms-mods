@@ -618,6 +618,83 @@ describe("canonical source, inspection and provider behavior", () => {
     }
   });
 
+  it("locates the chests a key opens but not those lockpicks open", async () => {
+    const f = fixture();
+    try {
+      f.insert("items", {
+        id: "lockpicks",
+        name: "Lockpicks",
+        item_type: "general",
+        quality: 0,
+      });
+      f.insert("chests", {
+        id: "locked",
+        name: "Locked",
+        zone_id: "zone",
+        position_x: 4,
+        position_y: 0,
+        position_z: 8,
+      });
+      f.method("locked-method", "world_chest");
+      f.insert("acquisition_world_chest_details", {
+        id: "locked-method",
+        chest_id: "locked",
+        key_item_id: "key",
+        outer_success: 1,
+        gold_min: 0,
+        gold_max: 0,
+      });
+      f.insert("acquisition_providers_chests", {
+        id: "locked-provider",
+        method_id: "locked-method",
+        chest_id: "locked",
+      });
+      f.output("locked-output", "locked-method", "iron");
+      for (const [ordinal, item_id, role, selection_rule] of [
+        [0, "key", "key", "chest_key_first"],
+        [1, "lockpicks", "lockpick", "chest_lockpick_fallback"],
+      ] as const) {
+        f.insert("acquisition_cost_groups", {
+          id: `locked-${role}`,
+          method_id: "locked-method",
+          phase: "attempt",
+          quantity_rule: "fixed",
+          consumption_rule: "after_outer_success",
+          selection_rule,
+        });
+        f.insert("acquisition_inputs", {
+          id: `locked-${role}-input`,
+          cost_group_id: `locked-${role}`,
+          ordinal,
+          resource_kind: "item",
+          item_id,
+          amount: 1,
+          role,
+        });
+      }
+      const model = await f.model({
+        kind: "items",
+        itemIds: ["key", "lockpicks"],
+      });
+      expect(
+        projectItemUsages(model, "key").flatMap((use) => use.useLocations),
+      ).toMatchObject([
+        {
+          provider: { kind: "chests", id: "locked" },
+          purpose: "use",
+          position: { x: 4, y: 0, z: 8 },
+        },
+      ]);
+      expect(
+        projectItemUsages(model, "lockpicks").flatMap(
+          (use) => use.useLocations,
+        ),
+      ).toEqual([]);
+    } finally {
+      f.db.close();
+    }
+  });
+
   it("keeps native placement context and nonrespawning placeholder loot separate", async () => {
     const f = fixture();
     try {
