@@ -7,7 +7,7 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import { seasonHref } from "$lib/data/seasonal-events";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
   import { base } from "$app/paths";
   import EntityCombatSummary from "$lib/components/EntityCombatSummary.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
@@ -47,7 +47,6 @@
   import Shield from "@lucide/svelte/icons/shield";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import Compass from "@lucide/svelte/icons/compass";
-  import Snowflake from "@lucide/svelte/icons/snowflake";
   import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
   import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
   import { getNpcSpecialMechanics } from "$lib/special-mechanics";
@@ -540,15 +539,8 @@
         </span>
       {/if}
       <RoleBadges roles={data.npc.roles} linked />
-      {#if data.npc.season === "christmas"}
-        <a
-          href={seasonHref("christmas")}
-          title="Winter Festival dates and quests"
-          class="{ICON_BADGE.base} {ICON_BADGE.link}"
-        >
-          <Snowflake class="{ICON_BADGE.iconSize} text-red-500" />
-          Winter Festival
-        </a>
+      {#if data.npc.season}
+        <SeasonLabel season={data.npc.season} variant="badge" />
       {/if}
     </div>
 

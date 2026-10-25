@@ -35,7 +35,7 @@
 
 ## 7. Season label and detail pages
 
-- [ ] 7.1 Add a `SeasonLabel` component that owns each season's icon and tone and reads name and link from `SEASONS`, and replace the existing monster and NPC badges with it. The season module stays free of components because Node scripts import it through the acquisition model. Verify both pages in light and dark mode.
+- [x] 7.1 Add a `SeasonLabel` component that owns each season's icon and tone and reads name and link from `SEASONS`, and replace the existing monster and NPC badges with it. The season module stays free of components because Node scripts import it through the acquisition model. Verify both pages in light and dark mode.
 - [ ] 7.2 Item page: label Dropped by, Rewarded by Quests and Found in Packs rows with their seasons, and keep the Seasonal Shop card at 14 px or more. Verify `/items/pumpkin_costume`, `/items/winter_festival_coin`, `/items/pack_10_skyflares` and `/items/haunted_chews` in light and dark mode at desktop and phone widths.
 - [ ] 7.3 Monster and NPC pages: one sentence under the header stating the season, and seasons in the spawn table's Active column. NPC pages: a "Seasonal stock" card per season on repair merchants, with the season in the dedupe key, and the quests completed at the NPC. Verify `/monsters/witch`, `/npcs/santa_claus`, `/npcs/grimnir_stonehammer` and one other repair merchant in the browser.
 - [ ] 7.4 Quest pages: season label, a timing box saying the quest can be accepted only during the Winter Festival and repeated 8 hours after completion, and a labeled Santa in the NPCs section. Verify the three Santa quests in the browser.

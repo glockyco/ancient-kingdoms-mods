@@ -42,9 +42,7 @@
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Megaphone from "@lucide/svelte/icons/megaphone";
   import { huntPlayers } from "$lib/data/regional-events";
-  import { seasonHref } from "$lib/data/seasonal-events";
-  import { ICON_BADGE } from "$lib/styles/badge";
-  import Ghost from "@lucide/svelte/icons/ghost";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
   import Scroll from "@lucide/svelte/icons/scroll";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Star from "@lucide/svelte/icons/star";
@@ -825,15 +823,8 @@
           Hunt
         </span>
       {/if}
-      {#if data.monster.season === "halloween"}
-        <a
-          href={seasonHref("halloween")}
-          title="Halloween dates and shop"
-          class="{ICON_BADGE.base} {ICON_BADGE.link}"
-        >
-          <Ghost class="{ICON_BADGE.iconSize} text-orange-500" />
-          Halloween
-        </a>
+      {#if data.monster.season}
+        <SeasonLabel season={data.monster.season} variant="badge" />
       {/if}
     </div>
 
