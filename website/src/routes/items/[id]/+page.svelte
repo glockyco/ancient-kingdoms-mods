@@ -27,6 +27,7 @@
   import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
   import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
   import type { StatId } from "$lib/generated/stat-vocabulary";
+  import type { QuestDisplayType } from "$lib/utils/quests";
   import {
     formatStat,
     formatStatField,
@@ -56,13 +57,17 @@
     label: "text-sm text-muted-foreground",
     // Regular values
     value: "",
+    // Table text that can run long wraps at a fixed width, so one long cell
+    // cannot set the width of every flexible column.
+    wrapCell: "block max-w-64 whitespace-normal",
     // Positive values (bonuses, gains, health/mana)
     valuePositive: "text-green-600 dark:text-green-400",
     // Currency/gold values
     valueCurrency: "text-yellow-600 dark:text-yellow-400",
-    // One fact per row, kept to a readable width so a value stays near its label.
-    factList: "max-w-xl",
-    fact: "flex items-baseline justify-between gap-4 border-b py-2 last:border-b-0 [&>dd]:text-right",
+    // Beside the tooltip, one fact per row with its value at the right. A card with
+    // the page's width to itself lays facts out in columns, label above value.
+    factList: "grid @2xl:grid-cols-3 @2xl:gap-x-8 @2xl:gap-y-4",
+    fact: "flex items-baseline justify-between gap-4 border-b py-2 last:border-b-0 [&>dd]:text-right @2xl:block @2xl:border-b-0 @2xl:py-0 @2xl:[&>dd]:text-left",
   } as const;
   function parseJson<T>(json: string | null): T | null {
     if (!json) return null;
@@ -502,10 +507,13 @@
   // Relation tables. Each keeps the name first and its number second, so a phone shows both before the table scrolls.
   // Number columns are sized to fit "100.0%" and a header with its sort icon, so a phone shows them whole.
   const NUMBER = 112;
+  // Text columns start narrow and grow with their content and the free width, so a
+  // drop table's five columns fit a two-column layout at 768 pixels.
+  const TEXT = 160;
   type DropRow = (typeof computed.droppedBy)[number];
   const dropChance = (drop: DropRow) => drop.per_kill_chance ?? drop.drop_rate;
   const dropColumns: ColumnDef<DropRow>[] = [
-    { accessorKey: "monster_name", header: "Monster", minSize: 220 },
+    { accessorKey: "monster_name", header: "Monster", minSize: TEXT },
     { id: "chance", accessorFn: dropChance, header: "Chance", size: NUMBER },
     {
       id: "level",
@@ -517,29 +525,29 @@
       id: "zone",
       accessorFn: (drop) => drop.zones.map((z) => z.zone_name).join(", "),
       header: "Zone",
-      minSize: 180,
+      minSize: TEXT,
     },
   ];
 
   type AltarDropRow = (typeof computed.rewardedByAltars)[number];
   const altarDropColumns: ColumnDef<AltarDropRow>[] = [
-    { accessorKey: "altar_name", header: "Altar", minSize: 200 },
+    { accessorKey: "altar_name", header: "Altar", minSize: TEXT },
     { accessorKey: "drop_rate", header: "Chance", size: NUMBER },
-    { id: "tier", header: "Reward tier", minSize: 180, enableSorting: false },
-    { accessorKey: "boss_monster_name", header: "Final boss", minSize: 180 },
-    { accessorKey: "zone_name", header: "Zone", minSize: 160 },
+    { id: "tier", header: "Reward tier", minSize: TEXT, enableSorting: false },
+    { accessorKey: "boss_monster_name", header: "Final boss", minSize: TEXT },
+    { accessorKey: "zone_name", header: "Zone", minSize: TEXT },
   ];
 
   type VendorRow = (typeof computed.soldBy)[number];
   const vendorColumns = $derived<ColumnDef<VendorRow>[]>([
-    { accessorKey: "npc_name", header: "NPC", minSize: 200 },
+    { accessorKey: "npc_name", header: "NPC", minSize: TEXT },
     { accessorKey: "price", header: "Price", size: 160 },
     ...(computed.soldBy.some((v) => v.npc_faction && v.is_faction_vendor)
       ? [
           {
             id: "requirement",
             header: "Requires",
-            minSize: 220,
+            minSize: TEXT,
             enableSorting: false,
           },
         ]
@@ -559,7 +567,7 @@
   };
   const questColumns = (rows: QuestRow[], withNeed: boolean) =>
     [
-      { accessorKey: "quest_name", header: "Quest", minSize: 240 },
+      { accessorKey: "quest_name", header: "Quest", minSize: TEXT },
       ...(withNeed
         ? [{ id: "need", header: "Needs", size: 128, enableSorting: false }]
         : []),
@@ -571,13 +579,14 @@
         size: 120,
       },
       ...(rows.some((q) => hasSpecificClassRestriction(q.class_restrictions))
-        ? [{ id: "classes", header: "Classes", minSize: 180 }]
+        ? [{ id: "classes", header: "Classes", minSize: TEXT }]
         : []),
     ] as ColumnDef<QuestRow>[];
-  // Source: server-scripts/GatherInventoryQuest.cs:OnCompleted — a quest that removes its items takes them on completion, others only check that you carry them.
-  const QUEST_ITEM_NEEDS: Record<string, string> = {
+  // The quest page's objective names, so both pages describe a quest's use of the item alike.
+  // Source: server-scripts/GatherInventoryQuest.cs:OnCompleted — a quest that removes its items takes them on completion, others only check that you have them.
+  const QUEST_ITEM_NEEDS: Record<string, QuestDisplayType> = {
     required: "Deliver",
-    have: "Carry",
+    have: "Have",
     gather: "Gather",
     brew: "Brew",
     equip: "Equip",
@@ -585,69 +594,69 @@
 
   type TreasureMapRow = (typeof computed.rewardedByTreasureMaps)[number];
   const treasureMapColumns: ColumnDef<TreasureMapRow>[] = [
-    { accessorKey: "map_name", header: "Treasure map", minSize: 220 },
-    { accessorKey: "zone_name", header: "Dig zone", minSize: 180 },
+    { accessorKey: "map_name", header: "Treasure map", minSize: TEXT },
+    { accessorKey: "zone_name", header: "Dig zone", minSize: TEXT },
   ];
 
   type GatherRow = (typeof computed.gatheredFrom)[number];
   const gatherColumns = $derived<ColumnDef<GatherRow>[]>([
-    { accessorKey: "gather_item_name", header: "Resource", minSize: 220 },
+    { accessorKey: "gather_item_name", header: "Resource", minSize: TEXT },
     { accessorKey: "rate", header: "Chance", minSize: 140 },
     ...(computed.gatheredFrom.some((g) => (g.amount_max ?? 0) > 0)
       ? [{ id: "amount", header: "Amount", size: NUMBER, enableSorting: false }]
       : []),
-    { accessorKey: "zone_name", header: "Zone", minSize: 180 },
+    { accessorKey: "zone_name", header: "Zone", minSize: TEXT },
   ]);
 
   type ChestRow = (typeof computed.foundInChests)[number];
   const chestColumns = $derived<ColumnDef<ChestRow>[]>([
-    { accessorKey: "zone_name", header: "Chest", minSize: 220 },
+    { accessorKey: "zone_name", header: "Chest", minSize: TEXT },
     { accessorKey: "rate", header: "Chance", size: NUMBER },
     ...(computed.foundInChests.some((c) => c.key_id)
-      ? [{ accessorKey: "key_name", header: "Key", minSize: 180 }]
+      ? [{ accessorKey: "key_name", header: "Key", minSize: TEXT }]
       : []),
   ]);
 
   type PackRow = (typeof computed.foundInPacks)[number];
   const packColumns: ColumnDef<PackRow>[] = [
-    { accessorKey: "pack_name", header: "Pack", minSize: 220 },
+    { accessorKey: "pack_name", header: "Pack", minSize: TEXT },
     { accessorKey: "amount", header: "Amount", size: NUMBER },
   ];
 
   type RandomLootRow = (typeof computed.foundInRandomLoot)[number];
   const randomLootColumns: ColumnDef<RandomLootRow>[] = [
-    { accessorKey: "random_item_name", header: "Container", minSize: 220 },
+    { accessorKey: "random_item_name", header: "Container", minSize: TEXT },
     { accessorKey: "probability", header: "Chance", size: NUMBER },
   ];
 
   type RecipeUseRow = (typeof computed.usedInRecipes)[number];
   const recipeUseColumns: ColumnDef<RecipeUseRow>[] = [
-    { accessorKey: "result_item_name", header: "Makes", minSize: 220 },
+    { accessorKey: "result_item_name", header: "Makes", minSize: TEXT },
     { accessorKey: "amount", header: "Amount", size: NUMBER },
-    { id: "recipe", header: "Recipe", minSize: 160, enableSorting: false },
+    { id: "recipe", header: "Recipe", minSize: TEXT, enableSorting: false },
   ];
 
   type CurrencyRow = (typeof computed.usedAsCurrencyFor)[number];
   const currencyColumns: ColumnDef<CurrencyRow>[] = [
-    { accessorKey: "item_name", header: "Buys", minSize: 220 },
+    { accessorKey: "item_name", header: "Buys", minSize: TEXT },
     { accessorKey: "price", header: "Price", size: NUMBER },
   ];
 
   type AltarUseRow = (typeof computed.requiredForAltars)[number];
   const altarUseColumns: ColumnDef<AltarUseRow>[] = [
-    { accessorKey: "altar_name", header: "Altar", minSize: 220 },
-    { accessorKey: "zone_name", header: "Zone", minSize: 180 },
+    { accessorKey: "altar_name", header: "Altar", minSize: TEXT },
+    { accessorKey: "zone_name", header: "Zone", minSize: TEXT },
   ];
 
   type PortalRow = (typeof computed.requiredForPortals)[number];
   const portalColumns: ColumnDef<PortalRow>[] = [
-    { accessorKey: "from_zone_name", header: "Portal in", minSize: 220 },
-    { accessorKey: "to_zone_name", header: "Leads to", minSize: 180 },
+    { accessorKey: "from_zone_name", header: "Portal in", minSize: TEXT },
+    { accessorKey: "to_zone_name", header: "Leads to", minSize: TEXT },
   ];
 
   type OpensChestRow = (typeof computed.opensChests)[number];
   const opensChestColumns: ColumnDef<OpensChestRow>[] = [
-    { accessorKey: "zone_name", header: "Chest", minSize: 220 },
+    { accessorKey: "zone_name", header: "Chest", minSize: TEXT },
   ];
 
   // Possible items, chest rewards and pack contents all list an item with a number, sorted by the value and shown as its label.
@@ -658,7 +667,7 @@
     label: string;
   };
   const contentColumns = (valueHeader: string): ColumnDef<ContentRow>[] => [
-    { accessorKey: "item_name", header: "Item", minSize: 220 },
+    { accessorKey: "item_name", header: "Item", minSize: TEXT },
     { accessorKey: "value", header: valueHeader, size: NUMBER },
   ];
 </script>
@@ -724,10 +733,11 @@
         : `${drop.monster_level_min}-${drop.monster_level_max}`,
     )}
   {:else if cell.column.id === "zone"}
-    {#each drop.zones as zone, index (zone.zone_id)}
-      {#if index > 0},
-      {/if}{@render zoneLink(zone.zone_id, zone.zone_name)}
-    {/each}
+    <span class={styles.wrapCell}>
+      {#each drop.zones as zone, index (zone.zone_id)}{index > 0
+          ? ", "
+          : ""}{@render zoneLink(zone.zone_id, zone.zone_name)}{/each}
+    </span>
   {:else if cell.column.id === "chance"}
     <span class="ml-auto tabular-nums">
       <DropChance
@@ -755,9 +765,11 @@
   {:else if cell.column.id === "drop_rate"}
     {@render percent(altar.drop_rate)}
   {:else if cell.column.id === "tier"}
-    {altar.reward_tier
-      ? formatAltarRewardTier(altar.reward_tier, altar, data.maxLevel)
-      : ""}
+    <span class={styles.wrapCell}>
+      {altar.reward_tier
+        ? formatAltarRewardTier(altar.reward_tier, altar, data.maxLevel)
+        : ""}
+    </span>
   {:else if cell.column.id === "boss_monster_name"}
     {#if altar.boss_monster_id && altar.boss_monster_name}
       <a
@@ -799,8 +811,10 @@
     </span>
   {:else if cell.column.id === "requirement"}
     {#if vendor.npc_faction && vendor.is_faction_vendor}
-      {vendor.required_reputation_name ?? vendor.required_reputation_tier} with
-      {vendor.npc_faction}
+      <span class={styles.wrapCell}>
+        {vendor.required_reputation_name ?? vendor.required_reputation_tier} with
+        {vendor.npc_faction}
+      </span>
     {/if}
   {/if}
 {/snippet}
@@ -833,9 +847,11 @@
   {:else if cell.column.id === "repeats"}
     {quest.is_repeatable ? "Repeatable" : "Once"}
   {:else if cell.column.id === "classes"}
-    {hasSpecificClassRestriction(quest.class_restrictions)
-      ? quest.class_restrictions!.map(formatClassName).join(", ")
-      : ""}
+    <span class={styles.wrapCell}>
+      {hasSpecificClassRestriction(quest.class_restrictions)
+        ? quest.class_restrictions!.map(formatClassName).join(", ")
+        : ""}
+    </span>
   {/if}
 {/snippet}
 
