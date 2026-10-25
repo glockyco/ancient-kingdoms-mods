@@ -639,7 +639,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       id: "the_lone-lands",
       name: "The Lone-lands",
-      levelMedian: 21,
+      levelMedian: 19,
       isDungeon: false,
       href: "/zones/the_lone-lands",
       shot: {

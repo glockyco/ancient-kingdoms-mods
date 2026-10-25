@@ -1,7 +1,8 @@
 """Zone level range denormalization.
 
 Computes level_min, level_max, and level_median from monster spawns for each zone.
-Excludes critters from level calculations unless the zone only has critters.
+Only year-round spawns count, because the statistics describe a zone outside any
+season. Critters are excluded unless the zone only has critters.
 """
 
 import sqlite3
@@ -9,6 +10,15 @@ import sqlite3
 from rich.console import Console
 
 console = Console()
+
+# Spawns of monsters that appear in every season, with the monster type that the
+# critter rule reads.
+YEAR_ROUND_SPAWNS = """year_round_spawns AS (
+    SELECT ms.zone_id, ms.level, m.type_name
+    FROM monster_spawns ms
+    JOIN monsters m ON m.id = ms.monster_id
+    WHERE m.season IS NULL
+)"""
 
 
 def run(conn: sqlite3.Connection) -> None:
@@ -28,32 +38,31 @@ def run(conn: sqlite3.Connection) -> None:
     console.print("Denormalizing zone level ranges...")
     cursor = conn.cursor()
 
-    # Get level ranges from spawns, excluding critters where possible
-    cursor.execute("""
+    # Get level ranges from year-round spawns, excluding critters where possible
+    cursor.execute(f"""
+        WITH {YEAR_ROUND_SPAWNS}
         SELECT
             z.id,
             -- Try non-critter min first, fall back to any monster min
             COALESCE(
-                (SELECT MIN(ms.level)
-                 FROM monster_spawns ms
-                 JOIN monsters m ON m.id = ms.monster_id
-                 WHERE ms.zone_id = z.id
-                   AND ms.level > 0
-                   AND m.type_name != 'Critter'),
-                (SELECT MIN(ms.level)
-                 FROM monster_spawns ms
-                 WHERE ms.zone_id = z.id AND ms.level > 0)
+                (SELECT MIN(s.level)
+                 FROM year_round_spawns s
+                 WHERE s.zone_id = z.id
+                   AND s.level > 0
+                   AND s.type_name != 'Critter'),
+                (SELECT MIN(s.level)
+                 FROM year_round_spawns s
+                 WHERE s.zone_id = z.id AND s.level > 0)
             ) as level_min,
             -- Try non-critter max first, fall back to any monster max
             COALESCE(
-                (SELECT MAX(ms.level)
-                 FROM monster_spawns ms
-                 JOIN monsters m ON m.id = ms.monster_id
-                 WHERE ms.zone_id = z.id
-                   AND m.type_name != 'Critter'),
-                (SELECT MAX(ms.level)
-                 FROM monster_spawns ms
-                 WHERE ms.zone_id = z.id)
+                (SELECT MAX(s.level)
+                 FROM year_round_spawns s
+                 WHERE s.zone_id = z.id
+                   AND s.type_name != 'Critter'),
+                (SELECT MAX(s.level)
+                 FROM year_round_spawns s
+                 WHERE s.zone_id = z.id)
             ) as level_max
         FROM zones z
     """)
@@ -82,18 +91,18 @@ def run(conn: sqlite3.Connection) -> None:
     # Excludes critters, falls back to all spawns if zone has only critters
     console.print("Denormalizing zone median levels...")
 
-    cursor.execute("""
-        WITH spawn_levels AS (
+    cursor.execute(f"""
+        WITH {YEAR_ROUND_SPAWNS},
+        spawn_levels AS (
             SELECT
-                ms.zone_id,
-                ms.level,
-                ROW_NUMBER() OVER (PARTITION BY ms.zone_id ORDER BY ms.level) as rn,
-                COUNT(*) OVER (PARTITION BY ms.zone_id) as cnt
-            FROM monster_spawns ms
-            JOIN monsters m ON m.id = ms.monster_id
-            WHERE ms.level IS NOT NULL
-              AND ms.level > 0
-              AND m.type_name != 'Critter'
+                s.zone_id,
+                s.level,
+                ROW_NUMBER() OVER (PARTITION BY s.zone_id ORDER BY s.level) as rn,
+                COUNT(*) OVER (PARTITION BY s.zone_id) as cnt
+            FROM year_round_spawns s
+            WHERE s.level IS NOT NULL
+              AND s.level > 0
+              AND s.type_name != 'Critter'
         ),
         non_critter_medians AS (
             SELECT zone_id, CAST(ROUND(AVG(level), 0) AS INTEGER) as median_level
@@ -103,14 +112,14 @@ def run(conn: sqlite3.Connection) -> None:
         ),
         critter_fallback AS (
             SELECT
-                ms.zone_id,
-                ms.level,
-                ROW_NUMBER() OVER (PARTITION BY ms.zone_id ORDER BY ms.level) as rn,
-                COUNT(*) OVER (PARTITION BY ms.zone_id) as cnt
-            FROM monster_spawns ms
-            WHERE ms.level IS NOT NULL
-              AND ms.level > 0
-              AND ms.zone_id NOT IN (SELECT zone_id FROM non_critter_medians)
+                s.zone_id,
+                s.level,
+                ROW_NUMBER() OVER (PARTITION BY s.zone_id ORDER BY s.level) as rn,
+                COUNT(*) OVER (PARTITION BY s.zone_id) as cnt
+            FROM year_round_spawns s
+            WHERE s.level IS NOT NULL
+              AND s.level > 0
+              AND s.zone_id NOT IN (SELECT zone_id FROM non_critter_medians)
         ),
         critter_medians AS (
             SELECT zone_id, CAST(ROUND(AVG(level), 0) AS INTEGER) as median_level

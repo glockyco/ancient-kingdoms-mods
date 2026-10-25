@@ -18,7 +18,7 @@
 ## 4. Pipeline derivations
 
 - [ ] 4.1 Derive `item_seasons` in the acquisition reachability fixed point per design decision 4, with tests for a direct seasonal shop item, a Halloween drop, an item obtained only from a seasonal pack, an item sold in both seasons, and a year-round item with a seasonal name. Verify the rebuilt database lists exactly the 30 seasonal items from the audit.
-- [ ] 4.2 Exclude seasonal monsters from zone level range and median in `denormalizers/zones/levels.py`, with a test. Verify The Lone-lands median is 19 and the other five Halloween zones are unchanged. Review the resulting `source_level_hint` changes in the data diff.
+- [x] 4.2 Exclude seasonal monsters from zone level range and median in `denormalizers/zones/levels.py`, with a test. Verify The Lone-lands median is 19 and the other five Halloween zones are unchanged. Review the resulting `source_level_hint` changes in the data diff.
 - [ ] 4.3 Add season keywords ("halloween", or "winter festival christmas") to seasonal monsters, NPCs, quests and items in `denormalizers/search/keywords.py`, with a test. Verify the keywords in the rebuilt database.
 
 ## 5. Shared reader
@@ -59,5 +59,5 @@
 
 ## 11. Integration
 
-- [ ] 11.1 Sync citations with `uv run compendium citations sync --game-version 0.9.37.1`, then run `pnpm check`, `pnpm lint`, `pnpm format:check`, `pnpm test`, the pipeline tests, the sitemap manifest build and `pnpm build`. Verify all pass.
+- [ ] 11.1 Sync citations with `uv run compendium citations sync --game-version 0.9.37.2`, then run `pnpm check`, `pnpm lint`, `pnpm format:check`, `pnpm test`, the pipeline tests, the sitemap manifest build and `pnpm build`. Verify all pass.
 - [ ] 11.2 Run `openspec validate integrate-seasonal-content --strict` and review every changed route at 1440×900 and 390×844 in light and dark mode. Verify the validation passes and record the routes reviewed in the commit messages.
