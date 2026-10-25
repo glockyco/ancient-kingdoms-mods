@@ -805,7 +805,8 @@
   </div>
 
   {#if isHydrated && showPagination && (!complete || data.length > pageSize)}
-    <div class="h-10 pt-4">
+    <!-- Reserves the paging row's height before it renders: 16px gap plus the 36px buttons. -->
+    <div class="h-13 pt-4">
       {#if ready && pageCount > 1}
         <Pagination.Root
           count={table.getFilteredRowModel().rows.length}
