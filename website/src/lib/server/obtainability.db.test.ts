@@ -103,3 +103,26 @@ describe("recipe material reader", () => {
     }
   });
 });
+
+test("obtainability preserves seasonal source labels", async () => {
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  try {
+    const tree = await buildObtainabilityTree(
+      db,
+      "winter_festival_coin",
+      1,
+      0,
+      new Set(),
+      true,
+    );
+    expect(tree.sources).toContainEqual(
+      expect.objectContaining({
+        type: "pack",
+        id: "pack_3_winter_festival_coin",
+        seasons: ["christmas"],
+      }),
+    );
+  } finally {
+    db.close();
+  }
+});

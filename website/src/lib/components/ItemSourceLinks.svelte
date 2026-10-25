@@ -1,13 +1,15 @@
 <script lang="ts" module>
   import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
+  import type { Season } from "$lib/data/seasonal-events";
 
   export interface SourceLinkGroup {
     type: keyof typeof SOURCE_TYPE_CONFIG;
-    sources: { id: string; name: string }[];
+    sources: { id: string; name: string; seasons?: readonly Season[] }[];
   }
 </script>
 
 <script lang="ts">
+  import SeasonLabel from "./SeasonLabel.svelte";
   interface Props {
     groups: SourceLinkGroup[];
     /**
@@ -35,12 +37,22 @@
           class="h-4 w-4 shrink-0 {config.color}"
           aria-hidden="true"
         />
-        {#each shown as source, index (source.id)}
-          <a
-            href="{config.linkPrefix}{source.id}"
-            class="text-blue-600 hover:underline dark:text-blue-400"
-            >{source.name}</a
-          >{#if index < shown.length - 1}<span class="text-muted-foreground"
+        {#each shown as source, index (`${source.id}:${source.seasons?.join(",") ?? ""}`)}
+          {#if group.type === "seasonal" && source.seasons?.length}
+            {#each source.seasons as season (season)}
+              <SeasonLabel {season} variant="inline" />
+            {/each}
+          {:else}
+            <a
+              href="{config.linkPrefix}{source.id}"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >{source.name}</a
+            >
+            {#each source.seasons ?? [] as season (season)}
+              <SeasonLabel {season} variant="inline" />
+            {/each}
+          {/if}
+          {#if index < shown.length - 1}<span class="text-muted-foreground"
               >,</span
             >{/if}
         {/each}

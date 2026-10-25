@@ -1,7 +1,11 @@
 import type Database from "better-sqlite3";
 import type { ItemSourceType } from "$lib/constants/source-types";
 import type { AcquisitionModel, MethodView } from "$lib/acquisition/types";
-import { projectItemSources } from "$lib/acquisition/projections";
+import {
+  projectItemSources,
+  projectItemSeasons,
+  projectMethodSeasons,
+} from "$lib/acquisition/projections";
 import {
   isAltarTierReward,
   loadItemSourceModel,
@@ -15,6 +19,7 @@ export interface ItemSourceSummary {
   id: string;
   name: string;
   source_level: number | null;
+  seasons: readonly Season[];
 }
 
 export function itemSourceSummariesFromModel(
@@ -39,6 +44,10 @@ export function itemSourceSummariesFromModel(
         type,
         id,
         name,
+        seasons:
+          method.kind === "pack_use"
+            ? projectItemSeasons(model, String(method.detail.item_id))
+            : projectMethodSeasons(model, method),
         source_level: awards.has(method.methodId)
           ? method.sourceLevelHint
           : null,
@@ -64,14 +73,19 @@ export function itemSourceSummariesFromModel(
               name("monsters", d.monster_id),
             );
           break;
-        case "vendor":
-          if (d.season === null)
-            add(method, "vendor", String(d.npc_id), name("npcs", d.npc_id));
-          else {
-            const season = SEASONS[d.season as Season];
-            add(method, "seasonal", season.anchor, season.name);
-          }
+        case "vendor": {
+          const seasons = projectMethodSeasons(model, method);
+          if (seasons.length)
+            for (const season of seasons)
+              add(
+                method,
+                "seasonal",
+                SEASONS[season].anchor,
+                SEASONS[season].name,
+              );
+          else add(method, "vendor", String(d.npc_id), name("npcs", d.npc_id));
           break;
+        }
         case "quest_accept":
         case "quest_complete":
           add(method, "quest", String(d.quest_id), name("quests", d.quest_id));
@@ -153,7 +167,7 @@ export function itemSourceSummariesFromModel(
   }
   const summaries = new Map<string, ItemSourceSummary>();
   for (const row of rows) {
-    const key = `${row.item_id}:${row.type}:${row.id}`;
+    const key = `${row.item_id}:${row.type}:${row.id}:${row.seasons.join(",")}`;
     const existing = summaries.get(key);
     if (!existing) summaries.set(key, row);
     else existing.source_level = getMinimumSourceLevel([existing, row]);

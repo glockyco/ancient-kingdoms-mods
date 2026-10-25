@@ -1,9 +1,11 @@
 import type Database from "better-sqlite3";
 import type { AcquisitionModel } from "$lib/acquisition/types";
-import { projectItemUsages } from "$lib/acquisition/projections";
+import {
+  projectItemUsages,
+  projectMethodSeasons,
+} from "$lib/acquisition/projections";
 import type { ItemUsages } from "$lib/types/item-sources";
 import { loadItemSourceModel, sourceEntity } from "./item-sources";
-import type { Season } from "$lib/data/seasonal-events";
 
 export function itemUsagesFromModel(
   model: AcquisitionModel,
@@ -92,7 +94,7 @@ export function itemUsagesFromModel(
         npc_id: String(detail.npc_id),
         npc_name: name("npcs", detail.npc_id),
         price: amount,
-        season: detail.season as Season | null,
+        season: projectMethodSeasons(model, method)[0] ?? null,
       });
     } else if (method?.kind === "altar_activate" && detail) {
       const altar = sourceEntity(model, "altars", detail.altar_id);

@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { calculateChestRewards } from "$lib/calculation/chest-rewards";
 import type { ChestRewardRow } from "$lib/queries/chest-rewards";
 import {
@@ -637,5 +638,59 @@ test("merge sources and reverse uses retain every component including a withheld
     ]);
   } finally {
     f.db.close();
+  }
+});
+
+test("seasonal sources carry drop, quest and containing-pack seasons", async () => {
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  try {
+    const drops = (await getItemSources(db, "spook_token")).monsters;
+    expect(drops.map((row) => row.monster_id).sort()).toEqual([
+      "pumpkin_head",
+      "witch",
+    ]);
+    expect(drops.every((row) => row.seasons.join(",") === "halloween")).toBe(
+      true,
+    );
+    const quests = (await getItemSources(db, "pack_3_festival_token")).quests;
+    expect(quests).toHaveLength(3);
+    expect(quests.every((row) => row.seasons.join(",") === "christmas")).toBe(
+      true,
+    );
+    expect(
+      quests.some((row) => row.quest_id === "a_wish_for_the_winter_heart"),
+    ).toBe(true);
+    const packs = (await getItemSources(db, "winter_festival_coin")).packs;
+    expect(packs).toMatchObject([
+      {
+        pack_item_id: "pack_3_winter_festival_coin",
+        amount: 3,
+        seasons: ["christmas"],
+      },
+    ]);
+  } finally {
+    db.close();
+  }
+});
+
+test("seasonal shop and currency uses share projected offer seasons", async () => {
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  try {
+    const sources = await getItemSources(db, "pack_10_skyflares");
+    expect(sources.vendors).toEqual([]);
+    expect(sources.seasonal.map((row) => row.season)).toEqual([
+      "halloween",
+      "christmas",
+    ]);
+    const usages = await getItemUsages(db, "festival_token");
+    const offers = usages.currency.filter(
+      (row) => row.purchasable_item_id === "pack_10_skyflares",
+    );
+    expect([...new Set(offers.map((row) => row.season))].sort()).toEqual([
+      "christmas",
+      "halloween",
+    ]);
+  } finally {
+    db.close();
   }
 });

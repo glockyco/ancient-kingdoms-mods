@@ -1,3 +1,5 @@
+import type { Season } from "$lib/data/seasonal-events";
+
 /**
  * Ingredient in a recipe
  */
@@ -71,6 +73,7 @@ export interface SourceSummary {
   type: ObtainabilitySourceType;
   id: string;
   name: string;
+  seasons?: readonly Season[];
 }
 
 /**

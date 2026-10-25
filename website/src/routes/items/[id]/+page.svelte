@@ -2,12 +2,8 @@
   import * as Card from "$lib/components/ui/card";
   import { base, resolve } from "$app/paths";
   import { formatAltarRewardTier } from "$lib/calculation/altar";
-  import {
-    SEASON_ORDER,
-    SEASONS,
-    seasonHref,
-    type Season,
-  } from "$lib/data/seasonal-events";
+  import { SEASON_ORDER, type Season } from "$lib/data/seasonal-events";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -186,6 +182,7 @@
             m.per_kill_chance,
             m.per_kill_chance_with_fatecharm,
             m.fatecharm?.id,
+            m.seasons,
           ]),
         ).values(),
       ).map((rolls) => ({
@@ -310,6 +307,7 @@
           pack_id: p.pack_item_id,
           pack_name: p.pack_item_name,
           amount: p.amount,
+          seasons: p.seasons,
         })) || [],
 
       createdFromMerge:
@@ -375,7 +373,7 @@
           (acc, c) => {
             // Many NPCs make the same offer. Rows stay distinct by price and by
             // whether the offer is year-round, and seasonal rows list their seasons.
-            const key = `${c.purchasable_item_id}:${c.price}:${c.season === null}`;
+            const key = `${c.purchasable_item_id}:${c.price}:${Boolean(c.season)}`;
             const entry = (acc[key] ??= {
               key,
               item_id: c.purchasable_item_id,
@@ -1085,13 +1083,11 @@
                     >
                       {item.item_name}
                     </a>
-                    {#each item.seasons as season (season)}
-                      <a
-                        href={seasonHref(season)}
-                        class="ml-2 text-sm text-muted-foreground hover:underline"
-                        >{SEASONS[season].name}</a
-                      >
-                    {/each}
+                    <span class="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                      {#each item.seasons as season (season)}
+                        <SeasonLabel {season} variant="inline" />
+                      {/each}
+                    </span>
                   </span>
                   <span class={styles.label}>
                     {item.price === 0 ? "Free" : `${item.price}x`}
@@ -1500,10 +1496,17 @@
           <Card.Content>
             <div class="space-y-2">
               {#each computed.foundInPacks as pack, index (`${pack.pack_id}_${index}`)}
-                <div class="flex justify-between items-center">
-                  <a href="/items/{pack.pack_id}" class={styles.link}>
-                    {pack.pack_name}
-                  </a>
+                <div class="flex justify-between items-center gap-3">
+                  <div class="space-y-1">
+                    <a href="/items/{pack.pack_id}" class={styles.link}>
+                      {pack.pack_name}
+                    </a>
+                    <div class="flex flex-wrap gap-2">
+                      {#each pack.seasons as season (season)}
+                        <SeasonLabel {season} variant="inline" />
+                      {/each}
+                    </div>
+                  </div>
                   <span class={styles.value}>×{pack.amount}</span>
                 </div>
               {/each}
@@ -1521,10 +1524,10 @@
           <Card.Content class="space-y-3">
             <div class="space-y-2">
               {#each data.sources.seasonal as offer (`${offer.season}_${offer.currency_item_id}_${offer.price}`)}
-                <div class="flex justify-between items-center">
-                  <a href={seasonHref(offer.season)} class={styles.link}>
-                    {SEASONS[offer.season].name}
-                  </a>
+                <div
+                  class="flex flex-wrap justify-between items-center gap-x-4 gap-y-1"
+                >
+                  <SeasonLabel season={offer.season} variant="inline" />
                   <span class={styles.valueCurrency}>
                     {#if offer.currency_item_id}
                       {offer.price}
@@ -1843,7 +1846,7 @@
           <div class="space-y-2">
             {#each computed.droppedBy as drop, index (`${drop.monster_id}_${index}`)}
               <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <MonsterTypeIcon
                     isBoss={drop.is_boss}
                     isFabled={drop.is_fabled}
@@ -1860,6 +1863,9 @@
                         : `${drop.monster_level_min}-${drop.monster_level_max}`})</span
                     >
                   </a>
+                  {#each drop.seasons as season (season)}
+                    <SeasonLabel {season} variant="inline" />
+                  {/each}
                 </div>
                 <span class={styles.label}
                   ><DropChance
@@ -1983,6 +1989,11 @@
                             .join(", ")}{/if})
                       </span>
                     </a>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      {#each quest.seasons as season (season)}
+                        <SeasonLabel {season} variant="inline" />
+                      {/each}
+                    </div>
                   </div>
                 {/each}
               </div>
@@ -2007,6 +2018,11 @@
                             .join(", ")}{/if})
                       </span>
                     </a>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      {#each quest.seasons as season (season)}
+                        <SeasonLabel {season} variant="inline" />
+                      {/each}
+                    </div>
                   </div>
                 {/each}
               </div>
@@ -2047,6 +2063,11 @@
                             .join(", ")}{/if})
                       </span>
                     </a>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      {#each quest.seasons as season (season)}
+                        <SeasonLabel {season} variant="inline" />
+                      {/each}
+                    </div>
                   </div>
                 {/each}
               </div>
@@ -2071,6 +2092,11 @@
                             .join(", ")}{/if})
                       </span>
                     </a>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      {#each quest.seasons as season (season)}
+                        <SeasonLabel {season} variant="inline" />
+                      {/each}
+                    </div>
                   </div>
                 {/each}
               </div>

@@ -287,7 +287,7 @@ async function buildTree(
             const type = ["alchemy", "crafting", "scribing"].includes(row.type)
               ? "recipe"
               : row.type;
-            const key = `${type}:${row.id}`;
+            const key = `${type}:${row.id}:${row.seasons.join(",")}`;
             if (seen.has(key)) return [];
             seen.add(key);
             return [
@@ -295,6 +295,7 @@ async function buildTree(
                 type: type as ObtainabilitySourceType,
                 id: row.id,
                 name: row.name,
+                seasons: row.seasons,
               },
             ];
           });

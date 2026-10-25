@@ -3,6 +3,7 @@
   import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
   import ObtainabilityTree from "./ObtainabilityTree.svelte";
   import ItemLink from "./ItemLink.svelte";
+  import SeasonLabel from "./SeasonLabel.svelte";
   import Gem from "@lucide/svelte/icons/gem";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
@@ -51,17 +52,26 @@
     {@const config = SOURCE_TYPE_CONFIG[type]}
     {@const totalForType = node.sourceCountsByType[type] || sources.length}
     {@const moreCount = totalForType - sources.length}
-    <div class="flex items-center gap-1.5 py-1 pl-4 whitespace-nowrap">
+    <div class="flex flex-wrap items-center gap-1.5 py-1 pl-4">
       <config.icon class="h-4 w-4 shrink-0 {config.color}" />
       <span class="text-muted-foreground">{config.label}:</span>
-      <div class="flex items-center gap-1">
+      <div class="flex flex-wrap items-center gap-1">
         {#each sources as source, i (`${source.id}_${i}`)}
-          <a
-            href="{config.linkPrefix}{source.id}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            {source.name}
-          </a>
+          {#if type === "seasonal" && source.seasons?.length}
+            {#each source.seasons as season (season)}
+              <SeasonLabel {season} variant="inline" />
+            {/each}
+          {:else}
+            <a
+              href="{config.linkPrefix}{source.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {source.name}
+            </a>
+            {#each source.seasons ?? [] as season (season)}
+              <SeasonLabel {season} variant="inline" />
+            {/each}
+          {/if}
           {#if i < sources.length - 1 || moreCount > 0}
             <span class="text-muted-foreground">,</span>
           {/if}
@@ -153,12 +163,21 @@
               <span class="text-muted-foreground">{config.label}:</span>
               <div class="flex items-center gap-1">
                 {#each sources as source, i (`${source.id}_${i}`)}
-                  <a
-                    href="{config.linkPrefix}{source.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {source.name}
-                  </a>
+                  {#if type === "seasonal" && source.seasons?.length}
+                    {#each source.seasons as season (season)}
+                      <SeasonLabel {season} variant="inline" />
+                    {/each}
+                  {:else}
+                    <a
+                      href="{config.linkPrefix}{source.id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      {source.name}
+                    </a>
+                    {#each source.seasons ?? [] as season (season)}
+                      <SeasonLabel {season} variant="inline" />
+                    {/each}
+                  {/if}
                   {#if i < sources.length - 1 || moreCount > 0}
                     <span class="text-muted-foreground">,</span>
                   {/if}

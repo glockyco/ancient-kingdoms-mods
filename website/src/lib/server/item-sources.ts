@@ -5,7 +5,11 @@ import type {
   MethodView,
   ProbabilityResult,
 } from "$lib/acquisition/types";
-import { projectItemSources } from "$lib/acquisition/projections";
+import {
+  projectItemSources,
+  projectItemSeasons,
+  projectMethodSeasons,
+} from "$lib/acquisition/projections";
 import {
   BASELINE_ASSUMPTIONS,
   calculateMethodProbabilities,
@@ -24,7 +28,7 @@ import {
 } from "$lib/calculation/chest-rewards";
 import { lowestCatchableSkillPercent } from "$lib/utils/fishing";
 import { monsterFatecharm } from "$lib/utils/fatecharm";
-import { SEASON_ORDER, type Season } from "$lib/data/seasonal-events";
+import { SEASON_ORDER } from "$lib/data/seasonal-events";
 
 export async function loadItemSourceModel(
   db: Database.Database,
@@ -151,6 +155,7 @@ function monsterRow(
     is_fabled: Boolean(monster.is_fabled),
     is_elite: Boolean(detail.is_elite),
     drop_rate: rate,
+    seasons: projectMethodSeasons(model, method),
   };
   if (levels.length) {
     row.monster_level_min = Math.min(...levels);
@@ -195,6 +200,7 @@ export function itemSourcesFromModel(
     const rate = configuredRate(model, method, itemId);
     const output = method.outputs.find((output) => output.item_id === itemId);
     const inputs = method.costGroups.flatMap((group) => group.inputs);
+    const seasons = projectMethodSeasons(model, method);
     if (method.kind === "kill" && !isAltarTierReward(method, itemId)) {
       const row = monsterRow(model, method, itemId, rate);
       if (!row) continue;
@@ -234,22 +240,24 @@ export function itemSourcesFromModel(
             ) ?? undefined;
       } else if (targetChance !== null) row.drop_rate = targetChance;
       result.monsters.push(row);
-    } else if (method.kind === "vendor" && detail.season !== null) {
+    } else if (method.kind === "vendor" && seasons.length) {
       const currency = inputs.find((input) => input.resource_kind === "item");
       const gold = inputs.find((input) => input.resource_kind === "gold");
-      const row = {
-        season: detail.season as Season,
-        price: currency?.amount ?? gold?.amount ?? 0,
-        currency_item_id: currency?.item_id ?? null,
-        currency_item_name: currency
-          ? str(sourceEntity(model, "items", currency.item_id), "name")
-          : null,
-        amount: output?.amount_min ?? 1,
-      };
-      const key = JSON.stringify(row);
-      const existing = seasonal.get(key);
-      if (existing) existing.merchant_count++;
-      else seasonal.set(key, { ...row, merchant_count: 1 });
+      for (const season of seasons) {
+        const row = {
+          season,
+          price: currency?.amount ?? gold?.amount ?? 0,
+          currency_item_id: currency?.item_id ?? null,
+          currency_item_name: currency
+            ? str(sourceEntity(model, "items", currency.item_id), "name")
+            : null,
+          amount: output?.amount_min ?? 1,
+        };
+        const key = JSON.stringify(row);
+        const existing = seasonal.get(key);
+        if (existing) existing.merchant_count++;
+        else seasonal.set(key, { ...row, merchant_count: 1 });
+      }
     } else if (method.kind === "vendor") {
       const npc = sourceEntity(model, "npcs", detail.npc_id);
       if (!npc) continue;
@@ -306,6 +314,7 @@ export function itemSourcesFromModel(
         is_repeatable: Boolean(
           quest.is_repeatable || quest.is_adventurer_quest,
         ),
+        seasons,
       });
     } else if (method.kind === "recipe") {
       const recipeType = detail.alchemy_recipe_id
@@ -513,6 +522,7 @@ export function itemSourcesFromModel(
           pack_item_name: str(pack, "name"),
           pack_quality: num(pack, "quality"),
           amount: output?.amount_min ?? 1,
+          seasons: projectItemSeasons(model, pack.id),
         });
     } else if (method.kind === "merge") {
       const components = inputs.filter(

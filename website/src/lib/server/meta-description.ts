@@ -41,6 +41,7 @@ import { getRoleLabel } from "$lib/utils/roles";
 
 import type { Item } from "$lib/queries/items";
 import type { ItemSources, ItemUsages } from "$lib/types/item-sources";
+import { SEASONS, type Season } from "$lib/data/seasonal-events";
 
 /** Optional pre-loaded data the description may incorporate. */
 export interface ItemMetaContext {
@@ -71,6 +72,7 @@ export interface ItemMetaContext {
   /** Loaded treasure_locations row for this map. */
   treasureLocation?: { zone_name: string; reward_name: string | null } | null;
   sources?: ItemSources;
+  seasons?: readonly Season[];
   /** Ingredients of the representative crafting recipe loaded for the item. */
   recipeIngredients?: RecipeIngredient[];
 }
@@ -146,6 +148,17 @@ export function itemTitle(item: Item): string {
 // ---------------------------------------------------------------------------
 
 export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
+  if (ctx.seasons?.length) {
+    const description = itemBaseDescription(item, {
+      ...ctx,
+      sources: undefined,
+    });
+    return description + seasonalItemSourcePhrase(ctx);
+  }
+  return itemBaseDescription(item, ctx);
+}
+
+function itemBaseDescription(item: Item, ctx: ItemMetaContext): string {
   switch (item.item_type) {
     case "weapon":
       return weaponDescription(item) + sourcePhrase(ctx);
@@ -265,6 +278,48 @@ function itemStatPhrase(item: Item): string {
       : [];
   });
   return phrases.length ? ` Grants ${joinList(phrases.slice(0, 3))}.` : "";
+}
+
+function seasonalItemSourcePhrase(ctx: ItemMetaContext): string {
+  const during = (seasons: readonly Season[]) =>
+    joinList(
+      seasons.map((season) =>
+        season === "christmas"
+          ? `the ${SEASONS[season].name}`
+          : SEASONS[season].name,
+      ),
+    );
+  const sources = ctx.sources;
+  if (!sources) return ` Obtained during ${during(ctx.seasons!)}.`;
+  const phrases: string[] = [];
+  // Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — repair merchants sell the season's stock while it runs.
+  for (const offer of sources.seasonal)
+    phrases.push(
+      `Sold by repair merchants during ${during([offer.season])} for ${formatNumber(offer.price)} ${offer.currency_item_name || "gold"}${offer.amount > 1 ? ` per ${formatNumber(offer.amount)} items` : ""}.`,
+    );
+  // Source: server-scripts/Monster.cs:UpdateServer_IDLE — Halloween monsters hide outside Halloween.
+  for (const [seasons, monsters] of Map.groupBy(sources.monsters, (row) =>
+    row.seasons.join(","),
+  )) {
+    const names = [...new Set(monsters.map((row) => row.monster_name))];
+    phrases.push(
+      `Dropped by ${joinList(names)}${seasons ? ` during ${during(monsters[0].seasons)}` : ""}.`,
+    );
+  }
+  if (sources.quests.length) {
+    // Source: server-scripts/Npc.cs:Start — seasonal quest givers are hidden outside their season.
+    phrases.push(
+      `Rewarded by ${joinList([...new Set(sources.quests.map((row) => row.quest_name))])}. These quests are offered during ${during(ctx.seasons!)}.`,
+    );
+  }
+  // Source: server-scripts/PackItem.cs:Use — opening a pack delivers finalAmountReceived of its item.
+  for (const pack of sources.packs)
+    phrases.push(
+      `From ${during(pack.seasons)}: open ${pack.pack_item_name} (${formatNumber(pack.amount)} per pack).`,
+    );
+  return phrases.length
+    ? ` ${phrases.join(" ")}`
+    : ` Obtained during ${during(ctx.seasons!)}.`;
 }
 
 function sourcePhrase(ctx: ItemMetaContext): string {

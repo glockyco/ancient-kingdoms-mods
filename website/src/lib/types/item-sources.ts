@@ -65,6 +65,7 @@ export interface MonsterSource {
   is_fabled: boolean;
   is_elite: boolean;
   drop_rate: number;
+  seasons: readonly Season[];
   per_kill_chance?: number;
   per_kill_chance_with_fatecharm?: number;
   /** The Fatecharm consumed for the boosted chance. */
@@ -115,6 +116,7 @@ export interface QuestSource {
   source_type: "reward" | "provided";
   class_restriction: string | null; // JSON array of class names
   is_repeatable: boolean;
+  seasons: readonly Season[];
 }
 
 /**
@@ -199,6 +201,7 @@ export interface PackSource {
   pack_item_name: string;
   pack_quality: number;
   amount: number;
+  seasons: readonly Season[];
 }
 
 /**

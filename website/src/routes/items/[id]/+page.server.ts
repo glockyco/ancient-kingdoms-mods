@@ -13,6 +13,7 @@ import {
 import {
   projectDefinitionInspection,
   projectItemSources,
+  projectItemSeasons,
 } from "$lib/acquisition/projections";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
 import { itemDescription, itemTitle } from "$lib/server/meta-description";
@@ -425,6 +426,7 @@ export const load: PageServerLoad = async ({
     buffDurationSeconds,
     relicIsCleanse,
     sources,
+    seasons: projectItemSeasons(model, params.id),
     treasureLocation,
     buffEffect: consumableBuffEffect,
     recipeIngredients: sources.recipes[0]
