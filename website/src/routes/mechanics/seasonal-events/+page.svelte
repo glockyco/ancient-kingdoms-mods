@@ -7,6 +7,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
+  import MapLink from "$lib/components/MapLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
@@ -82,7 +83,8 @@
   const names = (list: readonly { name: string }[]) =>
     list.map((entry) => entry.name).join(" and ");
   const percent = (chance: number) => `${Math.round(chance * 100)}%`;
-  const kills = (chance: number) => Number((1 / chance).toFixed(1));
+  /** Seasonal currency names are regular nouns: Spook Tokens, Winter Festival Coins. */
+  const plural = (name: string) => `${name}s`;
 
   const isTreat = (offer: SeasonalShopOffer) =>
     Boolean(data.items[offer.received_id].food_buff_id);
@@ -204,16 +206,30 @@
 {/snippet}
 
 {#snippet price(offer: SeasonalShopOffer)}
-  {@const currency = data.items[offer.currency_id]}
-  <p class="flex items-center gap-1.5 text-sm">
+  <span
+    class="inline-flex shrink-0 items-center gap-2 font-medium text-foreground"
+    title={data.items[offer.currency_id].name}
+  >
+    {offer.price}
     {#if data.itemIconPaths[offer.currency_id]}<img
         src="/{data.itemIconPaths[offer.currency_id]}"
-        alt=""
-        class="size-5 object-contain"
-      />{/if}
-    <span class="font-medium text-foreground">{offer.price}</span>
-    {currency.name}
-  </p>
+        alt={data.items[offer.currency_id].name}
+        class="size-6 object-contain"
+      />{:else}{data.items[offer.currency_id].name}{/if}
+  </span>
+{/snippet}
+
+<!-- Names the currencies a card's prices use, with the icon each price shows. -->
+{#snippet currencyNames(offers: readonly SeasonalShopOffer[])}
+  {#each [...new Set(offers.map((o) => o.currency_id))] as id, i (id)}{i
+      ? " and "
+      : ""}<span class="inline-flex items-baseline gap-1 whitespace-nowrap"
+      >{#if data.itemIconPaths[id]}<img
+          src="/{data.itemIconPaths[id]}"
+          alt=""
+          class="size-5 self-center object-contain"
+        />{/if}{plural(data.items[id].name)}</span
+    >{/each}
 {/snippet}
 
 {#snippet mapLinks(links: { href: string; label: string }[])}
@@ -238,10 +254,14 @@
 {/snippet}
 
 {#snippet offerTile(offer: SeasonalShopOffer, detail: string | null)}
-  <div class="flex min-w-0 flex-col gap-1 rounded-lg border p-3">
-    <div class="font-medium">{@render itemLink(offer.received_id)}</div>
-    {#if detail}<p class="text-sm">{detail}</p>{/if}
-    <div class="mt-auto pt-1">{@render price(offer)}</div>
+  <div
+    class="flex min-w-0 items-start justify-between gap-3 rounded-lg border p-3"
+  >
+    <div class="min-w-0 space-y-1">
+      <div class="font-medium">{@render itemLink(offer.received_id)}</div>
+      {#if detail}<p class="text-sm">{detail}</p>{/if}
+    </div>
+    {@render price(offer)}
   </div>
 {/snippet}
 
@@ -263,7 +283,9 @@
         <a href="/npcs?npcs.role_keys=can_repair_equipment" class={LINK}
           >Repair merchants</a
         >
-        sell these during {seasonInSentence(season)}.
+        sell these during {seasonInSentence(season)} for {@render currencyNames(
+          treatsOf(season),
+        )}.
       </p>
       <div class="grid gap-3 sm:grid-cols-2">
         <!-- Source: server-scripts/FoodItem.cs:Use,ToolTip — food applies its configured buff at the item's buff level. -->
@@ -299,44 +321,40 @@
 
   <Card.Root id="dates" class="bg-muted/30">
     <Card.Header><Card.Title>Dates</Card.Title></Card.Header>
-    <Card.Content class="space-y-4 text-muted-foreground">
-      <div class="grid gap-3 sm:grid-cols-2">
+    <Card.Content class="text-muted-foreground">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <!-- Source: server-scripts/EnviromentSystem.cs:OnStartServer,CheckSpecialEvents — seasons run on inclusive UTC dates. -->
         <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD,EventTimeSpawn — Halloween monsters spawn at their configured hours during Halloween. -->
         <!-- Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE — Santa is present only during the Winter Festival. -->
         {#each overview as entry (entry.season)}
-          <div class="space-y-2 rounded-lg border p-4">
-            <p class="font-semibold text-foreground">
-              <SeasonLabel season={entry.season} variant="title" />
-            </p>
-            <p class="font-medium text-foreground">
-              {seasonDates(entry.season)}
-            </p>
-            <p class="min-h-5 text-sm">
-              {#if now}
-                {@const current = status(entry.season, now)}
-                {#if current.running}
-                  <span
-                    class="font-medium text-emerald-600 dark:text-emerald-400"
-                    >Running now.</span
-                  >
-                  {current.text}
-                {:else}
-                  {current.text}
+          <div class="flex flex-col gap-4 rounded-lg border p-5">
+            <div class="space-y-1">
+              <p class="font-semibold text-foreground">
+                <SeasonLabel season={entry.season} variant="title" />
+              </p>
+              <p class="text-foreground">{seasonDates(entry.season)}</p>
+              <p class="min-h-5 text-sm">
+                {#if now}
+                  {@const current = status(entry.season, now)}
+                  {#if current.running}
+                    <span
+                      class="font-medium text-emerald-600 dark:text-emerald-400"
+                      >Running now.</span
+                    >
+                    {current.text}
+                  {:else}
+                    {current.text}
+                  {/if}
                 {/if}
-              {/if}
-            </p>
+              </p>
+            </div>
             <p>{entry.gist}</p>
-            <a href="#{SEASONS[entry.season].anchor}" class={LINK}
+            <a href="#{SEASONS[entry.season].anchor}" class="mt-auto {LINK}"
               >{entry.more}</a
             >
           </div>
         {/each}
       </div>
-      <!-- Source: server-scripts/EnviromentSystem.cs:OnStartServer,CheckSpecialEvents — seasons use inclusive UTC dates and the flags refresh hourly. -->
-      <p class="text-sm">
-        UTC dates, both days included. Each event can start and end up to an
-        hour after midnight UTC. Times are shown in your time zone.
-      </p>
     </Card.Content>
   </Card.Root>
 
@@ -403,7 +421,8 @@
           >
           sell these fireworks during {during(
             fireworks.flatMap((o) => o.seasons),
-          )}. They also sell each event's treats while it runs:
+          )} for {@render currencyNames(fireworks)}. They also sell each event's
+          treats while it runs:
           {#each data.seasons as { id: season }, i (season)}{i ? " and " : ""}<a
               href="#{SEASONS[season].anchor}-treats"
               class={LINK}>{SEASONS[season].name} treats</a
@@ -490,11 +509,8 @@
                 <td>{@render itemLink(drop.item_id)}</td>
                 {#each data.monsters as monster (monster.id)}
                   {@const chance = drop.chances[monster.id]}
-                  <td class="text-right whitespace-nowrap tabular-nums">
-                    {#if chance === undefined}—{:else}<span
-                        class="text-foreground">{percent(chance)}</span
-                      ><span class="block">about {kills(chance)} kills</span
-                      >{/if}
+                  <td class="text-right tabular-nums text-foreground">
+                    {#if chance === undefined}—{:else}{percent(chance)}{/if}
                   </td>
                 {/each}
               </tr>
@@ -510,9 +526,7 @@
               <div>
                 <p class="font-medium text-foreground">{set.monster.name}</p>
                 {#if set.chance !== null}<p class="text-sm">
-                    {percent(set.chance)} each per kill, about {kills(
-                      set.chance,
-                    )} kills
+                    {percent(set.chance)} each per kill
                   </p>{/if}
               </div>
               <ul class="space-y-2">
@@ -553,43 +567,45 @@
             <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/KillQuest.cs:IsFulfilled; server-scripts/GatherInventoryQuest.cs:IsFulfilled — quests use their configured objectives and award shared and class-specific rewards on completion. -->
             {#each data.quests as quest (quest.id)}
               <article
-                class="grid gap-4 rounded-lg border p-4 sm:grid-cols-[1fr_15rem]"
+                class="grid gap-x-6 gap-y-4 rounded-lg border p-5 sm:grid-cols-[1fr_15rem]"
               >
-                <div class="min-w-0 space-y-2">
-                  <h3 class="font-semibold">
-                    <EntityLink href="/quests/{quest.id}" name={quest.name} />
-                  </h3>
-                  <p class="text-sm">
-                    {#if "text" in quest.objective}{quest.objective
-                        .text}{:else}{quest.objective.verb}
+                <div class="min-w-0 space-y-3">
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <h3 class="font-semibold">
+                      <EntityLink href="/quests/{quest.id}" name={quest.name} />
+                    </h3>
+                    <MapLink entityId={quest.id} entityType="quest" />
+                  </div>
+                  <dl
+                    class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-sm"
+                  >
+                    <dt>Objective</dt>
+                    <dd class="text-foreground">
+                      {#if "text" in quest.objective}{quest.objective
+                          .text}{:else}{quest.objective.verb}
+                        <EntityLink
+                          href={quest.objective.href}
+                          name={quest.objective.name}
+                        />
+                        ×{quest.objective.amount}{/if}
+                    </dd>
+                    <dt>Where</dt>
+                    <dd class="text-foreground">
+                      {#each quest.zones as zone, i (zone.id)}{i
+                          ? " and "
+                          : ""}<EntityLink
+                          href="/zones/{zone.id}"
+                          name={zone.name}
+                        />{/each}
+                    </dd>
+                    <dt>Turn in</dt>
+                    <dd class="text-foreground">
                       <EntityLink
-                        href={quest.objective.href}
-                        name={quest.objective.name}
+                        href="/npcs/{quest.completer_id}"
+                        name={quest.completer_name}
                       />
-                      <span class="text-foreground"
-                        >×{quest.objective.amount}</span
-                      >{/if}
-                  </p>
-                  <p class="text-sm">
-                    {#each quest.zones as zone, i (zone.id)}{i
-                        ? " and "
-                        : ""}<EntityLink
-                        href="/zones/{zone.id}"
-                        name={zone.name}
-                      />{/each}
-                  </p>
-                  <p class="text-sm">
-                    Turn in to <EntityLink
-                      href="/npcs/{quest.completer_id}"
-                      name={quest.completer_name}
-                    />.
-                  </p>
-                  {@render mapLinks([
-                    {
-                      href: mapHref(quest.id, "quest"),
-                      label: "Quest locations",
-                    },
-                  ])}
+                    </dd>
+                  </dl>
                 </div>
                 <div class="space-y-3 text-sm sm:border-l sm:pl-4">
                   <p class="text-foreground">

@@ -6,7 +6,7 @@ Define how the compendium identifies Halloween and the Winter Festival, which ga
 
 ### Requirement: Seasons follow the game's dates
 
-The compendium SHALL describe each season by the game's UTC date window with both endpoints included: Halloween from October 19 to November 1 and the Winter Festival from December 19 to January 6. It SHALL state that a season can begin or end up to an hour after its date boundary, because the game checks the date once an hour.
+The compendium SHALL describe each season by the game's UTC date window with both endpoints included: Halloween from October 19 to November 1 and the Winter Festival from December 19 to January 6.
 
 #### Scenario: The Winter Festival spans the new year
 

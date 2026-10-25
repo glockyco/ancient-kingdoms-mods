@@ -2,7 +2,7 @@
 
 ### Requirement: Copy leads with the player's outcome
 
-Copy SHALL open with what the player gets, does or must avoid, in the game's vocabulary and with exact numbers. It SHALL state outcomes a player would otherwise compute, such as kills per token or real minutes per game window. It SHALL NOT open with a generic description of the game, restate a heading or the table beside it, decorate facts with flavour verbs, or explain an internal mechanism unless that mechanism changes what the player can do.
+Copy SHALL open with what the player gets, does or must avoid, in the game's vocabulary and with exact numbers. It SHALL state a derived number only when the player lacks an input to compute it, such as real minutes per game-time window, and SHALL NOT spell out arithmetic a player does at a glance, such as kills per token from a drop chance. It SHALL NOT open with a generic description of the game, restate a heading or the table beside it, decorate facts with flavour verbs, or explain an internal mechanism unless that mechanism changes what the player can do.
 
 #### Scenario: A section introduces a table
 
@@ -10,16 +10,22 @@ Copy SHALL open with what the player gets, does or must avoid, in the game's voc
 - **THEN** its sentence states what the table does not, such as the season and spawn hours shared by every row
 - **AND** it does not repeat the table's rows in prose
 
-#### Scenario: A timing rule comes from an implementation detail
+#### Scenario: A time depends on how the server works
 
-- **WHEN** an event starts after an hourly date check
-- **THEN** the copy says the event can start up to an hour after midnight UTC
-- **AND** it does not describe the server's check
+- **WHEN** the page says when an event starts or ends
+- **THEN** it gives the time in the reader's time zone
+- **AND** it does not explain UTC date handling or the server's hourly date check
 
-#### Scenario: A chance implies an effort
+#### Scenario: A chance is simple arithmetic
 
 - **WHEN** a currency drops with a 20% chance per kill
-- **THEN** the copy gives the chance and the average of 5 kills per token
+- **THEN** the copy gives the chance
+- **AND** it does not add the average number of kills per token
+
+#### Scenario: A time needs a conversion the player cannot do
+
+- **WHEN** monsters spawn from 20:00 to 08:00 game time
+- **THEN** the copy also gives the 30 real minutes in every hour that the window lasts
 
 ### Requirement: Headings and sentences state facts plainly
 

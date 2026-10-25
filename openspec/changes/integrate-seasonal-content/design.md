@@ -88,7 +88,7 @@ Layout rules:
 
 Other surfaces follow the same priority: year-round content first, seasonal content after it. On an NPC page the seasonal stock follows the items for sale, and on a zone page the seasonal section follows regional events.
 
-Copy follows the reader-facing-copy requirements in this change. Headings name their content in the site's terms, such as "Spawns", "Drops" and "Treats". The page says "30 real minutes in every hour" for the 20:00 to 08:00 window, "about 5 kills" per token, and that eating another seasonal treat ends the first. It says nothing about server checks or stock lists.
+Copy follows the reader-facing-copy requirements in this change. Headings name their content in the site's terms, such as "Spawns", "Drops" and "Treats". The page gives drop chances as percentages without kill counts, says "30 real minutes in every hour" for the 20:00 to 08:00 window because players cannot convert game time, and says that eating another seasonal treat ends the first. It says nothing about UTC handling, server checks or stock lists.
 
 ### 9. NPC pages show quests completed there
 
