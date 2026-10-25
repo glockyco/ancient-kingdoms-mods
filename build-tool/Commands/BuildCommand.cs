@@ -33,7 +33,7 @@ public sealed class BuildCommand : AsyncCommand<BuildCommand.Settings>
     internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
         ExecuteAsync(null!, settings, cancellationToken);
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         Console.WriteLine("Building Ancient Kingdoms mods...");
         var propsPath = Path.Combine(_repoRoot, "Local.props");

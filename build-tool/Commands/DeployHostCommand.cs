@@ -64,7 +64,7 @@ public sealed class DeployHostCommand : AsyncCommand<DeployHostCommand.Settings>
     internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
         ExecuteAsync(null!, settings, cancellationToken);
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var configuration = string.IsNullOrWhiteSpace(settings.Configuration) ? "Debug" : settings.Configuration;
         HotReplPaths paths;
