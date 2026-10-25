@@ -23,6 +23,8 @@ import { questDescription } from "$lib/server/meta-description";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import { getAchievementsLinkingTo } from "$lib/queries/achievements.server";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
+import { projectQuestSeasons } from "$lib/acquisition/projections";
+import type { Season } from "$lib/data/seasonal-events";
 
 export const prerender = true;
 
@@ -100,6 +102,7 @@ export const load: PageServerLoad = async ({
     entities: [{ kind: "quest", id: params.id }],
   });
   const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
+  const seasons = projectQuestSeasons(acquisition, params.id);
   const rewardSlots = db
     .prepare(
       `
@@ -283,7 +286,7 @@ export const load: PageServerLoad = async ({
   const questNpcs = db
     .prepare(
       `
-    SELECT DISTINCT n.id, n.name, n.faction,
+    SELECT DISTINCT n.id, n.name, n.faction, n.season,
       (SELECT ns.zone_id FROM npc_spawns ns WHERE ns.npc_id = n.id ORDER BY ns.id LIMIT 1) AS zone_id,
       (SELECT z.name FROM npc_spawns ns JOIN zones z ON z.id = ns.zone_id WHERE ns.npc_id = n.id ORDER BY ns.id LIMIT 1) AS zone_name,
       m.role
@@ -291,7 +294,9 @@ export const load: PageServerLoad = async ({
     WHERE m.quest_id = ? ORDER BY m.ordinal, n.name, n.id
   `,
     )
-    .all(params.id) as Array<QuestNpc & { role: string }>;
+    .all(params.id) as Array<
+    QuestNpc & { role: string; season: Season | null }
+  >;
   const startNpcs = questNpcs.filter((npc) => npc.role === "offer");
   const endNpcs = questNpcs.filter((npc) => npc.role === "complete");
   const startNpc = quest.is_adventurer_quest ? null : (startNpcs[0] ?? null);
@@ -459,6 +464,7 @@ export const load: PageServerLoad = async ({
   const description = questDescription(
     {
       name: quest.name,
+      seasons,
       level_required: quest.level_required,
       quest_type: quest.quest_type,
       is_main_quest: quest.is_main_quest,
@@ -494,6 +500,10 @@ export const load: PageServerLoad = async ({
     achievements: getAchievementsLinkingTo(`/quests/${quest.id}`),
     factionIds: getFactionIdsByName(),
     description,
+    seasons,
+    npcSeasons: Object.fromEntries(
+      questNpcs.map((npc) => [npc.id, npc.season]),
+    ),
     startNpcs,
     endNpcs,
     startNpc,

@@ -419,8 +419,9 @@ internal static class SkillEffectFormatter
         var debuff = skill.skill_type is "area_debuff" or "target_debuff";
 
         // 1. Special flags
+        // Source: server-scripts/Skills.cs:hasDoubleExp; Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftItem__NetworkIdentity__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String — double XP covers kills, gathering, fishing, crafting, cooking, alchemy, scribing and augmentation.
         if (skill.is_double_exp_spell)
-            parts.Add("2× XP from kills, gathering, fishing, crafting, alchemy & scribing");
+            parts.Add("2× XP from kills, gathering, fishing, crafting, cooking, alchemy, scribing & augmentation");
         if (skill.is_dispel)
             parts.Add("dispels buffs");
         if (skill.is_cleanse)
@@ -846,8 +847,6 @@ internal static class SkillEffectFormatter
         ["detect_traps"] = "reveal and disarm traps",
         // Source: server-scripts/Player.cs:HasDetectTraps — Sharp Senses uses the same trap-detection gate.
         ["sharp_senses"] = "reveal and disarm traps",
-        ["halloween_event"] = "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",
-        ["winter_festival"] = "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",
         ["master_poisoner"] = "Stab deals poison dmg & adds 250% of DEX, resisted by poison res, 10s",
         ["wild_strike"] = "next auto attack deals +10% × rank dmg as magic dmg, 5s",
         ["call_of_the_heroes"] = "teleport all active mercenaries to you, remove their fear",

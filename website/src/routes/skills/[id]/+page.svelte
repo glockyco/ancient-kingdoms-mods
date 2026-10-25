@@ -2,6 +2,7 @@
   import { base } from "$app/paths";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
@@ -82,7 +83,8 @@
   } = $derived(facts);
   const scalingColumns = $derived(getScalingColumns(skill, scrollOnly));
   const showLevelScaling = $derived(
-    getShowLevelScaling(skill, scalingColumns, hasScrollMasteryScaling),
+    !data.season &&
+      getShowLevelScaling(skill, scalingColumns, hasScrollMasteryScaling),
   );
   // Source: server-scripts/AreaBuffSkill.cs:Apply — a pet-cast area buff skips a target that already has a different buff of its category.
   const groupHasMercenaryAreaBuff = $derived(
@@ -94,15 +96,16 @@
     mechanicsSections({ skill, spec: data.mechanicsSpec, facts }),
   );
   const showCostTiming = $derived(
-    Boolean(
-      scrollOnly ||
-      skill.is_bard_song ||
-      skill.mana_cost ||
-      skill.energy_cost ||
-      skill.cooldown ||
-      skill.cast_time ||
-      skill.cast_range,
-    ),
+    !data.season &&
+      Boolean(
+        scrollOnly ||
+        skill.is_bard_song ||
+        skill.mana_cost ||
+        skill.energy_cost ||
+        skill.cooldown ||
+        skill.cast_time ||
+        skill.cast_range,
+      ),
   );
 
   // Jump list entries, in document order. Each predicate mirrors the {#if}
@@ -110,6 +113,7 @@
   // this skill does not render.
   const sections = $derived(
     [
+      { id: "granted-to", label: "Granted to", show: Boolean(data.season) },
       {
         id: "appearance",
         label: "Appearance",
@@ -120,7 +124,11 @@
         label: "Description",
         show: Boolean(data.effectSummary || skill.tooltip_template),
       },
-      { id: "requirements", label: "Requirements", show: hasRequirements },
+      {
+        id: "requirements",
+        label: "Requirements",
+        show: !data.season && hasRequirements,
+      },
       {
         id: "cost-timing",
         label: "Cost & Timing",
@@ -147,7 +155,7 @@
       {
         id: "buff-debuff",
         label: "Buff/Debuff Effects",
-        show: hasBuffEffects,
+        show: !data.season && hasBuffEffects,
       },
       { id: "level-scaling", label: "Rank Scaling", show: showLevelScaling },
       {
@@ -255,6 +263,9 @@
       {/if}
 
       <DungeonRestrictionBadge allowDungeon={skill.allow_dungeon} />
+      {#if data.season}
+        <SeasonLabel season={data.season} variant="badge" />
+      {/if}
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -263,18 +274,40 @@
           {data.skillCategories.join(" / ")}
         </span>
       {/if}
-      <span>Max Rank {skill.max_level}</span>
-      <a
-        class="underline underline-offset-4 hover:text-foreground"
-        href="{base}/mechanics/character#skills-and-specializations"
-      >
-        How ranks are learned
-      </a>
+      {#if !data.season}
+        <span>Max Rank {skill.max_level}</span>
+        <a
+          class="underline underline-offset-4 hover:text-foreground"
+          href="{base}/mechanics/character#skills-and-specializations"
+        >
+          How ranks are learned
+        </a>
+      {/if}
     </div>
   </div>
 
   <!-- Page Anchor Navigation -->
   <PageSections {sections} />
+  {#if data.season}
+    <Card.Root id="granted-to" class="bg-muted/30">
+      <Card.Header>
+        <Card.Title level={2}>Granted to</Card.Title>
+      </Card.Header>
+      <Card.Content class="space-y-3 text-sm">
+        <!-- Source: server-scripts/Player.cs:Start; server-scripts/EnviromentSystem.cs:CheckSpecialEvents — every online player receives the season's refreshed buff. -->
+        <p>
+          Every online player has this buff during {data.season === "christmas"
+            ? "the "
+            : ""}<SeasonLabel season={data.season} />.
+        </p>
+        <!-- Source: server-scripts/Skills.cs:hasDoubleExp — multiple Double XP buffs still give only one doubling. -->
+        <p>
+          Double XP buffs do not stack. Drinking an Elixir of Enlightened
+          Learning during the season adds no XP bonus.
+        </p>
+      </Card.Content>
+    </Card.Root>
+  {/if}
 
   <!-- Appearance -->
   {#if data.visualAsset}
@@ -344,9 +377,11 @@
               </dl>
             </Tabs.Content>
             <Tabs.Content value="tooltip">
-              <p class="mb-3 text-sm text-muted-foreground">
-                Rank 1. Base values before equipment and attribute bonuses.
-              </p>
+              {#if !data.season}
+                <p class="mb-3 text-sm text-muted-foreground">
+                  Rank 1. Base values before equipment and attribute bonuses.
+                </p>
+              {/if}
               <div class="text-sm whitespace-pre-wrap">
                 <!-- eslint-disable-next-line svelte/no-at-html-tags -- Safe: Unity color tags from controlled data -->
                 {@html convertTooltip(data.gameTooltip)}
@@ -377,9 +412,11 @@
             </div>
           </dl>
         {:else}
-          <p class="mb-3 text-sm text-muted-foreground">
-            Rank 1. Base values before equipment and attribute bonuses.
-          </p>
+          {#if !data.season}
+            <p class="mb-3 text-sm text-muted-foreground">
+              Rank 1. Base values before equipment and attribute bonuses.
+            </p>
+          {/if}
           <div class="text-sm whitespace-pre-wrap">
             <!-- eslint-disable-next-line svelte/no-at-html-tags -- Safe: Unity color tags from controlled data -->
             {@html convertTooltip(data.gameTooltip)}
@@ -390,7 +427,7 @@
   {/if}
 
   <!-- Requirements -->
-  {#if hasRequirements}
+  {#if !data.season && hasRequirements}
     <Card.Root id="requirements" class="bg-muted/30">
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
@@ -942,7 +979,7 @@
   {/if}
 
   <!-- Buff/Debuff Effects -->
-  {#if hasBuffEffects}
+  {#if !data.season && hasBuffEffects}
     <Card.Root id="buff-debuff" class="bg-muted/30">
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">

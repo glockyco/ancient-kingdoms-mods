@@ -780,10 +780,10 @@ function formatBuffDebuffStats(
   };
 
   // 1. Special flags (binary game-changers that define the skill's identity)
-  // Source: server-scripts/Skills.cs:hasDoubleExp; Monster.cs:OnDeath; GatherItem.cs; Player.cs — double XP covers kills, gathering, fishing, crafting, alchemy and scribing, but not quest rewards.
+  // Source: server-scripts/Skills.cs:hasDoubleExp; Monster.cs:OnDeath; GatherItem.cs; Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftItem__NetworkIdentity__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String — double XP covers kills, gathering, fishing, crafting, cooking, alchemy, scribing and augmentation, but not quest rewards.
   if (skill.is_double_exp_spell) {
     parts.push(
-      "2× XP from kills, gathering, fishing, crafting, alchemy & scribing",
+      "2× XP from kills, gathering, fishing, crafting, cooking, alchemy, scribing & augmentation",
     );
   }
   if (skill.is_dispel) parts.push("dispels buffs");
@@ -1114,11 +1114,6 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   detect_traps: "reveal and disarm traps",
   // Source: server-scripts/Player.cs:9098-9115 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
-  // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
-  halloween_event:
-    "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",
-  winter_festival:
-    "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — while active, a Rogue's
   // followupDefaultAttack skill, Stab, switches to Poison damage and adds the rounded 250% Dexterity
   // bonus to Attack Power. Duration stored in duration_base (10s).

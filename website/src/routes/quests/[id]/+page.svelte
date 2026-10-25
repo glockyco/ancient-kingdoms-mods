@@ -13,6 +13,7 @@
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import Scroll from "@lucide/svelte/icons/scroll";
   import Target from "@lucide/svelte/icons/target";
@@ -122,6 +123,9 @@
       <MapLink entityId={data.quest.id} entityType="quest" />
       <QuestTypeBadge type={data.quest.display_type} />
       <QuestFlagBadges quest={data.quest} />
+      {#each data.seasons as season (season)}
+        <SeasonLabel {season} variant="badge" />
+      {/each}
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -143,6 +147,23 @@
       {/if}
     </div>
   </div>
+  {#if data.seasons.length > 0}
+    <div class="bg-muted/30 rounded-md border p-4">
+      <!-- Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE,UpdateServer_DEAD — Santa Claus is present only during the Winter Festival, so his quests can only be accepted then. -->
+      <p class="text-sm">
+        Accept this quest only during
+        {#each data.seasons as season, index (season)}
+          {index > 0 ? " or " : ""}{season === "christmas"
+            ? "the "
+            : ""}<SeasonLabel {season} />
+        {/each}.
+        {#if data.quest.is_repeatable}
+          <!-- Source: server-scripts/PlayerQuests.cs:CanAcceptInternal — a repeatable quest can be accepted again 8 hours after completion. -->
+          You can accept it again 8 hours after completion.
+        {/if}
+      </p>
+    </div>
+  {/if}
 
   <!-- Daily Quest Info -->
   {#if data.quest.is_adventurer_quest}
@@ -296,7 +317,7 @@
             NPCs
           </h2>
           <div class="bg-muted/30 rounded-md border p-4 space-y-3">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
               <span class="text-sm text-muted-foreground w-16">Start:</span>
               <a
                 href="/npcs/{data.startNpc.id}"
@@ -304,6 +325,9 @@
               >
                 {data.startNpc.name}
               </a>
+              {#if data.npcSeasons[data.startNpc.id]}
+                <SeasonLabel season={data.npcSeasons[data.startNpc.id]!} />
+              {/if}
               {#if data.startNpc.zone_name}
                 <span class="text-muted-foreground">
                   in
@@ -317,7 +341,7 @@
               {/if}
             </div>
             {#if data.endNpc}
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <span class="text-sm text-muted-foreground w-16">End:</span>
                 <a
                   href="/npcs/{data.endNpc.id}"
@@ -325,6 +349,9 @@
                 >
                   {data.endNpc.name}
                 </a>
+                {#if data.npcSeasons[data.endNpc.id]}
+                  <SeasonLabel season={data.npcSeasons[data.endNpc.id]!} />
+                {/if}
                 {#if data.endNpc.zone_name}
                   <span class="text-muted-foreground">
                     in

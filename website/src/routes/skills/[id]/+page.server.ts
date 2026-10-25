@@ -32,6 +32,7 @@ import { skillMechanicsSpec } from "$lib/utils/skillMechanics";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { getSkillCategoryKey } from "$lib/utils/skill-category";
 import { skillLearningAtRank } from "$lib/acquisition/conditions";
+import type { Season } from "$lib/data/seasonal-events";
 
 export const prerender = true;
 
@@ -43,6 +44,7 @@ export const entries: EntryGenerator = () => {
 
 export interface SkillDetailPageData {
   skill: SkillDetailView;
+  season: Season | null;
   gameTooltip: string;
   effectSummary: string;
   grantedByItems: SkillItemSource[];
@@ -466,7 +468,15 @@ export const load: PageServerLoad = async ({
     [params.id],
   );
 
-  const effectSummary = formatSkillEffect(skillEffectInput(skill, casters));
+  const season =
+    query<{ id: Season }>("SELECT id FROM seasons WHERE buff_skill_id = ?", [
+      params.id,
+    ])[0]?.id ?? null;
+  // Source: server-scripts/EnviromentSystem.cs:CheckSpecialEvents — the hourly refresh interval is not the duration of the season's XP bonus.
+  const effectSummary = formatSkillEffect({
+    ...skillEffectInput(skill, casters),
+    duration_base: season ? 0 : skill.duration_base,
+  });
 
   // Mercenaries are pets with is_mercenary=1; familiars/companions are the
   // rest. We split because mercenary ownership is most actionable for the
@@ -493,6 +503,7 @@ export const load: PageServerLoad = async ({
 
   const description = skillDescription({
     name: skill.name,
+    season,
     skill_type: skill.skill_type,
     tier: skill.tier,
     max_level: skill.max_level,
@@ -531,6 +542,7 @@ export const load: PageServerLoad = async ({
 
   return {
     skill,
+    season,
     // Source: server-scripts/Skills.cs:AddOrRefreshBuff — applying a categorized buff expires existing buffs of the same category.
     // Source: server-scripts/AreaBuffSkill.cs:Apply — a pet-cast area buff skips a target that already has a different buff of its category.
     categorySkills: skill.buff_category

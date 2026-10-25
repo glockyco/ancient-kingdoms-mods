@@ -219,6 +219,19 @@ export function formatSpawnTimeWindow(
 }
 
 /**
+ * Real minutes per real hour that a spawn window is open, or null when the
+ * spawn is not limited. A window that ends before it starts wraps midnight.
+ */
+// Source: server-scripts/Monster.cs:EventTimeSpawn,IsHourBetween — the game hour is server time modulo 3600 seconds divided by 150, so one game day lasts one real hour.
+export function spawnWindowRealMinutes(
+  start: number,
+  end: number,
+): number | null {
+  if ((start === 0 && end === 0) || start === end) return null;
+  return (((end - start + 24) % 24) / 24) * 60;
+}
+
+/**
  * Get CSS class for item quality color (uses custom CSS variables)
  * Use for backgrounds/badges
  */

@@ -787,6 +787,7 @@ function capitalizeFirst(text: string): string {
 
 interface MonsterDescriptionInput {
   name: string;
+  season?: Season | null;
   type_name: string | null;
   is_boss: boolean;
   is_elite: boolean;
@@ -871,6 +872,9 @@ export function monsterDescription(
           monster.death_time != null
         ? ` Ready to respawn ${formatDuration(monster.death_time + monster.respawn_time)} after death.`
         : "";
+  // Source: server-scripts/Monster.cs:UpdateServer_DEAD — Halloween monsters only spawn while Halloween runs.
+  if (monster.season)
+    origin += ` Appears only during ${SEASONS[monster.season].name}.`;
   return `Level ${range} ${species}${classification}.${origin}${monster.drop_summary ? ` ${monster.drop_summary}` : ""}${respawn}`;
 }
 
@@ -905,6 +909,7 @@ interface NpcRoles {
 
 interface NpcDescriptionInput {
   name: string;
+  season?: Season | null;
   faction: string | null;
   roles: NpcRoles;
   /** Number of quests offered by this NPC, used in the description tail. */
@@ -988,7 +993,11 @@ export function npcDescription(
   if (npc.kill_reputation_summary) tail.push(npc.kill_reputation_summary);
   const tailPhrase = tail.length > 0 ? ` ${tail.join(" ")}` : "";
 
-  return `${primary}${location}${questCount}.${factionPhrase}${tailPhrase}`;
+  // Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE,UpdateServer_DEAD — seasonal NPCs are hidden outside their season.
+  const season = npc.season
+    ? ` Present only during ${npc.season === "christmas" ? "the " : ""}${SEASONS[npc.season].name}.`
+    : "";
+  return `${primary}${location}${questCount}.${season}${factionPhrase}${tailPhrase}`;
 }
 
 // =============================================================================
@@ -1089,6 +1098,7 @@ interface QuestObjective {
 
 interface QuestDescriptionInput {
   name: string;
+  seasons?: readonly Season[];
   quest_type: string;
   level_required: number;
   is_main_quest: boolean;
@@ -1237,7 +1247,11 @@ export function questDescription(
   const levelPhrase =
     quest.level_required > 1 ? ` for level ${quest.level_required}+` : "";
   const objectiveSentence = buildObjectiveSentence(quest, objectives);
-  return `${tier}${levelPhrase}.${objectiveSentence}`;
+  // Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE,UpdateServer_DEAD; server-scripts/PlayerQuests.cs:CanAcceptInternal — seasonal NPC quests can only be accepted during their season and repeatable quests reopen after 8 hours.
+  const seasonal = quest.seasons?.length
+    ? ` Accept only during ${joinList(quest.seasons.map((season) => `${season === "christmas" ? "the " : ""}${SEASONS[season].name}`))}.${quest.is_repeatable ? " Repeatable 8 hours after completion." : ""}`
+    : "";
+  return `${tier}${levelPhrase}.${objectiveSentence}${seasonal}`;
 }
 
 // =============================================================================
@@ -1492,6 +1506,7 @@ export interface SkillGrantedByCounts {
 
 interface SkillDescriptionInput {
   name: string;
+  season?: Season | null;
   skill_type: string;
   tier: number;
   max_level: number;
@@ -1646,6 +1661,9 @@ function skillOwnershipPhrase(skill: SkillDescriptionInput): string | null {
 
 /** Lead with the effect, followed by its source and meaningful learning requirements. */
 export function skillDescription(skill: SkillDescriptionInput): string {
+  // Source: server-scripts/Player.cs:Start; server-scripts/EnviromentSystem.cs:CheckSpecialEvents — every online player receives the active season's buff.
+  if (skill.season)
+    return `${skill.effect_summary ?? "Double XP"}. Granted to every online player during ${skill.season === "christmas" ? "the " : ""}${SEASONS[skill.season].name}.`;
   // Source: server-scripts/NecromancerDeathBloomSkill.cs:CorrectedTarget — another living Player or non-familiar Pet only.
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet — owned living combat pet, not a familiar or mercenary.
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — toggles the form buff.

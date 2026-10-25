@@ -25,6 +25,7 @@ import {
   getProsperityRegion,
   getZoneEventRegion,
 } from "$lib/queries/regional-events.server";
+import type { Season } from "$lib/data/seasonal-events";
 
 export const prerender = true;
 
@@ -104,6 +105,7 @@ export const load: PageServerLoad = async ({
     SELECT
       m.id,
       m.name,
+      m.season,
       va.public_path AS visual_public_path,
       m.level,
       m.health,
@@ -147,6 +149,7 @@ export const load: PageServerLoad = async ({
       const m = row as {
         id: string;
         name: string;
+        season: Season | null;
         visual_public_path: string | null;
         level: number;
         health: number;
@@ -177,6 +180,7 @@ export const load: PageServerLoad = async ({
       return {
         id: m.id,
         name: m.name,
+        season: m.season,
         visual_public_path: m.visual_public_path,
         level: levelMin,
         level_min: levelMin,
@@ -210,6 +214,7 @@ export const load: PageServerLoad = async ({
     SELECT
       n.id,
       n.name,
+      n.season,
       va.public_path AS visual_public_path,
       n.roles,
       ns.position_x,
@@ -228,6 +233,7 @@ export const load: PageServerLoad = async ({
     .all(params.id) as Array<{
     id: string;
     name: string;
+    season: Season | null;
     visual_public_path: string | null;
     roles: string;
     position_x: number | null;
@@ -242,6 +248,7 @@ export const load: PageServerLoad = async ({
       npcMap.set(npc.id, {
         id: npc.id,
         name: npc.name,
+        season: npc.season,
         visual_public_path: npc.visual_public_path,
         roles: normalizeRoles(npc.roles ? JSON.parse(npc.roles) : {}),
         position_x: npc.position_x,

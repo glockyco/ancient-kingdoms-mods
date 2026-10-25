@@ -1,5 +1,6 @@
 import type { LinkedAchievement } from "./achievements";
 import type { ObtainabilityNode } from "./recipes";
+import type { Season } from "$lib/data/seasonal-events";
 
 // Quest reward item
 export interface QuestRewardItem {
@@ -144,6 +145,8 @@ export interface QuestDetailPageData {
   /** Faction display name to route id, for linking out to `/factions/[id]`. */
   factionIds: Record<string, string>;
   description: string;
+  seasons: readonly Season[];
+  npcSeasons: Record<string, Season | null>;
   startNpcs: QuestNpc[];
   endNpcs: QuestNpc[];
   startNpc: QuestNpc | null;

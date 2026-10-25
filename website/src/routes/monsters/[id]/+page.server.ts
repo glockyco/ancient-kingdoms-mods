@@ -909,6 +909,7 @@ export const load: PageServerLoad = async ({
   const description = monsterDescription(
     {
       name: monster.name,
+      season: monster.season,
       level_min: monster.level_min,
       level_max: monster.level_max,
       is_boss: monster.is_boss,

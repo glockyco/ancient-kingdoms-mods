@@ -21,6 +21,11 @@ import { getFactionIdsByName } from "$lib/queries/factions.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { loadAcquisition } from "$lib/server/acquisition";
 import type { Season } from "$lib/data/seasonal-events";
+import { SEASON_ORDER } from "$lib/data/seasonal-events";
+import {
+  projectMethodSeasons,
+  projectQuestSeasons,
+} from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -112,17 +117,19 @@ export const load: PageServerLoad = async ({
     kind: "providers",
     providers: [{ kind: "npcs", id: params.id }],
   });
+  for (const quest of questMemberships) {
+    quest.seasons = projectQuestSeasons(acquisition, quest.id);
+  }
   const vendorMethods = [...acquisition.methodViews.values()].filter(
     (method) =>
       method.kind === "vendor" &&
-      method.detail.season === null &&
       method.providers.some(
         (provider) =>
           provider.ref.kind === "npcs" && provider.ref.id === params.id,
       ),
   );
   // A vendor row is the offered item, as the trade window shows it. A pack's page lists the contents a purchase delivers.
-  const offers: NpcItemSold[] = vendorMethods.map((method) => {
+  const offers = vendorMethods.flatMap((method) => {
     const itemId = String(method.detail.offered_item_id);
     const item = db
       .prepare(
@@ -152,7 +159,8 @@ export const load: PageServerLoad = async ({
             .get(currency.item_id) as { name: string }
         ).name
       : null;
-    return {
+    const seasons = projectMethodSeasons(acquisition, method);
+    const offer: NpcItemSold = {
       item_id: itemId,
       item_name: item.name,
       quality: item.quality,
@@ -164,16 +172,26 @@ export const load: PageServerLoad = async ({
       faction_required: item.faction_required_to_buy,
       faction_tier_name: item.faction_required_tier_name,
     };
+    return (seasons.length ? seasons : [null]).map((season) => ({
+      ...offer,
+      season,
+    }));
   });
   // The game's sale list can repeat an identical offer, which the page lists once.
   const itemsSold = [
     ...new Map(
       offers.map((offer) => [
-        `${offer.item_id}:${offer.currency_item_id}:${offer.price}`,
+        `${offer.item_id}:${offer.currency_item_id}:${offer.price}:${offer.season}`,
         offer,
       ]),
     ).values(),
   ];
+  const seasonalStock = (Object.keys(SEASON_ORDER) as Season[])
+    .map((season) => ({
+      season,
+      items: itemsSold.filter((offer) => offer.season === season),
+    }))
+    .filter((group) => group.items.length > 0);
   const skills = db
     .prepare(
       `
@@ -412,6 +430,7 @@ export const load: PageServerLoad = async ({
   const description = npcDescription(
     {
       name: npc.name,
+      season: npc.season,
       faction: npc.faction,
       roles,
       questCount: questsOffered.length,
@@ -433,7 +452,8 @@ export const load: PageServerLoad = async ({
     description,
     questsOffered,
     questsCompletedHere,
-    itemsSold,
+    itemsSold: itemsSold.filter((offer) => offer.season === null),
+    seasonalStock,
     drops: [],
     spawns,
     summonTriggers,

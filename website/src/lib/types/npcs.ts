@@ -114,6 +114,7 @@ export interface NpcQuestFactionRequirement {
 export interface NpcQuestOffered {
   id: string;
   name: string;
+  seasons?: readonly Season[];
   level_required: number;
   level_recommended: number;
   is_adventurer_quest: boolean;
@@ -176,6 +177,7 @@ export interface NpcDetailPageData {
   questsOffered: NpcQuestOffered[];
   questsCompletedHere: NpcQuestOffered[];
   itemsSold: NpcItemSold[];
+  seasonalStock: { season: Season; items: NpcItemSold[] }[];
   spawns: NpcSpawnLocation[];
   summonTriggers: Array<{
     trigger_id: string;

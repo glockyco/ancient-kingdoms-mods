@@ -32,6 +32,8 @@
     formatPercent as formatFraction,
     formatDuration,
     formatSkillType,
+    formatSpawnTimeWindow,
+    spawnWindowRealMinutes,
   } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
@@ -63,7 +65,15 @@
   const showRespawnColumn = $derived(respawnTime > 0);
   const showChanceColumn = $derived(data.monster.respawn_probability < 1);
   const showActiveColumn = $derived(
-    data.monster.spawn_time_start !== 0 || data.monster.spawn_time_end !== 0,
+    data.monster.season !== null ||
+      data.monster.spawn_time_start !== 0 ||
+      data.monster.spawn_time_end !== 0,
+  );
+  const spawnWindow = $derived(
+    formatSpawnTimeWindow(
+      data.monster.spawn_time_start,
+      data.monster.spawn_time_end,
+    )?.replace("-", " to "),
   );
   const hasSpawnsOnDeath = $derived(
     data.monster.placeholder_monster_id !== null,
@@ -635,9 +645,14 @@
       >{formatPercent(data.monster.respawn_probability)}</span
     >
   {:else if cell.column.id === "active"}
-    <span class="ml-auto">
-      {data.monster.spawn_time_start}:00-{data.monster.spawn_time_end}:00
-    </span>
+    <div class="ml-auto flex flex-col items-end gap-1 text-sm">
+      {#if data.monster.season}
+        <SeasonLabel season={data.monster.season} />
+      {/if}
+      {#if spawnWindow}
+        <span>{spawnWindow}</span>
+      {/if}
+    </div>
   {:else if cell.column.id === "spawn_count"}
     <span class="ml-auto">{row.original.spawn_count}</span>
   {:else}
@@ -827,6 +842,17 @@
         <SeasonLabel season={data.monster.season} variant="badge" />
       {/if}
     </div>
+    {#if data.monster.season}
+      <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD,EventTimeDespawn,IsHourBetween — a seasonal monster appears only during its season and within its spawn window. -->
+      <p class="mt-3 text-sm text-muted-foreground">
+        Appears only during <SeasonLabel
+          season={data.monster.season}
+        />{#if spawnWindow}, from {spawnWindow} game time, for {spawnWindowRealMinutes(
+            data.monster.spawn_time_start,
+            data.monster.spawn_time_end,
+          )} real minutes in every hour{/if}.
+      </p>
+    {/if}
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
       <span

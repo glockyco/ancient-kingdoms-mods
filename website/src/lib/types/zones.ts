@@ -1,6 +1,7 @@
 import type { RespawnInfo } from "./respawn";
 import type { NpcRoles } from "./npcs";
 import type { TrapType } from "$lib/constants/traps";
+import type { Season } from "$lib/data/seasonal-events";
 
 /**
  * Zone data as displayed in the zones overview table
@@ -26,6 +27,7 @@ export interface ZoneListView {
 export interface ZoneMonster extends RespawnInfo {
   id: string;
   name: string;
+  season: Season | null;
   level: number;
   level_min: number;
   level_max: number;
@@ -50,6 +52,7 @@ export interface ZoneMonster extends RespawnInfo {
 export interface ZoneNpc {
   id: string;
   name: string;
+  season: Season | null;
   roles: NpcRoles;
   visual_public_path: string | null;
   position_x: number | null;

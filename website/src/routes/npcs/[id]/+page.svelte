@@ -160,14 +160,14 @@
 
   // Check if any quests have class requirements (for conditional column)
   const hasClassRequirements = $derived(
-    data.questsOffered.some(
+    [...data.questsOffered, ...data.questsCompletedHere].some(
       (q) => q.class_requirements && q.class_requirements.length > 0,
     ),
   );
 
   // Check if any quests have flags (for conditional column)
   const hasQuestFlags = $derived(
-    data.questsOffered.some(
+    [...data.questsOffered, ...data.questsCompletedHere].some(
       (q) =>
         q.is_main_quest ||
         q.is_epic_quest ||
@@ -313,6 +313,9 @@
       });
     }
 
+    if (data.npc.season) {
+      cols.push({ id: "active", header: "Active", size: 180 });
+    }
     return cols;
   });
 
@@ -347,6 +350,9 @@
     >
       {row.original.name}
     </a>
+    {#each row.original.seasons ?? [] as season (season)}
+      <SeasonLabel {season} />
+    {/each}
   {:else if cell.column.id === "class"}
     <ClassPills
       classes={(row.original.class_requirements || []).map((c) =>
@@ -492,6 +498,8 @@
     <span class="ml-auto">{formatTime(data.npc.respawn_time)}</span>
   {:else if cell.column.id === "chance"}
     <span class="ml-auto">{formatPercent(data.npc.respawn_probability)}</span>
+  {:else if cell.column.id === "active" && data.npc.season}
+    <SeasonLabel season={data.npc.season} />
   {:else}
     {cell.getValue()}
   {/if}
@@ -543,6 +551,22 @@
         <SeasonLabel season={data.npc.season} variant="badge" />
       {/if}
     </div>
+    {#if data.npc.season}
+      <!-- Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE,UpdateServer_DEAD — seasonal NPCs are hidden outside the Winter Festival. -->
+      <p class="mt-3 text-sm text-muted-foreground">
+        Found in
+        {#each data.spawns as spawn, index (spawn.zone_id)}
+          {index > 0 ? ", " : ""}<a
+            href="/zones/{spawn.zone_id}"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >{spawn.zone_name}</a
+          >
+        {/each}
+        only during {data.npc.season === "christmas" ? "the " : ""}<SeasonLabel
+          season={data.npc.season}
+        />.
+      </p>
+    {/if}
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
       <span>Level {data.npc.level}</span>
@@ -924,6 +948,68 @@
         zebraStripe={true}
         class="bg-muted/30"
       />
+    </section>
+  {/if}
+  {#if data.questsCompletedHere.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Scroll class="h-5 w-5 text-orange-500" />
+        Quests Completed Here ({data.questsCompletedHere.length})
+      </h2>
+      <DataTable
+        data={data.questsCompletedHere}
+        columns={questColumns}
+        renderCell={renderQuestCell}
+        renderHeader={renderQuestHeader}
+        initialSorting={[{ id: "level_recommended", desc: false }]}
+        urlKey="npc-{data.npc.id}-completed-quests"
+        pageSize={10}
+        zebraStripe={true}
+        class="bg-muted/30"
+      />
+    </section>
+  {/if}
+
+  {#if data.seasonalStock.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <ShoppingBag class="h-5 w-5 text-green-500" />
+        Seasonal stock
+      </h2>
+      <div class="grid gap-4 lg:grid-cols-2">
+        {#each data.seasonalStock as group (group.season)}
+          <div class="rounded-md border bg-muted/30 p-4 space-y-4">
+            <h3 class="font-semibold"><SeasonLabel season={group.season} /></h3>
+            <ul class="divide-y text-sm">
+              {#each group.items as item (item.item_id)}
+                <li
+                  class="flex flex-wrap items-center justify-between gap-2 py-3"
+                >
+                  <ItemLink
+                    itemId={item.item_id}
+                    itemName={item.item_name}
+                    quality={item.quality}
+                    imageAvailable={item.visual_public_path}
+                    tooltipHtml={item.tooltip_html}
+                    variant="reference"
+                    fallback={Package}
+                  />
+                  <span class="flex items-center gap-1">
+                    {item.price.toLocaleString()}
+                    {#if item.currency_item_id}
+                      <ItemLink
+                        itemId={item.currency_item_id}
+                        itemName={item.currency_item_name ?? ""}
+                        variant="text"
+                      />
+                    {:else}Gold{/if}
+                  </span>
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/each}
+      </div>
     </section>
   {/if}
 
