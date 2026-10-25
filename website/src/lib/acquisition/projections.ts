@@ -744,6 +744,23 @@ const bySeasonOrder = (seasons: Iterable<Season>): readonly Season[] =>
     [...new Set(seasons)].sort((a, b) => SEASON_ORDER[a] - SEASON_ORDER[b]),
   );
 
+/** Seasons required to accept a quest, empty when any offering NPC is present all year. */
+export function projectQuestSeasons(
+  model: AcquisitionModel,
+  questId: string,
+): readonly Season[] {
+  const seasons = (model.rows.facts.npc_quest_memberships ?? [])
+    .filter((row) => row.quest_id === questId && row.role === "offer")
+    .map(
+      (row) =>
+        model.entities.get("npcs")?.get(String(row.npc_id))?.season as
+          Season | null | undefined,
+    );
+  return seasons.length && seasons.every((season) => season != null)
+    ? bySeasonOrder(seasons as Season[])
+    : [];
+}
+
 /**
  * The seasons a method needs, empty when it is available all year: its own season
  * conditions, a season every provider needs, and for a quest completion the
@@ -759,18 +776,8 @@ export function projectMethodSeasons(
   );
   if (providerSeasons.length && providerSeasons.every((list) => list.length))
     seasons.push(...providerSeasons.flat());
-  if (method.kind === "quest_complete") {
-    const questId = String(method.detail.quest_id);
-    const offerSeasons = (model.rows.facts.npc_quest_memberships ?? [])
-      .filter((row) => row.quest_id === questId && row.role === "offer")
-      .map(
-        (row) =>
-          model.entities.get("npcs")?.get(String(row.npc_id))?.season as
-            Season | null | undefined,
-      );
-    if (offerSeasons.length && offerSeasons.every((season) => season != null))
-      seasons.push(...(offerSeasons as Season[]));
-  }
+  if (method.kind === "quest_complete")
+    seasons.push(...projectQuestSeasons(model, String(method.detail.quest_id)));
   return bySeasonOrder(seasons);
 }
 
