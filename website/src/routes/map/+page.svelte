@@ -340,10 +340,10 @@
       : computeSelectionData(entityIndex, selectedEntityType, selectedEntityId),
   );
 
-  // Derived: whether there are any highlight positions to focus on
-  // Used to conditionally show the focus button in popups
+  // Whether the selection has anything on the map to focus on. This is the
+  // one gate for every popup's focus button.
   let hasHighlightPositions = $derived(
-    selectionData.some((e) => e.position !== null),
+    selectionData.some((e) => e.position !== null) || discoveryArea !== null,
   );
 
   // Derived: pre-computed patrol path data for patrolling monsters
@@ -519,10 +519,8 @@
   }
 
   function handleFocusDiscovery() {
-    if (!deckInstance || !discoveryArea) return;
-    flyToBounds(deckInstance, boundsFromPolygon(discoveryArea), {
-      rightPadding: flyToRightPadding,
-    });
+    if (!discoveryArea) return;
+    handleFocusBounds(boundsFromPolygon(discoveryArea));
   }
 
   /**
@@ -555,20 +553,27 @@
     applySelection({ popup: null, highlight: null });
   }
 
+  /**
+   * Fly to bounds. On phones the details sheet covers most of the map, so it
+   * closes first and the target lands in view. The Show details button
+   * reopens it.
+   */
   function handleFocusBounds(bounds: Bounds) {
     if (!deckInstance) return;
+    if (!isDesktop) mobileDrawerOpen = false;
     flyToBounds(deckInstance, bounds, { rightPadding: flyToRightPadding });
   }
 
+  /** Frame everything the selection highlights, including a quest's discovery area. */
   function handleFocusHighlighted() {
-    if (!deckInstance) return;
-    const positions = selectionData
-      .map((e) => e.position)
-      .filter((p): p is [number, number] => p !== null);
+    const positions = [
+      ...selectionData
+        .map((e) => e.position)
+        .filter((p): p is [number, number] => p !== null),
+      ...(discoveryArea ?? []),
+    ];
     const bounds = boundsFromPositions(positions);
-    if (bounds) {
-      flyToBounds(deckInstance, bounds, { rightPadding: flyToRightPadding });
-    }
+    if (bounds) handleFocusBounds(bounds);
   }
 
   function handleSelectMonster(monsterId: string) {
@@ -1227,9 +1232,14 @@
       onZoneFocusChange={handleZoneFocusChange}
       bind:isCollapsed={sidebarCollapsed}
     />
+    <!--
+      On phones the search and controls buttons fill the bottom-left corner
+      (1rem margin, 3rem buttons), so this list sits 0.5rem above them. On
+      desktop it sits beside the sidebar.
+    -->
     <details
       bind:open={markerListOpen}
-      class="absolute bottom-4 left-4 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-lg border bg-card text-card-foreground shadow-lg md:left-[calc(var(--sidebar-width)+1rem)]"
+      class="absolute bottom-[4.5rem] left-4 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-lg border bg-card text-card-foreground shadow-lg md:bottom-4 md:left-[calc(var(--sidebar-width)+1rem)]"
       style="--sidebar-width: {sidebarWidth}px"
     >
       <summary

@@ -56,6 +56,21 @@ describe("compact map popups on canonical acquisition", () => {
     expect(selection.highlight).not.toBeNull();
   });
 
+  test("a quest highlights where to do its objectives as well as its NPCs", async () => {
+    const groups = async (questId: string) =>
+      (await resolveVirtualSelection("quest", questId)).highlight
+        ?.overrideGroups ?? [];
+    const kill = await groups("keeping_the_winter_peace");
+    expect(kill).toContainEqual({ ids: ["santa_claus"], category: "npc" });
+    expect(kill).toContainEqual({ ids: ["snow_giant"], category: "monster" });
+    const deliver = await groups("the_spirit_of_winter");
+    expect(
+      deliver.some(
+        (group) => group.category === "resource" && group.ids.length > 0,
+      ),
+    ).toBe(true);
+  });
+
   test("repair merchants retain both seasons and item-currency prices", async () => {
     const popup = await loadNpcPopupDetails("adventurer_argosh");
     for (const season of ["halloween", "christmas"]) {

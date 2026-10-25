@@ -104,35 +104,31 @@ export function resolvePhysicalSelection(
   return resolved;
 }
 
-/**
- * Resolve selection for virtual entities (async - needs DB query).
- * Returns what popup to show and what physical entities to highlight.
- */
-export async function resolveVirtualSelection(
-  category: "item" | "quest",
-  id: string,
-): Promise<ResolvedSelection> {
-  if (category === "item") {
-    const model = await loadBrowserAcquisition({
-      kind: "items",
-      itemIds: [id],
-    });
-    const categories: Partial<Record<LocationRef["kind"], HighlightCategory>> =
-      {
-        monster_spawns: "monster",
-        npcs: "npc",
-        resource_spawns: "resource",
-        chests: "chest",
-        altars: "altar",
-        treasure_locations: "treasure",
-        crafting_stations: "crafting",
-        alchemy_tables: "crafting",
-        scribing_tables: "crafting",
-        portals: "portal",
-      };
-    const groups = new Map<HighlightCategory, Set<string>>();
-    for (const location of itemMapLocations(model, id)) {
-      const category = categories[location.provider.kind];
+/** Map highlight category for each kind of acquisition provider. */
+const PROVIDER_CATEGORIES: Partial<
+  Record<LocationRef["kind"], HighlightCategory>
+> = {
+  monster_spawns: "monster",
+  npcs: "npc",
+  resource_spawns: "resource",
+  chests: "chest",
+  altars: "altar",
+  treasure_locations: "treasure",
+  crafting_stations: "crafting",
+  alchemy_tables: "crafting",
+  scribing_tables: "crafting",
+  portals: "portal",
+};
+
+/** Highlight groups for every place on the map where the items are obtained or used. */
+function itemOverrideGroups(
+  model: Awaited<ReturnType<typeof loadBrowserAcquisition>>,
+  itemIds: readonly string[],
+): OverrideGroup[] {
+  const groups = new Map<HighlightCategory, Set<string>>();
+  for (const itemId of itemIds) {
+    for (const location of itemMapLocations(model, itemId)) {
+      const category = PROVIDER_CATEGORIES[location.provider.kind];
       if (!category) continue;
       const ids = groups.get(category) ?? new Set<string>();
       if (category === "monster" && location.approximate) {
@@ -150,14 +146,28 @@ export async function resolveVirtualSelection(
       }
       groups.set(category, ids);
     }
-    const overrideGroups: OverrideGroup[] = [...groups].map(
-      ([category, ids]) => ({
-        category,
-        ids: [...ids],
-        exactPlacement: category === "monster" || category === "resource",
-      }),
-    );
+  }
+  return [...groups].map(([category, ids]) => ({
+    category,
+    ids: [...ids],
+    exactPlacement: category === "monster" || category === "resource",
+  }));
+}
 
+/**
+ * Resolve selection for virtual entities (async - needs DB query).
+ * Returns what popup to show and what physical entities to highlight.
+ */
+export async function resolveVirtualSelection(
+  category: "item" | "quest",
+  id: string,
+): Promise<ResolvedSelection> {
+  if (category === "item") {
+    const model = await loadBrowserAcquisition({
+      kind: "items",
+      itemIds: [id],
+    });
+    const overrideGroups = itemOverrideGroups(model, [id]);
     return {
       popup: { type: "item", id },
       highlight:
@@ -168,16 +178,31 @@ export async function resolveVirtualSelection(
   }
 
   if (category === "quest") {
-    const npcIds = await queryQuestNpcs(id);
+    // A quest shows where to take it, where to do each objective and where to
+    // turn it in: its NPCs, every spawn of a monster to kill, and every place
+    // to get an objective item. A discovery area is drawn by the quest popup.
+    const [npcIds, monsterIds, itemIds] = await Promise.all([
+      queryQuestNpcs(id),
+      queryQuestObjectiveTargets(id, "quest_objective_monsters", "monster_id"),
+      queryQuestObjectiveTargets(id, "quest_objective_items", "item_id"),
+    ]);
+    const overrideGroups: OverrideGroup[] = [
+      ...(npcIds.length ? [{ ids: npcIds, category: "npc" as const }] : []),
+      ...(monsterIds.length
+        ? [{ ids: monsterIds, category: "monster" as const }]
+        : []),
+      ...(itemIds.length
+        ? itemOverrideGroups(
+            await loadBrowserAcquisition({ kind: "items", itemIds }),
+            itemIds,
+          )
+        : []),
+    ];
     return {
       popup: { type: "quest", id },
       highlight:
-        npcIds.length > 0
-          ? {
-              entityId: id,
-              entityType: "quest",
-              overrideGroups: [{ ids: npcIds, category: "npc" }],
-            }
+        overrideGroups.length > 0
+          ? { entityId: id, entityType: "quest", overrideGroups }
           : null,
     };
   }
@@ -526,4 +551,20 @@ async function queryQuestNpcs(questId: string): Promise<string[]> {
     [questId],
   );
   return rows.map((row) => row.npc_id);
+}
+
+/** Monsters or items a quest's published objectives name. */
+async function queryQuestObjectiveTargets(
+  questId: string,
+  table: "quest_objective_monsters" | "quest_objective_items",
+  column: "monster_id" | "item_id",
+): Promise<string[]> {
+  const rows = await query<{ target: string }>(
+    `SELECT DISTINCT t.${column} AS target FROM quest_objectives o
+     JOIN ${table} t ON t.id=o.id
+     WHERE o.quest_id=? AND o.withheld=0 AND t.${column} IS NOT NULL
+     ORDER BY target`,
+    [questId],
+  );
+  return rows.map((row) => row.target);
 }

@@ -129,13 +129,12 @@
     <p class="text-destructive">{error}</p>
   </PopupCard>
 {:else if details}
-  {@const hasHighlightedEntities = details.canFocus}
   <PopupCard
     title={details.name}
     subtitle="Quest · Lv {details.levelRecommended}"
     detailsUrl="/quests/{details.id}"
     {onClose}
-    onFocusClick={hasHighlightedEntities ? onFocusClick : undefined}
+    {onFocusClick}
     {mode}
   >
     {#if details.seasons.length > 0}

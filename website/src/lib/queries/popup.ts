@@ -342,7 +342,6 @@ export interface QuestPopupDetails {
   id: string;
   name: string;
   levelRecommended: number;
-  canFocus: boolean;
   displayType: string;
   isMainQuest: boolean;
   isEpicQuest: boolean;
@@ -1366,7 +1365,6 @@ export async function loadQuestPopupDetailsBatch(
     entities: ids.map((id) => ({ kind: "quest", id })),
   });
   const npcsByQuest = new Map<string, QuestPopupNpc[]>();
-  const focusableQuests = new Set<string>();
   for (let offset = 0; offset < ids.length; offset += 200) {
     const batch = ids.slice(offset, offset + 200);
     const memberships = await query<{
@@ -1375,13 +1373,11 @@ export async function loadQuestPopupDetailsBatch(
       name: string;
       role: string;
       zone_name: string | null;
-      has_position: number;
     }>(
-      `SELECT DISTINCT m.quest_id,m.npc_id,n.name,m.role,z.name zone_name,(ns.position_x IS NOT NULL AND ns.position_y IS NOT NULL) has_position FROM npc_quest_memberships m JOIN npcs n ON n.id=m.npc_id LEFT JOIN npc_spawns ns ON ns.npc_id=n.id LEFT JOIN zones z ON z.id=ns.zone_id WHERE m.quest_id IN (${batch.map(() => "?").join(",")}) ORDER BY n.name,z.name,m.role`,
+      `SELECT DISTINCT m.quest_id,m.npc_id,n.name,m.role,z.name zone_name FROM npc_quest_memberships m JOIN npcs n ON n.id=m.npc_id LEFT JOIN npc_spawns ns ON ns.npc_id=n.id LEFT JOIN zones z ON z.id=ns.zone_id WHERE m.quest_id IN (${batch.map(() => "?").join(",")}) ORDER BY n.name,z.name,m.role`,
       batch,
     );
     for (const row of memberships) {
-      if (row.has_position) focusableQuests.add(row.quest_id);
       const npcs = npcsByQuest.get(row.quest_id) ?? [];
       let npc = npcs.find((n) => n.npcId === row.npc_id);
       if (!npc) {
@@ -1529,7 +1525,6 @@ export async function loadQuestPopupDetailsBatch(
       ],
       gold: Number(quest.reward_gold ?? 0),
       exp: Number(quest.reward_experience ?? 0),
-      canFocus: focusableQuests.has(questId),
       objectives,
       rewardItems: shareRewardsGivenToEveryClass(rewardItems, classNames, {
         key: (item) => item.itemId,
