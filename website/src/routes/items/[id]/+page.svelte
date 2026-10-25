@@ -6,6 +6,7 @@
   import { formatAltarRewardTier } from "$lib/calculation/altar";
   import { SEASON_ORDER, type Season } from "$lib/data/seasonal-events";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import SeasonIcons from "$lib/components/SeasonIcons.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -16,6 +17,7 @@
   import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
   import ItemTooltip from "$lib/components/ItemTooltip.svelte";
   import DropChance from "$lib/components/DropChance.svelte";
+  import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import FishIcon from "@lucide/svelte/icons/fish";
   import { ITEM_STAT_FIELDS } from "$lib/constants/items";
   import {
@@ -592,12 +594,6 @@
         header: "Rec. Level",
         size: NUMBER,
       },
-      {
-        id: "repeats",
-        accessorFn: (quest: QuestRow) => quest.is_repeatable,
-        header: "Repeats",
-        size: 120,
-      },
       ...(rows.some((q) => hasSpecificClassRestriction(q.class_restrictions))
         ? [{ id: "classes", header: "Classes", minSize: TEXT }]
         : []),
@@ -700,17 +696,6 @@
   ];
 </script>
 
-<!-- A source or use that only a season offers names it on its own line under the row's name. -->
-{#snippet seasonLabels(seasons: readonly Season[], indent = "")}
-  {#if seasons.length > 0}
-    <span class="mt-1 flex flex-wrap gap-x-3 gap-y-1 {indent}">
-      {#each seasons as season (season)}
-        <SeasonLabel {season} variant="inline" />
-      {/each}
-    </span>
-  {/if}
-{/snippet}
-
 {#snippet number(value: string | number)}
   <span class="ml-auto tabular-nums">{value}</span>
 {/snippet}
@@ -771,21 +756,19 @@
 })}
   {@const drop = row.original}
   {#if cell.column.id === "monster_name"}
-    <div class="min-w-0">
-      <div class="flex items-center gap-1.5">
-        <MonsterTypeIcon
-          isBoss={drop.is_boss}
-          isFabled={drop.is_fabled}
-          isElite={drop.is_elite}
-        />
-        <a
-          href={resolve("/monsters/[id]", { id: drop.monster_id })}
-          class={styles.link}
-        >
-          {drop.monster_name}
-        </a>
-      </div>
-      {@render seasonLabels(drop.seasons, "pl-6")}
+    <div class="flex items-center gap-1.5">
+      <MonsterTypeIcon
+        isBoss={drop.is_boss}
+        isFabled={drop.is_fabled}
+        isElite={drop.is_elite}
+      />
+      <a
+        href={resolve("/monsters/[id]", { id: drop.monster_id })}
+        class={styles.link}
+      >
+        {drop.monster_name}
+      </a>
+      <SeasonIcons seasons={drop.seasons} />
     </div>
   {:else if cell.column.id === "level"}
     {@render number(
@@ -885,12 +868,22 @@
 })}
   {@const quest = row.original}
   {#if cell.column.id === "quest_name"}
-    <div>
+    <div class="flex items-center gap-1.5">
       <a
         href={resolve("/quests/[id]", { id: quest.quest_id })}
         class={styles.link}>{quest.quest_name}</a
       >
-      {@render seasonLabels(quest.seasons ?? [])}
+      <!-- Few quests repeat, so a marker beside the name replaces a column of "Once". -->
+      {#if quest.is_repeatable}
+        <span class="inline-flex shrink-0 p-0.5" title="Repeatable">
+          <RefreshCw
+            class="h-4 w-4 text-green-700 dark:text-green-500"
+            aria-hidden="true"
+          />
+          <span class="sr-only">Repeatable</span>
+        </span>
+      {/if}
+      <SeasonIcons seasons={quest.seasons ?? []} />
     </div>
   {:else if cell.column.id === "need"}
     {[QUEST_ITEM_NEEDS[quest.purpose ?? ""] ?? quest.purpose, quest.amount]
@@ -898,8 +891,6 @@
       .join(" ")}
   {:else if cell.column.id === "level_recommended"}
     {@render number(quest.level_recommended)}
-  {:else if cell.column.id === "repeats"}
-    {quest.is_repeatable ? "Repeatable" : "Once"}
   {:else if cell.column.id === "classes"}
     <span class={styles.wrapCell}>
       {hasSpecificClassRestriction(quest.class_restrictions)
@@ -993,11 +984,11 @@
 })}
   {@const pack = row.original}
   {#if cell.column.id === "pack_name"}
-    <div>
+    <div class="flex items-center gap-1.5">
       <a href={resolve("/items/[id]", { id: pack.pack_id })} class={styles.link}
         >{pack.pack_name}</a
       >
-      {@render seasonLabels(pack.seasons)}
+      <SeasonIcons seasons={pack.seasons} />
     </div>
   {:else if cell.column.id === "amount"}
     {@render number(pack.amount)}
@@ -1056,12 +1047,12 @@
 })}
   {@const offer = row.original}
   {#if cell.column.id === "item_name"}
-    <div>
+    <div class="flex items-center gap-1.5">
       <a
         href={resolve("/items/[id]", { id: offer.item_id })}
         class={styles.link}>{offer.item_name}</a
       >
-      {@render seasonLabels(offer.seasons)}
+      <SeasonIcons seasons={offer.seasons} />
     </div>
   {:else if cell.column.id === "price"}
     {@render number(offer.price === 0 ? "Free" : offer.price)}
@@ -1549,7 +1540,10 @@
           </dl>
           {#if unlistedStats.length > 0 || unlistedAttackDelay}
             <div class="space-y-1">
-              <h3 class="text-sm font-semibold">Not listed in the tooltip</h3>
+              <!-- A description can state a stat in words or with a number, but only stat lines are a stat list. -->
+              <h3 class="text-sm font-semibold">
+                Not in the tooltip's stat lines
+              </h3>
               <dl class={styles.factList}>
                 {#if unlistedAttackDelay}
                   <div class={styles.fact}>
