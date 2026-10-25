@@ -14,6 +14,21 @@ Every prerendered, indexable page SHALL have a title distinct from all other pre
 - **WHEN** a weapon has `WeaponDagger` as its internal category but is a spear
 - **THEN** the title describes a light one-handed weapon, not a dagger
 
+### Requirement: Armor-set entries have one player-facing identity
+
+An armor-set reference entry SHALL use the verified player-facing set name as its published display name. The page heading, breadcrumb, document title, search result and list entry SHALL agree on that name. It SHALL retain the `Armor Set` display type and its stable item ID, route and set-member relationships. Ordinary augments and individual set-piece names SHALL remain unchanged.
+
+#### Scenario: A reader opens the Cinderchant set entry
+
+- **WHEN** the reader visits the reference entry whose stable ID is `cinderchant_armor_bonus_set`
+- **THEN** its heading, breadcrumb, title, search result and list name use `Cinderchant Regalia`, not `Cinderchant Armor Bonus Set`
+- **AND** its type is `Armor Set` and its member links still resolve to the same pieces
+
+#### Scenario: A set name includes punctuation
+
+- **WHEN** the Cobalt set entry is presented
+- **THEN** every display surface preserves `Cobalt's Battlegear` without deriving a name by stripping the internal suffix
+
 ### Requirement: Detail titles distinguish every family and repeated placement
 
 Titles SHALL use verified family labels and relevant, available context for items, skills, monsters, NPCs, quests, zones, summons, mercenaries, altars, gathering resources, factions, classes, chests, recipes, and professions. Identical names within a family SHALL receive additional truthful context. Each canonical placement page SHALL identify its specific placement. An alias that canonicalizes to the first placement SHALL not need a separate title.
@@ -55,3 +70,9 @@ The prerender verification SHALL compare the decoded HTML `<title>` of every sel
 
 - **WHEN** the prerendered pages contain duplicate titles
 - **THEN** the verification fails and reports both page URLs
+
+#### Scenario: A renamed armor-set title collides
+
+- **WHEN** a renamed armor-set page and any other self-canonical indexable page render the same title
+- **THEN** the global verification fails and reports both canonical URLs
+- **AND** the renamed entry is not excluded because its stable item ID retains the internal suffix
