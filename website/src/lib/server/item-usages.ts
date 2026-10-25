@@ -3,6 +3,7 @@ import type { AcquisitionModel } from "$lib/acquisition/types";
 import { projectItemUsages } from "$lib/acquisition/projections";
 import type { ItemUsages } from "$lib/types/item-sources";
 import { loadItemSourceModel, sourceEntity } from "./item-sources";
+import type { Season } from "$lib/data/seasonal-events";
 
 export function itemUsagesFromModel(
   model: AcquisitionModel,
@@ -81,11 +82,7 @@ export function itemUsagesFromModel(
         ),
         class_restrictions: classes.length ? JSON.stringify(classes) : null,
       });
-    } else if (
-      method?.kind === "vendor" &&
-      detail?.season === "none" &&
-      use.kind === "cost"
-    ) {
+    } else if (method?.kind === "vendor" && detail && use.kind === "cost") {
       const id = String(detail.offered_item_id);
       result.currency.push({
         currency_item_id: itemId,
@@ -95,6 +92,7 @@ export function itemUsagesFromModel(
         npc_id: String(detail.npc_id),
         npc_name: name("npcs", detail.npc_id),
         price: amount,
+        season: detail.season === "none" ? null : (detail.season as Season),
       });
     } else if (method?.kind === "altar_activate" && detail) {
       const altar = sourceEntity(model, "altars", detail.altar_id);

@@ -24,7 +24,7 @@ import {
 } from "$lib/calculation/chest-rewards";
 import { lowestCatchableSkillPercent } from "$lib/utils/fishing";
 import { monsterFatecharm } from "$lib/utils/fatecharm";
-import { SEASONS, type Season } from "$lib/data/seasonal-events";
+import { SEASON_ORDER, type Season } from "$lib/data/seasonal-events";
 
 export async function loadItemSourceModel(
   db: Database.Database,
@@ -636,9 +636,8 @@ export function itemSourcesFromModel(
           entries.length,
       });
   }
-  const seasonOrder = Object.keys(SEASONS);
   result.seasonal = [...seasonal.values()].sort(
-    (a, b) => seasonOrder.indexOf(a.season) - seasonOrder.indexOf(b.season),
+    (a, b) => SEASON_ORDER[a.season] - SEASON_ORDER[b.season],
   );
   for (const key of Object.keys(result) as (keyof ItemSources)[])
     (result[key] as unknown[]) = unique(result[key] as unknown[]);

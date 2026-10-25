@@ -15,6 +15,11 @@ export const SEASONS = {
 /** The game's season keys, as the export records them on seasonal shop offers. */
 export type Season = keyof typeof SEASONS;
 
+/** Calendar position of each season, for ordering season lists. */
+export const SEASON_ORDER = Object.fromEntries(
+  Object.keys(SEASONS).map((season, index) => [season, index]),
+) as Record<Season, number>;
+
 export const SEASONAL_EVENTS_HREF = "/mechanics/seasonal-events";
 
 export const seasonHref = (season: Season) =>

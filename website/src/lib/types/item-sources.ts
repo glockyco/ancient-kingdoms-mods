@@ -283,6 +283,8 @@ export interface CurrencyUsage {
   npc_id: string;
   npc_name: string;
   price: number; // Amount of currency needed
+  /** Season the offer is limited to, or null for a year-round offer. */
+  season: Season | null;
 }
 
 /**

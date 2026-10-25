@@ -2,7 +2,12 @@
   import * as Card from "$lib/components/ui/card";
   import { base, resolve } from "$app/paths";
   import { formatAltarRewardTier } from "$lib/calculation/altar";
-  import { SEASONS, seasonHref } from "$lib/data/seasonal-events";
+  import {
+    SEASON_ORDER,
+    SEASONS,
+    seasonHref,
+    type Season,
+  } from "$lib/data/seasonal-events";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -368,19 +373,31 @@
       usedAsCurrencyFor: Object.values(
         (data.usages.currency || []).reduce(
           (acc, c) => {
-            // Deduplicate by item_id (same item may be sold by multiple NPCs)
-            if (!acc[c.purchasable_item_id]) {
-              acc[c.purchasable_item_id] = {
-                item_id: c.purchasable_item_id,
-                item_name: c.purchasable_item_name,
-                price: c.price,
-              };
+            // Many NPCs make the same offer. Rows stay distinct by price and by
+            // whether the offer is year-round, and seasonal rows list their seasons.
+            const key = `${c.purchasable_item_id}:${c.price}:${c.season === null}`;
+            const entry = (acc[key] ??= {
+              key,
+              item_id: c.purchasable_item_id,
+              item_name: c.purchasable_item_name,
+              price: c.price,
+              seasons: [],
+            });
+            if (c.season && !entry.seasons.includes(c.season)) {
+              entry.seasons.push(c.season);
+              entry.seasons.sort((a, b) => SEASON_ORDER[a] - SEASON_ORDER[b]);
             }
             return acc;
           },
           {} as Record<
             string,
-            { item_id: string; item_name: string; price: number }
+            {
+              key: string;
+              item_id: string;
+              item_name: string;
+              price: number;
+              seasons: Season[];
+            }
           >,
         ),
       ),
@@ -432,7 +449,8 @@
       data.item.id === "primal_essence" ||
       data.item.id === "radiant_aether" ||
       (isAugment && !isArmorSetMetadata && data.augmenters.length > 0) ||
-      data.packContents.length > 0,
+      data.packContents.length > 0 ||
+      computed.foundInPacks.length > 0,
   );
 
   function formatGold(amount: number): string {
@@ -1057,14 +1075,23 @@
           </Card.Header>
           <Card.Content>
             <div class="space-y-2">
-              {#each computed.usedAsCurrencyFor as item (item.item_id)}
-                <div class="flex justify-between items-center">
-                  <a
-                    href={resolve("/items/[id]", { id: item.item_id })}
-                    class={styles.link}
-                  >
-                    {item.item_name}
-                  </a>
+              {#each computed.usedAsCurrencyFor as item (item.key)}
+                <div class="flex justify-between items-center gap-3">
+                  <span>
+                    <a
+                      href={resolve("/items/[id]", { id: item.item_id })}
+                      class={styles.link}
+                    >
+                      {item.item_name}
+                    </a>
+                    {#each item.seasons as season (season)}
+                      <a
+                        href={seasonHref(season)}
+                        class="ml-2 text-sm text-muted-foreground hover:underline"
+                        >{SEASONS[season].name}</a
+                      >
+                    {/each}
+                  </span>
                   <span class={styles.label}>
                     {item.price === 0 ? "Free" : `${item.price}x`}
                   </span>
@@ -1344,25 +1371,6 @@
             </div>
           </Card.Content>
         </Card.Root>
-      {:else if computed.foundInPacks && computed.foundInPacks.length > 0}
-        <!-- Found in Packs -->
-        <Card.Root class="bg-muted/30">
-          <Card.Header>
-            <Card.Title level={2}>Found in Packs</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <div class="space-y-2">
-              {#each computed.foundInPacks as pack, index (`${pack.pack_id}_${index}`)}
-                <div class="flex justify-between items-center">
-                  <a href="/items/{pack.pack_id}" class={styles.link}>
-                    {pack.pack_name}
-                  </a>
-                  <span class={styles.value}>×{pack.amount}</span>
-                </div>
-              {/each}
-            </div>
-          </Card.Content>
-        </Card.Root>
       {:else if data.item.recipe_potion_learned_id && data.item.recipe_potion_learned_name && data.taughtRecipes.length === 1 && data.taughtRecipes[0].materials.every((material) => material.item_id)}
         <!-- Teaches Recipe -->
         <Card.Root class="bg-muted/30">
@@ -1479,6 +1487,26 @@
                 </div>
               {/if}
             {/if}
+          </Card.Content>
+        </Card.Root>
+      {/if}
+      {#if computed.foundInPacks && computed.foundInPacks.length > 0}
+        <!-- Found in Packs -->
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title level={2}>Found in Packs</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-2">
+              {#each computed.foundInPacks as pack, index (`${pack.pack_id}_${index}`)}
+                <div class="flex justify-between items-center">
+                  <a href="/items/{pack.pack_id}" class={styles.link}>
+                    {pack.pack_name}
+                  </a>
+                  <span class={styles.value}>×{pack.amount}</span>
+                </div>
+              {/each}
+            </div>
           </Card.Content>
         </Card.Root>
       {/if}
