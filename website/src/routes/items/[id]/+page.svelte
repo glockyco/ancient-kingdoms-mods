@@ -687,6 +687,13 @@
   {/if}
 {/snippet}
 
+<!-- A row links to the map only where the map can show the entity for this item. -->
+{#snippet rowMapLink(category: keyof typeof data.mapLinks, id: string)}
+  {#if data.mapLinks[category].includes(id)}
+    <MapLink entityId={id} entityType={category} compact />
+  {/if}
+{/snippet}
+
 {#snippet renderDropCell({
   cell,
   row,
@@ -709,6 +716,7 @@
         >
           {drop.monster_name}
         </a>
+        {@render rowMapLink("monster", drop.monster_id)}
       </div>
       {@render seasonLabels(drop.seasons, "pl-6")}
     </div>
@@ -743,10 +751,13 @@
 })}
   {@const altar = row.original}
   {#if cell.column.id === "altar_name"}
-    <a
-      href={resolve("/altars/[id]", { id: altar.altar_id })}
-      class={styles.link}>{altar.altar_name}</a
-    >
+    <div class="flex items-center gap-1.5">
+      <a
+        href={resolve("/altars/[id]", { id: altar.altar_id })}
+        class={styles.link}>{altar.altar_name}</a
+      >
+      {@render rowMapLink("altar", altar.altar_id)}
+    </div>
   {:else if cell.column.id === "drop_rate"}
     {@render percent(altar.drop_rate)}
   {:else if cell.column.id === "tier"}
@@ -774,9 +785,12 @@
 })}
   {@const vendor = row.original}
   {#if cell.column.id === "npc_name"}
-    <a href={resolve("/npcs/[id]", { id: vendor.npc_id })} class={styles.link}
-      >{vendor.npc_name}</a
-    >
+    <div class="flex items-center gap-1.5">
+      <a href={resolve("/npcs/[id]", { id: vendor.npc_id })} class={styles.link}
+        >{vendor.npc_name}</a
+      >
+      {@render rowMapLink("npc", vendor.npc_id)}
+    </div>
   {:else if cell.column.id === "price"}
     <span class="ml-auto tabular-nums {styles.valueCurrency}">
       {#if vendor.currency_item_id}
@@ -810,10 +824,13 @@
   {@const quest = row.original}
   {#if cell.column.id === "quest_name"}
     <div>
-      <a
-        href={resolve("/quests/[id]", { id: quest.quest_id })}
-        class={styles.link}>{quest.quest_name}</a
-      >
+      <div class="flex items-center gap-1.5">
+        <a
+          href={resolve("/quests/[id]", { id: quest.quest_id })}
+          class={styles.link}>{quest.quest_name}</a
+        >
+        {@render rowMapLink("quest", quest.quest_id)}
+      </div>
       {@render seasonLabels(quest.seasons ?? [])}
     </div>
   {:else if cell.column.id === "need"}
@@ -865,7 +882,7 @@
         href={resolve("/gather-items/[id]", { id: gather.gather_item_id })}
         class={styles.link}>{gather.gather_item_name}</a
       >
-      <MapLink entityId={gather.gather_item_id} entityType="resource" compact />
+      {@render rowMapLink("resource", gather.gather_item_id)}
     </div>
   {:else if cell.column.id === "rate"}
     <span class="ml-auto whitespace-normal text-right tabular-nums">
@@ -900,7 +917,7 @@
         class={styles.link}
         >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
       >
-      <MapLink entityId={chest.chest_id} entityType="chest" compact />
+      {@render rowMapLink("chest", chest.chest_id)}
     </div>
   {:else if cell.column.id === "rate"}
     {@render percent(chest.rate)}
@@ -1006,10 +1023,13 @@
 })}
   {@const altar = row.original}
   {#if cell.column.id === "altar_name"}
-    <a
-      href={resolve("/altars/[id]", { id: altar.altar_id })}
-      class={styles.link}>{altar.altar_name}</a
-    >
+    <div class="flex items-center gap-1.5">
+      <a
+        href={resolve("/altars/[id]", { id: altar.altar_id })}
+        class={styles.link}>{altar.altar_name}</a
+      >
+      {@render rowMapLink("altar", altar.altar_id)}
+    </div>
   {:else if cell.column.id === "zone_name"}
     {@render zoneLink(altar.zone_id, altar.zone_name)}
   {/if}
@@ -1026,7 +1046,7 @@
   {#if cell.column.id === "from_zone_name"}
     <div class="flex items-center gap-1.5">
       {@render zoneLink(portal.from_zone_id, portal.from_zone_name)}
-      <MapLink entityId={portal.portal_id} entityType="portal" compact />
+      {@render rowMapLink("portal", portal.portal_id)}
     </div>
   {:else if cell.column.id === "to_zone_name"}
     {@render zoneLink(portal.to_zone_id, portal.to_zone_name)}
@@ -1048,7 +1068,7 @@
         class={styles.link}
         >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
       >
-      <MapLink entityId={chest.chest_id} entityType="chest" compact />
+      {@render rowMapLink("chest", chest.chest_id)}
     </div>
   {/if}
 {/snippet}

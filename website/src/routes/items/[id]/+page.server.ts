@@ -9,6 +9,7 @@ import {
   loadItemSourceModel,
   aggregateChestRewards,
   getItemSourcesFromModel,
+  sourceEntity,
 } from "$lib/server/item-sources";
 import {
   projectDefinitionInspection,
@@ -21,6 +22,7 @@ import { itemUsagesFromModel } from "$lib/server/item-usages";
 import { getRecipeDefinitions } from "$lib/server/obtainability";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import { getItemMapBounds } from "$lib/queries/map-search";
+import { itemMapLocations, MAP_PROVIDER_CATEGORY } from "$lib/map/acquisition";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
 import {
@@ -55,12 +57,19 @@ export const entries: EntryGenerator = () => {
   return items.map((item) => ({ id: item.id }));
 };
 
+type MapLinks = Record<
+  "monster" | "npc" | "altar" | "chest" | "portal" | "resource" | "quest",
+  string[]
+>;
+
 // Load item data at build time (for SSR/prerendering)
 export const load: PageServerLoad = async ({
   params,
 }): Promise<
   ItemDetailPageData & {
     hasMapLocation: boolean;
+    /** Related entities with a visible map location for this item, by map category. */
+    mapLinks: MapLinks;
     hasKnownSource: boolean;
     acquisitionNotes: string[];
     foodBuffUsesTavernSpirit: boolean;
@@ -202,6 +211,57 @@ export const load: PageServerLoad = async ({
       async (sql, bindings) =>
         db.prepare(sql).all(...bindings) as Record<string, unknown>[],
     )) !== null;
+
+  // A row links to the map only where the map can show it for this item: the same
+  // visible locations the item's own map link highlights.
+  const mapLinks: MapLinks = {
+    monster: [],
+    npc: [],
+    altar: [],
+    chest: [],
+    portal: [],
+    resource: [],
+    quest: [],
+  };
+  for (const location of itemMapLocations(model, params.id)) {
+    const category = MAP_PROVIDER_CATEGORY[location.provider.kind];
+    // A spawn location links its template, which the map selects as a group.
+    const id =
+      location.provider.kind === "monster_spawns"
+        ? sourceEntity(model, "monster_spawns", location.provider.id)
+            ?.monster_id
+        : location.provider.kind === "resource_spawns"
+          ? sourceEntity(
+              model,
+              "gathering_resource_spawns",
+              location.provider.id,
+            )?.resource_id
+          : location.provider.id;
+    if (category && category in mapLinks && typeof id === "string")
+      mapLinks[category as keyof MapLinks].push(id);
+  }
+  // A quest's map selection highlights its NPCs, its kill targets and its discovery areas.
+  const questIds = [
+    ...new Set([...sources.quests, ...usages.quests].map((q) => q.quest_id)),
+  ];
+  if (questIds.length > 0)
+    mapLinks.quest = (
+      db
+        .prepare(
+          `SELECT q.id FROM quests q
+           WHERE q.id IN (${questIds.map(() => "?").join(",")})
+             AND (EXISTS (SELECT 1 FROM npc_quest_memberships m JOIN npc_spawns s ON s.npc_id = m.npc_id
+                          WHERE m.quest_id = q.id AND s.position_x IS NOT NULL)
+               OR EXISTS (SELECT 1 FROM quest_objectives o JOIN quest_objective_monsters t ON t.id = o.id
+                          JOIN monster_spawns s ON s.monster_id = t.monster_id
+                          WHERE o.quest_id = q.id AND o.withheld = 0 AND s.position_x IS NOT NULL)
+               OR EXISTS (SELECT 1 FROM quest_objectives o JOIN quest_objective_locations l ON l.id = o.id
+                          WHERE o.quest_id = q.id AND o.withheld = 0 AND l.area_shape IS NOT NULL))`,
+        )
+        .all(...questIds) as { id: string }[]
+    ).map((row) => row.id);
+  for (const key of Object.keys(mapLinks) as (keyof MapLinks)[])
+    mapLinks[key] = [...new Set(mapLinks[key])];
 
   const recipeMaterials: ItemDetailPageData["recipeMaterials"] = {};
   for (const recipe of sources.recipes) {
@@ -459,6 +519,7 @@ export const load: PageServerLoad = async ({
     acquisitionNotes,
     foodBuffUsesTavernSpirit,
     hasMapLocation,
+    mapLinks,
     fishing_role: fishingRole,
     fishing_effect: fishingEffect,
     recipeMaterials,

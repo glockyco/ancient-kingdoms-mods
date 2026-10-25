@@ -102,6 +102,20 @@ A relationship list SHALL show at most ten rows at a time and offer the remainin
 - **WHEN** an item has at most ten drop sources
 - **THEN** all rows show and no paging controls appear
 
+### Requirement: Rows link to the map where the map can show them
+
+A relationship row SHALL offer a map link when the map can show its monster, NPC, altar, chest, portal, gathering resource or quest for this item, using the same visible locations as the item's own map link. A row whose locations are suppressed or absent SHALL offer no map link.
+
+#### Scenario: A monster in a mapped zone
+
+- **WHEN** a player reads Dropped by on Arcane Essence
+- **THEN** each monster row offers a map link
+
+#### Scenario: A monster in a position-suppressed zone
+
+- **WHEN** a player reads Dropped by on Broken Map
+- **THEN** the rows for monsters in Temple of Valaark offer no map link
+
 ### Requirement: Drop rows name their zone
 
 Each drop row SHALL name the zones of the placements that carry the drop, so that two chances for one monster in different zones are attributed to their zones. A drop with no placed source SHALL name no zone rather than a guessed one.
