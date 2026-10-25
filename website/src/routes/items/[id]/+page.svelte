@@ -448,7 +448,6 @@
       data.item.id === "radiant_aether" ||
       (isAugment && !isArmorSetMetadata && data.augmenters.length > 0) ||
       data.packContents.length > 0 ||
-      computed.foundInPacks.length > 0 ||
       data.sources.seasonal.length > 0,
   );
 
@@ -465,6 +464,17 @@
       : `${value > 0 ? "+" : ""}${value}`;
   }
 </script>
+
+<!-- A source or use that only a season offers names it on its own line under the row's name. -->
+{#snippet seasonLabels(seasons: readonly Season[], indent = "")}
+  {#if seasons.length > 0}
+    <span class="mt-1 flex flex-wrap gap-x-3 gap-y-1 {indent}">
+      {#each seasons as season (season)}
+        <SeasonLabel {season} variant="inline" />
+      {/each}
+    </span>
+  {/if}
+{/snippet}
 
 <!-- Source: server-scripts/RegionalEventActivities.cs:FindCityDishes,IsCookingResult — a dish counts when cooked at an oven in the requesting city, and dishes made from the city's animal meat or from another such dish count. -->
 {#snippet cookingRequests(role: "dish" | "meat")}
@@ -1083,11 +1093,7 @@
                     >
                       {item.item_name}
                     </a>
-                    <span class="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-                      {#each item.seasons as season (season)}
-                        <SeasonLabel {season} variant="inline" />
-                      {/each}
-                    </span>
+                    {@render seasonLabels(item.seasons)}
                   </span>
                   <span class={styles.label}>
                     {item.price === 0 ? "Free" : `${item.price}x`}
@@ -1487,33 +1493,6 @@
           </Card.Content>
         </Card.Root>
       {/if}
-      {#if computed.foundInPacks && computed.foundInPacks.length > 0}
-        <!-- Found in Packs -->
-        <Card.Root class="bg-muted/30">
-          <Card.Header>
-            <Card.Title level={2}>Found in Packs</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <div class="space-y-2">
-              {#each computed.foundInPacks as pack, index (`${pack.pack_id}_${index}`)}
-                <div class="flex justify-between items-center gap-3">
-                  <div class="space-y-1">
-                    <a href="/items/{pack.pack_id}" class={styles.link}>
-                      {pack.pack_name}
-                    </a>
-                    <div class="flex flex-wrap gap-2">
-                      {#each pack.seasons as season (season)}
-                        <SeasonLabel {season} variant="inline" />
-                      {/each}
-                    </div>
-                  </div>
-                  <span class={styles.value}>×{pack.amount}</span>
-                </div>
-              {/each}
-            </div>
-          </Card.Content>
-        </Card.Root>
-      {/if}
       <!-- Seasonal Shop -->
       {#if data.sources.seasonal.length > 0}
         <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — repair merchants add the seasonal items to their stock while the season runs. -->
@@ -1845,27 +1824,27 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.droppedBy as drop, index (`${drop.monster_id}_${index}`)}
-              <div class="flex justify-between items-center">
-                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <MonsterTypeIcon
-                    isBoss={drop.is_boss}
-                    isFabled={drop.is_fabled}
-                    isElite={drop.is_elite}
-                  />
-                  <a
-                    href={resolve("/monsters/[id]", { id: drop.monster_id })}
-                    class={styles.link}
-                  >
-                    {drop.monster_name}
-                    <span class={styles.label}
-                      >(Lv {drop.monster_level_min === drop.monster_level_max
-                        ? drop.monster_level_min
-                        : `${drop.monster_level_min}-${drop.monster_level_max}`})</span
+              <div class="flex justify-between items-center gap-3">
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <MonsterTypeIcon
+                      isBoss={drop.is_boss}
+                      isFabled={drop.is_fabled}
+                      isElite={drop.is_elite}
+                    />
+                    <a
+                      href={resolve("/monsters/[id]", { id: drop.monster_id })}
+                      class={styles.link}
                     >
-                  </a>
-                  {#each drop.seasons as season (season)}
-                    <SeasonLabel {season} variant="inline" />
-                  {/each}
+                      {drop.monster_name}
+                      <span class={styles.label}
+                        >(Lv {drop.monster_level_min === drop.monster_level_max
+                          ? drop.monster_level_min
+                          : `${drop.monster_level_min}-${drop.monster_level_max}`})</span
+                      >
+                    </a>
+                  </div>
+                  {@render seasonLabels(drop.seasons, "pl-6")}
                 </div>
                 <span class={styles.label}
                   ><DropChance
@@ -1989,11 +1968,7 @@
                             .join(", ")}{/if})
                       </span>
                     </a>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                      {#each quest.seasons as season (season)}
-                        <SeasonLabel {season} variant="inline" />
-                      {/each}
-                    </div>
+                    {@render seasonLabels(quest.seasons)}
                   </div>
                 {/each}
               </div>
@@ -2018,11 +1993,7 @@
                             .join(", ")}{/if})
                       </span>
                     </a>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                      {#each quest.seasons as season (season)}
-                        <SeasonLabel {season} variant="inline" />
-                      {/each}
-                    </div>
+                    {@render seasonLabels(quest.seasons)}
                   </div>
                 {/each}
               </div>
@@ -2063,11 +2034,7 @@
                             .join(", ")}{/if})
                       </span>
                     </a>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                      {#each quest.seasons as season (season)}
-                        <SeasonLabel {season} variant="inline" />
-                      {/each}
-                    </div>
+                    {@render seasonLabels(quest.seasons)}
                   </div>
                 {/each}
               </div>
@@ -2092,11 +2059,7 @@
                             .join(", ")}{/if})
                       </span>
                     </a>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                      {#each quest.seasons as season (season)}
-                        <SeasonLabel {season} variant="inline" />
-                      {/each}
-                    </div>
+                    {@render seasonLabels(quest.seasons)}
                   </div>
                 {/each}
               </div>
@@ -2370,6 +2333,29 @@
       </Card.Root>
     {/if}
 
+    {#if computed.foundInPacks && computed.foundInPacks.length > 0}
+      <!-- Found in Packs -->
+      <Card.Root class="bg-muted/30">
+        <Card.Header>
+          <Card.Title level={2}>Found in Packs</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.foundInPacks as pack, index (`${pack.pack_id}_${index}`)}
+              <div class="flex justify-between items-center gap-3">
+                <div>
+                  <a href="/items/{pack.pack_id}" class={styles.link}>
+                    {pack.pack_name}
+                  </a>
+                  {@render seasonLabels(pack.seasons)}
+                </div>
+                <span class={styles.value}>×{pack.amount}</span>
+              </div>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
     <!-- Found in Chests -->
     {#if computed.foundInChests && computed.foundInChests.length > 0}
       <Card.Root class="bg-muted/30">
