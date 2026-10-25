@@ -293,7 +293,7 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:413 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:13804-13829 and 13839-13867 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:13805-13830 and 13840-13868 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -410,7 +410,7 @@
         <p>
           <span class="block"
             ><!-- Source: server-scripts/CustomStrucUI.cs:211-234 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 337-356 and Player.cs:13555-13567 — move mode hides the structure, then repositions the same one without charging gold. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 337-356 and Player.cs:13556-13568 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -426,7 +426,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:71-76 and 268-286 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10644-10677 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10645-10678 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >
@@ -688,11 +688,11 @@
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — loot pickup states and 2.4-unit reach check. -->Loot
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean — loot pickup states and 2.4-unit reach check. -->Loot
           pickup works within 2.4 yd.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — gold deposits directly as carried gold and splits among nearby party members. -->Gold
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean — gold deposits directly as carried gold and splits among nearby party members. -->Gold
           goes directly to carried gold.
         </li>
         <li>
@@ -703,11 +703,11 @@
           >.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — keys are added to key storage instead of inventory slots. -->Keys
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean — keys are added to key storage instead of inventory slots. -->Keys
           go to key storage.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32; GatherInventoryQuest.cs:OnCompleted — Gather consumes on pickup; Have and Deliver count inventory; Deliver removes on completion. -->
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean; GatherInventoryQuest.cs:OnCompleted — Gather consumes on pickup; Have and Deliver count inventory; Deliver removes on completion. -->
           Picking up an item for an accepted Gather quest advances the quest and uses
           the item up.
         </li>
@@ -720,7 +720,7 @@
           it in.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — a failed inventory add keeps the loot slot and sends "Your inventory is full". -->When
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean — a failed inventory add keeps the loot slot and sends "Your inventory is full". -->When
           your inventory is full, the item stays in the loot window and you see
           "Your inventory is full".
         </li>
@@ -995,7 +995,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PotionItem.cs:78-86,120-145, server-scripts/FoodItem.cs:14-36 and server-scripts/ScrollItem.cs:95-130 — potions restore resources or apply buffs, food and drink apply buffs, and spell scrolls invoke skills. -->
+      <!-- Source: server-scripts/PotionItem.cs:99-107,141-166, server-scripts/FoodItem.cs:14-36 and server-scripts/ScrollItem.cs:95-130 — potions restore resources or apply buffs, food and drink apply buffs, and spell scrolls invoke skills. -->
       <p>
         <span class="block">Potions restore resources or apply buffs.</span>
         <span class="block">Food and drink apply buffs.</span>

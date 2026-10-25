@@ -20,7 +20,7 @@ const mechanics = PROFESSION_MECHANICS.alchemy;
 // differences: the skill-gain divisor is 1000 (cooking uses 3000) and the
 // success roll applies to every output (cooking exempts non-FoodItem results).
 
-// Source: server-scripts/Player.cs:13709-13712 and TableUI.cs:90 — an alchemy/scribing
+// Source: server-scripts/Player.cs:13710-13713 and TableUI.cs:90 — an alchemy/scribing
 // table refuses to craft when GetSuccessProbAlchemy(...) < 0.1, so a recipe only
 // becomes craftable once its raw success chance reaches 10%.
 export const ALCHEMY_SUCCESS_FLOOR = mechanics.success.floor;
@@ -44,7 +44,7 @@ export function isAlchemyCraftable(
 
 // Displayed success chance (0..100). It is 0% below the craftable threshold,
 // where the recipe cannot be made.
-// Source: server-scripts/Player.cs:13706-13725 — the success roll is not gated on item type, so unlike cooking there is no always-succeeds case for non-potion results.
+// Source: server-scripts/Player.cs:13707-13726 — the success roll is not gated on item type, so unlike cooking there is no always-succeeds case for non-potion results.
 export function alchemySuccessPercent(
   level: number,
   skillPercent: number,
@@ -53,7 +53,7 @@ export function alchemySuccessPercent(
   return rawAlchemySuccessChance(level, skillPercent) * 100;
 }
 
-// Source: server-scripts/Player.cs:13742-13745 — a high enough Alchemy skill turns
+// Source: server-scripts/Player.cs:13743-13746 — a high enough Alchemy skill turns
 // low-level recipes into "too simple" tasks that grant no skill gain (strict >).
 export function isAlchemyEffortless(
   level: number,
@@ -62,13 +62,13 @@ export function isAlchemyEffortless(
   return isEffortlessAtTier(mechanics.effortless, level, skillPercent);
 }
 
-// Source: server-scripts/Player.cs:13746-13748 — skill gain chance is
+// Source: server-scripts/Player.cs:13747-13749 — skill gain chance is
 // Lerp(0.95, 0.35, alchemyLevel²).
 export function alchemySkillGainChancePercent(skillPercent: number): number {
   return skillGainChance(mechanics.skillGain, skillPercent) * 100;
 }
 
-// Source: server-scripts/Player.cs:13748 — num4 = Random.Range(1, 4) /
+// Source: server-scripts/Player.cs:13749 — num4 = Random.Range(1, 4) /
 // (successProbAlchemy * 1000). Note the 1000 divisor (cooking uses 3000). Skill
 // gain only happens when the recipe is craftable and still grants skill (not
 // "effortless"). Returns percentage-point bounds, or null when none applies.
@@ -76,7 +76,7 @@ export function alchemySkillGainRange(
   level: number,
   skillPercent: number,
 ): { min: number; max: number } | null {
-  // Source: server-scripts/Player.cs:13740 — Alchemy cannot increase at the cap.
+  // Source: server-scripts/Player.cs:13741 — Alchemy cannot increase at the cap.
   if (skillPercent >= mechanics.capPercent) return null;
   if (!isAlchemyCraftable(level, skillPercent)) return null;
   if (isAlchemyEffortless(level, skillPercent)) return null;

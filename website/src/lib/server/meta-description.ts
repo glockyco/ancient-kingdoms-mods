@@ -365,12 +365,12 @@ function buffPhrase(
 }
 
 function potionDescription(item: Item, ctx: ItemMetaContext): string {
-  // Source: server-scripts/PotionItem.cs:24-39,144-146 — non-bandage buff
+  // Source: server-scripts/PotionItem.cs:24-39,165-167 — non-bandage buff
   // levels can use Elixir Endurance; bandages return their base buff level.
   // Source: server-scripts/Pet.cs:2141-2165 — mercenary utility potions
   // resolve that level from the owner's veteran rank.
   const isBandage = item.cooldown_category === "Bandages";
-  // Source: server-scripts/PotionItem.cs:8-17,41-125 — health, mana, energy,
+  // Source: server-scripts/PotionItem.cs:8-17,62-146 — health, mana, energy,
   // pet-health, and experience usage values are applied on use.
   const restored: string[] = [];
   if (item.usage_health > 0)
@@ -403,7 +403,7 @@ function potionDescription(item: Item, ctx: ItemMetaContext): string {
     : item.usage_experience > 0
       ? "Scroll"
       : "Potion";
-  // Source: server-scripts/PotionItem.cs:139-143 — dungeon-disabled buffs
+  // Source: server-scripts/PotionItem.cs:160-164 — dungeon-disabled buffs
   // reject use before the buff is applied.
   const dungeon =
     !item.potion_buff_allow_dungeon && item.potion_buff_name
@@ -647,7 +647,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:13131-13135,12077-12092
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:13132-13136,12078-12093
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -684,7 +684,7 @@ function keyDescription(ctx: ItemMetaContext): string {
   // portals gated by a key check `player.keys` (or any party member's
   // keyring) for the matching name. Source: server-scripts/ScriptableItem.cs:47
   // — items flagged `isKey` belong in the keyring.
-  // Source: server-scripts/PlayerLooting.cs:177-182; ChestItem.cs:51-54; GatherItem.cs:529-532 — these loot paths route keys to the keyring instead of taking an inventory slot.
+  // Source: server-scripts/PlayerLooting.cs:182-187; ChestItem.cs:51-54; GatherItem.cs:529-532 — these loot paths route keys to the keyring instead of taking an inventory slot.
   // Source: server-scripts/GatherInventoryQuest.cs:21,47 — the keyring also
   // counts as inventory for gather-inventory quest gates that name a key.
   const portals = ctx.usages?.portals ?? [];
@@ -1752,7 +1752,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:99; Player.cs:10818-10832,UpdateMercStatsByLevel — familiar level follows
+// Source: server-scripts/SummonSkill.cs:99; Player.cs:10819-10833,UpdateMercStatsByLevel — familiar level follows
 // summoning skill rank, companions match the summoner up to Level.max, and
 // mercenaries hire at player level and gain attributes per level.
 
@@ -1808,7 +1808,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return ` Summoned by a class skill. Its level matches yours, up to level ${input.level_max}.`;
     case "Mercenary":
-      // Source: server-scripts/Player.cs:10818-10832; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:10819-10833; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
       return " Hire one from any Mercenary Recruiter. Its level matches yours.";
   }
 }

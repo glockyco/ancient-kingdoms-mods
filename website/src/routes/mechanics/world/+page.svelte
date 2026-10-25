@@ -78,7 +78,7 @@
           >Hardcore starts unchecked for each new character.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:4183-4190,10020-10023 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
+      <!-- Source: server-scripts/Player.cs:4183-4190,10021-10024 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>
         <span class="block"
           >Hardcore death deletes that character instead of allowing a normal
@@ -242,7 +242,7 @@
           Travel scrolls work in every other dungeon.</span
         >
       </p>
-      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14399-14411 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
+      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14400-14412 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
       <p>
         <span class="block"
           >A <a
@@ -320,7 +320,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Player.cs:11418-11432,3632-3634, server-scripts/Skills.cs:1454-1474, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
+      <!-- Source: server-scripts/Player.cs:11419-11433,3632-3634, server-scripts/Skills.cs:1454-1474, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
           >Passing through a portal ends invisibility, including Resurrection

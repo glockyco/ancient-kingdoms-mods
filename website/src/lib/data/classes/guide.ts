@@ -72,7 +72,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:815-820,1065-1068; server-scripts/Player.cs:11425-11431 — dungeon casting restriction and buff removal",
+          "Source: server-scripts/PlayerSkills.cs:815-820,1065-1068; server-scripts/Player.cs:11426-11432 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",

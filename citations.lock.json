@@ -1,6 +1,6 @@
 {
   "snapshot": {
-    "game_version": "0.9.37.2",
+    "game_version": "0.9.37.3",
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
@@ -2085,39 +2085,39 @@
       "span": 17
     },
     "Monster.cs:3008-3020": {
-      "sha256": "b91726bee647d48c7ef56c295191b1fe41e3417ab4c32c25b47c8706e90fa67f",
+      "sha256": "82953f5e83110b2f0825ace26a28af80cfb11f3bf7356301ee082d8117199b42",
       "span": 13
     },
-    "Monster.cs:3030-3044": {
+    "Monster.cs:3029-3043": {
       "sha256": "22abae262c6a97646dc4bdb5ecafc66107d62a3ef8b116fe7a2a9601684afbab",
       "span": 15
     },
-    "Monster.cs:3033-3037": {
+    "Monster.cs:3032-3036": {
       "sha256": "593008ae38e95271c6707983abae6295c61ea36d2aa66850cf3e8d7bda005307",
       "span": 5
     },
-    "Monster.cs:3060-3061": {
+    "Monster.cs:3059-3060": {
       "sha256": "07e44a3e82c077cc7cb26e9ffbc93110185e00c320b97ef83e0c4abe17adb2c5",
       "span": 2
     },
-    "Monster.cs:3060-3125": {
+    "Monster.cs:3059-3124": {
       "sha256": "763385fa05f052142bc7af74065204618fd7e3df2087d1ca5f3a476309395663",
       "span": 66
     },
-    "Monster.cs:3127-3132": {
+    "Monster.cs:3126-3131": {
       "sha256": "38ff59b1cbaa6c504651ea0322926f85917ade42e6fe2ed8addd519399718f09",
       "span": 6
     },
     "Monster.cs:3180-3208": {
-      "sha256": "64992da6653470cee012b6e4fb2ca0e83fc599cbd43d4d61a6836aaf89bcee24",
+      "sha256": "e83174a41e46c3dc6ec1286d23b63c96493017aec110744e77ec2a80214086c3",
       "span": 29
     },
     "Monster.cs:3180-3209": {
-      "sha256": "3a49223765f2787705e54c3543ffaf2c0d9096bc0fb643d50cb2376f4391c784",
+      "sha256": "e07e7ba63f81b942cb629b36e9198e85246f7f59de3e88b3846e2ba65fe57e4b",
       "span": 30
     },
     "Monster.cs:3205-3208": {
-      "sha256": "2be2050d94bdfd05f04e829e060474c1c2ff67e55764df12a20f2cd7ffae7a22",
+      "sha256": "521109e3502d66eb0bacfa8ef113139adfea5c643aeeb7646f5545253934fbca",
       "span": 4
     },
     "Monster.cs:3214-3226": {
@@ -2125,7 +2125,7 @@
       "span": 13
     },
     "Monster.cs:3242-3245": {
-      "sha256": "bd6936319a32d620b7470f762977168a4ce424769d85feb3415ae2ca0c93e993",
+      "sha256": "45fe43e8f3afa3a38e27c93a65e30877373a8089d577061f20f191e91da28944",
       "span": 4
     },
     "Monster.cs:3251-3263": {
@@ -2140,15 +2140,15 @@
       "sha256": "18da1830749bbd993d9cf9d28ac2440f909ee89a0b79c1d2c625ddeca7184659",
       "span": 19
     },
-    "Monster.cs:4242-4351": {
+    "Monster.cs:4251-4360": {
       "sha256": "3b20de3751a8a55a39e04af1559e95a2a077d82b9a7d0651a27fec74b2113940",
       "span": 110
     },
-    "Monster.cs:4409-4439": {
+    "Monster.cs:4418-4448": {
       "sha256": "d63605941e7540b06fd89272a0dfc889aec932d7ac4155ee24660332157f71a4",
       "span": 31
     },
-    "Monster.cs:4636-4675": {
+    "Monster.cs:4645-4684": {
       "sha256": "9482355022b53dddc8ccdec93c2b3669a06219382c796d628fa1dcdb158fc340",
       "span": 40
     },
@@ -2782,135 +2782,135 @@
     "Player.cs": {
       "span": 0
     },
-    "Player.cs:10020-10023": {
+    "Player.cs:10021-10024": {
       "sha256": "364678227fcbd9aaadec6650b523ce40fad5ef36e84720d3e532a52028229f6e",
       "span": 4
     },
-    "Player.cs:10063-10080": {
+    "Player.cs:10064-10081": {
       "sha256": "d587808f469c9792684562c805e4cd33f4db4bfe9b70dc81ac9bc771eb71d9bd",
       "span": 18
     },
-    "Player.cs:10196-10201": {
+    "Player.cs:10197-10202": {
       "sha256": "3b418300bf58ada4476a1fe905c610cae53256388f3ad4a844010bb251677b93",
       "span": 6
     },
-    "Player.cs:10224-10238": {
+    "Player.cs:10225-10239": {
       "sha256": "701605f153875f5b9aabfaff3bab40d5b20e65595d5883bf6b08b60ee525ed19",
       "span": 15
     },
-    "Player.cs:10564-10582": {
+    "Player.cs:10565-10583": {
       "sha256": "65b327d29521463496ce64dc64548a3ca2f4f75d4d1c9e1f7aa7d04327df2b52",
       "span": 19
     },
-    "Player.cs:10644-10677": {
+    "Player.cs:10645-10678": {
       "sha256": "9ad9dba9506188716e3e663a7d0208afd60ee567114d6ba3e6f72bac75838c9a",
       "span": 34
     },
-    "Player.cs:10732-10733": {
+    "Player.cs:10733-10734": {
       "sha256": "cc33e2410b7eb948488cab00028339c7be6cfee6e81ba3da33c8a68321cc6f37",
       "span": 2
     },
-    "Player.cs:10732-10792": {
+    "Player.cs:10733-10793": {
       "sha256": "b0f8874cd663e74ebb30a7026396bd83dbd70690e456fc8193a5f5bb2a4021eb",
       "span": 61
     },
-    "Player.cs:10737-10792": {
+    "Player.cs:10738-10793": {
       "sha256": "138f39cafdb084f2373eefd28fd3feee3e75f7579c4a385d46e583945d02df47",
       "span": 56
     },
-    "Player.cs:10793-10798": {
+    "Player.cs:10794-10799": {
       "sha256": "6813e7169a992be0a7b4dfa26811a8e3673911c8a1a7b36f17eb2bd15526b008",
       "span": 6
     },
-    "Player.cs:10794": {
+    "Player.cs:10795": {
       "sha256": "c681fb675cc0e663c8cb070125685981f17234cb8dcb6ce403e11b5425efb87e",
       "span": 1
     },
-    "Player.cs:10818-10830": {
+    "Player.cs:10819-10831": {
       "sha256": "8817d6fa5874e272b3b1c254bb2b4e2fab69ce1acfb75c678f6a9471dfc86c23",
       "span": 13
     },
-    "Player.cs:10818-10832": {
+    "Player.cs:10819-10833": {
       "sha256": "5730e62cf11d4053ddd8eaf721172d355b86cb8caad94e11401dbb1d04eb4c2d",
       "span": 15
     },
-    "Player.cs:10829-10835": {
+    "Player.cs:10830-10836": {
       "sha256": "1b9365ebecc524deb34117381d0de0dd31da159d8d0a16c65b05f6408948661f",
       "span": 7
     },
-    "Player.cs:10833-10847": {
+    "Player.cs:10834-10848": {
       "sha256": "6f228acc202b6120e90acc0f4f1ec36859b0be21c052c472651961c7e6c76f2b",
       "span": 15
     },
-    "Player.cs:10934-10953": {
+    "Player.cs:10935-10954": {
       "sha256": "d51c3effed3b067cbd64a0e7550803b5c7c73ae8484f6ae6c14317142dfd3bb9",
       "span": 20
     },
-    "Player.cs:10970-10985": {
+    "Player.cs:10971-10986": {
       "sha256": "e9bbe49e2ad418c486f6319fa759f694c0cd476ca793cf6c4b3eec3c9cc368c6",
       "span": 16
     },
-    "Player.cs:11018-11037": {
+    "Player.cs:11019-11038": {
       "sha256": "7771eec5467a64d9e40f671e52d6038f45b59e41a5edf42d61ba6e4bfa667309",
       "span": 20
     },
-    "Player.cs:11018-11047": {
+    "Player.cs:11019-11048": {
       "sha256": "284c10ef90a1c3e6ee416233326d6ca0bbb38cc3440adcb38b5d314999e436a4",
       "span": 30
     },
-    "Player.cs:11018-11048": {
+    "Player.cs:11019-11049": {
       "sha256": "338594ec5b7dc3cda2142f3621c53730291abcad6f8dab82a0a30e25fad1fc97",
       "span": 31
     },
-    "Player.cs:11019-11027": {
+    "Player.cs:11020-11028": {
       "sha256": "ef6922b74916dd3906c35334068b7127c2dee44d3a13e076400bcae4f5e58295",
       "span": 9
     },
-    "Player.cs:11028-11035": {
+    "Player.cs:11029-11036": {
       "sha256": "ca036d9e89fd23048ff16b678a19786f20b34ff28f5a3d9d13a49513e48c88e0",
       "span": 8
     },
-    "Player.cs:11028-11048": {
+    "Player.cs:11029-11049": {
       "sha256": "9ed4ebc2cdbfa45f879f771388fc80f907a29c5d1c8e3e9bc5771a03bdfe7fcb",
       "span": 21
     },
-    "Player.cs:11033-11048": {
+    "Player.cs:11034-11049": {
       "sha256": "ca8227f9eae17017f8898c26bd30bd49ff9a1965733c6ba55d1f2211ae70c847",
       "span": 16
     },
-    "Player.cs:11100": {
+    "Player.cs:11101": {
       "sha256": "74433b510b824b45f1f44f7d3b115263a8809b2be02ed68c30ac6c8848f30b85",
       "span": 1
     },
-    "Player.cs:11170-11192": {
+    "Player.cs:11171-11193": {
       "sha256": "8f509ff90bc464bd2eca8816a22ba0cd1e9ab59b3e8cdac5569d6b3a74b5687b",
       "span": 23
     },
-    "Player.cs:11206-11212": {
+    "Player.cs:11207-11213": {
       "sha256": "a3f6c4de4ec66e0a32376498dff63f94c012243d7223bc84d99bcd9d60b14aed",
       "span": 7
     },
-    "Player.cs:11238-11272": {
+    "Player.cs:11238-11273": {
+      "sha256": "f53056706469121055c796b2304e2396d6601aad47d957cd91e812b54906b754",
+      "span": 36
+    },
+    "Player.cs:11239-11273": {
       "sha256": "879280b9de98b7130c70500b3d9819446d761c22250b087dcdbac12416e981de",
       "span": 35
     },
-    "Player.cs:11238-11273": {
-      "sha256": "ca1d2469230762267161b1d3d4c2870af0d198961c89612bfd31bb2a7e2b0919",
-      "span": 36
-    },
-    "Player.cs:11323-11341": {
+    "Player.cs:11324-11342": {
       "sha256": "7da1db0db8095a816801e1ecb8c6a702007cda4308c36cd65c81d2d89dab15d4",
       "span": 19
     },
-    "Player.cs:11418-11432": {
+    "Player.cs:11419-11433": {
       "sha256": "52d528b41ab858fb4441a0a962edd59f441912398bfed6ec0efbb8631944c14c",
       "span": 15
     },
-    "Player.cs:11425-11431": {
+    "Player.cs:11426-11432": {
       "sha256": "249b20fdb41d1190ea9e4e35d1f9ed3c49e714a41b3f4990725987a6318d980d",
       "span": 7
     },
-    "Player.cs:11456": {
+    "Player.cs:11457": {
       "sha256": "645311e217c53539db846ec2e76c26009e85a42b465928ad78540017f7ab7f0b",
       "span": 1
     },
@@ -2918,287 +2918,299 @@
       "sha256": "a521440e9642f9879a618a93dc6e0ebd3acb8777af03a22cd39c3398b7c01751",
       "span": 9
     },
-    "Player.cs:11717-11729": {
+    "Player.cs:11718-11730": {
       "sha256": "488f8059086224105c9350a8717f697438176977b3c3edff141b474f83b9ae91",
       "span": 13
     },
-    "Player.cs:11942-11971": {
+    "Player.cs:11943-11972": {
       "sha256": "8aacce02ea28ab54a904eb7c276793c8d05f5978fe5f597ae838ab20bf8b33ca",
       "span": 30
     },
-    "Player.cs:11973-11981": {
+    "Player.cs:11974-11982": {
       "sha256": "91d4c359df35716ecf8f2af1ed0bfcf5e5133018c463ad92bdc9f456538f56cc",
       "span": 9
     },
-    "Player.cs:12077-12092": {
+    "Player.cs:12078-12093": {
       "sha256": "dcc00f402cfe746ca29ba65cb33ab32c2b21eef89ad8b7cf28594b0a0c828c49",
       "span": 16
     },
-    "Player.cs:12078-12096": {
+    "Player.cs:12079-12097": {
       "sha256": "7f300f558c8adbe23f436c9ca029585d0fda55fbd77ee10354fa6367013c7719",
       "span": 19
     },
-    "Player.cs:12111-12146": {
+    "Player.cs:12112-12147": {
       "sha256": "ccb8ba2fb5bdad65ed17d19b65067f02e8d335b8709a2a13423b2f45491c1362",
       "span": 36
     },
-    "Player.cs:12134-12145": {
+    "Player.cs:12135-12146": {
       "sha256": "4faf60414dcb32a6d3eb9bacdf41a5d28593be07582ef71fa773d9253c041ecb",
       "span": 12
     },
-    "Player.cs:12162-12177": {
+    "Player.cs:12163-12178": {
       "sha256": "211d2a05c07ba7aef024ee804dfd9db467cdaaf3d786e8ab7506d5e3e1c73d75",
       "span": 16
     },
-    "Player.cs:12189-12196": {
+    "Player.cs:12190-12197": {
       "sha256": "f82cfed35b232e8e2ca5237c34b789287d1d8078b39b8d33983800aa19d915f3",
       "span": 8
     },
-    "Player.cs:12589-12591": {
+    "Player.cs:12590-12592": {
       "sha256": "5fde844db61b3fd5e139e90ed09f5b9c735eda5e00ae51e0459015b101a6234b",
       "span": 3
     },
-    "Player.cs:12596-12631": {
+    "Player.cs:12597-12632": {
       "sha256": "e29d01afbbf7c27baf19f3d7874c910f0393e5581cf6412fe1232f04aa4d572d",
       "span": 36
     },
-    "Player.cs:12890-12903": {
+    "Player.cs:12891-12904": {
       "sha256": "2faafae183fb39ce0e8c60cc386852204cfd7075a8082fea34279972f4633ca7",
       "span": 14
     },
-    "Player.cs:12954-12981": {
+    "Player.cs:12955-12982": {
       "sha256": "92bc021fdf6ce8fdde397519fbbdb07e777f5d21f5aac7b8a9a96f5e2273c03c",
       "span": 28
     },
-    "Player.cs:13005-13011": {
+    "Player.cs:13006-13012": {
       "sha256": "35f1506afc79caab00c67d58e9806fc3f8c0580fad935e94f1f2d41078892461",
       "span": 7
     },
-    "Player.cs:13131-13135": {
+    "Player.cs:13132-13136": {
       "sha256": "93a48315e4fff0bb6c76d21eb6913d04cff2442bbc67b247d06f4e5423d5b36d",
       "span": 5
     },
-    "Player.cs:13348-13351": {
+    "Player.cs:13349-13352": {
       "sha256": "f122871ff76e784a8b63814ab1a876640af3de3e49de45f2eb0eb1a1bb5406ca",
       "span": 4
     },
-    "Player.cs:13461-13491": {
+    "Player.cs:13462-13492": {
       "sha256": "c4ec6e3cf37723e3ca50fb30fe21ca6f4d71cb44e61c9c74047d96cae55e17dd",
       "span": 31
     },
-    "Player.cs:13480-13481": {
+    "Player.cs:13481-13482": {
       "sha256": "b800e04600454e06f522fe7392fcb37e59c94441ed1ca2311fb5cc2d81ef7918",
       "span": 2
     },
-    "Player.cs:13480-13484": {
+    "Player.cs:13481-13485": {
       "sha256": "dd4fe4e09859262fc38da5ac089e2275828cf19afca42b394e7270a1a88ccab4",
       "span": 5
     },
-    "Player.cs:13480-13487": {
+    "Player.cs:13481-13488": {
       "sha256": "1d7828775034b43d1e452bf04a6283e08af3bcbee3826b164c91cc4f7398722f",
       "span": 8
     },
-    "Player.cs:13491": {
+    "Player.cs:13492": {
       "sha256": "e5823f42ae8281ab01a68884d64e76585bb830180793533869ba1b78a5d7fb47",
       "span": 1
     },
-    "Player.cs:13523-13540": {
+    "Player.cs:13524-13541": {
       "sha256": "0e70e466fa4f67d3767c26ad3605c58c7241bbd4f2ee0871e4442f49e60e620a",
       "span": 18
     },
-    "Player.cs:13555-13567": {
+    "Player.cs:13556-13568": {
       "sha256": "ac8a8aa1c73bc093f762ebc009351584efdb584d6781581cdd22aa905c26e46b",
       "span": 13
     },
-    "Player.cs:13555-13592": {
+    "Player.cs:13556-13593": {
       "sha256": "91f7f4a8bd2bc40f5f041407e0b6f0c2d3de24f2a3a21504203e5b03da07d502",
       "span": 38
     },
-    "Player.cs:13632-13636": {
+    "Player.cs:13633-13637": {
       "sha256": "f50f03b7611dc8b1f526f04014f5396a525ca7902f87b3a22557c671919ec543",
       "span": 5
     },
-    "Player.cs:13668-13685": {
+    "Player.cs:13669-13686": {
       "sha256": "125404a6b40c04119fd3a99ef7fcb624fa925d5d9cfa2e3aba18ef647ee1e426",
       "span": 18
     },
-    "Player.cs:13682-13693": {
+    "Player.cs:13683-13694": {
       "sha256": "aec1bdad5b5487fe3953eb887bf4679d3322ca7fe522284987f4e147b725a0c1",
       "span": 12
     },
-    "Player.cs:13682-13723": {
+    "Player.cs:13683-13724": {
       "sha256": "ccaaf885b46dcf63a33f7cba33f95b289dc89bbe3b8119ea19cf75ef25c2e617",
       "span": 42
     },
-    "Player.cs:13706-13725": {
+    "Player.cs:13707-13726": {
       "sha256": "21a9787e4c2878b3ae9d3cd1a7e4d3802f9b38a3f88020692a5132d4f8cdea5e",
       "span": 20
     },
-    "Player.cs:13706-13726": {
+    "Player.cs:13707-13727": {
       "sha256": "6253b7821443f7271289f9e44398b3a1a47b65b0f3467a6f53200e41208ebaf9",
       "span": 21
     },
-    "Player.cs:13709-13712": {
+    "Player.cs:13710-13713": {
       "sha256": "32997cd4147ffefc95e56abd259bff225ffb93d0d1621f5fe684df6d1f8cd36f",
       "span": 4
     },
-    "Player.cs:13729": {
+    "Player.cs:13730": {
       "sha256": "fc7d15a4ac62598138fcf9cc2f50687d1df21b72d8b9924f1f45946839084b86",
       "span": 1
     },
-    "Player.cs:13740": {
+    "Player.cs:13741": {
       "sha256": "7f75ad40d7768d47fe1420fd9bc612a6ba7478776d07d506a7d74cd6fffda251",
       "span": 1
     },
-    "Player.cs:13742-13745": {
+    "Player.cs:13743-13746": {
       "sha256": "b7603d66c9166f07e60ca45e76b41ce4a26d1dee24ee7adce994359cb1964c21",
       "span": 4
     },
-    "Player.cs:13746-13748": {
+    "Player.cs:13747-13749": {
       "sha256": "70820cb6ee7b940a08d9df0ef13cb206cefae919749230fcbae8e01ddf3f246e",
       "span": 3
     },
-    "Player.cs:13748": {
+    "Player.cs:13749": {
       "sha256": "004ed169341daf2954fb2bf45e18780dd60339db52f9dfa227934ceec379e111",
       "span": 1
     },
     "Player.cs:13757-13764": {
-      "sha256": "5d19432cbe24e5d2c74c87f33eb4edd6208b5994dda3b65635994b15bd19b16f",
+      "sha256": "85fcc69ffa2f6d15b37a0b1ff680f5d7f0ae915d4c4d7644091d3a3f96ae4709",
       "span": 8
     },
     "Player.cs:13757-13770": {
+      "sha256": "a619ac871928406032c66cc99a0f7c6ca16918fb80039072d13a8fa54fbd088f",
+      "span": 14
+    },
+    "Player.cs:13758-13771": {
       "sha256": "1a246fc3b6f0d53673e7638620620ecc4c263ab074d1682e58a03cb2ba77129d",
       "span": 14
     },
     "Player.cs:13765-13770": {
+      "sha256": "1281a375f9d72debbf2712f6f1b64ef03952594d61e73406373b8de173b31153",
+      "span": 6
+    },
+    "Player.cs:13766-13771": {
       "sha256": "65c6e5bfcbc1b54f1b7bb2fca0c0403d8377ec656a3471ef4326ad8b735e8ce9",
       "span": 6
     },
-    "Player.cs:13773-13788": {
+    "Player.cs:13774-13789": {
       "sha256": "6453db9bf53122865e13680416900a4ff88b8769e8f52aa942b33a9ebd97f4f6",
       "span": 16
     },
-    "Player.cs:13804-13829": {
+    "Player.cs:13805-13830": {
       "sha256": "d958428f89965f24b25583fa531f4f4b630289395c42b475b6ad8458b48f6a81",
       "span": 26
     },
-    "Player.cs:13839-13867": {
+    "Player.cs:13840-13868": {
       "sha256": "327f11d048f751aaa613d9eebe3ae14dc614dc6df4e05785f98ee30365496fc6",
       "span": 29
     },
-    "Player.cs:13888-13930": {
+    "Player.cs:13889-13931": {
       "sha256": "a42568fea5fc58894d7650a8b5155e1897a92e9fe10fa614134fad6f97856419",
       "span": 43
     },
-    "Player.cs:13903-13930": {
+    "Player.cs:13904-13931": {
       "sha256": "cf0f0de5c4baa49e50fbd48b33bb420d5718526d184a3a650a00bef10e1e0502",
       "span": 28
     },
-    "Player.cs:13970-13979": {
+    "Player.cs:13971-13980": {
       "sha256": "9ec4be508aaf39e825b59068cf149a8df7c3e82a071b0288e7ee2e8d56f247d8",
       "span": 10
     },
-    "Player.cs:13970-14011": {
+    "Player.cs:13971-14012": {
       "sha256": "303284af11ed221006154aafbcaef0074576ecb452c2ef19b0855b649ce81775",
       "span": 42
     },
-    "Player.cs:13979-13981": {
+    "Player.cs:13980-13982": {
       "sha256": "773490ff73f5c3858f25a56f887e131e97d5f1c920ce31022f6c59d1cd12e7ff",
       "span": 3
     },
     "Player.cs:13996-14002": {
+      "sha256": "10fbc8368e02b36f825313c9bd9873e9fe45950053d69d7a92e8f35805d0325b",
+      "span": 7
+    },
+    "Player.cs:13997-14003": {
       "sha256": "2be5114f52ec07bc062b05921b2f565db5a4702ce08187384bf235258adcb9f0",
       "span": 7
     },
-    "Player.cs:14005-14021": {
+    "Player.cs:14006-14022": {
       "sha256": "8daeb268ab002abf44f1b79fbcdffa421c641e0690a2ee067b0394f53eac5db7",
       "span": 17
     },
-    "Player.cs:14012-14039": {
+    "Player.cs:14012-14047": {
+      "sha256": "9b16c1c6d3481ebe930b7c464ca027d75733ba5c9f5a9aadbd18863dcd43870b",
+      "span": 36
+    },
+    "Player.cs:14013-14040": {
       "sha256": "2c7366512f9717434e9fd31e5e3fee8a6ebe38b6720d27d23a2df9d7dd147dfb",
       "span": 28
     },
-    "Player.cs:14012-14047": {
-      "sha256": "00c0a62de4ba425d1cf305b95995a510d04147726579596d7e68e26eb060ab14",
-      "span": 36
-    },
-    "Player.cs:14012-14068": {
+    "Player.cs:14013-14069": {
       "sha256": "162aafbb6ec5b8fc0c9893de6b272af38fced4fa4de1ed68fea10a4fdfdabad8",
       "span": 57
     },
-    "Player.cs:14023": {
+    "Player.cs:14024": {
       "sha256": "21c547f691ea1dc2913bc23b37f7de8a67b828d84c677405bf07d136e81a41f6",
       "span": 1
     },
-    "Player.cs:14024-14027": {
+    "Player.cs:14025-14028": {
       "sha256": "47803aeb7c3720d361bf0104efdd5e7fe94535adae102f8152f2188b40605f88",
       "span": 4
     },
-    "Player.cs:14029-14031": {
+    "Player.cs:14030-14032": {
       "sha256": "0798855af56520c05d1262151bdd27632da31fcdbddb374f09b2d06ed492c465",
       "span": 3
     },
-    "Player.cs:14040-14042": {
+    "Player.cs:14041-14043": {
       "sha256": "741b6e46b4735de7c6f1da6265b697573780e6f27c52ab351df1f7c95ff76d6a",
       "span": 3
     },
-    "Player.cs:14044-14047": {
+    "Player.cs:14045-14048": {
       "sha256": "f4ab81babfeab2f60b6d0c6a2778148f87f98eebddf384f05102db5febb2a28c",
       "span": 4
     },
-    "Player.cs:14048-14064": {
+    "Player.cs:14049-14065": {
       "sha256": "6ce91286b6ae36c993731128b3d18dd0aecfbb4fcac508cc75ddcaeccec5b732",
       "span": 17
     },
-    "Player.cs:14063-14067": {
+    "Player.cs:14064-14068": {
       "sha256": "27aa1e274cf6136e99511c6ea13c222684c9dce6bb15e371e65b59fb519c979d",
       "span": 5
     },
-    "Player.cs:14114-14121": {
+    "Player.cs:14115-14122": {
       "sha256": "b8a389e3afa33317dc511ab44d0dfc347d9e21753835db6ac8ea2e470fc9518e",
       "span": 8
     },
-    "Player.cs:14152-14158": {
+    "Player.cs:14153-14159": {
       "sha256": "b27cb4fdc8568de78e5988eb0b2103a5a1cd419611bf1a20294aac26b2fd6bf9",
       "span": 7
     },
-    "Player.cs:14399-14411": {
+    "Player.cs:14400-14412": {
       "sha256": "e7c48c2905fbe995d827ec072e7496723f6a3d86dd436e712ef826ff8a53ef58",
       "span": 13
     },
-    "Player.cs:14646-14650": {
+    "Player.cs:14651-14655": {
       "sha256": "480cc76985758ad63ac70003b407aa28587062b0a3295e7ac6f6d672a253191c",
       "span": 5
     },
-    "Player.cs:14646-14655": {
+    "Player.cs:14651-14660": {
       "sha256": "a57b0e0fc760782fe3ecbc53adf593569400465bbb4f4786dfcb8394600e0b2b",
       "span": 10
     },
-    "Player.cs:14707-14720": {
+    "Player.cs:14712-14725": {
       "sha256": "8c6b1eb34b9ff8901df2b4c59c05454310ef4e700bc4a37b3d304eeb32b5242b",
       "span": 14
     },
-    "Player.cs:14707-14734": {
+    "Player.cs:14712-14739": {
       "sha256": "b58c78408afb32e229b7e1c75be53cbdf11921a072a6ab0294446ae3c6a52f00",
       "span": 28
     },
-    "Player.cs:14722-14734": {
+    "Player.cs:14727-14739": {
       "sha256": "2a466bd01a3f751acde6027fc81e7dee9e1738c4503f54d55727c344bbac0843",
       "span": 13
     },
-    "Player.cs:14722-14735": {
+    "Player.cs:14727-14740": {
       "sha256": "0a4c946a914c13ffa8fba8f0c1ca043d2bdaae310fc129c971b12953e8ab877b",
       "span": 14
     },
-    "Player.cs:14723-14735": {
+    "Player.cs:14728-14740": {
       "sha256": "ae19631a19f3c040bf548137a91d37648806a0199e1d8a8c65b3f02c7788415f",
       "span": 13
     },
-    "Player.cs:14759-14770": {
+    "Player.cs:14764-14775": {
       "sha256": "f41ed9ad6928c0d8ab334e7e9f8add17abfffa6f7dd2c8f0625b1d4673a0b391",
       "span": 12
     },
-    "Player.cs:14828-14846": {
+    "Player.cs:14833-14851": {
       "sha256": "0c568eae175f95118b9dd7ef360ac3752a52aa4a19c20e54e0711e1188689fe8",
       "span": 19
     },
@@ -3214,7 +3226,7 @@
       "sha256": "9aafd6a1ffefb79954d122bb524e4b19699eff3f44bbbc4178ca7ce82161172a",
       "span": 15
     },
-    "Player.cs:15419-15422": {
+    "Player.cs:15424-15427": {
       "sha256": "068ce8df3e3dfb51f87a00730f8f157392fa6e93e468d2eb0fcabeb17e18593c",
       "span": 4
     },
@@ -3338,19 +3350,19 @@
       "sha256": "22cc9d2d51bdba8f539e111d815a5d0543fad0a0c9b6d7b871ece50f54d87b67",
       "span": 11
     },
-    "Player.cs:8670-8677": {
+    "Player.cs:8671-8678": {
       "sha256": "9f47d3de65660bc4b1789c01d20e9c5986aef9f5d0b67d73d64a79fb2da0176e",
       "span": 8
     },
-    "Player.cs:9098-9115": {
+    "Player.cs:9099-9116": {
       "sha256": "1c4104be15264be2613972c6577c07b9ff4b659f74c1fbe9ac819e7e30287523",
       "span": 18
     },
-    "Player.cs:9553-9556": {
+    "Player.cs:9554-9557": {
       "sha256": "4037492196bb57aa4725f418967a90adb6fed6739e5f401f396cb144c6b0da41",
       "span": 4
     },
-    "Player.cs:9626-9649": {
+    "Player.cs:9627-9650": {
       "sha256": "944cb4951035c359f934d203ccd3e393b4a50d197917b2777b64c0f5d014e36f",
       "span": 24
     },
@@ -3854,23 +3866,23 @@
     "PlayerInventory.cs:UpdateScrollCast": {
       "span": 0
     },
-    "PlayerLooting.cs:115-154": {
-      "sha256": "49f898db88b9592dcdc472911f2d44d0e404fa87af785355dda2f7cbc7d88859",
+    "PlayerLooting.cs:120-159": {
+      "sha256": "898323bdf2dcfcfa8d0486704c89f9e28a9c9d06085fc91f6d1147501647ff16",
       "span": 40
     },
-    "PlayerLooting.cs:156-175": {
+    "PlayerLooting.cs:161-180": {
       "sha256": "2e2eee12ef42b7638c2cdf9adad50d925d9d1e0e284af4415353f4de638ce7b6",
       "span": 20
     },
-    "PlayerLooting.cs:177-182": {
+    "PlayerLooting.cs:182-187": {
       "sha256": "a5e3eb01ba98967d36a7d7211294cef6c415eeb237056d2fbae81a04c3cca106",
       "span": 6
     },
-    "PlayerLooting.cs:184-210": {
+    "PlayerLooting.cs:189-215": {
       "sha256": "57df9acd7801714ec1c8d24194be5eb74b139f23ebf2262db2d6603bc8cca105",
       "span": 27
     },
-    "PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32": {
+    "PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean": {
       "span": 0
     },
     "PlayerNpcTrading.cs:18": {
@@ -4337,15 +4349,15 @@
     "Portal.cs:OnTriggerEnter2D": {
       "span": 0
     },
-    "PotionItem.cs:120-145": {
+    "PotionItem.cs:141-166": {
       "sha256": "02d6a2cca901f039c9b9a72563133691ec4019cf8aeabe63f51fbc046112dd78",
       "span": 26
     },
-    "PotionItem.cs:139-143": {
+    "PotionItem.cs:160-164": {
       "sha256": "3e5baf955aa06b67997399ca44ffbece573945527fc1403f7857dc2c8dcedd44",
       "span": 5
     },
-    "PotionItem.cs:144-146": {
+    "PotionItem.cs:165-167": {
       "sha256": "77945c11926a3e318b4aa58a541f1fa031b689f504a467b0f2c4ad4a37e2896a",
       "span": 3
     },
@@ -4353,17 +4365,17 @@
       "sha256": "6599aa1d3a0adc00beede35d7c166f51f2104cf7a14a67c1f60fc64def1808b1",
       "span": 16
     },
-    "PotionItem.cs:41-125": {
+    "PotionItem.cs:62-146": {
       "sha256": "c76ec63c53664e9e3365ccf266192ca86fadfe4df59852cd5033582bece54d0d",
       "span": 85
-    },
-    "PotionItem.cs:78-86": {
-      "sha256": "c31f72bc11bb8af9ab4ddd998754068f6e5e52dc38a4298ccae8843881773489",
-      "span": 9
     },
     "PotionItem.cs:8-17": {
       "sha256": "eb0ff0b508e63345f4fc1392c7c403dc8afc58711dc6e124752bfa954961089f",
       "span": 10
+    },
+    "PotionItem.cs:99-107": {
+      "sha256": "c31f72bc11bb8af9ab4ddd998754068f6e5e52dc38a4298ccae8843881773489",
+      "span": 9
     },
     "PotionItem.cs:GetBuffLevelWithElixirEndurance": {
       "span": 0

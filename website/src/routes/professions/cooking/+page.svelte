@@ -166,7 +166,7 @@
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
     <h2 class="text-xl font-semibold">How Cooking works</h2>
-    <!-- Source: server-scripts/Player.cs:13979-13981,14005-14021,14044-14047,12954-12981 — baking checks output space, spends ingredients before success, and displays a burned result on failure without adding food. -->
+    <!-- Source: server-scripts/Player.cs:13980-13982,14006-14022,14045-14048,12955-12982 — baking checks output space, spends ingredients before success, and displays a burned result on failure without adding food. -->
     <p class="text-muted-foreground">
       <span class="block">Baking needs room for the food.</span>
       <span class="block"

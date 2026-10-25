@@ -4,7 +4,7 @@ import { iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatNumber } from "$lib/utils/format";
 import { MAX_HEALTH, MAX_MANA, situational } from "./inputs";
 
-// Source: server-scripts/Player.cs:13480-13487,14646-14650; server-scripts/EnergyResource.cs:21-35 — XP fractions and resurrection resources round to even, restored Mana is capped independently.
+// Source: server-scripts/Player.cs:13481-13488,14651-14655; server-scripts/EnergyResource.cs:21-35 — XP fractions and resurrection resources round to even, restored Mana is capped independently.
 export function deathRecovery(): Calculation {
   return {
     steps: [

@@ -128,7 +128,7 @@
             </thead>
             <tbody>
               <!-- Source: server-scripts/PlayerDead.cs:103-119 — only the character who died can collect unused remains. -->
-              <!-- Source: server-scripts/Player.cs:14646-14655 — collecting remains returns half the stored XP loss and destroys the remains. -->
+              <!-- Source: server-scripts/Player.cs:14651-14660 — collecting remains returns half the stored XP loss and destroys the remains. -->
               <tr class="border-b">
                 <th class="p-2 font-medium text-foreground"
                   >Collect your remains</th
@@ -165,7 +165,7 @@
           </table>
         </div>
         <Calculation calculation={deathRecovery()} />
-        <!-- Source: server-scripts/Player.cs:13480-13481; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
+        <!-- Source: server-scripts/Player.cs:13481-13482; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
         <!-- Observed: docs/game-bugs/resurrection-restores-mana-from-maximum-health.md — both live resurrection trials restore Mana from maximum Health. -->
         <p>
           Rage is unchanged. The Mana amount uses maximum Hit Points because of
@@ -198,11 +198,11 @@
             >Scroll of Resurrection</a
           >.
         </p>
-        <!-- Source: server-scripts/Player.cs:13461-13491 — resurrection restores resources and XP without changing equipment durability. -->
+        <!-- Source: server-scripts/Player.cs:13462-13492 — resurrection restores resources and XP without changing equipment durability. -->
         <p>Resurrection does not repair your equipment.</p>
       </div>
 
-      <!-- Source: server-scripts/Player.cs:4183-4190,10020-10023 — Hardcore death deletes the character instead of saving the normal death state. -->
+      <!-- Source: server-scripts/Player.cs:4183-4190,10021-10024 — Hardcore death deletes the character instead of saving the normal death state. -->
       <p
         class="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-foreground"
       >

@@ -11,7 +11,7 @@ import type { StatId } from "$lib/generated/stat-vocabulary";
 // merc-stats.ts — Pure mercenary stat-range math and hiring-cost helpers.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 
-// Source: server-scripts/Player.cs:11033-11048 — each veteran point adds +0.25% to Health and Mana multipliers.
+// Source: server-scripts/Player.cs:11034-11049 — each veteran point adds +0.25% to Health and Mana multipliers.
 export const VET_MULT_PER_POINT = 0.0025;
 // Source: server-scripts/Constitution.cs:13-15 — Constitution adds 25 Health per point.
 const CON_HEALTH = 25;
@@ -29,7 +29,7 @@ export interface RaceBands {
   bc: number;
 }
 
-// Source: server-scripts/Player.cs:10737-10792 — per-race roll bands and base-combat factors.
+// Source: server-scripts/Player.cs:10738-10793 — per-race roll bands and base-combat factors.
 export const RACES: Record<string, RaceBands> = {
   Human: { hp: [0.95, 1.0], mana: [0.95, 1.0], energy: [0.95, 1.0], bc: 0.9 },
   Elf: { hp: [0.9, 0.95], mana: [1.0, 1.05], energy: [0.9, 0.95], bc: 0.7 },
@@ -63,7 +63,7 @@ export const RACES: Record<string, RaceBands> = {
 /** Display order of every race a mercenary can be. */
 export const RACE_ORDER = Object.keys(RACES);
 
-/** Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean; Player.cs:11018-11047; Pet.cs:976-985 — Bard uses the Mana multiplier branch but displays songs. */
+/** Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean; Player.cs:11019-11048; Pet.cs:976-985 — Bard uses the Mana multiplier branch but displays songs. */
 export type Role = "mana" | "energy";
 
 export interface ClassDef {
@@ -147,13 +147,13 @@ export function attrs(cls: string, level: number): Record<string, number> {
   return out;
 }
 
-// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:11018-11037 — Health curve times multiplier plus Constitution.
+// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:11019-11038 — Health curve times multiplier plus Constitution.
 const hpAt = (hpCurve: number, mult: number, con: number): number =>
   iround(multiplyF32(hpCurve, mult)) + con * CON_HEALTH;
-// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:11018-11048 — Mana curve times multiplier plus Intelligence.
+// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:11019-11049 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
   iround(multiplyF32(manaCurve, mult)) + intl * INT_MANA;
-// Source: server-scripts/Player.cs:10737-10792 — base-combat max is round(level × race factor) − 1.
+// Source: server-scripts/Player.cs:10738-10793 — base-combat max is round(level × race factor) − 1.
 const baseCombatMax = (level: number, factor: number): number =>
   iround(multiplyF32(level, factor)) - 1;
 
@@ -180,8 +180,8 @@ export interface ClassResult {
   rows: MercRow[];
 }
 
-/** Source: server-scripts/Player.cs:10732-10733,10737-10792,10818-10830 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
-/** Source: server-scripts/Player.cs:10829-10835,11028-11035 — hiring and resummoning add total veteran points to the shared hire roll for base damage and base magic damage, including a zero roll. */
+/** Source: server-scripts/Player.cs:10733-10734,10738-10793,10819-10831 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
+/** Source: server-scripts/Player.cs:10830-10836,11029-11036 — hiring and resummoning add total veteran points to the shared hire roll for base damage and base magic damage, including a zero roll. */
 /** Source: server-scripts/Player.cs:UpdateMercStatsByLevel — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
@@ -345,7 +345,7 @@ export function hirePrice(
 /**
  * The resource a mercenary class shows. Warriors and Rogues use Rage. A Bard
  * shows its active songs. The other classes use Mana.
- * Source: server-scripts/Pet.cs:976-985, Player.cs:11019-11027
+ * Source: server-scripts/Pet.cs:976-985, Player.cs:11020-11028
  */
 export function mercenaryResource(cls: string): MercenaryResource {
   if (cls === "Bard") return "Songs";
@@ -358,10 +358,10 @@ export const MERC_MIN_LEVEL = 10;
 export const MAX_VETERAN = 200;
 /** Source: server-scripts/UIMercenaries.cs:596 — a player can have ten hired mercenaries. */
 export const MAX_HIRED = 10;
-/** Source: server-scripts/Player.cs:10793-10798 — a party holds at most five members. */
+/** Source: server-scripts/Player.cs:10794-10799 — a party holds at most five members. */
 export const MAX_PARTY = 5;
 
-/** Source: server-scripts/UIMercenaries.cs:494-496, Player.cs:10794 — the active limit is 1 below level 20, 2 at 20–29, 3 at 30–39, and 4 at 40+. */
+/** Source: server-scripts/UIMercenaries.cs:494-496, Player.cs:10795 — the active limit is 1 below level 20, 2 at 20–29, 3 at 30–39, and 4 at 40+. */
 export function activeMercenaryLimit(level: number): number {
   if (level >= 40) return 4;
   if (level >= 30) return 3;
@@ -391,7 +391,7 @@ export function mercenarySkillRank(
   );
 }
 
-/** Source: server-scripts/Player.cs:8670-8677 — double-precision resurrection curve and veteran fee, then a float32 Charisma product rounded upward. */
+/** Source: server-scripts/Player.cs:8671-8678 — double-precision resurrection curve and veteran fee, then a float32 Charisma product rounded upward. */
 export function resurrectionPrice(
   level: number,
   veteran: number,

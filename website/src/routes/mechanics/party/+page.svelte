@@ -113,19 +113,19 @@
         >
         for the kill XP sharing calculation.
       </p>
-      <!-- Source: server-scripts/PlayerLooting.cs:156-175 and server-scripts/PlayerParty.cs:76-90 — gold is shared around its picker, each recipient receives the ceiling of gold divided by nearby member count. -->
+      <!-- Source: server-scripts/PlayerLooting.cs:161-180 and server-scripts/PlayerParty.cs:76-90 — gold is shared around its picker, each recipient receives the ceiling of gold divided by nearby member count. -->
       <p>
         <span class="block">Nearby party players share collected gold.</span>
         <span class="block">Distance is measured from the gold collector.</span>
       </p>
       <Calculation calculation={partyGold()} />
-      <!-- Source: server-scripts/PlayerLooting.cs:115-154 — matching unfinished GatherQuest objectives advance for nearby party members on monster or chest pickup; the loot is consumed rather than copied. -->
+      <!-- Source: server-scripts/PlayerLooting.cs:120-159 — matching unfinished GatherQuest objectives advance for nearby party members on monster or chest pickup; the loot is consumed rather than copied. -->
       <p>
         Picking up a gather-quest drop from a monster or chest advances the
         matching unfinished quest for each nearby party member. Nobody receives
         the drop in their inventory.
       </p>
-      <!-- Source: server-scripts/PlayerLooting.cs:184-210 and server-scripts/Monster.cs:4636-4675 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
+      <!-- Source: server-scripts/PlayerLooting.cs:189-215 and server-scripts/Monster.cs:4645-4684 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
       <p>
         <span class="block"
           >The collector receives items that do not require a roll.</span
@@ -157,7 +157,7 @@
         You have 2 minutes to answer. The roll resolves when everyone answers or
         time runs out. No answer counts as Pass.
       </p>
-      <!-- Source: server-scripts/Player.cs:14152-14158 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
+      <!-- Source: server-scripts/Player.cs:14153-14159 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>

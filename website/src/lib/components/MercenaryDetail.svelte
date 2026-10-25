@@ -152,7 +152,7 @@
         ? "text-stat-atk"
         : "text-stat-mana",
   );
-  // Source: server-scripts/Player.cs:UpdateMercStatsByLevel,11033-11048 — the veteran percentage multiplies the class's current base-resource curve before the pool is rounded.
+  // Source: server-scripts/Player.cs:UpdateMercStatsByLevel,11034-11049 — the veteran percentage multiplies the class's current base-resource curve before the pool is rounded.
   const veteranPools = $derived.by(() => {
     const curve = pet.profile.curves[classDef.type];
     const bonus = multiplyF32(veteran, VET_MULT_PER_POINT);
@@ -358,7 +358,7 @@
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-4">
-        <!-- Source: server-scripts/Player.cs:11018-11048, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
+        <!-- Source: server-scripts/Player.cs:11019-11049, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
         <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
           {#if stats.health}{@render stat(
               "Maximum Hit Points",
@@ -507,7 +507,7 @@
           </div>
           <div>
             <h3 class="text-sm font-semibold">Veteran resource bonuses</h3>
-            <!-- Source: server-scripts/Player.cs:10833-10847,11033-11048; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
+            <!-- Source: server-scripts/Player.cs:10834-10848,11034-11049; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
               Your {veteran} total veteran points add about
               {formatNumber(veteranPools.health)} maximum Hit Points{veteranRaisesMana

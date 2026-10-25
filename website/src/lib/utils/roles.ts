@@ -199,7 +199,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       `The reset costs ${formatNumber(10000)} gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.`,
     ],
   },
-  // Source: server-scripts/Player.cs:5222-5237,11323-11341 — reset clears the current specialization allocation and refuses curses or debuffs.
+  // Source: server-scripts/Player.cs:5222-5237,11324-11342 — reset clears the current specialization allocation and refuses curses or debuffs.
   is_reset_attributes: {
     description: "Resets attribute points for your current specialization.",
     details: [

@@ -810,7 +810,7 @@ export function assembleAcquisitionModel(
           "scribing",
         ]);
         const parts: RequirementExpression[] = [];
-        // Source: server-scripts/Player.cs:13682-13723; server-scripts/TableUI.cs:71-98.
+        // Source: server-scripts/Player.cs:13683-13724; server-scripts/TableUI.cs:71-98.
         // Scribing uses Alchemy success but does not require learning the recipe.
         if (method.rule_id === "alchemy")
           parts.push(

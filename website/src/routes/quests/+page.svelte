@@ -484,7 +484,7 @@
             <td class="px-4 py-2">Every listed item equipped at once</td>
             <td class="px-4 py-2 text-muted-foreground">You keep the items</td>
           </tr>
-          <!-- Source: server-scripts/AlchemyQuest.cs:13-16; server-scripts/Player.cs:13773-13788 — brewing a matching potion advances only active, incomplete quests, and the quest is fulfilled at the target count. -->
+          <!-- Source: server-scripts/AlchemyQuest.cs:13-16; server-scripts/Player.cs:13774-13789 — brewing a matching potion advances only active, incomplete quests, and the quest is fulfilled at the target count. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Brew" /></td>
             <td class="px-4 py-2">Potions you brew after you accept</td>

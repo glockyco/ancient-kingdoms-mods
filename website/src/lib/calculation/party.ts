@@ -3,7 +3,7 @@ import { ceilToInt, divideF32 } from "$lib/calculation/unity-math";
 import { formatNumber } from "$lib/utils/format";
 import { situational } from "./inputs";
 
-// Source: server-scripts/PlayerLooting.cs:156-175 — each nearby player receives the float-divided share rounded upward.
+// Source: server-scripts/PlayerLooting.cs:161-180 — each nearby player receives the float-divided share rounded upward.
 export function partyGold(): Calculation {
   return {
     steps: [

@@ -420,7 +420,7 @@
           <li>Use the whistle again to dismiss the pet.</li>
           <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454 — a follower without its inventory whistle is removed. -->
           <li>The pet leaves if its whistle is not in your inventory.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:13632-13636 — petting grants 1–4 faction standing every 30 seconds per animal. -->
+          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:13633-13637 — petting grants 1–4 faction standing every 30 seconds per animal. -->
           <li>
             <a
               href="/mechanics/reputation#pets"

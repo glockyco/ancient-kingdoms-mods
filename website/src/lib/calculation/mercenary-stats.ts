@@ -5,7 +5,7 @@ import { CLASSES, RACES } from "$lib/utils/merc-stats";
 import type { ClassResult, Curves } from "$lib/utils/merc-stats";
 import { formatNumber, formatPercent } from "$lib/utils/format";
 
-// Source: server-scripts/Player.cs:10737-10792,11028-11048,UpdateMercStatsByLevel; server-scripts/Health.cs:28-41; server-scripts/Mana.cs:28-41; server-scripts/Strength.cs:15-17; server-scripts/Intelligence.cs:36-38 — saved multipliers and shared combat rolls combine with current attributes and veteran totals.
+// Source: server-scripts/Player.cs:10738-10793,11029-11049,UpdateMercStatsByLevel; server-scripts/Health.cs:28-41; server-scripts/Mana.cs:28-41; server-scripts/Strength.cs:15-17; server-scripts/Intelligence.cs:36-38 — saved multipliers and shared combat rolls combine with current attributes and veteran totals.
 export function mercenaryStats(
   result: ClassResult,
   level: number,
@@ -178,7 +178,7 @@ export function mercenaryStats(
   };
 }
 
-// Source: server-scripts/Player.cs:10732-10792 — race selection precedes independent resource rolls and the shared combat roll. Repeated-hire expectations are derived from those probabilities.
+// Source: server-scripts/Player.cs:10733-10793 — race selection precedes independent resource rolls and the shared combat roll. Repeated-hire expectations are derived from those probabilities.
 export function mercenaryHiringOdds(
   raceChance: number,
   statChance: number,
