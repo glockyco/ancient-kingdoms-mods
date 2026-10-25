@@ -2193,6 +2193,9 @@
     "Monster.cs:CalculateRewardExp": {
       "span": 0
     },
+    "Monster.cs:CanAutoLoot": {
+      "span": 0
+    },
     "Monster.cs:EndBardCharm": {
       "span": 0
     },
@@ -5550,6 +5553,9 @@
     "UIJournal.cs:86-93": {
       "sha256": "055fefedfb3ba091676aa38343d2f8e858c05a910096ebefff7bac7f18009c74",
       "span": 8
+    },
+    "UILoot.cs:PrepareCorpseClick": {
+      "span": 0
     },
     "UIMacroCommandInput.cs:OnUpdateSelected": {
       "span": 0

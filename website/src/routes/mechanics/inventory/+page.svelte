@@ -692,6 +692,11 @@
           pickup works within 2.4 yd.
         </li>
         <li>
+          <!-- Source: server-scripts/UILoot.cs:PrepareCorpseClick,UpdateAutoLoot; server-scripts/Monster.cs:CanAutoLoot — shift and left click on a corpse loots everything once in reach, only when you alone can loot it and are not in a party. -->Shift-click
+          a monster's corpse to take everything at once. This works only outside
+          a party.
+        </li>
+        <li>
           <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean — gold deposits directly as carried gold and splits among nearby party members. -->Gold
           goes directly to carried gold.
         </li>
