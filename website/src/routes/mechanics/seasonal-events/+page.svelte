@@ -570,11 +570,11 @@
                 class="grid gap-x-6 gap-y-4 rounded-lg border p-5 sm:grid-cols-[1fr_15rem]"
               >
                 <div class="min-w-0 space-y-3">
-                  <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <h3 class="font-semibold">
                       <EntityLink href="/quests/{quest.id}" name={quest.name} />
                     </h3>
-                    <MapLink entityId={quest.id} entityType="quest" />
+                    <MapLink entityId={quest.id} entityType="quest" compact />
                   </div>
                   <dl
                     class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-sm"
