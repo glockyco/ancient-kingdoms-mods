@@ -117,6 +117,12 @@
       ),
   );
 
+  // A skill that only replaces the others of its group, such as a race
+  // illusion, still shows the effects card that says so.
+  const showBuffEffects = $derived(
+    !data.season && (hasBuffEffects || data.categorySkills.length > 0),
+  );
+
   // Jump list entries, in document order. Each predicate mirrors the {#if}
   // guarding the matching Card.Root, so the list never points at a section
   // this skill does not render.
@@ -164,7 +170,7 @@
       {
         id: "buff-debuff",
         label: "Buff/Debuff Effects",
-        show: !data.season && hasBuffEffects,
+        show: showBuffEffects,
       },
       { id: "level-scaling", label: "Rank Scaling", show: showLevelScaling },
       {
@@ -990,7 +996,7 @@
   {/if}
 
   <!-- Buff/Debuff Effects -->
-  {#if !data.season && hasBuffEffects}
+  {#if showBuffEffects}
     <Card.Root id="buff-debuff" class="bg-muted/30">
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
@@ -1003,22 +1009,22 @@
           <!-- Source: server-scripts/Skills.cs:AddOrRefreshBuff — a new buff expires existing buffs with the same category. -->
           <p class="text-sm">
             {#if data.categorySkills.length <= 6}
-              Shares an overwrite group with
-              {#each data.categorySkills as other, index (other.id)}{#if index > 0}{index ===
-                  data.categorySkills.length - 1
-                    ? " and "
-                    : ", "}{/if}<a
+              Only one of this effect{#each data.categorySkills as other, index (other.id)}{index ===
+                data.categorySkills.length - 1
+                  ? " and "
+                  : ", "}<a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   href="{base}/skills/{other.id}">{other.name}</a
-                >{/each}.
+                >{/each}
+              lasts on a character at a time.
             {:else}
-              Shares the {skill.buff_category} overwrite group with {data
-                .categorySkills.length} other effects.
+              Only one of this effect and {data.categorySkills.length} other
+              {skill.buff_category} effects lasts on a character at a time.
             {/if}
-            A new effect of the group replaces the others on that character.
+            The newest ends the others.
             {#if groupHasMercenaryAreaBuff}
               A mercenary's area buff is the exception. It skips characters who
-              already have another effect of the group.
+              already have one of these effects.
             {/if}
             <a
               class="text-blue-600 dark:text-blue-400 hover:underline"
