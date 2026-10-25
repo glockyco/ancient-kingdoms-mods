@@ -439,6 +439,11 @@
     ),
   );
 
+  // A row links to the map only where the map can show its entity for this item.
+  const mapTarget = (category: keyof typeof data.mapLinks) => (id: string) =>
+    data.mapLinks[category].includes(id)
+      ? { entityId: id, entityType: category }
+      : null;
   const chanceLabel = (chance: number) =>
     formatPercent(chance, { decimals: 1, trailingZeros: true });
   const packContentRows = $derived(
@@ -687,13 +692,6 @@
   {/if}
 {/snippet}
 
-<!-- A row links to the map only where the map can show the entity for this item. -->
-{#snippet rowMapLink(category: keyof typeof data.mapLinks, id: string)}
-  {#if data.mapLinks[category].includes(id)}
-    <MapLink entityId={id} entityType={category} compact />
-  {/if}
-{/snippet}
-
 {#snippet renderDropCell({
   cell,
   row,
@@ -716,7 +714,6 @@
         >
           {drop.monster_name}
         </a>
-        {@render rowMapLink("monster", drop.monster_id)}
       </div>
       {@render seasonLabels(drop.seasons, "pl-6")}
     </div>
@@ -751,13 +748,10 @@
 })}
   {@const altar = row.original}
   {#if cell.column.id === "altar_name"}
-    <div class="flex items-center gap-1.5">
-      <a
-        href={resolve("/altars/[id]", { id: altar.altar_id })}
-        class={styles.link}>{altar.altar_name}</a
-      >
-      {@render rowMapLink("altar", altar.altar_id)}
-    </div>
+    <a
+      href={resolve("/altars/[id]", { id: altar.altar_id })}
+      class={styles.link}>{altar.altar_name}</a
+    >
   {:else if cell.column.id === "drop_rate"}
     {@render percent(altar.drop_rate)}
   {:else if cell.column.id === "tier"}
@@ -785,12 +779,9 @@
 })}
   {@const vendor = row.original}
   {#if cell.column.id === "npc_name"}
-    <div class="flex items-center gap-1.5">
-      <a href={resolve("/npcs/[id]", { id: vendor.npc_id })} class={styles.link}
-        >{vendor.npc_name}</a
-      >
-      {@render rowMapLink("npc", vendor.npc_id)}
-    </div>
+    <a href={resolve("/npcs/[id]", { id: vendor.npc_id })} class={styles.link}
+      >{vendor.npc_name}</a
+    >
   {:else if cell.column.id === "price"}
     <span class="ml-auto tabular-nums {styles.valueCurrency}">
       {#if vendor.currency_item_id}
@@ -824,13 +815,10 @@
   {@const quest = row.original}
   {#if cell.column.id === "quest_name"}
     <div>
-      <div class="flex items-center gap-1.5">
-        <a
-          href={resolve("/quests/[id]", { id: quest.quest_id })}
-          class={styles.link}>{quest.quest_name}</a
-        >
-        {@render rowMapLink("quest", quest.quest_id)}
-      </div>
+      <a
+        href={resolve("/quests/[id]", { id: quest.quest_id })}
+        class={styles.link}>{quest.quest_name}</a
+      >
       {@render seasonLabels(quest.seasons ?? [])}
     </div>
   {:else if cell.column.id === "need"}
@@ -877,13 +865,10 @@
 })}
   {@const gather = row.original}
   {#if cell.column.id === "gather_item_name"}
-    <div class="flex items-center gap-1.5">
-      <a
-        href={resolve("/gather-items/[id]", { id: gather.gather_item_id })}
-        class={styles.link}>{gather.gather_item_name}</a
-      >
-      {@render rowMapLink("resource", gather.gather_item_id)}
-    </div>
+    <a
+      href={resolve("/gather-items/[id]", { id: gather.gather_item_id })}
+      class={styles.link}>{gather.gather_item_name}</a
+    >
   {:else if cell.column.id === "rate"}
     <span class="ml-auto whitespace-normal text-right tabular-nums">
       {gather.rate_note ??
@@ -911,14 +896,11 @@
 })}
   {@const chest = row.original}
   {#if cell.column.id === "zone_name"}
-    <div class="flex items-center gap-1.5">
-      <a
-        href={resolve("/chests/[id]", { id: chest.chest_id })}
-        class={styles.link}
-        >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
-      >
-      {@render rowMapLink("chest", chest.chest_id)}
-    </div>
+    <a
+      href={resolve("/chests/[id]", { id: chest.chest_id })}
+      class={styles.link}
+      >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
+    >
   {:else if cell.column.id === "rate"}
     {@render percent(chest.rate)}
   {:else if cell.column.id === "key_name"}
@@ -1023,13 +1005,10 @@
 })}
   {@const altar = row.original}
   {#if cell.column.id === "altar_name"}
-    <div class="flex items-center gap-1.5">
-      <a
-        href={resolve("/altars/[id]", { id: altar.altar_id })}
-        class={styles.link}>{altar.altar_name}</a
-      >
-      {@render rowMapLink("altar", altar.altar_id)}
-    </div>
+    <a
+      href={resolve("/altars/[id]", { id: altar.altar_id })}
+      class={styles.link}>{altar.altar_name}</a
+    >
   {:else if cell.column.id === "zone_name"}
     {@render zoneLink(altar.zone_id, altar.zone_name)}
   {/if}
@@ -1044,10 +1023,7 @@
 })}
   {@const portal = row.original}
   {#if cell.column.id === "from_zone_name"}
-    <div class="flex items-center gap-1.5">
-      {@render zoneLink(portal.from_zone_id, portal.from_zone_name)}
-      {@render rowMapLink("portal", portal.portal_id)}
-    </div>
+    {@render zoneLink(portal.from_zone_id, portal.from_zone_name)}
   {:else if cell.column.id === "to_zone_name"}
     {@render zoneLink(portal.to_zone_id, portal.to_zone_name)}
   {/if}
@@ -1062,14 +1038,11 @@
 })}
   {@const chest = row.original}
   {#if cell.column.id === "zone_name"}
-    <div class="flex items-center gap-1.5">
-      <a
-        href={resolve("/chests/[id]", { id: chest.chest_id })}
-        class={styles.link}
-        >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
-      >
-      {@render rowMapLink("chest", chest.chest_id)}
-    </div>
+    <a
+      href={resolve("/chests/[id]", { id: chest.chest_id })}
+      class={styles.link}
+      >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
+    >
   {/if}
 {/snippet}
 
@@ -2111,6 +2084,7 @@
   {#if computed.droppedBy.length > 0}
     <RelationTable
       title="Dropped by"
+      mapTarget={(drop) => mapTarget("monster")(drop.monster_id)}
       rows={computed.droppedBy}
       columns={dropColumns}
       cell={renderDropCell}
@@ -2123,6 +2097,7 @@
   {#if computed.rewardedByAltars.length > 0}
     <RelationTable
       title="Dropped by Altar Boss"
+      mapTarget={(altar) => mapTarget("altar")(altar.altar_id)}
       rows={computed.rewardedByAltars}
       columns={altarDropColumns}
       cell={renderAltarDropCell}
@@ -2135,6 +2110,7 @@
   {#if computed.soldBy.length > 0}
     <RelationTable
       title="Sold by"
+      mapTarget={(vendor) => mapTarget("npc")(vendor.npc_id)}
       rows={computed.soldBy}
       columns={vendorColumns}
       cell={renderVendorCell}
@@ -2193,6 +2169,7 @@
   {#if computed.rewardedBy.length > 0}
     <RelationTable
       title="Rewarded by Quests"
+      mapTarget={(quest) => mapTarget("quest")(quest.quest_id)}
       rows={computed.rewardedBy as QuestRow[]}
       columns={questColumns(computed.rewardedBy as QuestRow[], false)}
       cell={renderQuestCell}
@@ -2205,6 +2182,7 @@
   {#if computed.providedByQuests.length > 0}
     <RelationTable
       title="Provided by Quests"
+      mapTarget={(quest) => mapTarget("quest")(quest.quest_id)}
       rows={computed.providedByQuests as QuestRow[]}
       columns={questColumns(computed.providedByQuests as QuestRow[], false)}
       cell={renderQuestCell}
@@ -2407,6 +2385,7 @@
   {#if computed.gatheredFrom.length > 0}
     <RelationTable
       title="Gathered from"
+      mapTarget={(gather) => mapTarget("resource")(gather.gather_item_id)}
       rows={computed.gatheredFrom}
       columns={gatherColumns}
       cell={renderGatherCell}
@@ -2422,6 +2401,7 @@
   {#if computed.foundInChests.length > 0}
     <RelationTable
       title="Found in Chests"
+      mapTarget={(chest) => mapTarget("chest")(chest.chest_id)}
       rows={computed.foundInChests}
       columns={chestColumns}
       cell={renderChestCell}
@@ -2530,6 +2510,7 @@
   {#if computed.neededForQuests.length > 0}
     <RelationTable
       title="Required for Quests"
+      mapTarget={(quest) => mapTarget("quest")(quest.quest_id)}
       rows={computed.neededForQuests as QuestRow[]}
       columns={questColumns(computed.neededForQuests as QuestRow[], true)}
       cell={renderQuestCell}
@@ -2620,6 +2601,7 @@
   {#if computed.requiredForAltars.length > 0}
     <RelationTable
       title="Required to Activate Altars"
+      mapTarget={(altar) => mapTarget("altar")(altar.altar_id)}
       rows={computed.requiredForAltars}
       columns={altarUseColumns}
       cell={renderAltarUseCell}
@@ -2630,6 +2612,7 @@
   {#if computed.requiredForPortals.length > 0}
     <RelationTable
       title="Required for Portals"
+      mapTarget={(portal) => mapTarget("portal")(portal.portal_id)}
       rows={computed.requiredForPortals}
       columns={portalColumns}
       cell={renderPortalCell}
@@ -2640,6 +2623,7 @@
   {#if computed.opensChests.length > 0}
     <RelationTable
       title="Opens Chests"
+      mapTarget={(chest) => mapTarget("chest")(chest.chest_id)}
       rows={computed.opensChests}
       columns={opensChestColumns}
       cell={renderOpensChestCell}

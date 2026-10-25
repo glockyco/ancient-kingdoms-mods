@@ -1,5 +1,5 @@
 <script lang="ts" generics="TData">
-  import type { Snippet } from "svelte";
+  import type { ComponentProps, Snippet } from "svelte";
   import {
     DataTable,
     type Cell,
@@ -8,6 +8,12 @@
     type Row,
     type SortingState,
   } from "$lib/components/ui/data-table";
+  import MapLink from "$lib/components/MapLink.svelte";
+
+  type MapTarget = Pick<
+    ComponentProps<typeof MapLink>,
+    "entityId" | "entityType"
+  >;
 
   /**
    * A full-width section listing one relation of an entity, such as the
@@ -23,6 +29,7 @@
     initialSorting = [],
     rightAligned = [],
     description,
+    mapTarget,
   }: {
     title: string;
     rows: TData[];
@@ -35,7 +42,24 @@
     rightAligned?: string[];
     /** Text that explains what the rows mean, shown between the title and the table. */
     description?: Snippet;
+    /** Where a row's entity is on the map, or null when the map cannot show it. */
+    mapTarget?: (row: TData) => MapTarget | null;
   } = $props();
+
+  // The Map column closes each row, and appears only when some row has a place on the map.
+  const allColumns = $derived(
+    mapTarget && rows.some((row) => mapTarget(row))
+      ? [
+          ...columns,
+          {
+            id: "map",
+            header: "Map",
+            size: 88,
+            enableSorting: false,
+          } satisfies ColumnDef<TData>,
+        ]
+      : columns,
+  );
 </script>
 
 {#snippet header({ header }: { header: Header<TData, unknown> })}
@@ -46,6 +70,19 @@
   {/if}
 {/snippet}
 
+{#snippet renderCell(context: { cell: Cell<TData, unknown>; row: Row<TData> })}
+  {#if context.cell.column.id === "map"}
+    {@const target = mapTarget?.(context.row.original)}
+    {#if target}
+      <MapLink {...target} compact />
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else}
+    {@render cell(context)}
+  {/if}
+{/snippet}
+
 <section class="space-y-3">
   <h2 class="font-semibold leading-none">{title} ({rows.length})</h2>
   {#if description}
@@ -53,8 +90,8 @@
   {/if}
   <DataTable
     data={rows}
-    {columns}
-    renderCell={cell}
+    columns={allColumns}
+    {renderCell}
     renderHeader={header}
     {initialSorting}
     {urlKey}
