@@ -82,6 +82,8 @@ export interface VendorSource {
   item_id: string;
   npc_id: string;
   npc_name: string;
+  /** Zones the NPC spawns in, sorted by name. */
+  zones: readonly { zone_id: string; zone_name: string }[];
   npc_faction: string | null;
   is_faction_vendor: boolean;
   price: number;
@@ -326,8 +328,11 @@ export interface ChestUsage {
   chest_name: string;
   zone_id: string;
   zone_name: string;
-  position_x: number | null;
-  position_y: number | null;
+  gold_min: number;
+  gold_max: number;
+  item_reward_id: string | null;
+  item_reward_name: string | null;
+  item_reward_amount: number;
 }
 
 /**

@@ -6,6 +6,7 @@ import {
 } from "$lib/acquisition/projections";
 import type { ItemUsages } from "$lib/types/item-sources";
 import { loadItemSourceModel, sourceEntity } from "./item-sources";
+import { chestRewardFields } from "./world-acquisition";
 
 export function itemUsagesFromModel(
   model: AcquisitionModel,
@@ -132,14 +133,25 @@ export function itemUsagesFromModel(
       );
       const location = provider?.location;
       if (!location) continue;
+      const rewardItems = Object.fromEntries(
+        method.outputs.flatMap((output) =>
+          output.item_id
+            ? [[output.item_id, { name: name("items", output.item_id) }]]
+            : [],
+        ),
+      );
+      const reward = chestRewardFields([method], rewardItems);
       result.chests.push({
         item_id: itemId,
         chest_id: String(detail.chest_id),
         chest_name: name("chests", detail.chest_id),
         zone_id: location.zoneId ?? "",
         zone_name: name("zones", location.zoneId),
-        position_x: location.position?.x ?? null,
-        position_y: location.position?.y ?? null,
+        gold_min: reward.gold_min,
+        gold_max: reward.gold_max,
+        item_reward_id: reward.item_reward_id,
+        item_reward_name: reward.item_reward_name,
+        item_reward_amount: reward.item_reward_amount,
       });
     } else if (method?.kind === "merge" && use.kind === "cost") {
       for (const output of method.outputs)

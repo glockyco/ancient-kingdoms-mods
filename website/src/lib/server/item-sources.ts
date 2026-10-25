@@ -125,7 +125,7 @@ export function isAltarTierReward(method: MethodView, itemId: string): boolean {
   );
 }
 
-/** Zones of the spawns or altars that provide a kill method, sorted by name. */
+/** Zones of the spawns, altars or NPCs that provide a method, sorted by name. */
 function methodZones(
   model: AcquisitionModel,
   method: MethodView,
@@ -291,6 +291,7 @@ export function itemSourcesFromModel(
         item_id: itemId,
         npc_id: npc.id,
         npc_name: str(npc, "name"),
+        zones: methodZones(model, method),
         npc_faction: faction,
         is_faction_vendor: num(offered, "faction_required_to_buy") > 0,
         price: currency?.amount ?? gold?.amount ?? 0,

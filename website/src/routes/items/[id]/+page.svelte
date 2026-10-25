@@ -568,6 +568,7 @@
           },
         ]
       : []),
+    zoneColumn<VendorRow>(),
   ]);
 
   // A quest row from rewards, provided items or objectives.
@@ -679,6 +680,9 @@
   type OpensChestRow = (typeof computed.opensChests)[number];
   const opensChestColumns: ColumnDef<OpensChestRow>[] = [
     { accessorKey: "zone_name", header: "Chest", minSize: TEXT },
+    // A grouped range such as "1 000 - 1 199" needs more room than a percentage.
+    { accessorKey: "gold_min", header: "Gold", size: 160 },
+    { accessorKey: "item_reward_name", header: "Reward", minSize: TEXT },
   ];
 
   // Possible items, chest rewards and pack contents all list an item with a number, sorted by the value and shown as its label.
@@ -758,7 +762,8 @@
 })}
   {@const drop = row.original}
   {#if cell.column.id === "monster_name"}
-    <div class="flex items-center gap-1.5">
+    <!-- A long name wraps rather than running into the chance column at tablet widths. -->
+    <div class="flex items-center gap-1.5 whitespace-normal">
       <MonsterTypeIcon
         isBoss={drop.is_boss}
         isFabled={drop.is_fabled}
@@ -860,6 +865,8 @@
         {vendor.npc_faction}
       </span>
     {/if}
+  {:else if cell.column.id === "zone"}
+    {@render zoneList(vendor.zones)}
   {/if}
 {/snippet}
 
@@ -1109,6 +1116,29 @@
       href={resolve("/chests/[id]", { id: chest.chest_id })}
       class={styles.link}>{chestName(chest.zone_name)}</a
     >
+  {:else if cell.column.id === "gold_min"}
+    {#if chest.gold_max > 0}
+      <span class="ml-auto tabular-nums {styles.valueCurrency}"
+        >{chest.gold_min === chest.gold_max
+          ? formatNumber(chest.gold_min)
+          : formatRange(chest.gold_min, chest.gold_max)}</span
+      >
+    {/if}
+  {:else if cell.column.id === "item_reward_name"}
+    {#if chest.item_reward_id}
+      <span class={styles.wrapCell}
+        ><a
+          href={resolve("/items/[id]", { id: chest.item_reward_id })}
+          class={styles.link}>{chest.item_reward_name}</a
+        >
+        <!-- Chest pages show an item reward above one as a range from one, so this row matches them. -->
+        <span class="tabular-nums text-muted-foreground"
+          >×{chest.item_reward_amount > 1
+            ? formatRange(1, chest.item_reward_amount)
+            : 1}</span
+        ></span
+      >
+    {/if}
   {/if}
 {/snippet}
 
@@ -2604,6 +2634,8 @@
       columns={opensChestColumns}
       cell={renderOpensChestCell}
       urlKey="item-{data.item.id}-opens-chests"
+      initialSorting={[{ id: "gold_min", desc: true }]}
+      rightAligned={["gold_min"]}
     />
   {/if}
 </div>
