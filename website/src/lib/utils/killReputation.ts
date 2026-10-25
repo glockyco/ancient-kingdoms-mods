@@ -33,6 +33,8 @@ interface MonsterKillReputationInput {
 interface NpcKillReputationInput {
   level: number;
   is_notable: boolean;
+  /** Blocks every hit, so the NPC can never be killed. */
+  invincible: boolean;
   improve_faction: string[];
   decrease_faction: string[];
 }
@@ -101,15 +103,18 @@ export function monsterKillReputation(
 }
 
 /**
- * Reputation changed per kill for an NPC.
+ * Reputation changed per kill for an NPC. An invincible NPC cannot be killed,
+ * so it changes no reputation.
  *
  * Source: server-scripts/Npc.cs:1592-1624 (party) / 1639-1671 (solo).
  * Improve adds level.current * 1.5, multiplied by 60 for a notable NPC.
  * Decrease subtracts level.current * 5.
+ * Source: server-scripts/Combat.cs:DealDamageAt — every hit on an invincible target is blocked.
  */
 export function npcKillReputation(
   npc: NpcKillReputationInput,
 ): KillReputationEffect[] {
+  if (npc.invincible) return [];
   const effects: KillReputationEffect[] = [];
   const gain = npc.level * 1.5 * (npc.is_notable ? 60 : 1);
   const loss = npc.level * 5;

@@ -87,6 +87,7 @@ describe("npcKillReputation", () => {
         npcKillReputation({
           level,
           is_notable,
+          invincible: false,
           improve_faction: ["Army of Order"],
           decrease_faction: ["The Forsaken"],
         }),
@@ -96,4 +97,16 @@ describe("npcKillReputation", () => {
       ]);
     },
   );
+
+  it("changes no reputation for an NPC that cannot be killed", () => {
+    expect(
+      npcKillReputation({
+        level: 50,
+        is_notable: false,
+        invincible: true,
+        improve_faction: ["The Forsaken"],
+        decrease_faction: ["Children of Illithor"],
+      }),
+    ).toEqual([]);
+  });
 });

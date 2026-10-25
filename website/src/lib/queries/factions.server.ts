@@ -34,6 +34,7 @@ export interface FactionNpcKillRow {
   visual_public_path: string | null;
   level: number;
   is_notable: boolean;
+  invincible: boolean;
   improve_faction: string[];
   decrease_faction: string[];
 }
@@ -130,7 +131,8 @@ export function getFactionsList(): FactionListView[] {
        JOIN acquisition_faction_effects e ON e.method_id = am.id
        WHERE e.faction_id = f.id AND e.delta > 0) AS monster_source_count,
       (SELECT COUNT(*) FROM npcs n
-       WHERE EXISTS (SELECT 1 FROM json_each(n.improve_faction) je
+       WHERE n.invincible = 0
+         AND EXISTS (SELECT 1 FROM json_each(n.improve_faction) je
                      WHERE je.value = f.name)) AS npc_source_count,
       (SELECT COUNT(DISTINCT p.chest_id)
        FROM acquisition_providers_chests p
@@ -227,13 +229,14 @@ function getMonsters(
 
 interface RawNpcKillRow extends Omit<
   FactionNpcKillRow,
-  "improve_faction" | "decrease_faction" | "is_notable"
+  "improve_faction" | "decrease_faction" | "is_notable" | "invincible"
 > {
   is_notable: number;
   improve_faction: string;
   decrease_faction: string;
 }
 
+/** NPCs whose kill changes the faction's reputation. Invincible NPCs cannot be killed. */
 function getNpcKills(
   factionName: string,
   direction: "improve" | "decrease",
@@ -247,11 +250,13 @@ function getNpcKills(
      LEFT JOIN visual_assets va
        ON va.domain = 'npc' AND va.entity_id = n.id AND va.kind = 'primary'
      JOIN json_each(${column}) je ON je.value = ?
+     WHERE n.invincible = 0
      ORDER BY n.level DESC, n.name`,
     [factionName],
   ).map((row) => ({
     ...row,
     is_notable: Boolean(row.is_notable),
+    invincible: false,
     improve_faction: JSON.parse(row.improve_faction) as string[],
     decrease_faction: JSON.parse(row.decrease_faction) as string[],
   }));
