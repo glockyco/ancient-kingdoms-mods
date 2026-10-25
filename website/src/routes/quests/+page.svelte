@@ -341,7 +341,7 @@
             </p>
           </div>
         </li>
-        <!-- Source: server-scripts/UINpcQuests.cs:214-217; server-scripts/UIQuests.cs:137-153 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
+        <!-- Source: server-scripts/UINpcQuests.cs:214-217; server-scripts/UIQuests.cs:152-168 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">2</span>
           <div>

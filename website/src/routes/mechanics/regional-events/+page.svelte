@@ -148,7 +148,7 @@
   />
 
   <h1 class="text-4xl font-bold">Regional Event Mechanics</h1>
-  <!-- Source: server-scripts/RegionalEventText.cs:81-105,138-152 — the map shows the regional objective, time, progress, contribution and completion rewards. -->
+  <!-- Source: server-scripts/RegionalEventText.cs:Notice,TrackingSummary — the map shows the regional objective, time, progress, contribution and completion rewards. -->
   <p class="text-muted-foreground">
     Regional events, also called Dynamic Events, ask everyone in a region for
     help: gather supplies, hunt, cook, or defend a city from invaders. The map
@@ -191,8 +191,8 @@
       </p>
       <!-- Source: server-scripts/RegionalEvents.cs:433-440,536-559; server-scripts/RegionalEventProgress.cs:38-60 — ordinary requests use the configured activity duration. Invasions wait 1200 seconds for a living level 35 participant in the region, then run for 600 seconds. -->
       <!-- Source: server-scripts/RegionalEventSettings.cs:6-10 — enabled state and activity and Prosperity durations are configured settings. -->
-      <!-- Source: server-scripts/RegionalInvasions.cs:283-298; RegionalEvents.cs:433-442; RegionalEventProgress.cs:38-60,104-124 — no invaders spawn before the invasion starts. A living level 35 participant in the zone starts it, and an unstarted invasion expires after 1200 seconds. -->
-      <!-- Source: server-scripts/RegionalEventProgress.cs:72-101,105-142; server-scripts/RegionalEventText.cs:103 — reaching the goal starts Prosperity at once. An expired event pays nothing and has no penalty. -->
+      <!-- Source: server-scripts/RegionalInvasions.cs:Tick; RegionalEvents.cs:433-442; RegionalEventProgress.cs:38-60,116-136 — no invaders spawn before the invasion starts. A living level 35 participant in the zone starts it, and an unstarted invasion expires after 1200 seconds. -->
+      <!-- Source: server-scripts/RegionalEventProgress.cs:84-113,117-154; server-scripts/RegionalEventText.cs:Notice — reaching the goal starts Prosperity at once. An expired event pays nothing and has no penalty. -->
       <div class="space-y-6 pt-2">
         <h3 class="font-semibold text-foreground">How an event runs</h3>
         <div class="space-y-8">
@@ -280,7 +280,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/RegionalEventProgress.cs:72-102; server-scripts/RegionalEvents.cs:229-249 — each distinct action advances the goal once and can credit multiple hunters. Invader deaths advance the goal even without a credited player. -->
+      <!-- Source: server-scripts/RegionalEventProgress.cs:84-114; server-scripts/RegionalEvents.cs:RecordInvasionKill — each distinct action advances the goal once and can credit multiple hunters. Invader deaths advance the goal even without a credited player. -->
       <!-- Source: server-scripts/RegionalEvents.cs:251-258; RegionalEventActivities.cs:54,150,258 — quest items do not count for gathering, fishing or cooking. -->
       <!-- Source: server-scripts/RegionalEventText.cs:81-90 — players keep gathered resources, fish and cooked dishes. -->
       <p>
@@ -382,8 +382,8 @@
           <p>60 invaders, plus 10 for each extra player (60 to 100)</p>
         </div>
       </div>
-      <!-- Source: server-scripts/RegionalEventProgress.cs:72-101,127-142; server-scripts/RegionalEvents.cs:316-344 — three contributions qualify for rewards, computed from the first contribution's level and XP requirement, and only connected players in the region at completion receive them. -->
-      <!-- Source: server-scripts/RegionalEventText.cs:138-152 — the quarter-level reward is Veteran XP at level 50. -->
+      <!-- Source: server-scripts/RegionalEventProgress.cs:84-113,139-154; server-scripts/RegionalEvents.cs:316-344 — three contributions qualify for rewards, computed from the first contribution's level and XP requirement, and only connected players in the region at completion receive them. -->
+      <!-- Source: server-scripts/RegionalEvents.cs:TickServer; server-scripts/Experience.cs:current — the quarter-level reward is added to the experience pool, which becomes Veteran XP at level 50. -->
       <p>
         Help at least 3 times and be in the region when the goal is reached. You
         get 20 + 10 × your level in gold (520 at level 50) and 25% of a full
@@ -395,7 +395,7 @@
   <Card.Root id="prosperity" class="bg-muted/30">
     <Card.Header><Card.Title>Prosperity</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
-      <!-- Source: server-scripts/RegionalEventProgress.cs:97-101,145-152; server-scripts/RegionalEvents.cs:188-195,363-375 — completion grants a regional 15% XP multiplier, floored, with dungeon combat mapped to its parent region. -->
+      <!-- Source: server-scripts/RegionalEventProgress.cs:109-113,157-164; server-scripts/RegionalEvents.cs:188-195,363-375 — completion grants a regional 15% XP multiplier, floored, with dungeon combat mapped to its parent region. -->
       <!-- Source: server-scripts/PlayerQuests.cs:384-392; server-scripts/Player.cs:13348-13351,13757-13770,14040-14042,14063-14067; server-scripts/Npc.cs:1608-1616,1641-1649 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
       <p>
         When the goal is reached, the region prospers for
@@ -414,7 +414,7 @@
   <Card.Root id="invasions" class="bg-muted/30">
     <Card.Header><Card.Title>City invasions</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
-      <!-- Source: server-scripts/RegionalInvasions.cs:335-389 — invaders cycle through the configured attacker list, use the configured level range and health multiplier, and keep only their first skill. -->
+      <!-- Source: server-scripts/RegionalInvasions.cs:Tick — invaders cycle through the configured attacker list, use the configured level range and health multiplier, and keep only their first skill. -->
       <div class="overflow-x-auto">
         <table class="w-full text-sm border-collapse">
           <thead
@@ -480,8 +480,8 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/RegionalInvasions.cs:283-341,378-384 — waves contain up to eight attackers every 20 seconds, at most 24 live attackers, and no gold, item drops or faction changes. -->
-      <!-- Source: server-scripts/RegionalInvasions.cs:182-195,216-245 — invaders deal ten times damage to city citizens, take a tenth from them with a minimum of one damage, and only attack participating players inside the city. -->
+      <!-- Source: server-scripts/RegionalInvasions.cs:Tick — waves contain up to eight attackers every 20 seconds, at most 24 live attackers, and no gold, item drops or faction changes. -->
+      <!-- Source: server-scripts/RegionalInvasions.cs:183-196,217-246 — invaders deal ten times damage to city citizens, take a tenth from them with a minimum of one damage, and only attack participating players inside the city. -->
       <p>
         Invaders arrive in waves of up to 8 every 20 seconds, with at most 24 at
         once. They attack the townsfolk and leave you alone until you hit them.

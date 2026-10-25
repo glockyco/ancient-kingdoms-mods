@@ -995,7 +995,7 @@
                 >
                 <td class="p-2 text-right">100% more XP</td>
               </tr>
-              <!-- Source: server-scripts/Monster.cs:3205-3208,3242-3245; server-scripts/RegionalEvents.cs:188-195,363-375; server-scripts/RegionalEventProgress.cs:145-152 — Prosperity adds 15% monster XP in the region and its dungeons after the other multipliers, rounded down. -->
+              <!-- Source: server-scripts/Monster.cs:3205-3208,3242-3245; server-scripts/RegionalEvents.cs:188-195,363-375; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity adds 15% monster XP in the region and its dungeons after the other multipliers, rounded down. -->
               <tr class="hover:bg-muted/30">
                 <td class="p-2"
                   ><a
@@ -1015,7 +1015,7 @@
         <p class="text-sm text-muted-foreground">
           Multiple Double XP buffs do not stack. Forgotten Altar monsters give
           40% more XP after Double XP, rounded to the nearest whole XP.
-          <!-- Source: server-scripts/Monster.cs:3205-3208,3242-3245; server-scripts/RegionalEventProgress.cs:145-152 — Prosperity multiplies the award after Double XP and the Forgotten Altar bonus, then floors it. -->
+          <!-- Source: server-scripts/Monster.cs:3205-3208,3242-3245; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity multiplies the award after Double XP and the Forgotten Altar bonus, then floors it. -->
           Prosperity comes last and rounds down.
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
@@ -1247,7 +1247,7 @@
           </tr>
         </tbody>
       </table>
-      <!-- Source: server-scripts/GatherItem.cs:640-642,826-828; server-scripts/RegionalEvents.cs:363-375; server-scripts/RegionalEventProgress.cs:145-152 — Prosperity adds 15% gathering and fishing XP outdoors in its region, after Double XP, rounded down. -->
+      <!-- Source: server-scripts/GatherItem.cs:640-642,826-828; server-scripts/RegionalEvents.cs:363-375; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity adds 15% gathering and fishing XP outdoors in its region, after Double XP, rounded down. -->
       <p class="mt-3 text-sm text-muted-foreground">
         After a regional event,
         <a

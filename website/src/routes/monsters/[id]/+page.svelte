@@ -1474,7 +1474,7 @@
           How regional events work
         </a>
       </div>
-      <!-- Source: server-scripts/RegionalInvasions.cs:348-384 — invasion copies use the invasion's level range and health multiplier rather than the ordinary spawn settings. -->
+      <!-- Source: server-scripts/RegionalInvasions.cs:Tick — invasion copies use the invasion's level range and health multiplier rather than the ordinary spawn settings. -->
       <!-- Source: server-scripts/RegionalEventActivities.cs:60-82 — a hunt can ask for this animal while its spawns can supply the goal. -->
       <ul class="space-y-2 rounded-md border bg-muted/30 p-4">
         {#each data.regionalInvasions as invasion (invasion.id)}

@@ -1,6 +1,6 @@
 {
   "snapshot": {
-    "game_version": "0.9.37.1",
+    "game_version": "0.9.37.2",
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
@@ -4386,19 +4386,23 @@
     "RegionalEventActivities.cs:IsCookingResult": {
       "span": 0
     },
-    "RegionalEventProgress.cs:104-124": {
+    "RegionalEventProgress.cs:109-113": {
+      "sha256": "69b96c10e8940aa4d87587df491d4f805e1a156f02188913c4db449db7a9da06",
+      "span": 5
+    },
+    "RegionalEventProgress.cs:116-136": {
       "sha256": "5c9d6e9814cd41faff3a2222662ed9551cb70be86101d57070d7229c9f6682c3",
       "span": 21
     },
-    "RegionalEventProgress.cs:105-142": {
+    "RegionalEventProgress.cs:117-154": {
       "sha256": "7aa5d00cec9a76dd288b85485d1cabe4cf8edcd00b32f22dcdf42733fb5e011e",
       "span": 38
     },
-    "RegionalEventProgress.cs:127-142": {
+    "RegionalEventProgress.cs:139-154": {
       "sha256": "6bd14bc59cc7860800580de3f5c284bc5f6882f3e58b88344a50cf31049174ec",
       "span": 16
     },
-    "RegionalEventProgress.cs:145-152": {
+    "RegionalEventProgress.cs:157-164": {
       "sha256": "1f8033c5affd89caadb611cf533370f6d90ea75da456c9affd2ec3cc36048109",
       "span": 8
     },
@@ -4410,41 +4414,28 @@
       "sha256": "5e24a880e735a718dfd76bd53a0b502cb6f6eb8b9f7508c1136025efc26e117c",
       "span": 23
     },
-    "RegionalEventProgress.cs:72-101": {
+    "RegionalEventProgress.cs:84-113": {
       "sha256": "5ecc1429f50900579f377a3c8ef21f1436de1ef9a7b1f5453f1465418a7b1159",
       "span": 30
     },
-    "RegionalEventProgress.cs:72-102": {
+    "RegionalEventProgress.cs:84-114": {
       "sha256": "70095ec2c612f117425fad10e5c5d69e18b51b0e69b67f116775e169a3588cb8",
       "span": 31
-    },
-    "RegionalEventProgress.cs:97-101": {
-      "sha256": "69b96c10e8940aa4d87587df491d4f805e1a156f02188913c4db449db7a9da06",
-      "span": 5
     },
     "RegionalEventSettings.cs:6-10": {
       "sha256": "de297eea064239fff42a3bb28b8f0ae207ec8213bc595f74de6783900b30525d",
       "span": 5
     },
-    "RegionalEventText.cs:103": {
-      "sha256": "f46ba8c81fc63736410b9059e293050533b00c128605f26dbc04e54cff651867",
-      "span": 1
-    },
-    "RegionalEventText.cs:138-152": {
-      "sha256": "805d0b2c88da2423fff50088e69e0ee09ea783d22d665c1951c59dc5eee2ee44",
-      "span": 15
-    },
     "RegionalEventText.cs:30-40": {
       "sha256": "89501e433de0f3d031edce9e97b6c66c882713b677766a4737b7ac003ebc99fb",
       "span": 11
     },
-    "RegionalEventText.cs:81-105": {
-      "sha256": "34661a5cc8cf3dac6b7ef8c83f73861a0ed6b5dd633bbf491d95c9bcb1d8d8d3",
-      "span": 25
-    },
     "RegionalEventText.cs:81-90": {
       "sha256": "9c191ef1300d8eb4c121c5486b6868f8214eee26f735181a9add3927612d5150",
       "span": 10
+    },
+    "RegionalEventText.cs:Notice": {
+      "span": 0
     },
     "RegionalEvents.cs:120-125": {
       "sha256": "3c1643292caabb8a888c6afc981e842da5d027c77023be1f711852fd9bc3de4d",
@@ -4457,10 +4448,6 @@
     "RegionalEvents.cs:220-227": {
       "sha256": "1b31efbd0c4bca9259af85592abb655d6ed86fa28f96a43f8957753052c5db14",
       "span": 8
-    },
-    "RegionalEvents.cs:229-249": {
-      "sha256": "e5b0b9b4a3c691ca524ef791f07884940fdf4057d0e736af15ff9fa65a1e2317",
-      "span": 21
     },
     "RegionalEvents.cs:243-257": {
       "sha256": "53c43586b6edaaeab45d5e216ae01a8116a53842e0fca7b4faf7e27369f37616",
@@ -4529,38 +4516,27 @@
     "RegionalEvents.cs:RecordHuntKill": {
       "span": 0
     },
+    "RegionalEvents.cs:RecordInvasionKill": {
+      "span": 0
+    },
+    "RegionalEvents.cs:TickServer": {
+      "span": 0
+    },
     "RegionalEvents.cs:TryStart": {
       "span": 0
     },
-    "RegionalInvasions.cs:182-195": {
+    "RegionalInvasions.cs:183-196": {
       "sha256": "66d28f83c9c85f681aba3fa0c3ccfcaab6e94773863b6e310fe1318f2742cca9",
       "span": 14
     },
-    "RegionalInvasions.cs:216-245": {
+    "RegionalInvasions.cs:217-246": {
       "sha256": "c071d92229d4be043fe9de634dc3b8c9955702a88db79e579396438600a086ee",
       "span": 30
     },
-    "RegionalInvasions.cs:283-298": {
-      "sha256": "5cc1760f1ef2c2061070dd095b5903b9651ed20be69b30c94a884ca70aea0416",
-      "span": 16
-    },
-    "RegionalInvasions.cs:283-341": {
-      "sha256": "79970a00595e2fe6ebf2db8d3a7ed72b2b776091259eaf0b723b17b4e7648c60",
-      "span": 59
-    },
-    "RegionalInvasions.cs:335-389": {
-      "sha256": "09befec6ae67844ee761577828713a9310605661063198dcecca21c281f4a66c",
-      "span": 55
-    },
-    "RegionalInvasions.cs:348-384": {
-      "sha256": "12ac643bd496a26f433c882bbc85129dfdf4a3db440e8b2f4c62be45f88a5f06",
-      "span": 37
-    },
-    "RegionalInvasions.cs:378-384": {
-      "sha256": "7a416f9d2003d467cbb059675f9a612262242208bedf0dbac61d5be174f678ec",
-      "span": 7
-    },
     "RegionalInvasions.cs:Definitions": {
+      "span": 0
+    },
+    "RegionalInvasions.cs:Tick": {
       "span": 0
     },
     "RelicItem.cs:12-13": {
@@ -5425,11 +5401,11 @@
     "UIEquipment.cs:Update": {
       "span": 0
     },
-    "UIEquipmentMercenary.cs:167-175": {
+    "UIEquipmentMercenary.cs:171-179": {
       "sha256": "3b795f59d75818ad0d14d9e1216c01307764b74a78aa08bbcd422378a90368b5",
       "span": 9
     },
-    "UIEquipmentMercenary.cs:178-192": {
+    "UIEquipmentMercenary.cs:182-196": {
       "sha256": "fa5e1ed0ea117341a2c33bd106b17e617c2ea806866ebbffa01c9ae7f3799aa6",
       "span": 15
     },
@@ -5547,11 +5523,11 @@
     "UIMacroCommandInput.cs:OnUpdateSelected": {
       "span": 0
     },
-    "UIMap.cs:179-195": {
+    "UIMap.cs:176-192": {
       "sha256": "59f2b111f915f05e5c4d06ae2f0365ba20931cbdb45fe98a291ca2a82182926c",
       "span": 17
     },
-    "UIMap.cs:458-475": {
+    "UIMap.cs:454-471": {
       "sha256": "5c54470661103ccef18d650f5b42d8c05a33772b37a5effb6c78e0e81539d09b",
       "span": 18
     },
@@ -5683,7 +5659,7 @@
     "UIQuestTracking.cs:LateUpdate": {
       "span": 0
     },
-    "UIQuests.cs:137-153": {
+    "UIQuests.cs:152-168": {
       "sha256": "366afbbac58c54dcd25e9efdf8f1cfbf6453dfe2f6066b19894d86312d717c26",
       "span": 17
     },

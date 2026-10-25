@@ -1040,7 +1040,7 @@
             </p>
           {/if}
         {:else if data.prosperityRegion}
-          <!-- Source: server-scripts/RegionalEvents.cs:CombatRegion; server-scripts/RegionalEventProgress.cs:145-152 — kills in a dungeon use its region's 15% Prosperity multiplier. -->
+          <!-- Source: server-scripts/RegionalEvents.cs:CombatRegion; server-scripts/RegionalEventProgress.cs:157-164 — kills in a dungeon use its region's 15% Prosperity multiplier. -->
           <p class="text-muted-foreground">
             While <a
               href="/zones/{data.prosperityRegion.id}"

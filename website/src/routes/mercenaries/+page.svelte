@@ -736,7 +736,7 @@
       >
       <span class="block">Broken gear gives no active attribute bonus.</span>
     </p>
-    <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast; UIEquipmentMercenary.cs:167-175; MercenaryEquipment.cs:289-328 — repair kits select an owned mercenary target and helmet visibility changes the appearance. -->
+    <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast; UIEquipmentMercenary.cs:171-179; MercenaryEquipment.cs:289-328 — repair kits select an owned mercenary target and helmet visibility changes the appearance. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >A repair kit restores equipped gear up to the kit's quality.</span
@@ -755,7 +755,7 @@
 
   <section id="auto-consume" class="space-y-4 rounded-lg border p-5">
     <h2 class="text-xl font-semibold">Auto-Consume</h2>
-    <!-- Source: server-scripts/Pet.cs:292-306,2118-2207; UIEquipmentMercenary.cs:178-192; UIMercenaries.cs:796-803 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat. -->
+    <!-- Source: server-scripts/Pet.cs:292-306,2118-2207; UIEquipmentMercenary.cs:182-196; UIMercenaries.cs:796-803 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Each mercenary has food, utility potion, healing potion, and resource
