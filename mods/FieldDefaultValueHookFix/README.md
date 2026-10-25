@@ -1,23 +1,21 @@
 # FieldDefaultValueHookFix
 
-Prevents the crash on world entry that MelonLoader causes in Ancient Kingdoms. Every other mod needs it.
+FieldDefaultValueHookFix is an unofficial MelonLoader mod for Ancient Kingdoms that prevents a crash on world entry. Install it alongside any other mod in this repository.
 
 [Download FieldDefaultValueHookFix.dll](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll)
 
-## Use
+## Setup
 
-Install MelonLoader, then put the DLL in the game's `Mods` folder. It needs no input.
-
-Il2CppInterop finds one of the game's functions by a byte-signature scan, which matches the wrong function in this game. The mod makes it find the function by following references from a known one instead.
-
-## Settings
-
-None.
+Install [MelonLoader](https://github.com/LavaGang/MelonLoader) in Ancient Kingdoms, then put FieldDefaultValueHookFix.dll in the game's `Mods` folder. It works automatically and has no settings.
 
 ## Limits
 
-If the Il2CppInterop version lacks the expected methods, or following the references fails, the mod logs it and keeps the signature scan's result.
+If MelonLoader's bundled Il2CppInterop changes or the mod cannot resolve the game function, the fix logs the failure and leaves the original lookup in place. The world-entry crash can remain. [FieldDefaultValueHookFix.cs](FieldDefaultValueHookFix.cs) contains the lookup and patch.
 
-## Requirements
+## Development
 
-MelonLoader.
+[CONTRIBUTING.md](../../CONTRIBUTING.md) covers build requirements, deployment, and checks.
+
+## License
+
+MIT. See [LICENSE](../../LICENSE).

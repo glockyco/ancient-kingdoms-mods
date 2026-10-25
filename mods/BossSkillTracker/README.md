@@ -1,33 +1,29 @@
 # BossSkillTracker
 
-Shows the skill cooldowns of the bosses, elites, and fabled monsters you fight, and when each can next use a special skill.
+BossSkillTracker is an unofficial MelonLoader mod for Ancient Kingdoms players who want to see enemy skill cooldowns. It shows when the bosses, elites, and fabled monsters you fight can next use a special skill.
 
 [Download BossSkillTracker.dll](https://ancient-kingdoms.compendiums.org/mods/BossSkillTracker.dll)
 
-## Use
+## Setup
 
-Install MelonLoader, then put the DLL in the game's `Mods` folder with FieldDefaultValueHookFix.
+Install [MelonLoader](https://github.com/LavaGang/MelonLoader) in Ancient Kingdoms. Put BossSkillTracker.dll and [FieldDefaultValueHookFix.dll](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll) in the game's `Mods` folder. The fix prevents a crash on world entry.
+
+## Use
 
 The panel lists the monsters fighting you or your pet. Out of combat, select a boss, elite, or fabled monster to preview it. Drag a monster's header to move the panel. The compact button shrinks the rows, and the lock button stops dragging.
 
 ## Settings
 
-In `UserData/MelonPreferences.cfg`, category `BossSkillTracker`:
-
-| Key | Default |
-| --- | --- |
-| `PanelX` | `0` |
-| `PanelY` | `0` |
-| `PanelPositionVersion` | `0` |
-| `Locked` | `false` |
-| `Compact` | `false` |
-
-When `PanelPositionVersion` is below `2`, the mod resets the panel position and sets it to `2`.
+Moving the panel or changing its compact and lock controls saves your choices in the game's `UserData/MelonPreferences.cfg`, under `BossSkillTracker`. [Config.cs](Config.cs) defines the settings and defaults.
 
 ## Limits
 
 The panel finds monsters near you, not every monster in the zone. In a world you host, the next-special timer is exact. On someone else's server, the game does not send that deadline, so the mod estimates it from the casts it sees.
 
-## Requirements
+## Development
 
-MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+[CONTRIBUTING.md](../../CONTRIBUTING.md) covers build requirements, deployment, and checks.
+
+## License
+
+MIT. See [LICENSE](../../LICENSE).

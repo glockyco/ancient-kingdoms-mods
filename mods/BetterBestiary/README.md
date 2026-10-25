@@ -1,28 +1,29 @@
 # BetterBestiary
 
-Shows the full Bestiary page for every monster: details, loot tooltips, and a skill summary.
+BetterBestiary is an unofficial MelonLoader mod for Ancient Kingdoms players who want full monster reference pages. It reveals Bestiary details, loot tooltips, and skill summaries.
 
 [Download BetterBestiary.dll](https://ancient-kingdoms.compendiums.org/mods/BetterBestiary.dll)
 
-## Use
+## Setup
 
-Install MelonLoader, then put the DLL in the game's `Mods` folder with FieldDefaultValueHookFix.
+Install [MelonLoader](https://github.com/LavaGang/MelonLoader) in Ancient Kingdoms. Put BetterBestiary.dll and [FieldDefaultValueHookFix.dll](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll) in the game's `Mods` folder. The fix prevents a crash on world entry.
+
+## Use
 
 On a Bestiary page, click **Skills** to open the monster's skills. Hold Alt and left-click a monster in the world to open its page. Clicks on the interface are ignored.
 
 ## Settings
 
-In `UserData/MelonPreferences.cfg`, category `BetterBestiary`:
-
-| Key | Default | Effect |
-| --- | --- | --- |
-| `AutoAddMissingBestiaryEntries` | `false` | Adds Bestiary entries for loaded bosses, elites, and fabled monsters you have not met. |
-| `ShowSkillsPanelButton` | `true` | Shows the Skills button and panel. |
+You can configure automatic Bestiary entries and the Skills panel in the game's `UserData/MelonPreferences.cfg`, under `BetterBestiary`. [BetterBestiarySettings.cs](BetterBestiarySettings.cs) defines the available settings and defaults.
 
 ## Limits
 
 If drawing a Bestiary page throws an exception, the mod stops changing Bestiary pages until the game restarts.
 
-## Requirements
+## Development
 
-MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+[CONTRIBUTING.md](../../CONTRIBUTING.md) covers build requirements, deployment, and checks.
+
+## License
+
+MIT. See [LICENSE](../../LICENSE).
