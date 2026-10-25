@@ -70,11 +70,11 @@
     "wrangler": "^4.115.0"
   },
   "dependencies": {
-    "@deck.gl/core": "9.3.7",
-    "@deck.gl/extensions": "9.3.7",
-    "@deck.gl/geo-layers": "9.3.7",
-    "@deck.gl/layers": "9.3.7",
-    "@deck.gl/mesh-layers": "9.3.7",
+    "@deck.gl/core": "9.4.0",
+    "@deck.gl/extensions": "9.4.0",
+    "@deck.gl/geo-layers": "9.4.0",
+    "@deck.gl/layers": "9.4.0",
+    "@deck.gl/mesh-layers": "9.4.0",
     "@tanstack/table-core": "^8.21.3",
     "bits-ui": "^2.14.4",
     "lucide": "^1.27.0",
