@@ -8,6 +8,7 @@ class NpcSalesTests(unittest.TestCase):
         npc = NpcData(
             id="vendor",
             name="Vendor",
+            season=None,
             quest_offers=[],
             items_sold=[
                 NpcItemSale(item_id="beer", price=10),

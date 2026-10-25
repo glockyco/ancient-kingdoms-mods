@@ -30,6 +30,7 @@ import {
   professionAttempt,
   CODE_DEFINED_RULES,
 } from "./rules";
+import { SEASONS } from "../data/seasonal-events";
 const DETAIL_KIND: Record<MethodRow["kind"], string> = {
   kill: "kill",
   vendor: "vendor",
@@ -584,7 +585,9 @@ export function assembleAcquisitionModel(
         case "vendor":
           reference("npc_id", "npcs");
           reference("offered_item_id", "items");
-          enumField(detail, "season", ["none", "halloween", "christmas"]);
+          // Null marks a year-round offer.
+          if (detail.season !== null)
+            enumField(detail, "season", Object.keys(SEASONS));
           break;
         case "quest":
           reference("quest_id", "quests");

@@ -18,7 +18,7 @@ export function getSeasonalMonsters(): SeasonalMonster[] {
     FROM monsters m
     JOIN monster_spawns s ON s.monster_id = m.id
     JOIN zones z ON z.id = s.zone_id
-    WHERE m.is_halloween = 1
+    WHERE m.season = 'halloween'
     GROUP BY m.id
     ORDER BY m.level_min, m.name
   `);
@@ -43,7 +43,7 @@ export function getSeasonalNpcs(): SeasonalNpc[] {
     FROM npcs n
     JOIN npc_spawns s ON s.npc_id = n.id
     JOIN zones z ON z.id = s.zone_id
-    WHERE n.is_christmas_npc = 1
+    WHERE n.season = 'christmas'
     ORDER BY n.name, z.name
   `);
 }
@@ -68,7 +68,7 @@ export function getSeasonalQuests(): SeasonalQuest[] {
             WHERE r.quest_id = q.id) AS reward_ids
     FROM quests q
     JOIN npc_quest_memberships offer ON offer.quest_id = q.id AND offer.role = 'offer'
-    JOIN npcs n ON n.id = offer.npc_id AND n.is_christmas_npc = 1
+    JOIN npcs n ON n.id = offer.npc_id AND n.season = 'christmas'
     JOIN npc_quest_memberships complete ON complete.quest_id = q.id AND complete.role = 'complete'
     JOIN npcs cn ON cn.id = complete.npc_id
     ORDER BY q.level_recommended, q.name
@@ -100,7 +100,7 @@ export function getSeasonalShopOffers(): SeasonalShopOffer[] {
     JOIN acquisition_inputs inp ON inp.cost_group_id = g.id AND inp.resource_kind = 'item'
     JOIN items c ON c.id = inp.item_id
     JOIN acquisition_outputs o ON o.method_id = v.id
-    WHERE v.season != 'none'
+    WHERE v.season IS NOT NULL
     ORDER BY v.season, c.name, i.name
   `);
 }
@@ -129,13 +129,13 @@ export function getSeasonalCurrencyDrops(): {
   return query(`
     SELECT DISTINCT k.monster_id, o.item_id
     FROM acquisition_kill_details k
-    JOIN monsters m ON m.id = k.monster_id AND m.is_halloween = 1
+    JOIN monsters m ON m.id = k.monster_id AND m.season = 'halloween'
     JOIN acquisition_outputs o ON o.method_id = k.id
     WHERE o.item_id IN (
       SELECT inp.item_id FROM acquisition_vendor_details v
       JOIN acquisition_cost_groups g ON g.method_id = v.id
       JOIN acquisition_inputs inp ON inp.cost_group_id = g.id
-      WHERE v.season != 'none' AND inp.item_id IS NOT NULL
+      WHERE v.season IS NOT NULL AND inp.item_id IS NOT NULL
     )
     ORDER BY k.monster_id, o.item_id
   `);

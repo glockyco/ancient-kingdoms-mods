@@ -6,14 +6,14 @@
 
 ## 2. Export
 
-- [ ] 2.1 Replace `is_halloween` in `mods/DataExporter/Models/MonsterData.cs` and `Exporters/MonsterExporter.cs` with `season`, and `is_christmas_npc` in `NpcData.cs` and `NpcExporter.cs` with `season`, each with a comment citing the game field. Verify the exporter builds.
-- [ ] 2.2 Replace `seasonal_items` in `GameConfigData.cs` and `GameConfigExporter.cs` with `seasons` entries of id, buff skill id and shop item ids read from `GameManager`, failing on a missing list or buff. Verify the exporter builds and the export-game-data skill's checks pass.
-- [ ] 2.3 Run a fresh export of the current build following the export-game-data skill and promote it. Verify that `monsters.json` has `season: "halloween"` only for pumpkin_head and witch, `npcs.json` has `season: "christmas"` only for santa_claus, and `game_config.json` lists both seasons with halloween_event and winter_festival as buff skills.
+- [x] 2.1 Replace `is_halloween` in `mods/DataExporter/Models/MonsterData.cs` and `Exporters/MonsterExporter.cs` with `season`, and `is_christmas_npc` in `NpcData.cs` and `NpcExporter.cs` with `season`, each with a comment citing the game field. Verify the exporter builds.
+- [x] 2.2 Replace `seasonal_items` in `GameConfigData.cs` and `GameConfigExporter.cs` with `seasons` entries of id, buff skill id and shop item ids read from `GameManager`, failing on a missing list or buff. Verify the exporter builds and the export-game-data skill's checks pass.
+- [x] 2.3 Run a fresh export of the current build following the export-game-data skill and promote it. Verify that `monsters.json` has `season: "halloween"` only for pumpkin_head and witch, `npcs.json` has `season: "christmas"` only for santa_claus, and `game_config.json` lists both seasons with halloween_event and winter_festival as buff skills.
 
 ## 3. Pipeline schema and load
 
-- [ ] 3.1 Add the `seasons` table and make `monsters.season`, `npcs.season` and `acquisition_vendor_details.season` nullable foreign keys in `build-pipeline/schema.sql`. Remove both booleans and the `'none'` CHECK. Declare the new references in `redactions/references.py`. Verify `uv run pytest` passes for schema and reference tests.
-- [ ] 3.2 Type `seasons` in `GameConfigData` and `season` in `MonsterData` and `NpcData` in `models.py`, register the `seasons` table load, and make `denormalizers/acquisition.py` read `config["seasons"]` instead of the hard-coded tuple, writing null for year-round offers. Update `tests/acquisition_fixtures.py` and `tests/test_acquisition_derivation.py`. Verify the pipeline tests pass and a rebuilt database has 104 Halloween and 104 Winter Festival offer rows.
+- [x] 3.1 Add the `seasons` table and make `monsters.season`, `npcs.season` and `acquisition_vendor_details.season` nullable foreign keys in `build-pipeline/schema.sql`. Remove both booleans and the `'none'` CHECK. Declare the new references in `redactions/references.py`. Verify `uv run pytest` passes for schema and reference tests.
+- [x] 3.2 Type `seasons` in `GameConfigData` and `season` in `MonsterData` and `NpcData` in `models.py`, load the `seasons` table as its own dataset after `skills` and before monsters and NPCs, and make `denormalizers/acquisition.py` read `config["seasons"]` instead of the hard-coded tuple, writing null for year-round offers. Move every website reader of the old fields and the `"none"` sentinel to the new shapes in the same change. Update `tests/acquisition_fixtures.py` and `tests/test_acquisition_derivation.py`. Verify the pipeline tests pass and a rebuilt database has 104 Halloween and 104 Winter Festival offer rows.
 
 ## 4. Pipeline derivations
 

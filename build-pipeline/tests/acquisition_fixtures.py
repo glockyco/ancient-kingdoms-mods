@@ -46,6 +46,7 @@ def monster(identity: str, **fields) -> dict:
             "class_name": "Warrior",
             "loot_zone_number": 1,
             "is_summoned_pet": False,
+            "season": None,
             **fields,
         }
     ).model_dump()
@@ -53,7 +54,7 @@ def monster(identity: str, **fields) -> dict:
 
 def npc(identity: str, **fields) -> dict:
     return NpcData.model_validate(
-        {"id": identity, "name": identity, "quest_offers": [], **fields}
+        {"id": identity, "name": identity, "quest_offers": [], "season": None, **fields}
     ).model_dump()
 
 
@@ -74,7 +75,7 @@ def inputs(**families) -> dict:
                 "blessed_rune": "blessed",
                 "primal_essence": "essence",
             },
-            "seasonal_items": {"halloween": [], "christmas": []},
+            "seasons": [],
             "lockpicks_item_id": "lockpicks",
             "housing_catalog": [],
             "journal_fish_item_ids": [],

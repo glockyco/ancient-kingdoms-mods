@@ -156,7 +156,8 @@ public class NpcExporter : BaseExporter
                 see_invisibility = canonical.seeInvisibility,
                 is_summonable = canonical.isSummonable,
                 flee_on_low_hp = canonical.fleeOnLowHP,
-                is_christmas_npc = canonical.isChristmasNPC,
+                // Npc.isChristmasNPC is the game's only NPC season gate (Npc.cs:UpdateServer_IDLE).
+                season = canonical.isChristmasNPC ? "christmas" : null,
 
                 // Messages and interactions
                 aggro_message_probability = canonical.aggroMessageProbability,

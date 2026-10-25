@@ -540,7 +540,7 @@
         </span>
       {/if}
       <RoleBadges roles={data.npc.roles} linked />
-      {#if data.npc.is_christmas_npc}
+      {#if data.npc.season === "christmas"}
         <a
           href={seasonHref("christmas")}
           title="Winter Festival dates and quests"

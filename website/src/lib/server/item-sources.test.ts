@@ -70,7 +70,7 @@ test("pack vendors expose direct contents and retain pack inspection without a c
       id: "sale",
       npc_id: "merchant",
       offered_item_id: "pack",
-      season: "none",
+      season: null,
     });
     f.insert("acquisition_providers_npcs", {
       id: "sale-provider",

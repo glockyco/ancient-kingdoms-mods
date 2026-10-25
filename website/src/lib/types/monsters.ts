@@ -1,6 +1,7 @@
 import type { AltarRewardTier } from "$lib/calculation/altar";
 import type { SkillListRow } from "$lib/skills/skillListRow";
 import type { Skill as SkillEffectInput } from "$lib/utils/formatSkillEffect";
+import type { Season } from "$lib/data/seasonal-events";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { RespawnInfo } from "./respawn";
 
@@ -178,8 +179,8 @@ export interface MonsterInfo {
   is_elite: boolean;
   is_fabled: boolean;
   is_hunt: boolean;
-  /** Appears only during Halloween. */
-  is_halloween: boolean;
+  /** The season the monster spawns in, or null when it spawns all year. */
+  season: Season | null;
   is_summonable: boolean;
 
   // Combat stats (calculated at base level)

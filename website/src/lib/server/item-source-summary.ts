@@ -65,7 +65,7 @@ export function itemSourceSummariesFromModel(
             );
           break;
         case "vendor":
-          if (d.season === "none")
+          if (d.season === null)
             add(method, "vendor", String(d.npc_id), name("npcs", d.npc_id));
           else {
             const season = SEASONS[d.season as Season];

@@ -16,7 +16,7 @@ public class GameConfigData
 
     public List<string> bestiary_monsters { get; set; } = new();
     public List<string> mounts { get; set; } = new();
-    public SeasonalItemsData seasonal_items { get; set; } = new();
+    public List<SeasonData> seasons { get; set; } = new();
     public SpecialItemsData special_items { get; set; } = new();
     public string lockpicks_item_id { get; set; }
     public List<string> journal_fish_item_ids { get; set; } = new();
@@ -24,10 +24,17 @@ public class GameConfigData
     public List<HousingCatalogData> housing_catalog { get; set; } = new();
 }
 
-public class SeasonalItemsData
+/// <summary>
+/// A seasonal event as the game configures it. The id is the game's own season
+/// key, which monster and NPC season fields reference.
+/// </summary>
+public class SeasonData
 {
-    public List<string> halloween { get; set; } = new();
-    public List<string> christmas { get; set; } = new();
+    public string id { get; set; }
+    /// <summary>The buff every online player receives while the season runs.</summary>
+    public string buff_skill_id { get; set; }
+    /// <summary>Items every repair merchant adds to its stock while the season runs.</summary>
+    public List<string> shop_item_ids { get; set; } = new();
 }
 
 public class SpecialItemsData

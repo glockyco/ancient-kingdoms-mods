@@ -849,7 +849,7 @@ class _Normalizer:
                 )
 
     def vendors_and_services(self) -> None:
-        seasonal = self.config["seasonal_items"]
+        seasons = self.config["seasons"]
         special = self.config["special_items"]
         authority = _authority()
         names: dict[str, list[str]] = defaultdict(list)
@@ -859,9 +859,10 @@ class _Normalizer:
             npc_id = npc["id"]
             for ordinal, offer in enumerate(npc["items_sold"]):
                 item = offer["item_id"]
+                # "none" keeps year-round method identities stable. The season itself is null.
                 method = self.method("vendor", [npc_id, ordinal, "none"])
                 self.detail(
-                    "vendor", method, npc_id=npc_id, offered_item_id=item, season="none"
+                    "vendor", method, npc_id=npc_id, offered_item_id=item, season=None
                 )
                 self.provider("npcs", method, npc_id, ordinal)
                 if offer["price"] > 0:
@@ -871,9 +872,12 @@ class _Normalizer:
                         [(offer["currency_item_id"], offer["price"], "currency")],
                     )
                 self.award(method, item, resolve_pack=True)
+            # Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — every repair
+            # merchant adds the season's configured items while that season runs.
             if npc["roles"]["can_repair_equipment"]:
-                for season in ("halloween", "christmas"):
-                    for ordinal, item in enumerate(seasonal[season]):
+                for definition_season in seasons:
+                    season = definition_season["id"]
+                    for ordinal, item in enumerate(definition_season["shop_item_ids"]):
                         definition = self.items[item]
                         method = self.method("vendor", [npc_id, ordinal, season])
                         self.detail(

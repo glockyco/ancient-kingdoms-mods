@@ -127,7 +127,9 @@ public class MonsterData
     public bool is_hunt { get; set; }
     public bool is_dummy { get; set; }
     public bool is_summonable { get; set; }
-    public bool is_halloween { get; set; }
+    /// <summary>The season this monster spawns in, or null when it spawns all year.</summary>
+    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
+    public string season { get; set; }
     public bool is_forgotten_altar_event { get; set; }
 
     // Combat flags

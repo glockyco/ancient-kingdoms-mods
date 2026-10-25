@@ -20,6 +20,7 @@ import { distinctSubzoneName, formatNumber } from "$lib/utils/format";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { loadAcquisition } from "$lib/server/acquisition";
+import type { Season } from "$lib/data/seasonal-events";
 
 export const prerender = true;
 
@@ -114,7 +115,7 @@ export const load: PageServerLoad = async ({
   const vendorMethods = [...acquisition.methodViews.values()].filter(
     (method) =>
       method.kind === "vendor" &&
-      method.detail.season === "none" &&
+      method.detail.season === null &&
       method.providers.some(
         (provider) =>
           provider.ref.kind === "npcs" && provider.ref.id === params.id,
@@ -349,7 +350,7 @@ export const load: PageServerLoad = async ({
     see_invisibility: Boolean(npcRaw.see_invisibility),
     is_summonable: Boolean(npcRaw.is_summonable),
     flee_on_low_hp: Boolean(npcRaw.flee_on_low_hp),
-    is_christmas_npc: Boolean(npcRaw.is_christmas_npc),
+    season: npcRaw.season as Season | null,
     is_notable: Boolean(npcRaw.is_notable),
 
     // Respawn and behavior

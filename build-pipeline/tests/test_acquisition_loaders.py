@@ -13,11 +13,13 @@ from compendium.loaders.core import (
     load_game_config,
     load_quests,
     load_recipe_family,
+    load_seasons,
     load_summon_triggers,
 )
 from compendium.models import (
     CraftingRecipeData,
     CraftingStationData,
+    GameConfigData,
     MonsterSpawnData,
     NpcData,
     PortalData,
@@ -147,6 +149,7 @@ def test_npc_private_inputs_keep_duplicate_skills_and_shop_slots(tmp_path):
     npc = NpcData(
         id="npc",
         name="NPC",
+        season=None,
         skill_ids=["attack", "attack"],
         quest_offers=[
             {
@@ -295,16 +298,55 @@ def test_game_config_retains_ordered_fishing_and_home_offers(tmp_path):
                 ],
             }
         ],
+        "seasons": [
+            {
+                "id": "halloween",
+                "buff_skill_id": "halloween_event",
+                "shop_item_ids": ["treat", "fireworks"],
+            },
+            {
+                "id": "christmas",
+                "buff_skill_id": "winter_festival",
+                "shop_item_ids": ["cookie", "fireworks"],
+            },
+        ],
     }
     (tmp_path / "game_config.json").write_text(json.dumps(config))
     with create_database(tmp_path / "test.db", SCHEMA_PATH) as conn:
+        conn.executemany(
+            "INSERT INTO skills(id,name,skill_type) VALUES (?,?,'target_buff')",
+            [("halloween_event", "Halloween"), ("winter_festival", "Winter")],
+        )
         load_game_config(conn, tmp_path)
+        load_seasons(conn, tmp_path)
         stored = json.loads(
             conn.execute(
                 "SELECT payload FROM _acquisition_input_game_config"
             ).fetchone()[0]
         )
         assert stored == config
+        assert conn.execute(
+            "SELECT id, ordinal, buff_skill_id FROM seasons ORDER BY ordinal"
+        ).fetchall() == [
+            ("halloween", 0, "halloween_event"),
+            ("christmas", 1, "winter_festival"),
+        ]
+
+
+def test_game_config_requires_seasons_with_shop_items():
+    with pytest.raises(ValidationError, match="shop_item_ids"):
+        GameConfigData.model_validate(
+            {
+                "lockpicks_item_id": "lockpicks",
+                "journal_fish_item_ids": [],
+                "trash_fish_item_ids": [],
+                "special_items": {},
+                "housing_catalog": [],
+                "seasons": [
+                    {"id": "halloween", "buff_skill_id": "b", "shop_item_ids": []}
+                ],
+            }
+        )
 
 
 def test_new_relationship_foreign_keys_allow_atomic_rekey_but_reject_dangling_targets(
@@ -516,6 +558,7 @@ def test_npc_quest_offers_reject_reused_native_slots():
             {
                 "id": "npc",
                 "name": "NPC",
+                "season": None,
                 "quest_offers": [offer, offer],
             }
         )

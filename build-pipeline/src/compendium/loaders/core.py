@@ -1423,3 +1423,17 @@ def load_game_config(conn: sqlite3.Connection, export_dir: Path) -> None:
         config = GameConfigData.model_validate(json.load(f))
     insert_acquisition_input(conn.cursor(), "game_config", config, identity="config")
     conn.commit()
+
+
+def load_seasons(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Publish the seasons the game configures, in their configured order."""
+    with open(export_dir / "game_config.json", encoding="utf-8") as f:
+        config = GameConfigData.model_validate(json.load(f))
+    conn.executemany(
+        "INSERT INTO seasons (id, ordinal, buff_skill_id) VALUES (?,?,?)",
+        [
+            (season.id, ordinal, season.buff_skill_id)
+            for ordinal, season in enumerate(config.seasons)
+        ],
+    )
+    conn.commit()

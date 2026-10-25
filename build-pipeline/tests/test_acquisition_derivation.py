@@ -73,7 +73,7 @@ def vendor(
     method(conn, method_id, "vendor")
     conn.execute(
         """INSERT INTO acquisition_vendor_details (id, npc_id, offered_item_id, season)
-        VALUES (?, ?, ?, 'none')""",
+        VALUES (?, ?, ?, NULL)""",
         (method_id, npc, offered),
     )
     conn.execute(

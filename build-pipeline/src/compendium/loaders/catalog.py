@@ -49,6 +49,7 @@ from compendium.loaders.core import (
     load_recipe_family,
     load_regional_events,
     load_scribing_tables,
+    load_seasons,
     load_skills,
     load_static_data,
     load_stats,
@@ -207,6 +208,13 @@ DATASETS: tuple[Dataset, ...] = (
         handler=_plain(load_skills),
     ),
     Dataset(
+        "seasons",
+        ("game_config.json",),
+        ("seasons",),
+        after=("skills",),
+        handler=_plain(load_seasons),
+    ),
+    Dataset(
         "zone_triggers",
         ("zone_triggers.json",),
         ("zone_triggers",),
@@ -247,6 +255,7 @@ DATASETS: tuple[Dataset, ...] = (
         ("monsters.json",),
         ("monsters", "_acquisition_input_monsters"),
         model=MonsterData,
+        after=("seasons",),
     ),
     Dataset(
         "monster_spawns",
@@ -281,7 +290,7 @@ DATASETS: tuple[Dataset, ...] = (
         "npcs",
         ("npcs.json",),
         ("npcs", "_acquisition_input_npcs"),
-        after=("static_data",),
+        after=("static_data", "seasons"),
         model=NpcData,
     ),
     Dataset(

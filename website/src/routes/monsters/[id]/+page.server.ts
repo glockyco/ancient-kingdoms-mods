@@ -19,6 +19,7 @@ import type {
   SummonsInfo,
   MonsterSpawnCombatStats,
 } from "$lib/types/monsters";
+import type { Season } from "$lib/data/seasonal-events";
 import { monsterDescription } from "$lib/server/meta-description";
 import { formatPercent } from "$lib/utils/format";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
@@ -251,7 +252,7 @@ export const load: PageServerLoad = async ({
     is_fabled: Boolean(monsterRaw.is_fabled),
     is_elite: Boolean(monsterRaw.is_elite),
     is_hunt: Boolean(monsterRaw.is_hunt),
-    is_halloween: Boolean(monsterRaw.is_halloween),
+    season: monsterRaw.season as Season | null,
     is_summonable: Boolean(monsterRaw.is_summonable),
     damage: (monsterRaw.damage as number) || 0,
     magic_damage: (monsterRaw.magic_damage as number) || 0,

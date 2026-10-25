@@ -37,7 +37,7 @@ export async function loadBrowserAcquisition(
 }
 /** Seasonal vendor offers are outside the map's source presentation. */
 export function mapMethodIsVisible(method: MethodView): boolean {
-  return method.kind !== "vendor" || method.detail.season === "none";
+  return method.kind !== "vendor" || method.detail.season === null;
 }
 
 /** Award, offer and use locations stay distinct, but all can be selected on the map. */

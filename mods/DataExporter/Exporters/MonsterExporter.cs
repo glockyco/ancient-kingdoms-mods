@@ -176,7 +176,8 @@ public class MonsterExporter : BaseExporter
                 is_hunt = canonical.isHunt,
                 is_dummy = canonical.isDummy,
                 is_summonable = canonical.isSummonable,
-                is_halloween = canonical.isHalloween,
+                // Monster.isHalloween is the game's only monster season gate (Monster.cs:UpdateServer_DEAD).
+                season = canonical.isHalloween ? "halloween" : null,
                 is_forgotten_altar_event = canonical.isForgotttenAltarEvent,
 
                 // Combat flags

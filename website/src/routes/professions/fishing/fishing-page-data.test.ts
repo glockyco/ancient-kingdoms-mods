@@ -65,7 +65,7 @@ function createDb() {
     INSERT INTO npc_spawns (id, npc_id, zone_id) VALUES ('vendor_spawn', 'rod_vendor', 'zone_a');
     INSERT INTO crafting_stations (id, name, zone_id) VALUES ('rod_station', 'Rod Station', 'zone_a');
     INSERT INTO acquisition_providers_crafting_stations VALUES ('rod_station_provider', 'rod_recipe', 'rod_station', 0);
-    INSERT INTO acquisition_vendor_details VALUES ('rod_offer', 'rod_vendor', 'rusty_fishing_rod', 'none');
+    INSERT INTO acquisition_vendor_details VALUES ('rod_offer', 'rod_vendor', 'rusty_fishing_rod', NULL);
     INSERT INTO acquisition_providers_npcs VALUES ('rod_provider', 'rod_offer', 'rod_vendor', 0);
     INSERT INTO crafting_recipes VALUES ('crafted_fishing_rod_recipe', 'crafted_fishing_rod'), ('fish_chowder_recipe', 'fish_chowder'), ('dragonbait_stew_recipe', 'dragonbait_stew');
     INSERT INTO alchemy_recipes VALUES ('fish_potion_recipe', 'fish_potion');

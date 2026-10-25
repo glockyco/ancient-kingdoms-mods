@@ -61,28 +61,11 @@ public class GameConfigExporter : BaseExporter
             Logger.Msg($"Found {config.mounts.Count} mounts");
         }
 
-        // Export seasonal items
-        if (gameManager.HalloweenItems != null)
-        {
-            foreach (var item in gameManager.HalloweenItems)
-            {
-                if (item != null && !string.IsNullOrEmpty(item.name))
-                {
-                    config.seasonal_items.halloween.Add(SanitizeId(item.name));
-                }
-            }
-        }
-
-        if (gameManager.ChristmasItems != null)
-        {
-            foreach (var item in gameManager.ChristmasItems)
-            {
-                if (item != null && !string.IsNullOrEmpty(item.name))
-                {
-                    config.seasonal_items.christmas.Add(SanitizeId(item.name));
-                }
-            }
-        }
+        // Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor and EnviromentSystem.cs:CheckSpecialEvents.
+        // The season ids are the game's own keys (isHalloween, isChristmas). These lists are
+        // configuration, so the export does not depend on which season is active.
+        config.seasons.Add(ExportSeason("halloween", gameManager.HalloweenBuff, gameManager.HalloweenItems));
+        config.seasons.Add(ExportSeason("christmas", gameManager.ChristmasBuff, gameManager.ChristmasItems));
 
         // Export special item references
         config.special_items = new SpecialItemsData
@@ -120,5 +103,25 @@ public class GameConfigExporter : BaseExporter
         if (item == null || string.IsNullOrEmpty(item.name))
             return null;
         return SanitizeId(item.name);
+    }
+
+    private SeasonData ExportSeason(
+        string id,
+        Il2Cpp.BuffSkill buff,
+        Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<Il2Cpp.ScriptableItem> items)
+    {
+        if (buff == null || string.IsNullOrEmpty(buff.name))
+            throw new System.InvalidOperationException($"GameManager has no buff for season {id}.");
+        if (items == null || items.Length == 0)
+            throw new System.InvalidOperationException($"GameManager has no shop list for season {id}.");
+        var season = new SeasonData { id = id, buff_skill_id = SanitizeId(buff.name) };
+        foreach (var item in items)
+        {
+            if (item == null || string.IsNullOrEmpty(item.name))
+                throw new System.InvalidOperationException($"Season {id} shop list has a missing item.");
+            season.shop_item_ids.Add(SanitizeId(item.name));
+        }
+        Logger.Msg($"Season {id}: buff {season.buff_skill_id}, {season.shop_item_ids.Count} shop items");
+        return season;
     }
 }

@@ -126,7 +126,9 @@ public class NpcData
     public bool see_invisibility { get; set; }
     public bool is_summonable { get; set; }
     public bool flee_on_low_hp { get; set; }
-    public bool is_christmas_npc { get; set; }
+    /// <summary>The season this NPC appears in, or null when it is present all year.</summary>
+    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
+    public string season { get; set; }
     public bool is_notable { get; set; }
 
     // Spawning and respawn

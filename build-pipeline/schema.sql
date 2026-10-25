@@ -476,6 +476,19 @@ CREATE INDEX idx_fish_trash ON fish(is_trash);
 
 
 -- =============================================================================
+-- SEASONS
+-- =============================================================================
+
+-- One row per seasonal event the game configures. The id is the game's season key.
+-- The dates are constants in server-scripts/EnviromentSystem.cs:CheckSpecialEvents
+-- and live with the website's season presentation.
+CREATE TABLE seasons (
+    id TEXT PRIMARY KEY,
+    ordinal INTEGER NOT NULL UNIQUE,
+    buff_skill_id TEXT NOT NULL REFERENCES skills(id) DEFERRABLE INITIALLY DEFERRED
+);
+
+-- =============================================================================
 -- MONSTERS
 -- =============================================================================
 
@@ -554,7 +567,7 @@ CREATE TABLE monsters (
     is_hunt BOOLEAN DEFAULT 0,
     is_dummy BOOLEAN DEFAULT 0,
     is_summonable BOOLEAN DEFAULT 0,
-    is_halloween BOOLEAN DEFAULT 0,
+    season TEXT REFERENCES seasons(id) DEFERRABLE INITIALLY DEFERRED,
     is_forgotten_altar_event BOOLEAN DEFAULT 0,
 
     -- Combat flags
@@ -843,7 +856,7 @@ CREATE TABLE npcs (
     see_invisibility BOOLEAN DEFAULT 0,
     is_summonable BOOLEAN DEFAULT 0,
     flee_on_low_hp BOOLEAN DEFAULT 0,
-    is_christmas_npc BOOLEAN DEFAULT 0,
+    season TEXT REFERENCES seasons(id) DEFERRABLE INITIALLY DEFERRED,
     is_notable BOOLEAN DEFAULT 0,
 
     -- Respawn and behavior
@@ -1700,7 +1713,8 @@ CREATE TABLE acquisition_vendor_details (
     id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
     npc_id TEXT NOT NULL REFERENCES npcs(id) DEFERRABLE INITIALLY DEFERRED,
     offered_item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
-    season TEXT NOT NULL CHECK (season IN ('none','halloween','christmas'))
+    -- Null for a year-round offer.
+    season TEXT REFERENCES seasons(id) DEFERRABLE INITIALLY DEFERRED
 );
 CREATE TABLE acquisition_quest_details (
     id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,

@@ -34,7 +34,7 @@ describe("compact map popups on canonical acquisition", () => {
     expect(pack).not.toBeNull();
     const offers = db
       .prepare(
-        `SELECT d.npc_id FROM acquisition_vendor_details d JOIN acquisition_outputs o ON o.method_id=d.id WHERE d.offered_item_id='pack_25_arrows' AND d.season='none' AND o.item_id='arrow'`,
+        `SELECT d.npc_id FROM acquisition_vendor_details d JOIN acquisition_outputs o ON o.method_id=d.id WHERE d.offered_item_id='pack_25_arrows' AND d.season IS NULL AND o.item_id='arrow'`,
       )
       .all() as { npc_id: string }[];
     expect(offers.length).toBeGreaterThan(0);

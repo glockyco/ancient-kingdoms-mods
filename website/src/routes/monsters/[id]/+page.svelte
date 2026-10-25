@@ -825,7 +825,7 @@
           Hunt
         </span>
       {/if}
-      {#if data.monster.is_halloween}
+      {#if data.monster.season === "halloween"}
         <a
           href={seasonHref("halloween")}
           title="Halloween dates and shop"

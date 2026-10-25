@@ -91,6 +91,8 @@ PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("items", "recipe_potion_learned_id"),
         ("luck_tokens", "boss_luck_token_id"),
         ("luck_tokens", "fragment_token_id"),
+        # A season gives its buff to every online player while it runs.
+        ("seasons", "buff_skill_id"),
     }
 )
 
@@ -108,7 +110,9 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
         ("items", "buy_token_id"),
         ("items", "weapon_required_ammo_id"),
         ("monster_skills", "monster_id"),
+        ("monsters", "season"),
         ("npcs", "faction"),
+        ("npcs", "season"),
         ("pet_skills", "pet_id"),
         ("portals", "need_monster_dead_spawn_id"),
         ("portals", "required_item_id"),
@@ -252,7 +256,7 @@ DETAIL_TARGETS = {
         "altar_id",
         "parent_monster_spawn_id",
     ),
-    "vendor": ("npc_id", "offered_item_id"),
+    "vendor": ("npc_id", "offered_item_id", "season"),
     "quest": ("quest_id",),
     "recipe": (
         "crafting_recipe_id",

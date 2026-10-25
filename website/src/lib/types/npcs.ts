@@ -1,4 +1,5 @@
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
+import type { Season } from "$lib/data/seasonal-events";
 export interface NpcRoles {
   is_merchant: boolean;
   is_barber: boolean;
@@ -76,7 +77,8 @@ export interface NpcInfo {
   see_invisibility: boolean;
   is_summonable: boolean;
   flee_on_low_hp: boolean;
-  is_christmas_npc: boolean;
+  /** The season the NPC appears in, or null when it is present all year. */
+  season: Season | null;
   is_notable: boolean;
 
   // Respawn and behavior

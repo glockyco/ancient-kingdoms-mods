@@ -917,16 +917,20 @@ function addMechanicsHashes(db, addHash, context) {
         break;
       }
       case "seasonal-events": {
-        const monsters = tableRows(db, "monsters", "WHERE is_halloween = 1");
-        const npcs = tableRows(db, "npcs", "WHERE is_christmas_npc = 1");
+        const monsters = tableRows(
+          db,
+          "monsters",
+          "WHERE season = 'halloween'",
+        );
+        const npcs = tableRows(db, "npcs", "WHERE season = 'christmas'");
         const memberships = all(
           db,
-          "SELECT quest_id, npc_id, role, ordinal FROM npc_quest_memberships WHERE quest_id IN (SELECT m.quest_id FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.is_christmas_npc = 1) ORDER BY quest_id, role, ordinal, npc_id",
+          "SELECT quest_id, npc_id, role, ordinal FROM npc_quest_memberships WHERE quest_id IN (SELECT m.quest_id FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.season = 'christmas') ORDER BY quest_id, role, ordinal, npc_id",
         );
         // Seasonal shop items, their currencies and the quest rewards.
         const itemIds = all(
           db,
-          "SELECT offered_item_id AS id FROM acquisition_vendor_details WHERE season != 'none' UNION SELECT i.item_id FROM acquisition_vendor_details v JOIN acquisition_cost_groups g ON g.method_id = v.id JOIN acquisition_inputs i ON i.cost_group_id = g.id WHERE v.season != 'none' AND i.item_id IS NOT NULL UNION SELECT r.item_id FROM quest_reward_slots r WHERE r.quest_id IN (SELECT quest_id FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.is_christmas_npc = 1) ORDER BY id",
+          "SELECT offered_item_id AS id FROM acquisition_vendor_details WHERE season IS NOT NULL UNION SELECT i.item_id FROM acquisition_vendor_details v JOIN acquisition_cost_groups g ON g.method_id = v.id JOIN acquisition_inputs i ON i.cost_group_id = g.id WHERE v.season IS NOT NULL AND i.item_id IS NOT NULL UNION SELECT r.item_id FROM quest_reward_slots r WHERE r.quest_id IN (SELECT quest_id FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id WHERE m.role = 'offer' AND n.season = 'christmas') ORDER BY id",
         ).map((row) => row.id);
         rows = {
           monsters,

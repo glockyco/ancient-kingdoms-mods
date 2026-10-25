@@ -1,3 +1,5 @@
+import type { Season } from "../data/seasonal-events";
+
 export type SqlValue = string | number | null;
 export type AcquisitionQuery = (
   sql: string,
@@ -171,7 +173,8 @@ export interface KillDetailRow extends DataRow {
 export interface VendorDetailRow extends DataRow {
   readonly npc_id: string;
   readonly offered_item_id: string;
-  readonly season: "none" | "halloween" | "christmas";
+  /** Null for a year-round offer. */
+  readonly season: Season | null;
 }
 export interface QuestDetailRow extends DataRow {
   readonly quest_id: string;

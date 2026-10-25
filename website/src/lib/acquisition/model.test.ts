@@ -188,7 +188,7 @@ function fixture(): Fixture {
     id: "vendor",
     npc_id: "merchant",
     offered_item_id: "pack",
-    season: "none",
+    season: null,
   });
   insert("acquisition_providers_npcs", {
     id: "vendor-provider",
@@ -722,7 +722,7 @@ describe("bounded complete alternatives and lifecycle planning", () => {
           id,
           npc_id: "merchant",
           offered_item_id: "iron",
-          season: "none",
+          season: null,
         });
         f.insert("acquisition_providers_npcs", {
           id: `${id}-provider`,

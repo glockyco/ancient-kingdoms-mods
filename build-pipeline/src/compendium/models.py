@@ -263,7 +263,8 @@ class MonsterData(BaseModel):
     is_hunt: bool = False
     is_dummy: bool = False
     is_summonable: bool = False
-    is_halloween: bool = False
+    # The season the monster spawns in, or None when it spawns all year.
+    season: str | None
     is_forgotten_altar_event: bool = False
 
     # Combat flags
@@ -649,7 +650,8 @@ class NpcData(BaseModel):
     see_invisibility: bool = False
     is_summonable: bool = False
     flee_on_low_hp: bool = False
-    is_christmas_npc: bool = False
+    # The season the NPC appears in, or None when it is present all year.
+    season: str | None
     is_notable: bool = False
 
     # Monster-like properties
@@ -1370,6 +1372,16 @@ class HousingCatalogEntry(BaseModel):
     workstations: list[HousingWorkstation]
 
 
+class SeasonConfig(BaseModel):
+    """A seasonal event as the game configures it in GameManager."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    buff_skill_id: str
+    shop_item_ids: list[str] = Field(min_length=1)
+
+
 class GameConfigData(BaseModel):
     """Configured catalog inputs retained privately until normalization."""
 
@@ -1380,6 +1392,7 @@ class GameConfigData(BaseModel):
     journal_fish_item_ids: list[str]
     trash_fish_item_ids: list[str]
     special_items: dict[str, str | None]
+    seasons: list[SeasonConfig] = Field(min_length=1)
 
 
 class CraftingRecipeData(BaseModel):

@@ -92,7 +92,7 @@ export function itemUsagesFromModel(
         npc_id: String(detail.npc_id),
         npc_name: name("npcs", detail.npc_id),
         price: amount,
-        season: detail.season === "none" ? null : (detail.season as Season),
+        season: detail.season as Season | null,
       });
     } else if (method?.kind === "altar_activate" && detail) {
       const altar = sourceEntity(model, "altars", detail.altar_id);

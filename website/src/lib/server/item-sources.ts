@@ -234,7 +234,7 @@ export function itemSourcesFromModel(
             ) ?? undefined;
       } else if (targetChance !== null) row.drop_rate = targetChance;
       result.monsters.push(row);
-    } else if (method.kind === "vendor" && detail.season !== "none") {
+    } else if (method.kind === "vendor" && detail.season !== null) {
       const currency = inputs.find((input) => input.resource_kind === "item");
       const gold = inputs.find((input) => input.resource_kind === "gold");
       const row = {
