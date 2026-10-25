@@ -26,7 +26,7 @@
     "check:knip": "knip",
     "local:status": "./scripts/local-status.sh"
   },
-  "packageManager": "pnpm@10.34.5",
+  "packageManager": "pnpm@10.34.9",
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24"
   },
