@@ -437,20 +437,6 @@
         data.item.weapon_proc_effect_id),
   );
 
-  const hasPrimaryDetailCards = $derived(
-    specialMechanics.length > 0 ||
-      isPet ||
-      Boolean(data.item.tooltip_html) ||
-      hasStatsCard ||
-      (computed.createdFromMerge && computed.createdFromMerge.length > 0) ||
-      (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) ||
-      data.item.id === "primal_essence" ||
-      data.item.id === "radiant_aether" ||
-      (isAugment && !isArmorSetMetadata && data.augmenters.length > 0) ||
-      data.packContents.length > 0 ||
-      data.sources.seasonal.length > 0,
-  );
-
   function formatGold(amount: number): string {
     return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
   }
@@ -543,245 +529,176 @@
     </div>
   </div>
 
-  <!-- Basic Info -->
-  <Card.Root class="bg-muted/30">
-    <Card.Header>
-      <Card.Title level={2}>Basic Information</Card.Title>
-    </Card.Header>
-    <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <div>
-        <div class={styles.label}>Type</div>
-        <div class={styles.value}>{itemTypeLabel}</div>
-      </div>
-
-      {#if data.item.level_required > 1}
-        <div>
-          <div class={styles.label}>Level Required</div>
-          <div class={styles.value}>{data.item.level_required}</div>
-        </div>
-      {/if}
-
-      {#if hasSpecificClassRestriction(computed.classRequired)}
-        <div>
-          <div class={styles.label}>Class Required</div>
-          <div class={styles.value}>
-            {computed.classRequired.map(formatClassName).join(", ")}
+  <!--
+    The tooltip sits beside the item's facts. Every item has Basic Information,
+    so a tooltip never stands alone, and an item without a tooltip shows its
+    facts at full width.
+  -->
+  <div
+    class={data.item.tooltip_html
+      ? "grid grid-cols-1 items-start gap-4 md:grid-cols-2"
+      : undefined}
+  >
+    {#if data.item.tooltip_html}
+      <Card.Root class="bg-muted/30">
+        <Card.Header>
+          <Card.Title level={2}>Tooltip</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <ItemTooltip
+            tooltipHtml={data.item.tooltip_html}
+            visualAsset={data.visualAsset}
+          />
+        </Card.Content>
+      </Card.Root>
+    {/if}
+    <div class="space-y-4">
+      <!-- Three columns of facts when the card has the page's width, two beside the tooltip. -->
+      <Card.Root class="@container bg-muted/30">
+        <Card.Header>
+          <Card.Title level={2}>Basic Information</Card.Title>
+        </Card.Header>
+        <Card.Content class="grid grid-cols-2 @xl:grid-cols-3 gap-4">
+          <div>
+            <div class={styles.label}>Type</div>
+            <div class={styles.value}>{itemTypeLabel}</div>
           </div>
-        </div>
-      {/if}
 
-      {#if data.item.slot}
-        <div>
-          <div class={styles.label}>Equipment Slot</div>
-          <div class={styles.value}>
-            {formatEquipmentCategory(data.item.slot)}
-          </div>
-        </div>
-      {/if}
+          {#if data.item.level_required > 1}
+            <div>
+              <div class={styles.label}>Level Required</div>
+              <div class={styles.value}>{data.item.level_required}</div>
+            </div>
+          {/if}
 
-      {#if data.item.max_stack > 1}
-        <div>
-          <div class={styles.label}>Max Stack</div>
-          <div class={styles.value}>{data.item.max_stack}</div>
-        </div>
-      {/if}
+          {#if hasSpecificClassRestriction(computed.classRequired)}
+            <div>
+              <div class={styles.label}>Class Required</div>
+              <div class={styles.value}>
+                {computed.classRequired.map(formatClassName).join(", ")}
+              </div>
+            </div>
+          {/if}
 
-      {#if data.item.backpack_slots > 0}
-        <div>
-          <div class={styles.label}>Backpack Slots</div>
-          <div class={styles.value}>{data.item.backpack_slots}</div>
-        </div>
-      {/if}
+          {#if data.item.slot}
+            <div>
+              <div class={styles.label}>Equipment Slot</div>
+              <div class={styles.value}>
+                {formatEquipmentCategory(data.item.slot)}
+              </div>
+            </div>
+          {/if}
 
-      {#if isBackpack && data.item.backpack_is_unique}
-        <div>
-          <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:641-655 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
-          <div class={styles.label}>Unique</div>
-          <div class={styles.value}>Yes</div>
-        </div>
-      {/if}
+          {#if data.item.max_stack > 1}
+            <div>
+              <div class={styles.label}>Max Stack</div>
+              <div class={styles.value}>{data.item.max_stack}</div>
+            </div>
+          {/if}
 
-      {#if computed.maxDurability && !isAugment}
-        <div>
-          <div class={styles.label}>Max Durability</div>
-          <div class={styles.value}>{computed.maxDurability}</div>
-        </div>
-      {/if}
+          {#if data.item.backpack_slots > 0}
+            <div>
+              <div class={styles.label}>Backpack Slots</div>
+              <div class={styles.value}>{data.item.backpack_slots}</div>
+            </div>
+          {/if}
 
-      {#if data.item.mount_speed > 0}
-        <div>
-          <div class={styles.label}>Mount Speed</div>
-          <div class={styles.value}>{data.item.mount_speed}</div>
-        </div>
-      {/if}
+          {#if isBackpack && data.item.backpack_is_unique}
+            <div>
+              <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:641-655 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
+              <div class={styles.label}>Unique</div>
+              <div class={styles.value}>Yes</div>
+            </div>
+          {/if}
 
-      {#if data.item.food_type}
-        <div>
-          <div class={styles.label}>Food Type</div>
-          <div class={styles.value}>{data.item.food_type}</div>
-        </div>
-      {/if}
+          {#if computed.maxDurability && !isAugment}
+            <div>
+              <div class={styles.label}>Max Durability</div>
+              <div class={styles.value}>{computed.maxDurability}</div>
+            </div>
+          {/if}
 
-      {#if computed.hasSerenity}
-        <div>
-          <div class={styles.label}>Special Effect</div>
-          <a href="/skills/serenity" class={styles.link}>Serenity</a>
-        </div>
-      {/if}
+          {#if data.item.mount_speed > 0}
+            <div>
+              <div class={styles.label}>Mount Speed</div>
+              <div class={styles.value}>{data.item.mount_speed}</div>
+            </div>
+          {/if}
 
-      {#if computed.armorSetName && computed.armorSetId}
-        <div>
-          <div class={styles.label}>Set Bonus</div>
-          <a href="/items/{computed.armorSetId}" class={styles.link}>
-            {computed.armorSetName}
-          </a>
-        </div>
-      {/if}
+          {#if data.item.food_type}
+            <div>
+              <div class={styles.label}>Food Type</div>
+              <div class={styles.value}>{data.item.food_type}</div>
+            </div>
+          {/if}
 
-      {#if data.item.buy_price > 0 && computed.soldBy && computed.soldBy.length > 0}
-        <div>
-          <div class={styles.label}>Buy Price</div>
-          <div class={styles.valueCurrency}>
-            {#if computed.soldBy[0].currency_item_id}
-              {formatGold(data.item.buy_price)}
-              <a
-                href={resolve("/items/[id]", {
-                  id: computed.soldBy[0].currency_item_id,
-                })}
-                class={styles.link}
-              >
-                {computed.soldBy[0].currency_item_name}
+          {#if computed.hasSerenity}
+            <div>
+              <div class={styles.label}>Special Effect</div>
+              <a href="/skills/serenity" class={styles.link}>Serenity</a>
+            </div>
+          {/if}
+
+          {#if computed.armorSetName && computed.armorSetId}
+            <div>
+              <div class={styles.label}>Set Bonus</div>
+              <a href="/items/{computed.armorSetId}" class={styles.link}>
+                {computed.armorSetName}
               </a>
-            {:else}
-              {formatGold(data.item.buy_price)}g
-            {/if}
-          </div>
-        </div>
-      {/if}
+            </div>
+          {/if}
 
-      {#if data.item.sell_price > 0 && data.item.sellable}
-        <div>
-          <div class={styles.label}>Sell Price</div>
-          <div class={styles.valueCurrency}>
-            {formatGold(data.item.sell_price)}g
-          </div>
-        </div>
-      {/if}
+          {#if data.item.buy_price > 0 && computed.soldBy && computed.soldBy.length > 0}
+            <div>
+              <div class={styles.label}>Buy Price</div>
+              <div class={styles.valueCurrency}>
+                {#if computed.soldBy[0].currency_item_id}
+                  {formatGold(data.item.buy_price)}
+                  <a
+                    href={resolve("/items/[id]", {
+                      id: computed.soldBy[0].currency_item_id,
+                    })}
+                    class={styles.link}
+                  >
+                    {computed.soldBy[0].currency_item_name}
+                  </a>
+                {:else}
+                  {formatGold(data.item.buy_price)}g
+                {/if}
+              </div>
+            </div>
+          {/if}
 
-      {#if data.item.primal_essence_value}
-        <div>
-          <div class={styles.label}>Primal Essence</div>
-          <div class={styles.value}>
-            <a href="/items/primal_essence" class={styles.link}>
-              {data.item.primal_essence_value}
-            </a>
-          </div>
-        </div>
-      {/if}
+          {#if data.item.sell_price > 0 && data.item.sellable}
+            <div>
+              <div class={styles.label}>Sell Price</div>
+              <div class={styles.valueCurrency}>
+                {formatGold(data.item.sell_price)}g
+              </div>
+            </div>
+          {/if}
 
-      {#if data.item.item_type !== "augment"}
-        <div>
-          <div class={styles.label}>Tradable</div>
-          <div class={styles.value}>{data.item.tradable ? "Yes" : "No"}</div>
-        </div>
-      {/if}
-    </Card.Content>
-  </Card.Root>
+          {#if data.item.primal_essence_value}
+            <div>
+              <div class={styles.label}>Primal Essence</div>
+              <div class={styles.value}>
+                <a href="/items/primal_essence" class={styles.link}>
+                  {data.item.primal_essence_value}
+                </a>
+              </div>
+            </div>
+          {/if}
 
-  {#if hasMechanicsNotes}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Mechanics</Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-2 text-sm">
-        {#if isBackpack}
-          <div class="space-y-2 text-muted-foreground">
-            <p>
-              Equipping a backpack expands your carry inventory. See
-              <a href="/mechanics/inventory#backpacks" class={styles.link}>
-                backpack storage rules
-              </a>
-              for slot counts and where each bag comes from.
-            </p>
-          </div>
-        {/if}
-        {#if isHouseChestStructure}
-          <div class="space-y-2 text-muted-foreground">
-            <p>
-              House chest use requires owning a house. See
-              <a href="/mechanics/inventory#house-chests" class={styles.link}>
-                house chest storage rules
-              </a>
-              for slot ranges, costs, and house locations.
-            </p>
-          </div>
-        {/if}
-        {#if isSetPiece}
-          <p class="text-muted-foreground">
-            Set bonuses count only equipped pieces with durability left. See
-            <a href="/mechanics/inventory#armor-sets" class={styles.link}>
-              armor set rules
-            </a>
-            for the piece thresholds.
-          </p>
-        {/if}
-        {#if isAugment}
-          <p class="text-muted-foreground">
-            Augments attach to equipment at a Craft Station. See
-            <a href="/mechanics/crafting#augments" class={styles.link}>
-              augment rules
-            </a>
-            for compatibility and removal.
-          </p>
-        {/if}
-        {#if isCostume}
-          <p class="text-muted-foreground">
-            Using a costume saves its appearance to your wardrobe. See
-            <a href="/mechanics/housing#appearance" class={styles.link}>
-              wardrobe and appearance rules
-            </a>.
-          </p>
-        {/if}
-        {#if isTravelItem}
-          <p class="text-muted-foreground">
-            See
-            <a href="/mechanics/world#binding-and-travel" class={styles.link}>
-              binding and travel rules
-            </a>
-            for bind points and where travel items cannot be used.
-          </p>
-        {/if}
-        {#if isPet}
-          <p class="text-muted-foreground">
-            Whistles summon a friendly follower that does not fight. See
-            <a href="/summons#how-summons-work" class={styles.link}>
-              friendly follower rules
-            </a>
-            for the follower limit and naming.
-          </p>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-  {/if}
-
-  <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if hasPrimaryDetailCards}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Tooltip -->
-      {#if data.item.tooltip_html}
-        <Card.Root class="bg-muted/30">
-          <Card.Header>
-            <Card.Title level={2}>Tooltip</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <ItemTooltip
-              tooltipHtml={data.item.tooltip_html}
-              visualAsset={data.visualAsset}
-            />
-          </Card.Content>
-        </Card.Root>
-      {/if}
-
+          {#if data.item.item_type !== "augment"}
+            <div>
+              <div class={styles.label}>Tradable</div>
+              <div class={styles.value}>
+                {data.item.tradable ? "Yes" : "No"}
+              </div>
+            </div>
+          {/if}
+        </Card.Content>
+      </Card.Root>
       <!-- Summoned pet -->
       {#if petSpriteSrc && data.petVisualAsset}
         <Card.Root class="bg-muted/30">
@@ -1543,6 +1460,82 @@
         </Card.Root>
       {/if}
     </div>
+  </div>
+
+  {#if hasMechanicsNotes}
+    <Card.Root class="bg-muted/30">
+      <Card.Header>
+        <Card.Title level={2}>Mechanics</Card.Title>
+      </Card.Header>
+      <Card.Content class="space-y-2 text-sm">
+        {#if isBackpack}
+          <div class="space-y-2 text-muted-foreground">
+            <p>
+              Equipping a backpack expands your carry inventory. See
+              <a href="/mechanics/inventory#backpacks" class={styles.link}>
+                backpack storage rules
+              </a>
+              for slot counts and where each bag comes from.
+            </p>
+          </div>
+        {/if}
+        {#if isHouseChestStructure}
+          <div class="space-y-2 text-muted-foreground">
+            <p>
+              House chest use requires owning a house. See
+              <a href="/mechanics/inventory#house-chests" class={styles.link}>
+                house chest storage rules
+              </a>
+              for slot ranges, costs, and house locations.
+            </p>
+          </div>
+        {/if}
+        {#if isSetPiece}
+          <p class="text-muted-foreground">
+            Set bonuses count only equipped pieces with durability left. See
+            <a href="/mechanics/inventory#armor-sets" class={styles.link}>
+              armor set rules
+            </a>
+            for the piece thresholds.
+          </p>
+        {/if}
+        {#if isAugment}
+          <p class="text-muted-foreground">
+            Augments attach to equipment at a Craft Station. See
+            <a href="/mechanics/crafting#augments" class={styles.link}>
+              augment rules
+            </a>
+            for compatibility and removal.
+          </p>
+        {/if}
+        {#if isCostume}
+          <p class="text-muted-foreground">
+            Using a costume saves its appearance to your wardrobe. See
+            <a href="/mechanics/housing#appearance" class={styles.link}>
+              wardrobe and appearance rules
+            </a>.
+          </p>
+        {/if}
+        {#if isTravelItem}
+          <p class="text-muted-foreground">
+            See
+            <a href="/mechanics/world#binding-and-travel" class={styles.link}>
+              binding and travel rules
+            </a>
+            for bind points and where travel items cannot be used.
+          </p>
+        {/if}
+        {#if isPet}
+          <p class="text-muted-foreground">
+            Whistles summon a friendly follower that does not fight. See
+            <a href="/summons#how-summons-work" class={styles.link}>
+              friendly follower rules
+            </a>
+            for the follower limit and naming.
+          </p>
+        {/if}
+      </Card.Content>
+    </Card.Root>
   {/if}
 
   <!-- Armor Set Bonuses (shown on augment items and armor pieces) -->
