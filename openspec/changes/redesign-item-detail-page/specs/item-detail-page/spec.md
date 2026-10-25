@@ -28,12 +28,12 @@ An item page SHALL open with the in-game tooltip and one list of the item's fact
 
 ### Requirement: A stat is shown once
 
-A stat whose tooltip placeholder appears in the item's tooltip template SHALL be shown only by the tooltip. Every other nonzero stat SHALL be listed in the fact list under a heading stating that the tooltip does not show it. An item without a tooltip SHALL list all its stats. No separate panel SHALL repeat the tooltip's stats.
+A stat the tooltip lists, through its placeholder or as a typed stat line with the stat's exact value, SHALL be shown only by the tooltip. Every other nonzero stat SHALL be listed in the fact list under a heading stating that the tooltip's stat list does not include it. An item without a tooltip SHALL list all its stats, except an armor set bonus entry, whose stats are the bonuses its set section shows.
 
 #### Scenario: A stat the tooltip describes only in words
 
 - **WHEN** a player opens Cinderchant Chestplate, whose tooltip describes Cinderchant Tempo without a number and whose Haste is 10%
-- **THEN** the fact list shows Haste +10% under the heading for stats the tooltip does not show
+- **THEN** the fact list shows Haste +10% under the heading for stats the tooltip's stat list does not include
 
 #### Scenario: A stat the tooltip omits
 
@@ -45,10 +45,15 @@ A stat whose tooltip placeholder appears in the item's tooltip template SHALL be
 - **WHEN** a player opens Abyssal Tidehammer, whose template has a placeholder for each of its stats
 - **THEN** the page lists none of those stats outside the tooltip
 
-#### Scenario: A number typed into the template
+#### Scenario: A stat line typed into the template
 
-- **WHEN** an item's template states a stat as typed text rather than through its placeholder
-- **THEN** the fact list still shows the stat's value
+- **WHEN** a player opens Great Amethyst of Warding, whose template types "+10 Magic Resist" and whose Magic Resist is 10
+- **THEN** the page lists no Magic Resist outside the tooltip
+
+#### Scenario: A number inside an effect's description
+
+- **WHEN** a player opens Advisor Robe, whose tooltip says its effect increases magic and poison resistance by 15
+- **THEN** the fact list shows Magic Resist +15 and Poison Resist +15
 
 ### Requirement: Unused fields are not presented as stats
 

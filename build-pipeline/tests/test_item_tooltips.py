@@ -12,17 +12,38 @@ from compendium.denormalizers.items.tooltips import (
 )
 
 
-def test_tooltip_states_only_stats_with_a_placeholder():
+def test_tooltip_lists_stats_through_placeholders_or_exact_stat_lines():
     template = (
         "{DEFENSEBONUS} AC\n"
-        "+{CRITICALCHANCEBONUS}% Critical Chance\n"
         "{DELAY} Delay\n"
-        "+10 Magic Resist\n"
-        "Tempo: quickens your movements."
+        "+10 <color=#A8B3B7>Magic Resist</color>\n"
+        "+2% Critical Resist\n"
+        "+5 Mana\n"
+        "Tempo: quickens your movements.\n"
+        "Ward: increases your poison resistance by 15."
     )
-    assert tooltip_stat_fields(template) == [
-        "critical_chance",
+    stats = {
+        "defense": 30,
+        "magic_resist": 10,
+        "critical_resist": 0.02,
+        "mana_bonus": 250,
+        "haste": 0.1,
+        "poison_resist": 15,
+    }
+    names = {
+        "defense": "AC",
+        "magic_resist": "Magic Resist",
+        "critical_resist": "Critical Resist",
+        "mana_bonus": "Mana",
+        "haste": "Haste",
+        "poison_resist": "Poison Resist",
+    }
+    # Mana is typed with a value that differs from the stat, Haste is only described,
+    # and the poison resistance number sits inside an effect's prose.
+    assert tooltip_stat_fields(template, stats, names) == [
+        "critical_resist",
         "defense",
+        "magic_resist",
         "weapon_delay",
     ]
 

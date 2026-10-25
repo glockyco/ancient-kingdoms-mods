@@ -18,7 +18,7 @@ Checks made for this design, in the running game through HotRepl and against the
 - Loot is configured on each placed monster (`mods/DataExporter/ConfiguredWorldSnapshot.cs`). Fire Templars drop Black Pearl at 10% in Despair and 1% in Molten Sanctuary, and Ashen Key Shard only in Molten Sanctuary. Today's page lists two Fire Templar rows without zones.
 - `recipe_potion_learned_name` is NULL for all 46 recipe items. Nothing in the pipeline writes it, so the Teaches Recipe card never renders.
 
-Across all items, 4,735 stat values come from placeholders, 47 are typed into the template, and 83 items have a stat whose number the tooltip never gives. Most are Haste, Critical Chance, Accuracy, Spell Casting Haste, Mana Regen and Fear Resist on gear with named effects. The 24 armor set bonus entries have no tooltip and are not counted.
+Across all items, 4,735 stat values come from placeholders and 47 are typed into the template. Augments type stat lines such as "+10 Magic Resist", and some gear names a number inside an effect's description, such as Advisor Robe's "increases your magic resistance and poison resistance by 15". 92 equipment and weapon items have a stat that their tooltip's stat list does not include. Most are Haste, Critical Chance, Accuracy, Spell Casting Haste, Mana Regen and Fear Resist on gear with named effects. The 24 armor set bonus entries have no tooltip, and their stats are the set's attribute bonuses.
 
 ## Goals / Non-Goals
 
@@ -49,9 +49,9 @@ Alternatives considered:
 
 ### The pipeline records which stats the tooltip shows
 
-`tooltips.py` already maps each stat field to its placeholder in order to fill it. It records, per item, the stat fields whose placeholder appears in the template, in a new `items.tooltip_stat_fields` JSON column. The page lists every nonzero stat not in that set. Keeping the placeholder knowledge in the one place that fills placeholders means a game update that adds a placeholder changes both at once. Reading the website's rendered HTML for numbers was rejected, because a typed or prose number cannot be matched reliably and a typed number can disagree with the stat.
+`tooltips.py` already maps each stat field to its placeholder in order to fill it. It records, per item, the stat fields the tooltip lists, in a new `items.tooltip_stat_fields` JSON column. A stat is listed when the template holds its placeholder, or when the template types the exact line that placeholder would produce, such as "+10 Magic Resist" with a Magic Resist of 10. The page lists every nonzero stat outside that set, under a heading saying the tooltip's stat list does not include it. Keeping the placeholder knowledge in the one place that fills placeholders means a game update that adds a placeholder changes both at once.
 
-A typed number is not a placeholder, so its stat is listed. That repeats the number on 47 values and shows the actual value if the typed text is stale.
+A number inside an effect's description is not a stat line, so its stat is listed: the description may round, combine two stats or describe a condition. A typed stat line with a different value than the stat is not matched either, so the page shows the actual value. Reading the website's rendered HTML for any number was rejected, because prose numbers cannot be attributed to a stat reliably.
 
 ### Relationship sections use the shared data table
 
@@ -75,7 +75,7 @@ The set section keeps its member links and bonus links and gains a link to the s
 
 - [The stretched shorter card in the opening row still has some padding] → One fact per row keeps the two heights close. The residual sits inside one card at the end of the row, not between cards.
 - [A full-width section with one row is visually light] → It replaces a half-empty grid row and keeps one shape for every relation.
-- [Removing the Stats card changes the first screen of every item page] → Each stat remains on the page through the tooltip or the fact list, and the rule is tested against the 83 items that need fact rows.
+- [Removing the Stats card changes the first screen of every item page] → Each stat remains on the page through the tooltip or the fact list, and the rule is checked against every item with stats.
 - [Paging hides rows beyond ten] → The title states the total and the first page is in the static HTML. Sorting by chance puts the best sources first.
 
 ## Migration Plan

@@ -63,16 +63,39 @@ def _format_stat(field: str, value: float) -> str:
     return str(value)
 
 
-def tooltip_stat_fields(template: str) -> list[str]:
-    """Stat fields whose value the item's tooltip states through a placeholder.
+def _stat_line(field: str, value: float, name: str) -> str:
+    """The stat line a placeholder would produce, such as "+10 Magic Resist"."""
+    number = _format_stat(field, value)
+    if field in _PERCENT_STATS:
+        number = f"{'-' if value < 0 else '+'}{number}%"
+    elif value > 0:
+        number = f"+{number}"
+    return f"{number} {name}"
 
-    A number typed into the template is not counted: it can differ from the stat.
+
+def tooltip_stat_fields(
+    template: str, stats: dict[str, object], stat_names: dict[str, str | None]
+) -> list[str]:
+    """Stat fields whose value the item's tooltip lists as a stat.
+
+    A stat is listed when the template holds its placeholder, or when the template
+    types the line that placeholder would produce with the stat's exact value. A
+    number inside an effect's description is not a listed stat.
     """
-    fields = [
-        field
-        for field, placeholder in _STAT_PLACEHOLDERS.items()
-        if f"{{{placeholder}}}" in template
-    ]
+    text = re.sub(r"<[^>]*>", "", template)
+    fields = []
+    for field, placeholder in _STAT_PLACEHOLDERS.items():
+        value = stats.get(field)
+        name = stat_names.get(field)
+        if f"{{{placeholder}}}" in template or (
+            isinstance(value, int | float)
+            and value != 0
+            and name
+            and re.search(
+                rf"(?<![\w.]){re.escape(_stat_line(field, value, name))}\b", text
+            )
+        ):
+            fields.append(field)
     if "{DELAY}" in template:
         fields.append("weapon_delay")
     return sorted(fields)
@@ -284,6 +307,12 @@ def run(conn: sqlite3.Connection) -> None:
             "JOIN stats s ON s.id = f.stat_id WHERE f.source = 'item'"
         )
     )
+    field_names = dict(
+        conn.execute(
+            "SELECT f.field, s.item_name FROM stat_fields f "
+            "JOIN stats s ON s.id = f.stat_id WHERE f.source = 'item'"
+        )
+    )
 
     cursor.execute("""
         UPDATE items
@@ -330,7 +359,13 @@ def run(conn: sqlite3.Connection) -> None:
                 "UPDATE items SET tooltip_html = ?, tooltip_stat_fields = ? WHERE id = ?",
                 (
                     tooltip_html,
-                    json.dumps(tooltip_stat_fields(item["tooltip"])),
+                    json.dumps(
+                        tooltip_stat_fields(
+                            item["tooltip"],
+                            json.loads(item["stats"]) if item["stats"] else {},
+                            field_names,
+                        )
+                    ),
                     item["id"],
                 ),
             )

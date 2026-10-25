@@ -9,7 +9,7 @@ Players most often ask where to get an item and what it is for. The page should 
 ## What Changes
 
 - The page opens with one row: the in-game tooltip beside one list of facts, both the same height. An item without a tooltip shows the facts at full width.
-- The Stats card is removed. A stat the tooltip does not show as a number joins the fact list under a heading saying so. Whether the tooltip shows a stat is read from the item's tooltip template, which the game fills from placeholders.
+- The Stats card is removed. A stat the tooltip's stat list does not include joins the fact list under a heading saying so. Whether the tooltip lists a stat is read from the item's tooltip template: through the placeholder the game fills, or as a typed stat line with the stat's exact value.
 - Every other section takes the full width, in a fixed order: what the item does, then where to get it, then what it is for. Each section title carries its count.
 - Lists of monsters, vendors, chests, recipes and quests become tables whose columns suit the relation. A list longer than ten rows shows ten per page.
 - Drop rows gain a Zone column taken from the placements that carry the drop, so rows for one monster in two zones say which zone each chance belongs to.
