@@ -701,6 +701,31 @@
   {/if}
 {/snippet}
 
+{#snippet entityLinks(links: { href: string; name: string }[])}
+  <ul class="space-y-1">
+    {#each links as link, index (index)}
+      <li><a href={link.href} class={styles.link}>{link.name}</a></li>
+    {/each}
+  </ul>
+{/snippet}
+
+{#snippet materialList(
+  materials: readonly { item_id: string; item_name: string; amount: number }[],
+)}
+  <ul class="space-y-1">
+    {#each materials as material (material.item_id)}
+      <li>
+        <a href="/items/{material.item_id}" class={styles.link}
+          >{material.item_name}</a
+        >
+        <span class="tabular-nums text-muted-foreground"
+          >×{material.amount}</span
+        >
+      </li>
+    {/each}
+  </ul>
+{/snippet}
+
 {#snippet renderDropCell({
   cell,
   row,
@@ -1165,36 +1190,64 @@
   {#snippet identityCards()}
     <!-- Fatecharm -->
     {#if data.item.luck_token_role === "fatecharm"}
-      <Card.Root class="bg-muted/30">
+      <Card.Root class="@container bg-muted/30">
         <Card.Header>
           <Card.Title level={2}>Fatecharm</Card.Title>
         </Card.Header>
-        <Card.Content class="flex flex-col gap-4">
-          <div>
-            <div class={styles.label}>Zone</div>
-            <div class={styles.value}>
-              {data.item.luck_token_zone_name || "Unknown"}
+        <Card.Content>
+          <dl class={styles.factList}>
+            <div class={styles.fact}>
+              <dt class={styles.label}>Zone</dt>
+              <dd>{data.item.luck_token_zone_name || "Unknown"}</dd>
             </div>
-          </div>
-
-          {#if data.item.luck_token_fragment_id && data.item.luck_token_fragment_name}
-            <div>
-              <div class={styles.label}>Created From</div>
-              <div>
-                <a
-                  href="/items/{data.item.luck_token_fragment_id}"
-                  class={styles.link}
-                >
-                  {data.item.luck_token_fragment_name}
-                </a>
-                {#if data.item.luck_token_fragments_needed}
-                  <span class={styles.label}>
-                    (x{data.item.luck_token_fragments_needed})</span
+            {#if data.item.luck_token_fragment_id && data.item.luck_token_fragment_name}
+              <div class={styles.fact}>
+                <dt class={styles.label}>Created From</dt>
+                <dd>
+                  <a
+                    href="/items/{data.item.luck_token_fragment_id}"
+                    class={styles.link}>{data.item.luck_token_fragment_name}</a
                   >
-                {/if}
+                </dd>
               </div>
+            {/if}
+            {#if data.item.luck_token_fragments_needed}
+              <div class={styles.fact}>
+                <dt class={styles.label}>Fragments Needed</dt>
+                <dd>{data.item.luck_token_fragments_needed}</dd>
+              </div>
+            {/if}
+          </dl>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+    <!-- Fatecharm Fragment -->
+    {#if data.item.luck_token_role === "fragment" && data.item.fragment_result_item_id}
+      <Card.Root class="@container bg-muted/30">
+        <Card.Header>
+          <Card.Title level={2}>Fatecharm Fragment</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <dl class={styles.factList}>
+            <div class={styles.fact}>
+              <dt class={styles.label}>Zone</dt>
+              <dd>{data.item.luck_token_zone_name || "Unknown"}</dd>
             </div>
-          {/if}
+            <div class={styles.fact}>
+              <dt class={styles.label}>Creates</dt>
+              <dd>
+                <a
+                  href="/items/{data.item.fragment_result_item_id}"
+                  class={styles.link}
+                  >{data.item.fragment_result_item_name || "Unknown"}</a
+                >
+              </dd>
+            </div>
+            <div class={styles.fact}>
+              <dt class={styles.label}>Fragments Needed</dt>
+              <dd>{data.item.fragment_amount_needed}</dd>
+            </div>
+          </dl>
         </Card.Content>
       </Card.Root>
     {/if}
@@ -1474,110 +1527,97 @@
   <!-- What the item does -->
   <!-- Use Effects -->
   {#if data.item.usage_health > 0 || data.item.usage_mana > 0 || data.item.usage_energy > 0 || data.item.potion_buff_id || data.item.food_buff_id || data.item.relic_buff_id || data.item.scroll_skill_id}
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Use Effects</Card.Title>
       </Card.Header>
-      <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {#if data.item.usage_health > 0}
-          <div>
-            <div class={styles.label}>
-              Restores {statName("health", "item")}
+      <Card.Content>
+        <dl class={styles.factList}>
+          {#if data.item.usage_health > 0}
+            <div class={styles.fact}>
+              <dt class={styles.label}>
+                Restores {statName("health", "item")}
+              </dt>
+              <dd class={styles.valuePositive}>+{data.item.usage_health} HP</dd>
             </div>
-            <div class={styles.valuePositive}>+{data.item.usage_health} HP</div>
-          </div>
-        {/if}
-
-        {#if data.item.usage_mana > 0}
-          <div>
-            <div class={styles.label}>
-              Restores {statName("mana", "item")}
+          {/if}
+          {#if data.item.usage_mana > 0}
+            <div class={styles.fact}>
+              <dt class={styles.label}>
+                Restores {statName("mana", "item")}
+              </dt>
+              <dd class="text-blue-600 dark:text-blue-400">
+                +{data.item.usage_mana} MP
+              </dd>
             </div>
-            <div class="text-blue-600 dark:text-blue-400">
-              +{data.item.usage_mana} MP
+          {/if}
+          {#if data.item.usage_energy > 0}
+            <div class={styles.fact}>
+              <dt class={styles.label}>
+                Restores {statName("rage", "item")}
+              </dt>
+              <dd class={styles.valueCurrency}>
+                +{data.item.usage_energy}
+                {statName("rage", "item")}
+              </dd>
             </div>
-          </div>
-        {/if}
-
-        {#if data.item.usage_energy > 0}
-          <div>
-            <div class={styles.label}>
-              Restores {statName("rage", "item")}
-            </div>
-            <div class={styles.valueCurrency}>
-              +{data.item.usage_energy}
-              {statName("rage", "item")}
-            </div>
-          </div>
-        {/if}
-
-        {#if data.item.potion_buff_id && data.item.potion_buff_name}
-          <div>
-            <div class={styles.label}>Grants Buff</div>
-            <a href="/skills/{data.item.potion_buff_id}" class={styles.link}>
-              {data.item.potion_buff_name}
-            </a>
-            {#if data.consumableBuffEffect}
-              <div class="text-sm">{data.consumableBuffEffect}</div>
+          {/if}
+          {#each [[data.item.potion_buff_id, data.item.potion_buff_name], [data.item.food_buff_id, data.item.food_buff_name]] as [buffId, buffName], index (index)}
+            {#if buffId && buffName}
+              <div class={styles.fact}>
+                <dt class={styles.label}>Grants Buff</dt>
+                <dd>
+                  <a href="/skills/{buffId}" class={styles.link}>{buffName}</a>
+                  {#if data.consumableBuffEffect}
+                    <div class="text-sm">{data.consumableBuffEffect}</div>
+                  {/if}
+                </dd>
+              </div>
             {/if}
+          {/each}
+          {#if data.item.relic_buff_id}
+            <div class={styles.fact}>
+              <dt class={styles.label}>Activates</dt>
+              <dd>
+                <a href="/skills/{data.item.relic_buff_id}" class={styles.link}
+                  >{data.item.relic_buff_name ||
+                    data.item.relic_buff_id.replace(/_/g, " ")}</a
+                >
+              </dd>
+            </div>
+          {/if}
+          {#if data.item.scroll_skill_id && data.item.scroll_skill_name}
+            <div class={styles.fact}>
+              <dt class={styles.label}>Casts</dt>
+              <dd>
+                <a
+                  href="/skills/{data.item.scroll_skill_id}"
+                  class={styles.link}>{data.item.scroll_skill_name}</a
+                >
+              </dd>
+            </div>
+          {/if}
+          <div class={styles.fact}>
+            <dt class={styles.label}>Consumed on Use</dt>
+            <dd>{data.item.infinite_charges ? "No" : "Yes"}</dd>
           </div>
-        {/if}
-
-        {#if data.item.food_buff_id && data.item.food_buff_name}
-          <div>
-            <div class={styles.label}>Grants Buff</div>
-            <a href="/skills/{data.item.food_buff_id}" class={styles.link}>
-              {data.item.food_buff_name}
-            </a>
-            {#if data.consumableBuffEffect}
-              <div class="text-sm">{data.consumableBuffEffect}</div>
-            {/if}
-          </div>
-        {/if}
-
-        {#if data.item.relic_buff_id}
-          <div>
-            <div class={styles.label}>Activates</div>
-            <a href="/skills/{data.item.relic_buff_id}" class={styles.link}>
-              {data.item.relic_buff_name ||
-                data.item.relic_buff_id.replace(/_/g, " ")}
-            </a>
-          </div>
-        {/if}
-
-        {#if data.item.scroll_skill_id && data.item.scroll_skill_name}
-          <div>
-            <div class={styles.label}>Casts</div>
-            <a href="/skills/{data.item.scroll_skill_id}" class={styles.link}>
-              {data.item.scroll_skill_name}
-            </a>
-          </div>
-        {/if}
-
-        <div>
-          <div class={styles.label}>Consumed on Use</div>
-          <div class={styles.value}>
-            {data.item.infinite_charges ? "No" : "Yes"}
-          </div>
-        </div>
-
-        {#if data.item.cooldown > 0}
-          <div>
-            <div class={styles.label}>Recharge Time</div>
-            <div class={styles.value}>{data.item.cooldown}s</div>
-          </div>
-        {/if}
-
+          {#if data.item.cooldown > 0}
+            <div class={styles.fact}>
+              <dt class={styles.label}>Recharge Time</dt>
+              <dd>{data.item.cooldown}s</dd>
+            </div>
+          {/if}
+        </dl>
         <!-- Source: server-scripts/FoodItem.cs:Use; server-scripts/PassiveSkill.cs:GetFoodAndDrinkBuffDurationBonus — Tavern Spirit lengthens food and drink buffs. -->
         {#if data.foodBuffUsesTavernSpirit}
-          <p class="col-span-full text-sm text-muted-foreground">
+          <p class="mt-4 text-sm text-muted-foreground">
             <a href="/skills/tavern_spirit" class={styles.link}>Tavern Spirit</a
             >
             lengthens food and drink buffs.
           </p>
           <!-- Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — learned Elixir Endurance sets a potion buff's rank to 1 + its own rank, except for bandages. -->
         {:else if data.item.potion_buff_id && data.item.cooldown_category !== "Bandages"}
-          <p class="col-span-full text-sm text-muted-foreground">
+          <p class="mt-4 text-sm text-muted-foreground">
             <a href="/skills/elixir_endurance" class={styles.link}
               >Elixir Endurance</a
             > raises this buff's rank to one more than its own rank.
@@ -1588,67 +1628,24 @@
   {/if}
   <!-- Book Effects (Permanent Stat Gains) -->
   {#if data.item.book_strength_gain > 0 || data.item.book_dexterity_gain > 0 || data.item.book_constitution_gain > 0 || data.item.book_intelligence_gain > 0 || data.item.book_wisdom_gain > 0 || data.item.book_charisma_gain > 0}
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Permanent Stat Gains</Card.Title>
         <Card.Description
           >Reading this book permanently increases the attributes listed below.</Card.Description
         >
       </Card.Header>
-      <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {#if data.item.book_strength_gain > 0}
-          <div>
-            <div class={styles.label}>Strength</div>
-            <div class={styles.valuePositive}>
-              +{data.item.book_strength_gain}
-            </div>
-          </div>
-        {/if}
-
-        {#if data.item.book_dexterity_gain > 0}
-          <div>
-            <div class={styles.label}>Dexterity</div>
-            <div class={styles.valuePositive}>
-              +{data.item.book_dexterity_gain}
-            </div>
-          </div>
-        {/if}
-
-        {#if data.item.book_constitution_gain > 0}
-          <div>
-            <div class={styles.label}>Constitution</div>
-            <div class={styles.valuePositive}>
-              +{data.item.book_constitution_gain}
-            </div>
-          </div>
-        {/if}
-
-        {#if data.item.book_intelligence_gain > 0}
-          <div>
-            <div class={styles.label}>Intelligence</div>
-            <div class={styles.valuePositive}>
-              +{data.item.book_intelligence_gain}
-            </div>
-          </div>
-        {/if}
-
-        {#if data.item.book_wisdom_gain > 0}
-          <div>
-            <div class={styles.label}>Wisdom</div>
-            <div class={styles.valuePositive}>
-              +{data.item.book_wisdom_gain}
-            </div>
-          </div>
-        {/if}
-
-        {#if data.item.book_charisma_gain > 0}
-          <div>
-            <div class={styles.label}>Charisma</div>
-            <div class={styles.valuePositive}>
-              +{data.item.book_charisma_gain}
-            </div>
-          </div>
-        {/if}
+      <Card.Content>
+        <dl class={styles.factList}>
+          {#each [["Strength", data.item.book_strength_gain], ["Dexterity", data.item.book_dexterity_gain], ["Constitution", data.item.book_constitution_gain], ["Intelligence", data.item.book_intelligence_gain], ["Wisdom", data.item.book_wisdom_gain], ["Charisma", data.item.book_charisma_gain]] as const as [attribute, gain] (attribute)}
+            {#if gain > 0}
+              <div class={styles.fact}>
+                <dt class={styles.label}>{attribute}</dt>
+                <dd class={styles.valuePositive}>+{gain}</dd>
+              </div>
+            {/if}
+          {/each}
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
@@ -1676,13 +1673,8 @@
       <Card.Header>
         <Card.Title level={2}>Special Use</Card.Title>
       </Card.Header>
-      <Card.Content>
-        <div>
-          <div class={styles.label}>How it works</div>
-          <div class={styles.value}>
-            <SpecialMechanicText parts={specialMechanics[0].summary} />
-          </div>
-        </div>
+      <Card.Content class="text-sm">
+        <SpecialMechanicText parts={specialMechanics[0].summary} />
       </Card.Content>
     </Card.Root>
   {/if}
@@ -1705,43 +1697,46 @@
   {/if}
   <!-- Treasure Map Location -->
   {#if data.item.item_type === "treasure_map" && data.treasureLocation}
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Treasure Location</Card.Title>
       </Card.Header>
-      <Card.Content class="space-y-4">
-        <div>
-          <div class={styles.label}>Dig Location</div>
-          <div class="flex items-center gap-2">
-            <a
-              href="/zones/{data.treasureLocation.zone_id}"
-              class={styles.link}
+      <Card.Content>
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Dig Location</dt>
+            <dd
+              class="flex flex-wrap items-baseline justify-end gap-x-2 @2xl:justify-start"
             >
-              {data.treasureLocation.zone_name}
-            </a>
-            <MapLink
-              entityId={data.treasureLocation.location_id}
-              entityType="treasure"
-              compact
-            />
+              <a
+                href="/zones/{data.treasureLocation.zone_id}"
+                class={styles.link}>{data.treasureLocation.zone_name}</a
+              >
+              <MapLink
+                entityId={data.treasureLocation.location_id}
+                entityType="treasure"
+                compact
+              />
+            </dd>
           </div>
-        </div>
-        <div>
-          <div class={styles.label}>Required Tool</div>
-          <a href="/items/shovel" class={styles.link}>Shovel</a>
-        </div>
-        {#if data.treasureLocation.reward_id}
-          <div>
-            <div class={styles.label}>Reward</div>
-            <a
-              href="/items/{data.treasureLocation.reward_id}"
-              class={styles.link}
-            >
-              {data.treasureLocation.reward_name ||
-                data.treasureLocation.reward_id}
-            </a>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Required Tool</dt>
+            <dd><a href="/items/shovel" class={styles.link}>Shovel</a></dd>
           </div>
-        {/if}
+          {#if data.treasureLocation.reward_id}
+            <div class={styles.fact}>
+              <dt class={styles.label}>Reward</dt>
+              <dd>
+                <a
+                  href="/items/{data.treasureLocation.reward_id}"
+                  class={styles.link}
+                  >{data.treasureLocation.reward_name ||
+                    data.treasureLocation.reward_id}</a
+                >
+              </dd>
+            </div>
+          {/if}
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
@@ -1867,12 +1862,13 @@
           </div>
           <div>
             <div class={styles.label}>Augmenter NPCs</div>
-            <div class="space-y-1 mt-1">
-              {#each data.augmenters as augmenter (augmenter.id)}
-                <a href="/npcs/{augmenter.id}" class={styles.link}>
-                  {augmenter.name}
-                </a>
-              {/each}
+            <div class={styles.value}>
+              {@render entityLinks(
+                data.augmenters.map((augmenter) => ({
+                  href: `/npcs/${augmenter.id}`,
+                  name: augmenter.name,
+                })),
+              )}
             </div>
           </div>
           <p class={styles.label}>
@@ -1886,56 +1882,38 @@
   {/if}
   {#if data.item.recipe_potion_learned_id && data.item.recipe_potion_learned_name && data.taughtRecipes.length === 1 && data.taughtRecipes[0].materials.every((material) => material.item_id)}
     <!-- Teaches Recipe -->
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Teaches Recipe</Card.Title>
       </Card.Header>
-      <Card.Content class="space-y-4">
-        <div class="grid grid-cols-3 gap-4">
-          <div class="col-span-2">
-            <div class={styles.label}>Potion</div>
-            <a
-              href="/items/{data.item.recipe_potion_learned_id}"
-              class={styles.link}
-            >
-              {data.item.recipe_potion_learned_name}
-            </a>
+      <Card.Content>
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Potion</dt>
+            <dd>
+              <a
+                href="/items/{data.item.recipe_potion_learned_id}"
+                class={styles.link}>{data.item.recipe_potion_learned_name}</a
+              >
+            </dd>
           </div>
-
           {#if data.item.alchemy_recipe_level_required != null}
-            <div class="text-right">
-              <div class={styles.label}>Recipe Tier</div>
-              <div class={styles.value}>
-                {formatTier(
-                  data.item.recipe_potion_learned_id
-                    ? data.taughtRecipes[0].tier
-                    : (computed.craftedFrom[0]?.tier ??
-                        data.item.alchemy_recipe_level_required),
+            <div class={styles.fact}>
+              <dt class={styles.label}>Recipe Tier</dt>
+              <dd>{formatTier(data.taughtRecipes[0].tier)}</dd>
+            </div>
+          {/if}
+          {#if data.recipeMaterials[data.item.recipe_potion_learned_id]?.length}
+            <div class={styles.fact}>
+              <dt class={styles.label}>Materials</dt>
+              <dd>
+                {@render materialList(
+                  data.recipeMaterials[data.item.recipe_potion_learned_id],
                 )}
-              </div>
+              </dd>
             </div>
           {/if}
-        </div>
-
-        {#if data.recipeMaterials[data.item.recipe_potion_learned_id]?.length}
-          {@const materials =
-            data.recipeMaterials[data.item.recipe_potion_learned_id]}
-          {#if materials.length > 0}
-            <div>
-              <div class={styles.label}>Materials</div>
-              <div class="space-y-1 mt-2">
-                {#each materials as material (material.item_id)}
-                  <div class="flex items-center justify-between">
-                    <a href="/items/{material.item_id}" class={styles.link}>
-                      {material.item_name}
-                    </a>
-                    <span class={styles.value}>×{material.amount}</span>
-                  </div>
-                {/each}
-              </div>
-            </div>
-          {/if}
-        {/if}
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
@@ -2219,29 +2197,22 @@
   {/if}
   <!-- Crafted From (exclude alchemy items which have their own "Crafted by" section) -->
   {#if computed.craftedFrom && computed.craftedFrom.length > 0 && !data.item.taught_by_recipe_id}
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Crafted from Recipe</Card.Title>
       </Card.Header>
       <Card.Content>
-        <div class="space-y-1">
-          {#each computed.craftedFrom[0].materials as material (material.item_id)}
-            <div class="flex justify-between items-center">
-              <a
-                href={resolve("/items/[id]", { id: material.item_id })}
-                class={styles.link}
-              >
-                {material.item_name}
-              </a>
-              <span class={styles.label}>x{material.amount}</span>
-            </div>
-          {/each}
-        </div>
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Materials</dt>
+            <dd>{@render materialList(computed.craftedFrom[0].materials)}</dd>
+          </div>
+        </dl>
         <a
           href={resolve("/recipes/[id]", {
             id: computed.craftedFrom[0].recipe_id,
           })}
-          class="mt-3 inline-block text-sm {styles.link}">View the recipe</a
+          class="mt-4 inline-block text-sm {styles.link}">View the recipe</a
         >
         {@render cookingRequests("dish")}
       </Card.Content>
@@ -2249,151 +2220,133 @@
   {/if}
   {#if data.item.taught_by_recipe_id && data.item.taught_by_recipe_name && computed.craftedFrom.length > 0}
     <!-- Crafted by -->
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Crafted by</Card.Title>
       </Card.Header>
-      <Card.Content class="space-y-4">
-        <div class="grid grid-cols-3 gap-4">
-          <div class="col-span-2">
-            <div class={styles.label}>Recipe</div>
-            <a
-              href="/items/{data.item.taught_by_recipe_id}"
-              class={styles.link}
-            >
-              {data.item.taught_by_recipe_name}
-            </a>
+      <Card.Content>
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Recipe</dt>
+            <dd>
+              <a
+                href="/items/{data.item.taught_by_recipe_id}"
+                class={styles.link}>{data.item.taught_by_recipe_name}</a
+              >
+            </dd>
           </div>
-
           {#if data.item.alchemy_recipe_level_required != null}
-            <div class="text-right">
-              <div class={styles.label}>Recipe Tier</div>
-              <div class={styles.value}>
+            <div class={styles.fact}>
+              <dt class={styles.label}>Recipe Tier</dt>
+              <dd>
                 {formatTier(
-                  data.item.recipe_potion_learned_id
-                    ? data.taughtRecipes[0].tier
-                    : (computed.craftedFrom[0]?.tier ??
-                        data.item.alchemy_recipe_level_required),
+                  computed.craftedFrom[0]?.tier ??
+                    data.item.alchemy_recipe_level_required,
                 )}
-              </div>
+              </dd>
             </div>
           {/if}
-        </div>
-
-        {#if computed.craftedFrom?.[0]?.materials.length}
-          {@const materials = computed.craftedFrom[0].materials}
-          {#if materials.length > 0}
-            <div>
-              <div class={styles.label}>Materials</div>
-              <div class="space-y-1 mt-2">
-                {#each materials as material (material.item_id)}
-                  <div class="flex items-center justify-between">
-                    <a href="/items/{material.item_id}" class={styles.link}>
-                      {material.item_name}
-                    </a>
-                    <span class={styles.value}>×{material.amount}</span>
-                  </div>
-                {/each}
-              </div>
+          {#if computed.craftedFrom[0].materials.length > 0}
+            <div class={styles.fact}>
+              <dt class={styles.label}>Materials</dt>
+              <dd>{@render materialList(computed.craftedFrom[0].materials)}</dd>
             </div>
           {/if}
-        {/if}
+        </dl>
         <a
           href={resolve("/recipes/[id]", {
             id: computed.craftedFrom[0].recipe_id,
           })}
-          class="inline-block text-sm {styles.link}">View the recipe</a
+          class="mt-4 inline-block text-sm {styles.link}">View the recipe</a
         >
       </Card.Content>
     </Card.Root>
   {/if}
   {#if computed.createdFromMerge && computed.createdFromMerge.length > 0}
     <!-- Created From (shown when no stats and not a merge item) -->
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Created from</Card.Title>
       </Card.Header>
       <Card.Content>
-        <div>
-          <div class="{styles.label} mb-2">Components</div>
-          <div class="grid grid-cols-1 gap-2">
-            {#each computed.createdFromMerge as mergeItem, index (`${mergeItem.item_id}_${index}`)}
-              <a href="/items/{mergeItem.item_id}" class={styles.link}>
-                {mergeItem.item_name}
-              </a>
-            {/each}
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Components</dt>
+            <dd>
+              {@render entityLinks(
+                computed.createdFromMerge.map((part) => ({
+                  href: `/items/${part.item_id}`,
+                  name: part.item_name,
+                })),
+              )}
+            </dd>
           </div>
-        </div>
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
   {#if data.item.id === "primal_essence" && data.essenceTraders.length > 0}
     <!-- Primal Essence Acquisition -->
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>How to Acquire</Card.Title>
       </Card.Header>
       <Card.Content>
-        <div class="space-y-3">
-          <div>
-            <div class={styles.label}>Trade equipment to</div>
-            <div class="space-y-1 mt-1">
-              {#each data.essenceTraders as trader (trader.id)}
-                <a href="/npcs/{trader.id}" class={styles.link}>
-                  {trader.name}
-                </a>
-              {/each}
-            </div>
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Trade Equipment To</dt>
+            <dd>
+              {@render entityLinks(
+                data.essenceTraders.map((trader) => ({
+                  href: `/npcs/${trader.id}`,
+                  name: trader.name,
+                })),
+              )}
+            </dd>
           </div>
-          <div>
-            <div class={styles.label}>Requirements</div>
-            <div class={styles.value}>
-              <ul class="list-disc list-inside space-y-0.5">
-                <li>Equipment items only</li>
-                <li>Magic quality or higher</li>
-              </ul>
-            </div>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Accepts</dt>
+            <dd>Equipment of Magic quality or higher</dd>
           </div>
-          <div>
-            <div class={styles.label}>Amount received</div>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Amount Received</dt>
             <!-- Source: server-scripts/Utils.cs:getPrimalEssenceAmount — ceil(sellPrice * 0.06f), rounded up to a whole essence -->
-            <div class={styles.value}>6% of sell price, rounded up</div>
+            <dd>6% of sell price, rounded up</dd>
           </div>
-        </div>
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
   {#if data.item.id === "blessed_rune" && data.priestesses.length > 0}
     <!-- Blessed Rune Origin -->
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Acquisition</Card.Title>
       </Card.Header>
       <Card.Content>
-        <div class="space-y-3">
-          <div>
-            <div class={styles.label}>Created from</div>
-            <a href="/items/cursed_rune" class={styles.link}> Cursed Rune </a>
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Created From</dt>
+            <dd>
+              <a href="/items/cursed_rune" class={styles.link}>Cursed Rune</a>
+            </dd>
           </div>
-          <div>
-            <div class={styles.label}>Blessing cost</div>
-            <div class={styles.valueCurrency}>
-              {formatGold(75)}g per rune
-            </div>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Blessing Cost</dt>
+            <dd class={styles.valueCurrency}>{formatGold(75)}g per rune</dd>
           </div>
-          <div>
-            <div class={styles.label}>Blessed by</div>
-            <div class="space-y-1 mt-1">
-              {#each data.priestesses as priestess (priestess.id)}
-                <div>
-                  <a href="/npcs/{priestess.id}" class={styles.link}>
-                    {priestess.name}
-                  </a>
-                </div>
-              {/each}
-            </div>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Blessed By</dt>
+            <dd>
+              {@render entityLinks(
+                data.priestesses.map((priestess) => ({
+                  href: `/npcs/${priestess.id}`,
+                  name: priestess.name,
+                })),
+              )}
+            </dd>
           </div>
-        </div>
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
@@ -2468,57 +2421,32 @@
   {#if data.usages.merges.length > 0 && data.usages.merges[0].all_components.every((component) => component.item_id)}
     <!-- Combine To Create -->
     {@const mergeTarget = data.usages.merges[0]}
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Combine to Create</Card.Title>
       </Card.Header>
-      <Card.Content class="space-y-4">
-        <div>
-          <div class="{styles.label} mb-2">Components</div>
-          <div class="grid grid-cols-1 gap-2">
-            {#each mergeTarget.all_components as component, index (`${component.item_id}_${index}`)}
-              <a href="/items/{component.item_id}" class={styles.link}>
-                {component.item_name}
-              </a>
-            {/each}
+      <Card.Content>
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Components</dt>
+            <dd>
+              {@render entityLinks(
+                mergeTarget.all_components.map((part) => ({
+                  href: `/items/${part.item_id}`,
+                  name: part.item_name,
+                })),
+              )}
+            </dd>
           </div>
-        </div>
-
-        <div>
-          <div class="{styles.label} mb-2">Creates</div>
-          <a href="/items/{mergeTarget.result_item_id}" class={styles.link}>
-            {mergeTarget.result_item_name}
-          </a>
-        </div>
-      </Card.Content>
-    </Card.Root>
-  {/if}
-  <!-- Fatecharm Fragment -->
-  {#if data.item.luck_token_role === "fragment" && data.item.fragment_result_item_id}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Fatecharm Fragment</Card.Title>
-      </Card.Header>
-      <Card.Content class="flex flex-col gap-4">
-        <div>
-          <div class={styles.label}>Zone</div>
-          <div class={styles.value}>
-            {data.item.luck_token_zone_name || "Unknown"}
+          <div class={styles.fact}>
+            <dt class={styles.label}>Creates</dt>
+            <dd>
+              <a href="/items/{mergeTarget.result_item_id}" class={styles.link}
+                >{mergeTarget.result_item_name}</a
+              >
+            </dd>
           </div>
-        </div>
-        <div>
-          <div class={styles.label}>Creates</div>
-          <a
-            href="/items/{data.item.fragment_result_item_id}"
-            class={styles.link}
-          >
-            {data.item.fragment_result_item_name || "Unknown"}
-          </a>
-        </div>
-        <div>
-          <div class={styles.label}>Amount Needed</div>
-          <div class={styles.value}>{data.item.fragment_amount_needed}</div>
-        </div>
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
@@ -2548,68 +2476,66 @@
   {/if}
   {#if data.item.id === "token_of_redemption" && data.veteranMasters.length > 0}
     <!-- Token of Redemption Usage -->
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Usage</Card.Title>
       </Card.Header>
       <Card.Content>
-        <div class="space-y-3">
-          <div>
-            <div class={styles.label}>Purpose</div>
-            <div class={styles.value}>Resets veteran skill points</div>
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Purpose</dt>
+            <dd>Resets veteran skill points</dd>
           </div>
-          <div>
-            <div class={styles.label}>Cost</div>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Cost</dt>
             <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1830-1837 -->
-            <div class={styles.value}>
-              {formatGold(10000)}g + Token of Redemption
-            </div>
+            <dd>{formatGold(10000)}g + Token of Redemption</dd>
           </div>
-          <div>
-            <div class={styles.label}>Available from</div>
-            <div class="space-y-1 mt-1">
-              {#each data.veteranMasters as master (master.id)}
-                <a href="/npcs/{master.id}" class={styles.link}>
-                  {master.name}
-                </a>
-              {/each}
-            </div>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Available From</dt>
+            <dd>
+              {@render entityLinks(
+                data.veteranMasters.map((master) => ({
+                  href: `/npcs/${master.id}`,
+                  name: master.name,
+                })),
+              )}
+            </dd>
           </div>
-        </div>
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
   {#if data.item.id === "cursed_rune" && data.priestesses.length > 0}
     <!-- Cursed Rune Blessing -->
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Blessing</Card.Title>
       </Card.Header>
       <Card.Content>
-        <div class="space-y-3">
-          <div>
-            <div class={styles.label}>Converts to</div>
-            <a href="/items/blessed_rune" class={styles.link}> Blessed Rune </a>
+        <dl class={styles.factList}>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Converts To</dt>
+            <dd>
+              <a href="/items/blessed_rune" class={styles.link}>Blessed Rune</a>
+            </dd>
           </div>
-          <div>
-            <div class={styles.label}>Cost</div>
-            <div class={styles.valueCurrency}>
-              {formatGold(75)}g per rune
-            </div>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Cost</dt>
+            <dd class={styles.valueCurrency}>{formatGold(75)}g per rune</dd>
           </div>
-          <div>
-            <div class={styles.label}>Available from</div>
-            <div class="space-y-1 mt-1">
-              {#each data.priestesses as priestess (priestess.id)}
-                <div>
-                  <a href="/npcs/{priestess.id}" class={styles.link}>
-                    {priestess.name}
-                  </a>
-                </div>
-              {/each}
-            </div>
+          <div class={styles.fact}>
+            <dt class={styles.label}>Available From</dt>
+            <dd>
+              {@render entityLinks(
+                data.priestesses.map((priestess) => ({
+                  href: `/npcs/${priestess.id}`,
+                  name: priestess.name,
+                })),
+              )}
+            </dd>
           </div>
-        </div>
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
