@@ -59,5 +59,5 @@
 
 ## 11. Integration
 
-- [ ] 11.1 Sync citations with `uv run compendium citations sync --game-version 0.9.37.2`, then run `pnpm check`, `pnpm lint`, `pnpm format:check`, `pnpm test`, the pipeline tests, the sitemap manifest build and `pnpm build`. Verify all pass.
-- [ ] 11.2 Run `openspec validate integrate-seasonal-content --strict` and review every changed route at 1440×900 and 390×844 in light and dark mode. Verify the validation passes and record the routes reviewed in the commit messages.
+- [x] 11.1 Sync citations with `uv run compendium citations sync --game-version 0.9.37.2`, then run `pnpm check`, `pnpm lint`, `pnpm format:check`, `pnpm test`, the pipeline tests, the sitemap manifest build and `pnpm build`. Verify all pass.
+- [x] 11.2 Run `openspec validate integrate-seasonal-content --strict` and review every changed route at 1440×900 and 390×844 in light and dark mode. Verify the validation passes and record the routes reviewed in the commit messages.
