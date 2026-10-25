@@ -27,7 +27,10 @@
     toggleSingleColumnSorting,
   } from "./create-table.js";
   import FlexRender from "./flex-render.svelte";
-  import { fadeHiddenOverflow } from "$lib/actions/fade-hidden-overflow";
+  import {
+    FADE_WIDTH,
+    fadeHiddenOverflow,
+  } from "$lib/actions/fade-hidden-overflow";
   import * as Table from "$lib/components/ui/table";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import * as Pagination from "$lib/components/ui/pagination";
@@ -57,6 +60,8 @@
     /** False while `data` holds only the first page; keeps the static first-page view until the rest arrives. */
     complete?: boolean;
     persistentScrollbar?: boolean;
+    /** Id of the heading that names the table for assistive technology. */
+    labelledBy?: string;
     class?: string;
     renderCell?: Snippet<[{ cell: Cell<TData, unknown>; row: Row<TData> }]>;
     renderHeader?: Snippet<[{ header: Header<TData, unknown> }]>;
@@ -81,6 +86,7 @@
     paginateStaticHtml = false,
     complete = true,
     persistentScrollbar = false,
+    labelledBy,
     class: className,
     renderCell,
     renderHeader,
@@ -575,29 +581,47 @@
         const id = "accessorKey" in col ? col.accessorKey : col.id;
         return visibleColumnIds.has(id as string);
       })
+      // A minSize column grows to its content. Equal 1fr shares would widen every
+      // flexible column to the widest one's content.
       .map((col) => {
         if (col.size) return `${col.size}px`;
-        if (col.minSize) return `minmax(${col.minSize}px, 1fr)`;
+        if (col.minSize) return `minmax(${col.minSize}px, auto)`;
         return "auto";
       })
       .join(" "),
   );
 
-  const mobileGridTemplateColumns = $derived(
-    columns
-      .filter((col) => {
-        const id = "accessorKey" in col ? col.accessorKey : col.id;
-        return visibleColumnIds.has(id as string);
-      })
-      .map((col) => {
-        const id = "accessorKey" in col ? col.accessorKey : col.id;
-        if (id === identifierColumnId) return "min(16rem, 55vw)";
+  // On phones a leading name column followed by a fixed-width value column takes
+  // the width the value leaves, so each row shows its name and value before any
+  // sideways scrolling. When more columns follow, the overflow fade covers the
+  // start of the third column, not the value. Other name columns keep a share of
+  // the screen.
+  const mobileGridTemplateColumns = $derived.by(() => {
+    const visible = columns.filter((col) => {
+      const id = "accessorKey" in col ? col.accessorKey : col.id;
+      return visibleColumnIds.has(id as string);
+    });
+    const identifierIndex = visible.findIndex(
+      (col) =>
+        ("accessorKey" in col ? col.accessorKey : col.id) ===
+        identifierColumnId,
+    );
+    const valueWidth =
+      identifierIndex === 0 ? (visible[1]?.size ?? Infinity) : Infinity;
+    const fade = visible.length > 2 ? FADE_WIDTH : "0px";
+    const identifierWidth =
+      valueWidth <= 160
+        ? `max(8rem, calc(100cqw - ${valueWidth}px - ${fade}))`
+        : "min(16rem, 55vw)";
+    return visible
+      .map((col, index) => {
+        if (index === identifierIndex && !col.size) return identifierWidth;
         if (col.size) return `${col.size}px`;
-        if (col.minSize) return `minmax(${col.minSize}px, 1fr)`;
+        if (col.minSize) return `minmax(${col.minSize}px, auto)`;
         return "auto";
       })
-      .join(" "),
-  );
+      .join(" ");
+  });
 </script>
 
 <div class:zebra-stripe={zebraStripe}>
@@ -683,8 +707,10 @@
       ? 'overflow-x-scroll'
       : 'overflow-x-auto'} {className}"
   >
+    <!-- Full width, but never narrower than its content: columns that can wrap give up width before the table scrolls. -->
     <Table.Root
-      class="data-table-grid min-w-full w-max grid"
+      class="data-table-grid grid w-full min-w-min"
+      aria-labelledby={labelledBy}
       style="grid-template-columns: {gridTemplateColumns}; --mobile-grid-template-columns: {mobileGridTemplateColumns}"
     >
       <Table.Header class="contents">
@@ -851,8 +877,27 @@
   }
 
   @media (max-width: 639px) {
+    .data-table-container {
+      /* Lets the name column size itself against the visible table width. */
+      container-type: inline-size;
+      --sticky-tint: transparent;
+    }
+
     .data-table-container :global(.data-table-grid) {
       grid-template-columns: var(--mobile-grid-template-columns) !important;
+    }
+
+    /* The sticky name cell is opaque, so it repaints the container's tint and the row's stripe. */
+    .data-table-container:global(.bg-muted\/30) {
+      --sticky-tint: color-mix(in oklab, var(--muted) 30%, transparent);
+    }
+
+    .data-table-container :global(tr) {
+      --sticky-stripe: transparent;
+    }
+
+    .zebra-stripe .data-table-container :global(tr:nth-child(even)) {
+      --sticky-stripe: color-mix(in oklab, var(--muted) 30%, transparent);
     }
 
     .data-table-container :global(.identifier-cell) {
@@ -861,22 +906,17 @@
       z-index: 1;
       min-width: 0;
       white-space: normal;
-      overflow-wrap: anywhere;
+      /* break-word, unlike anywhere, keeps flex children at least one word wide. */
+      overflow-wrap: break-word;
       background-color: var(--background);
+      background-image:
+        linear-gradient(var(--sticky-stripe), var(--sticky-stripe)),
+        linear-gradient(var(--sticky-tint), var(--sticky-tint));
       box-shadow: 1px 0 var(--border);
     }
 
     .data-table-container :global(.identifier-cell .whitespace-nowrap) {
       white-space: normal;
-    }
-
-    .zebra-stripe
-      .data-table-container
-      :global(tr:nth-child(even) > .identifier-cell) {
-      background-image: linear-gradient(
-        color-mix(in oklab, var(--muted) 30%, transparent),
-        color-mix(in oklab, var(--muted) 30%, transparent)
-      );
     }
   }
 </style>

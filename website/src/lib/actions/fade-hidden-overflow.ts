@@ -1,4 +1,4 @@
-const FADE_WIDTH = "2.5rem";
+export const FADE_WIDTH = "2.5rem";
 
 /**
  * Fades the right edge of a horizontally scrolling element while content is
