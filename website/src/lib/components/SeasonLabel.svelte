@@ -35,7 +35,7 @@
 {#snippet content()}
   <Icon
     class="{variant === 'title'
-      ? 'size-6'
+      ? 'size-[1em]'
       : ICON_BADGE.iconSize} shrink-0 {PRESENTATION[season].tone}"
     aria-hidden="true"
   />

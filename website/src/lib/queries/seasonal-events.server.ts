@@ -14,6 +14,7 @@ import type { Season } from "../data/seasonal-events";
 export interface SeasonalItem {
   id: string;
   name: string;
+  item_type: string;
   quality: number;
   tooltip_html: string | null;
   food_buff_id: string | null;
@@ -83,7 +84,6 @@ export async function getSeasonalEvents(execute: AcquisitionQuery) {
     itemIds: [
       ...seasonalIds.map((i) => i.item_id),
       ...objectiveItems.map((i) => i.item_id),
-      "elixir_of_enlightened_learning",
     ],
   });
   const offersByItem = new Map<string, SeasonalShopOffer>();
@@ -181,29 +181,39 @@ export async function getSeasonalEvents(execute: AcquisitionQuery) {
       };
     })
     .sort((a, b) => a.level_min - b.level_min || a.name.localeCompare(b.name));
-  const currencyDrops = [
-    ...new Map(
-      [...model.methodViews.values()]
-        .filter(
-          (m) => m.kind === "kill" && projectMethodSeasons(model, m).length,
-        )
-        .flatMap((m) =>
-          m.probabilityResults.flatMap((r) =>
-            r.target.kind === "item" &&
-            currencyIds.has(r.target.itemId) &&
-            r.quantityMeaning === "at_least_one"
-              ? [
-                  {
-                    item_id: r.target.itemId,
-                    probability: Number(r.probability!.toPrecision(12)),
-                  },
-                ]
-              : [],
-          ),
-        )
-        .map((r) => [JSON.stringify(r), r]),
-    ).values(),
-  ];
+  // Every item a seasonal monster drops, with each monster's chance per kill.
+  // Currencies come first, then the other drops by name.
+  const dropChances = new Map<string, Record<string, number>>();
+  for (const method of model.methodViews.values()) {
+    if (method.kind !== "kill" || !projectMethodSeasons(model, method).length)
+      continue;
+    const monsterId = String(method.detail.monster_id);
+    for (const result of method.probabilityResults) {
+      if (
+        result.target.kind !== "item" ||
+        result.quantityMeaning !== "at_least_one"
+      )
+        continue;
+      const chance = Number(result.probability!.toPrecision(12));
+      const chances = dropChances.get(result.target.itemId) ?? {};
+      if (chances[monsterId] !== undefined && chances[monsterId] !== chance)
+        throw new Error(
+          `${monsterId} drops ${result.target.itemId} at two chances, so one cell cannot show it`,
+        );
+      chances[monsterId] = chance;
+      dropChances.set(result.target.itemId, chances);
+    }
+  }
+  const drops = [...dropChances]
+    .map(([item_id, chances]) => ({ item_id, chances }))
+    .sort(
+      (a, b) =>
+        Number(currencyIds.has(b.item_id)) -
+          Number(currencyIds.has(a.item_id)) ||
+        String(model.entities.get("items")!.get(a.item_id)!.name).localeCompare(
+          String(model.entities.get("items")!.get(b.item_id)!.name),
+        ),
+    );
   const entities = (table: string) => model.entities.get(table)!;
   const facts = (table: string) => model.rows.facts[table] ?? [];
   const objectiveMonsterSpawns = await byIds<{
@@ -319,7 +329,7 @@ export async function getSeasonalEvents(execute: AcquisitionQuery) {
     ...quests.flatMap((q) =>
       q.rewards.flatMap((r) => [r.item_id, ...(r.pack_id ? [r.pack_id] : [])]),
     ),
-    "elixir_of_enlightened_learning",
+    ...drops.map((drop) => drop.item_id),
   ]);
   const items: Record<string, SeasonalItem> = Object.fromEntries(
     [...itemIds].map((id) => {
@@ -329,6 +339,7 @@ export async function getSeasonalEvents(execute: AcquisitionQuery) {
         {
           id,
           name: String(i.name),
+          item_type: String(i.item_type),
           quality: Number(i.quality),
           tooltip_html: i.tooltip_html as string | null,
           food_buff_id: i.food_buff_id as string | null,
@@ -350,7 +361,7 @@ export async function getSeasonalEvents(execute: AcquisitionQuery) {
     })),
     quests,
     offers,
-    currencyDrops,
+    drops,
     items,
   };
 }

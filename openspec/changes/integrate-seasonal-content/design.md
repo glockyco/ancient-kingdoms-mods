@@ -71,18 +71,24 @@ A `SeasonLabel` component renders the season's icon and name and links to its se
 
 ### 8. The Seasonal Events page is rebuilt from player questions
 
-The page follows the Regional Events page, which readers accept: a lead paragraph under the title, the section list, then plain cards. Order: lead with both seasons' dates, Double XP, Halloween, Winter Festival, Fireworks, Currencies. Layout rules:
+The page is ordered by the questions a player arrives with: when the events run, what applies to both, then what each event adds.
 
-- The lead answers when the events run and what they change. No summary cards restate the sections below.
-- One type scale: 36 px page title, 24 px season heading, 16 px card titles and every paragraph, 14 px for tables, tiles and notes. A size changes only when the role changes.
-- No accent tints, title icons or callout boxes. A pitfall is a 14 px note with a warning icon, like the timeout note on Regional Events. The season icon appears only in SeasonLabel.
-- Every link uses the site's link blue or the item quality color, so a reader can see what is a link. Link a name only where the target adds something, once per section. A season does not link to its own section on this page.
-- Use a table only when rows are compared across columns. The Halloween spawn table lists zones by level with Pumpkin Head and Witch spawn counts, so shared facts (season, hours, drops) are stated once above it. It fits a phone without scrolling.
-- Show items as tiles with icon, name, effect and price, in a responsive grid. Show prices as amount plus currency icon.
-- Show each shared fact once. Fireworks get one card for both seasons.
+1. A Dates card first. One column per season gives its dates, one sentence on what it adds, and a link to its section. Facts in a lead paragraph above cards go unread, so nothing the player needs lives there.
+2. A "Both events" section with Double XP, Currencies and the Seasonal shop. A heading names the scope, because shared content placed after a season reads as part of it. The Currencies table shows what earns each token and what it buys, which makes the Festival Token's place in both events visible.
+3. One section per season, with its dates beside the heading: Halloween has Spawns, Drops and Treats, and the Winter Festival has Santa Claus's quests and Treats. Each season's earning and its treats sit together.
+
+Layout rules:
+
+- One type scale: 36 px page title, 24 px section heading, 16 px card titles and every paragraph, 14 px for tables, tiles and notes. A size changes only when the role changes.
+- No accent tints, title icons or callout boxes. A pitfall is a 14 px note with a warning icon beside the choice it concerns. The season icon appears only in SeasonLabel.
+- Every link uses the site's link blue or the item quality color, so a reader can see what is a link. Link a name only where the target adds something, once per section. In-page links lead from the Dates card and the shop into the season sections.
+- Use a table only when rows are compared across columns: spawn counts per zone, token chances per monster, and currencies by source and use. Costume pieces are listed per monster with the shared chance stated once, because a table of them would be mostly empty cells.
+- Show shop items as tiles with icon, name, effect and price. Show prices as amount plus currency icon. Fireworks appear once, in the shared shop.
 - Check light and dark mode at 1440×900 and 390×844 without horizontal scrolling.
 
-Copy follows the reader-facing-copy requirements in this change. Headings name their content in the site's terms, such as "Spawns" and "Treats". The page says "30 real minutes in every hour" for the 20:00 to 08:00 window, "about 5 kills per token", and that eating another seasonal treat ends the first. Each currency says what it buys and in which events. It says nothing about server checks or stock lists.
+Other surfaces follow the same priority: year-round content first, seasonal content after it. On an NPC page the seasonal stock follows the items for sale, and on a zone page the seasonal section follows regional events.
+
+Copy follows the reader-facing-copy requirements in this change. Headings name their content in the site's terms, such as "Spawns", "Drops" and "Treats". The page says "30 real minutes in every hour" for the 20:00 to 08:00 window, "about 5 kills" per token, and that eating another seasonal treat ends the first. It says nothing about server checks or stock lists.
 
 ### 9. NPC pages show quests completed there
 

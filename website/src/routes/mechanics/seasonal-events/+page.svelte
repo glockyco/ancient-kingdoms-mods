@@ -11,6 +11,7 @@
   import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import {
     SEASON_ORDER,
+    SEASONS,
     seasonDates,
     seasonInSentence,
     type Season,
@@ -26,37 +27,91 @@
   let { data }: { data: PageData } = $props();
 
   const LINK = "text-blue-600 hover:underline dark:text-blue-400";
+  const TABLE =
+    "w-full border-collapse text-sm [&_td]:p-2 [&_th]:p-2 sm:[&_td]:p-3 sm:[&_th]:p-3";
+
+  const bySeason = (a: Season, b: Season) => SEASON_ORDER[a] - SEASON_ORDER[b];
+  const during = (seasons: Iterable<Season>) =>
+    [...new Set(seasons)].sort(bySeason).map(seasonInSentence).join(" and ");
+  const names = (list: readonly { name: string }[]) =>
+    list.map((entry) => entry.name).join(" and ");
+  const percent = (chance: number) => `${Math.round(chance * 100)}%`;
+  const kills = (chance: number) => Number((1 / chance).toFixed(1));
 
   const isTreat = (offer: SeasonalShopOffer) =>
     Boolean(data.items[offer.received_id].food_buff_id);
+  const treatsOf = (season: Season) =>
+    data.offers.filter((o) => isTreat(o) && o.seasons.includes(season));
   const fireworks = $derived(data.offers.filter((o) => !isTreat(o)));
-  const currencies = $derived([
-    ...new Set(data.offers.map((o) => o.currency_id)),
-  ]);
-  const names = (list: readonly { name: string }[]) =>
-    list.map((entry) => entry.name).join(" and ");
-  const during = (seasons: Iterable<Season>) =>
-    [...new Set(seasons)]
-      .sort((a, b) => SEASON_ORDER[a] - SEASON_ORDER[b])
-      .map(seasonInSentence)
-      .join(" and ");
-  const killsPerToken = (probability: number) =>
-    Number((1 / probability).toFixed(1));
+  const currencyIds = $derived(new Set(data.offers.map((o) => o.currency_id)));
+  const tokenDrops = $derived(
+    data.drops.filter((d) => currencyIds.has(d.item_id)),
+  );
+  const costumePieces = $derived(
+    data.drops.filter((d) => !currencyIds.has(d.item_id)),
+  );
+  /** Costume pieces grouped by the monster that drops them, with the shared chance when every piece has one. */
+  const costumeSets = $derived.by(() => {
+    const other = costumePieces.find(
+      (d) => data.items[d.item_id].item_type !== "costume",
+    );
+    if (other)
+      throw new Error(
+        `Seasonal drop ${other.item_id} is neither a currency nor a costume piece, so the page has no place for it`,
+      );
+    return data.monsters
+      .map((monster) => {
+        const pieces = costumePieces.filter(
+          (d) => d.chances[monster.id] !== undefined,
+        );
+        const chances = new Set(pieces.map((d) => d.chances[monster.id]));
+        return {
+          monster,
+          pieces,
+          chance: chances.size === 1 ? [...chances][0] : null,
+        };
+      })
+      .filter((set) => set.pieces.length);
+  });
 
-  /** What a currency buys and when, for example "fireworks during Halloween and the Winter Festival". */
-  const purchases = (currencyId: string) => {
-    const offers = data.offers.filter((o) => o.currency_id === currencyId);
-    return [
-      { kind: "treats", offers: offers.filter(isTreat) },
-      { kind: "fireworks", offers: offers.filter((o) => !isTreat(o)) },
-    ]
-      .filter((group) => group.offers.length)
-      .map(
-        (group) =>
-          `${group.kind} during ${during(group.offers.flatMap((o) => o.seasons))}`,
-      )
-      .join(" and ");
-  };
+  /** What earns each currency and what it buys, shared tokens first. */
+  const currencies = $derived(
+    [...new Set(data.offers.map((o) => o.currency_id))]
+      .map((id) => {
+        const dropped = data.drops.find((d) => d.item_id === id);
+        const droppers = data.monsters.filter(
+          (m) => dropped && dropped.chances[m.id] !== undefined,
+        );
+        const rewarding = data.quests.some((q) =>
+          q.rewards.some((r) => r.item_id === id),
+        );
+        const earned = [
+          ...(droppers.length
+            ? [
+                `${names(droppers)} during ${during(droppers.map((m) => m.season))}`,
+              ]
+            : []),
+          ...(rewarding
+            ? data.npcs.map(
+                (npc) =>
+                  `${npc.name}'s quests during ${seasonInSentence(npc.season)}`,
+              )
+            : []),
+        ];
+        const offers = data.offers.filter((o) => o.currency_id === id);
+        const buys = [
+          { kind: "treats", offers: offers.filter(isTreat) },
+          { kind: "fireworks", offers: offers.filter((o) => !isTreat(o)) },
+        ]
+          .filter((group) => group.offers.length)
+          .map(
+            (group) =>
+              `${group.kind[0].toUpperCase()}${group.kind.slice(1)} during ${during(group.offers.flatMap((o) => o.seasons))}`,
+          );
+        return { id, earned, buys, seasons: data.items[id].seasons.length };
+      })
+      .sort((a, b) => b.seasons - a.seasons),
+  );
 
   // Every seasonal monster shares one spawn window, so the first one names it.
   const night = $derived.by(() => {
@@ -64,6 +119,28 @@
     const [from, to] = formatSpawnTimeWindow(start, end)!.split("-");
     return { from, to, minutes: spawnWindowRealMinutes(start, end) };
   });
+
+  /** One line per season for the dates card, and where to read more. */
+  const overview = $derived(
+    data.seasons.map(({ id: season }) =>
+      season === "halloween"
+        ? {
+            season,
+            gist: `${names(data.monsters)} spawn at night in ${data.huntZones.length} zones and drop tokens and ${costumePieces.length} costume pieces.`,
+            more: "Spawns, drops and treats",
+          }
+        : {
+            season,
+            gist: data.npcs
+              .map(
+                (npc) =>
+                  `${npc.name} offers ${data.quests.length} quests in ${npc.zone_name} that reward tokens and coins.`,
+              )
+              .join(" "),
+            more: "Quests and treats",
+          },
+    ),
+  );
 </script>
 
 {#snippet itemLink(id: string)}
@@ -116,8 +193,17 @@
   </div>
 {/snippet}
 
+{#snippet seasonHeading(season: Season)}
+  <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+    <h2 class="text-2xl font-semibold">
+      <SeasonLabel {season} variant="title" />
+    </h2>
+    <p class="text-sm text-muted-foreground">{seasonDates(season)}</p>
+  </div>
+{/snippet}
+
 {#snippet treats(season: Season)}
-  <Card.Root class="bg-muted/30">
+  <Card.Root id="{SEASONS[season].anchor}-treats" class="bg-muted/30">
     <Card.Header><Card.Title>Treats</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — repair merchants add only the running season's items. -->
@@ -129,7 +215,7 @@
       </p>
       <div class="grid gap-3 sm:grid-cols-2">
         <!-- Source: server-scripts/FoodItem.cs:Use,ToolTip — food applies its configured buff at the item's buff level. -->
-        {#each data.offers.filter((o) => isTreat(o) && o.seasons.includes(season)) as offer (offer.item_id)}
+        {#each treatsOf(season) as offer (offer.item_id)}
           {@render offerTile(offer, data.items[offer.received_id].effect)}
         {/each}
       </div>
@@ -143,7 +229,7 @@
 
 <Seo
   title="Seasonal Event Mechanics - Ancient Kingdoms"
-  description="Halloween and the Winter Festival in Ancient Kingdoms: dates, Double XP, seasonal monsters, Santa Claus's quests, and what repair merchants sell."
+  description="Halloween and the Winter Festival in Ancient Kingdoms: dates, Double XP, seasonal monsters and costumes, Santa Claus's quests, and what repair merchants sell."
   path="/mechanics/seasonal-events"
 />
 
@@ -156,62 +242,130 @@
     ]}
   />
   <h1 class="text-4xl font-bold">Seasonal Event Mechanics</h1>
-  <!-- Source: server-scripts/EnviromentSystem.cs:OnStartServer,CheckSpecialEvents — seasons use inclusive UTC dates and the flags refresh hourly. -->
-  <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — repair merchants add the running season's items. -->
-  <p class="text-muted-foreground">
-    Halloween runs from {seasonDates("halloween")} and the Winter Festival from
-    {seasonDates("christmas")}, by UTC date. Each event can start or end up to
-    an hour after midnight UTC. While either runs, every online player has
-    Double XP and repair merchants sell treats and fireworks.
-  </p>
 
   <PageSections sections={MECHANICS_SECTIONS["/mechanics/seasonal-events"]} />
 
-  <Card.Root id="double-xp" class="bg-muted/30">
-    <Card.Header><Card.Title>Double XP</Card.Title></Card.Header>
+  <Card.Root id="dates" class="bg-muted/30">
+    <Card.Header><Card.Title>Dates</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
-      <!-- Source: server-scripts/EnviromentSystem.cs:CheckSpecialEvents; server-scripts/Player.cs:Start — every online player gets the season's Double XP buff, including on login. -->
-      <!-- Source: server-scripts/Monster.cs:OnDeath; server-scripts/Npc.cs:OnDeath; server-scripts/GatherItem.cs:OnInteractServer,OnInteractFishServer; server-scripts/Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String,UserCode_CmdCraftItem__NetworkIdentity__Int32 — hasDoubleExp doubles character XP from kills, gathering, fishing, alchemy, scribing, augments and crafting, including cooking. -->
-      <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/Player.cs:UserCode_CmdGetExperienceNewZone__Int64 — quest and exploration XP are awarded without Double XP. -->
-      <p>
-        Every online player has Double XP while either event runs. It doubles
-        <MechanicsLink section="experience">character XP</MechanicsLink> from kills,
-        gathering, fishing, crafting, cooking, alchemy, scribing and augmenting. Quest
-        XP, exploration XP and profession skill gains are not doubled.
+      <div class="grid gap-3 sm:grid-cols-2">
+        <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD,EventTimeSpawn — Halloween monsters spawn at their configured hours during Halloween. -->
+        <!-- Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE — Santa is present only during the Winter Festival. -->
+        {#each overview as entry (entry.season)}
+          <div class="space-y-2 rounded-lg border p-4">
+            <p class="font-semibold text-foreground">
+              <SeasonLabel season={entry.season} variant="title" />
+            </p>
+            <p class="font-medium text-foreground">
+              {seasonDates(entry.season)}
+            </p>
+            <p>{entry.gist}</p>
+            <a href="#{SEASONS[entry.season].anchor}" class={LINK}
+              >{entry.more}</a
+            >
+          </div>
+        {/each}
+      </div>
+      <!-- Source: server-scripts/EnviromentSystem.cs:OnStartServer,CheckSpecialEvents — seasons use inclusive UTC dates and the flags refresh hourly. -->
+      <p class="text-sm">
+        UTC dates, both days included. Each event can start and end up to an
+        hour after midnight UTC.
       </p>
-      <!-- Source: server-scripts/Skills.cs:hasDoubleExp — Double XP is a single boolean bonus, so multiple Double XP buffs add nothing. -->
-      {@render note(
-        "Double XP buffs do not stack, so an Elixir of Enlightened Learning drunk during an event adds nothing.",
-      )}
     </Card.Content>
   </Card.Root>
 
+  <section id="both-events" class="space-y-4">
+    <h2 class="text-2xl font-semibold">Both events</h2>
+
+    <Card.Root id="double-xp" class="bg-muted/30">
+      <Card.Header><Card.Title>Double XP</Card.Title></Card.Header>
+      <Card.Content class="space-y-4 text-muted-foreground">
+        <!-- Source: server-scripts/EnviromentSystem.cs:CheckSpecialEvents; server-scripts/Player.cs:Start — every online player gets the season's Double XP buff, including on login. -->
+        <!-- Source: server-scripts/Monster.cs:OnDeath; server-scripts/Npc.cs:OnDeath; server-scripts/GatherItem.cs:OnInteractServer,OnInteractFishServer; server-scripts/Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String,UserCode_CmdCraftItem__NetworkIdentity__Int32 — hasDoubleExp doubles character XP from kills, gathering, fishing, alchemy, scribing, augments and crafting, including cooking. -->
+        <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/Player.cs:UserCode_CmdGetExperienceNewZone__Int64 — quest and exploration XP are awarded without Double XP. -->
+        <p>
+          Every online player has Double XP while either event runs. It doubles
+          <MechanicsLink section="experience">character XP</MechanicsLink> from kills,
+          gathering, fishing, crafting, cooking, alchemy, scribing and augmenting.
+          Quest XP, exploration XP and profession skill gains are not doubled.
+        </p>
+        <!-- Source: server-scripts/Skills.cs:hasDoubleExp — Double XP is a single boolean bonus, so multiple Double XP buffs add nothing. -->
+        {@render note(
+          "Double XP buffs do not stack, so an Elixir of Enlightened Learning drunk during an event adds nothing.",
+        )}
+      </Card.Content>
+    </Card.Root>
+
+    <Card.Root id="currencies" class="bg-muted/30">
+      <Card.Header><Card.Title>Currencies</Card.Title></Card.Header>
+      <Card.Content class="text-muted-foreground">
+        <!-- Source: server-scripts/Monster.cs:OnDeath; server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/NpcTrading.cs:VisibleSaleItemsFor — tokens come from configured drops or quest rewards and buy the season's merchant items. -->
+        <table class={TABLE}>
+          <thead
+            ><tr class="border-b"
+              ><th class="text-left font-medium text-foreground">Currency</th
+              ><th class="text-left font-medium text-foreground">Earned from</th
+              ><th class="text-left font-medium text-foreground">Buys</th></tr
+            ></thead
+          >
+          <tbody class="[&>tr:nth-child(odd)]:bg-muted/30">
+            {#each currencies as currency (currency.id)}
+              <tr class="border-b align-top last:border-0">
+                <td class="font-medium">{@render itemLink(currency.id)}</td>
+                <td class="space-y-2"
+                  >{#each currency.earned as line (line)}<p>
+                      {line}
+                    </p>{/each}</td
+                >
+                <td class="space-y-2"
+                  >{#each currency.buys as line (line)}<p>{line}</p>{/each}</td
+                >
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </Card.Content>
+    </Card.Root>
+
+    <Card.Root id="seasonal-shop" class="bg-muted/30">
+      <Card.Header><Card.Title>Seasonal shop</Card.Title></Card.Header>
+      <Card.Content class="space-y-4 text-muted-foreground">
+        <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor; server-scripts/PlayerNpcTrading.cs:UserCode_CmdBuyItem__Int32__Int32__Int64 — repair merchants add the running season's items, and pack offers deliver their contents directly. -->
+        <p>
+          <a href="/npcs?npcs.role_keys=can_repair_equipment" class={LINK}
+            >Repair merchants</a
+          >
+          sell these fireworks during {during(
+            fireworks.flatMap((o) => o.seasons),
+          )}. They also sell each event's treats while it runs:
+          {#each data.seasons as { id: season }, i (season)}{i ? " and " : ""}<a
+              href="#{SEASONS[season].anchor}-treats"
+              class={LINK}>{SEASONS[season].name} treats</a
+            >{/each}.
+        </p>
+        <div class="grid gap-3 sm:grid-cols-2">
+          {#each fireworks as offer (offer.item_id)}
+            {@render offerTile(offer, `${offer.amount} per purchase`)}
+          {/each}
+        </div>
+      </Card.Content>
+    </Card.Root>
+  </section>
+
   <section id="halloween" class="space-y-4">
-    <h2 class="text-2xl font-semibold">
-      <SeasonLabel season="halloween" variant="title" />
-    </h2>
+    {@render seasonHeading("halloween")}
     <Card.Root class="bg-muted/30">
       <Card.Header><Card.Title>Spawns</Card.Title></Card.Header>
       <Card.Content class="space-y-4 text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD,EventTimeSpawn,EventTimeDespawn,IsHourBetween — Halloween spawns are night-only, a game day is 3600 real seconds, and monsters despawn outside their hours when out of combat. -->
-        <!-- Source: server-scripts/Monster.cs:OnDeath — seasonal monsters roll their configured item drops once per kill. -->
         <p>
           {#each data.monsters as monster, i (monster.id)}{i ? " and " : ""}<a
               href="/monsters/{monster.id}"
               class={LINK}>{monster.name}</a
             >{/each} spawn from {night.from} to {night.to} game time, which is {night.minutes}
           real minutes in every hour. At {night.to} they despawn once out of combat.
-          Each kill has
-          {#each data.currencyDrops as drop, i (drop.item_id)}{i
-              ? " and "
-              : ""}a {Math.round(drop.probability * 100)}% chance to drop a {data
-              .items[drop.item_id].name}, about {killsPerToken(
-              drop.probability,
-            )} kills per token{/each}.
         </p>
-        <table
-          class="w-full border-collapse text-sm [&_td]:p-2 [&_th]:p-2 sm:[&_td]:p-3 sm:[&_th]:p-3"
-        >
+        <table class={TABLE}>
           <thead
             ><tr class="border-b"
               ><th class="text-left font-medium text-foreground">Zone</th><th
@@ -240,13 +394,73 @@
         </table>
       </Card.Content>
     </Card.Root>
+
+    <Card.Root class="bg-muted/30">
+      <Card.Header><Card.Title>Drops</Card.Title></Card.Header>
+      <Card.Content class="space-y-4 text-muted-foreground">
+        <!-- Source: server-scripts/Monster.cs:OnDeath — seasonal monsters roll their configured item drops once per kill. -->
+        <table class={TABLE}>
+          <thead
+            ><tr class="border-b"
+              ><th class="text-left font-medium text-foreground">Token</th
+              >{#each data.monsters as monster (monster.id)}<th
+                  class="text-right font-medium text-foreground"
+                  >{monster.name}</th
+                >{/each}</tr
+            ></thead
+          >
+          <tbody class="[&>tr:nth-child(odd)]:bg-muted/30">
+            {#each tokenDrops as drop (drop.item_id)}
+              <tr class="border-b last:border-0">
+                <td>{@render itemLink(drop.item_id)}</td>
+                {#each data.monsters as monster (monster.id)}
+                  {@const chance = drop.chances[monster.id]}
+                  <td class="text-right whitespace-nowrap tabular-nums">
+                    {#if chance === undefined}—{:else}<span
+                        class="text-foreground">{percent(chance)}</span
+                      ><span class="block">about {kills(chance)} kills</span
+                      >{/if}
+                  </td>
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        <h3 class="pt-2 text-sm font-semibold text-foreground">
+          Costume pieces
+        </h3>
+        <div class="grid gap-3 sm:grid-cols-2">
+          {#each costumeSets as set (set.monster.id)}
+            <div class="space-y-3 rounded-lg border p-3">
+              <div>
+                <p class="font-medium text-foreground">{set.monster.name}</p>
+                {#if set.chance !== null}<p class="text-sm">
+                    {percent(set.chance)} each per kill, about {kills(
+                      set.chance,
+                    )} kills
+                  </p>{/if}
+              </div>
+              <ul class="space-y-2">
+                {#each set.pieces as piece (piece.item_id)}
+                  <li class="flex items-center justify-between gap-3">
+                    {@render itemLink(piece.item_id)}
+                    {#if set.chance === null}<span
+                        class="text-sm tabular-nums text-foreground"
+                        >{percent(piece.chances[set.monster.id])}</span
+                      >{/if}
+                  </li>
+                {/each}
+              </ul>
+            </div>
+          {/each}
+        </div>
+      </Card.Content>
+    </Card.Root>
     {@render treats("halloween")}
   </section>
 
   <section id="winter-festival" class="space-y-4">
-    <h2 class="text-2xl font-semibold">
-      <SeasonLabel season="christmas" variant="title" />
-    </h2>
+    {@render seasonHeading("christmas")}
     {#each data.npcs as npc (npc.id)}
       <Card.Root class="bg-muted/30">
         <Card.Header><Card.Title>{npc.name}'s quests</Card.Title></Card.Header>
@@ -321,41 +535,4 @@
     {/each}
     {@render treats("christmas")}
   </section>
-
-  <Card.Root id="fireworks" class="bg-muted/30">
-    <Card.Header><Card.Title>Fireworks</Card.Title></Card.Header>
-    <Card.Content class="space-y-4 text-muted-foreground">
-      <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor; server-scripts/PlayerNpcTrading.cs:UserCode_CmdBuyItem__Int32__Int32__Int64 — both seasons' repair-merchant offers deliver pack contents directly. -->
-      <p>
-        Repair merchants sell fireworks during {during(
-          fireworks.flatMap((o) => o.seasons),
-        )}.
-      </p>
-      <div class="grid gap-3 sm:grid-cols-2">
-        {#each fireworks as offer (offer.item_id)}
-          {@render offerTile(offer, `${offer.amount} per purchase`)}
-        {/each}
-      </div>
-    </Card.Content>
-  </Card.Root>
-
-  <Card.Root id="currencies" class="bg-muted/30">
-    <Card.Header><Card.Title>Currencies</Card.Title></Card.Header>
-    <Card.Content class="grid gap-3 text-muted-foreground sm:grid-cols-3">
-      <!-- Source: server-scripts/Monster.cs:OnDeath; server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/NpcTrading.cs:VisibleSaleItemsFor — tokens come from configured drops or quest rewards and buy the season's merchant items. -->
-      {#each currencies as id (id)}
-        <div class="min-w-0 space-y-2 rounded-lg border p-3 text-sm">
-          <h3 class="text-base font-medium">{@render itemLink(id)}</h3>
-          {#if data.currencyDrops.some((d) => d.item_id === id)}<p>
-              Dropped by {names(data.monsters)}.
-            </p>{/if}
-          {#if data.quests.some( (q) => q.rewards.some((r) => r.item_id === id) )}<p
-            >
-              Rewarded by {names(data.npcs)}'s quests.
-            </p>{/if}
-          <p>Buys {purchases(id)}.</p>
-        </div>
-      {/each}
-    </Card.Content>
-  </Card.Root>
 </div>

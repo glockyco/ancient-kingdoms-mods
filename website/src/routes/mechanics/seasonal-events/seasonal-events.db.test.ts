@@ -25,13 +25,33 @@ describe("Seasonal Events page data", () => {
       price: 1,
       currency_id: "festival_token",
     });
-    expect(data.currencyDrops).toEqual(
+    expect(data.drops.slice(0, 2)).toEqual(
       expect.arrayContaining([
-        { item_id: "spook_token", probability: 0.2 },
-        { item_id: "festival_token", probability: 0.3 },
+        {
+          item_id: "spook_token",
+          chances: { pumpkin_head: 0.2, witch: 0.2 },
+        },
+        {
+          item_id: "festival_token",
+          chances: { pumpkin_head: 0.3, witch: 0.3 },
+        },
       ]),
     );
-    expect(data.currencyDrops).toHaveLength(2);
+    expect(
+      Object.fromEntries(
+        data.drops.slice(2).map((d) => [d.item_id, d.chances]),
+      ),
+    ).toEqual({
+      haunted_scarecrow_hat: { witch: 0.1 },
+      haunted_scarecrow_pants: { witch: 0.1 },
+      haunted_scarecrow_tunic: { witch: 0.1 },
+      pumpkin_costume: { pumpkin_head: 0.1 },
+      pumpkin_head: { pumpkin_head: 0.1 },
+      pumpkin_pants: { pumpkin_head: 0.1 },
+      witch_costume: { witch: 0.1 },
+      witch_hat: { witch: 0.1 },
+      witch_pants: { witch: 0.1 },
+    });
     expect(data.huntZones).toHaveLength(6);
     expect(data.huntZones.map((z) => z.level_min)).toEqual(
       [...data.huntZones.map((z) => z.level_min)].sort((a, b) => a - b),
