@@ -4675,10 +4675,6 @@
       "sha256": "12508829dbcad93e34ae7218d2037a1e2608da9013845c2813a701793a338c61",
       "span": 1
     },
-    "ScrollItem.cs:119": {
-      "sha256": "c19762ddf75e609ff83211ba6d44b9bde66ba5afca88d15d86f967f930b710e0",
-      "span": 1
-    },
     "ScrollItem.cs:127": {
       "sha256": "ac1f39a1d4d189dcd25d5cfd0f6072d4d7b85d338b46c8c5cde42aecd731f728",
       "span": 1
@@ -4720,6 +4716,9 @@
       "span": 36
     },
     "ScrollItem.cs:CheckCastTarget": {
+      "span": 0
+    },
+    "ScrollItem.cs:Use": {
       "span": 0
     },
     "ScrollItem.cs:UseAfterCast": {

@@ -349,6 +349,13 @@ export const load: PageServerLoad = async ({
       (row?.buff_category === "Food" || row?.buff_category === "Drink"),
     );
   }
+  const scrollSkillMaxRank = item.scroll_skill_id
+    ? (
+        db
+          .prepare("SELECT max_level FROM skills WHERE id = ?")
+          .get(item.scroll_skill_id) as { max_level: number }
+      ).max_level
+    : null;
   const consumableBuffId = item.potion_buff_id || item.food_buff_id;
   const consumableBuffEffect = consumableBuffId
     ? formatSkillEffect(
@@ -425,6 +432,7 @@ export const load: PageServerLoad = async ({
     mergeResultName,
     buffDurationSeconds,
     relicIsCleanse,
+    scrollSkillMaxRank,
     sources,
     seasons: projectItemSeasons(model, params.id),
     treasureLocation,

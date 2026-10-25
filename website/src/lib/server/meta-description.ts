@@ -67,6 +67,8 @@ export interface ItemMetaContext {
   buffDurationSeconds?: number | null;
   /** Whether the linked relic buff is a cleanse spell. */
   relicIsCleanse?: boolean;
+  /** Rank count of the spell a scroll casts. */
+  scrollSkillMaxRank?: number | null;
   /** Complete shared effect summary, including its duration, at the applied buff rank. */
   buffEffect?: string | null;
   /** Loaded treasure_locations row for this map. */
@@ -171,7 +173,7 @@ function itemBaseDescription(item: Item, ctx: ItemMetaContext): string {
     case "food":
       return foodDescription(item, ctx);
     case "scroll":
-      return scrollDescription(item);
+      return scrollDescription(item, ctx);
     case "relic":
       return relicDescription(item, ctx);
     case "book":
@@ -427,15 +429,17 @@ function foodDescription(item: Item, ctx: ItemMetaContext): string {
   return `${buff}${dungeon}`.trim() || `${kind}.`;
 }
 
-function scrollDescription(item: Item): string {
+function scrollDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/ScrollItem.cs:11,39-41 — isRepairKit branches the scroll behaviour
   if (item.is_repair_kit) {
     const tier = quality(item);
     return `Repairs all equipped ${tier} or lower gear.`;
   }
-  // Source: server-scripts/ScrollItem.cs:127,119 — spell rank scales with player.scrollMasteryLevel
+  // Source: server-scripts/ScrollItem.cs:Use — the cast rank follows player.scrollMasteryLevel, clamped to the spell's maximum rank.
   const skill = item.scroll_skill_name ?? "a spell";
-  return `Casts ${skill}. Spell rank scales with the Scroll Mastery profession.`;
+  return (ctx.scrollSkillMaxRank ?? 1) > 1
+    ? `Casts ${skill}. Spell rank scales with the Scroll Mastery profession.`
+    : `Casts ${skill}.`;
 }
 
 function relicDescription(item: Item, ctx: ItemMetaContext): string {

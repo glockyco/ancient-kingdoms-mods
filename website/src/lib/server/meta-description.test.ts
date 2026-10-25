@@ -327,3 +327,20 @@ test("guaranteed random-wrapper rolls do not claim fixed portable chest contents
   assert.ok(out.includes("up to 1 item"));
   assert.ok(!out.includes("fixed"));
 });
+
+test("scroll metadata credits Scroll Mastery only for spells with several ranks", () => {
+  const scroll = {
+    item_type: "scroll",
+    is_repair_kit: false,
+    scroll_skill_name: "Skyflare",
+  } as Item;
+  assert.equal(
+    itemDescription(scroll, { scrollSkillMaxRank: 1 }),
+    "Casts Skyflare.",
+  );
+  assert.ok(
+    itemDescription(scroll, { scrollSkillMaxRank: 5 }).includes(
+      "Scroll Mastery",
+    ),
+  );
+});
