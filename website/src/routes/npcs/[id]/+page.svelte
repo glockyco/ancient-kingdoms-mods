@@ -8,6 +8,11 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import {
+    SEASON_ORDER,
+    seasonInSentence,
+    type Season,
+  } from "$lib/data/seasonal-events";
   import { base } from "$app/paths";
   import EntityCombatSummary from "$lib/components/EntityCombatSummary.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
@@ -273,6 +278,32 @@
     return cols;
   });
 
+  // Seasonal offers use the sale table with a Season column. One item sold in
+  // both seasons stays two rows, because each season is a separate offer.
+  type SeasonalItemSold = NpcItemSold & { season: Season };
+  const seasonalRows: SeasonalItemSold[] = $derived(
+    data.seasonalStock.flatMap((group) =>
+      group.items.map((item) => ({ ...item, season: group.season })),
+    ),
+  );
+  const seasonalColumns: ColumnDef<SeasonalItemSold>[] = [
+    { accessorKey: "item_name", header: "Item", minSize: 250 },
+    {
+      id: "season",
+      header: "Season",
+      size: 180,
+      accessorFn: (row) => SEASON_ORDER[row.season],
+    },
+    { accessorKey: "price", header: "Price", size: 100 },
+    {
+      id: "currency",
+      header: "Currency",
+      size: 220,
+      minSize: 220,
+      accessorFn: (row) => row.currency_item_name ?? "Gold",
+    },
+  ];
+
   // Drop columns
   const dropColumns: ColumnDef<NpcDrop>[] = [
     {
@@ -392,10 +423,12 @@
   cell,
   row,
 }: {
-  cell: Cell<NpcItemSold, unknown>;
-  row: Row<NpcItemSold>;
+  cell: Cell<NpcItemSold, unknown> | Cell<SeasonalItemSold, unknown>;
+  row: Row<NpcItemSold> | Row<SeasonalItemSold>;
 })}
-  {#if cell.column.id === "item_name"}
+  {#if cell.column.id === "season" && "season" in row.original}
+    <SeasonLabel season={row.original.season} />
+  {:else if cell.column.id === "item_name"}
     <ItemLink
       itemId={row.original.item_id}
       itemName={row.original.item_name}
@@ -437,7 +470,7 @@
 {#snippet renderItemSoldHeader({
   header,
 }: {
-  header: Header<NpcItemSold, unknown>;
+  header: Header<NpcItemSold, unknown> | Header<SeasonalItemSold, unknown>;
 })}
   {#if header.id === "price"}
     <span class="ml-auto">{header.column.columnDef.header}</span>
@@ -551,6 +584,14 @@
         <SeasonLabel season={data.npc.season} variant="badge" />
       {/if}
     </div>
+
+    <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
+      <span>Level {data.npc.level}</span>
+      <OnKillFactions
+        effects={npcKillReputation(data.npc)}
+        factionIds={data.factionIds}
+      />
+    </div>
     {#if data.npc.season}
       <!-- Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE,UpdateServer_DEAD — seasonal NPCs are hidden outside the Winter Festival. -->
       <p class="mt-3 text-sm text-muted-foreground">
@@ -562,17 +603,9 @@
             >{spawn.zone_name}</a
           >
         {/each}
-        only during <SeasonLabel season={data.npc.season} inSentence />.
+        only during {seasonInSentence(data.npc.season)}.
       </p>
     {/if}
-
-    <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
-      <span>Level {data.npc.level}</span>
-      <OnKillFactions
-        effects={npcKillReputation(data.npc)}
-        factionIds={data.factionIds}
-      />
-    </div>
   </div>
 
   <!-- Header Summary Card -->
@@ -968,46 +1001,26 @@
     </section>
   {/if}
 
-  {#if data.seasonalStock.length > 0}
+  {#if seasonalRows.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <ShoppingBag class="h-5 w-5 text-green-500" />
-        Seasonal stock
+        Seasonal Stock ({seasonalRows.length})
       </h2>
-      <div class="grid gap-4 lg:grid-cols-2">
-        {#each data.seasonalStock as group (group.season)}
-          <div class="rounded-md border bg-muted/30 p-4 space-y-4">
-            <h3 class="font-semibold"><SeasonLabel season={group.season} /></h3>
-            <ul class="divide-y text-sm">
-              {#each group.items as item (item.item_id)}
-                <li
-                  class="flex flex-wrap items-center justify-between gap-2 py-3"
-                >
-                  <ItemLink
-                    itemId={item.item_id}
-                    itemName={item.item_name}
-                    quality={item.quality}
-                    imageAvailable={item.visual_public_path}
-                    tooltipHtml={item.tooltip_html}
-                    variant="reference"
-                    fallback={Package}
-                  />
-                  <span class="flex items-center gap-1">
-                    {item.price.toLocaleString()}
-                    {#if item.currency_item_id}
-                      <ItemLink
-                        itemId={item.currency_item_id}
-                        itemName={item.currency_item_name ?? ""}
-                        variant="text"
-                      />
-                    {:else}Gold{/if}
-                  </span>
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/each}
-      </div>
+      <DataTable
+        data={seasonalRows}
+        columns={seasonalColumns}
+        renderCell={renderItemSoldCell}
+        renderHeader={renderItemSoldHeader}
+        initialSorting={[
+          { id: "season", desc: false },
+          { id: "item_name", desc: false },
+        ]}
+        urlKey="npc-{data.npc.id}-seasonal"
+        pageSize={10}
+        zebraStripe={true}
+        class="bg-muted/30"
+      />
     </section>
   {/if}
 

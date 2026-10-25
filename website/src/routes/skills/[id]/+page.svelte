@@ -3,6 +3,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import { seasonInSentence } from "$lib/data/seasonal-events";
   import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
@@ -296,10 +297,9 @@
       <Card.Content class="space-y-3 text-sm">
         <!-- Source: server-scripts/Player.cs:Start; server-scripts/EnviromentSystem.cs:CheckSpecialEvents — every online player receives the season's refreshed buff. -->
         <p>
-          Every online player has this buff during <SeasonLabel
-            season={data.season}
-            inSentence
-          />.
+          Every online player has this buff during {seasonInSentence(
+            data.season,
+          )}.
         </p>
         <!-- Source: server-scripts/Skills.cs:hasDoubleExp — multiple Double XP buffs still give only one doubling. -->
         <p>

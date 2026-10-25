@@ -45,6 +45,7 @@
   import Megaphone from "@lucide/svelte/icons/megaphone";
   import { huntPlayers } from "$lib/data/regional-events";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import { seasonInSentence } from "$lib/data/seasonal-events";
   import Scroll from "@lucide/svelte/icons/scroll";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Star from "@lucide/svelte/icons/star";
@@ -842,18 +843,6 @@
         <SeasonLabel season={data.monster.season} variant="badge" />
       {/if}
     </div>
-    {#if data.monster.season}
-      <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD,EventTimeDespawn,IsHourBetween — a seasonal monster appears only during its season and within its spawn window. -->
-      <p class="mt-3 text-sm text-muted-foreground">
-        Appears only during <SeasonLabel
-          season={data.monster.season}
-          inSentence
-        />{#if spawnWindow}, from {spawnWindow} game time, for {spawnWindowRealMinutes(
-            data.monster.spawn_time_start,
-            data.monster.spawn_time_end,
-          )} real minutes in every hour{/if}.
-      </p>
-    {/if}
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
       <span
@@ -873,6 +862,17 @@
         factionIds={data.factionIds}
       />
     </div>
+    {#if data.monster.season}
+      <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD,EventTimeDespawn,IsHourBetween — a seasonal monster appears only during its season and within its spawn window. -->
+      <p class="mt-2 text-sm text-muted-foreground">
+        Appears only during {seasonInSentence(
+          data.monster.season,
+        )}{#if spawnWindow}, from {spawnWindow} game time, for {spawnWindowRealMinutes(
+            data.monster.spawn_time_start,
+            data.monster.spawn_time_end,
+          )} real minutes in every hour{/if}.
+      </p>
+    {/if}
   </div>
 
   <!-- Header Summary Card -->

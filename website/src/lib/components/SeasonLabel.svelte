@@ -13,15 +13,15 @@
   interface Props {
     season: Season;
     /**
-     * A header badge, a label inside a row or a sentence, or the unlinked
-     * heading of the season's own section.
+     * A label inside a row, a header badge, or the unlinked heading of the
+     * season's own section. Sentences name a season as plain text through
+     * seasonInSentence, because a muted label inside prose does not read as
+     * a link.
      */
     variant?: "badge" | "inline" | "title";
-    /** Put the article a sentence needs before the name, as in "the Winter Festival". */
-    inSentence?: boolean;
   }
 
-  let { season, variant = "inline", inSentence = false }: Props = $props();
+  let { season, variant = "inline" }: Props = $props();
 
   // Each season has one icon and tone everywhere it is named.
   const PRESENTATION: Record<Season, { icon: Component; tone: string }> = {
@@ -30,7 +30,6 @@
   };
 
   const Icon = $derived(PRESENTATION[season].icon);
-  const article = $derived(inSentence ? SEASONS[season].article : null);
 </script>
 
 {#snippet content()}
@@ -43,7 +42,7 @@
   {SEASONS[season].name}
 {/snippet}
 
-{#if article}{`${article} `}{/if}{#if variant === "title"}
+{#if variant === "title"}
   <span class="inline-flex items-center gap-2">{@render content()}</span>
 {:else}
   <a

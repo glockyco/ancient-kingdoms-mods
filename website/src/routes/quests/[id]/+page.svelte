@@ -14,6 +14,7 @@
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import { seasonInSentence } from "$lib/data/seasonal-events";
   import * as Tabs from "$lib/components/ui/tabs";
   import Scroll from "@lucide/svelte/icons/scroll";
   import Target from "@lucide/svelte/icons/target";
@@ -151,10 +152,9 @@
     <div class="bg-muted/30 rounded-md border p-4">
       <!-- Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE,UpdateServer_DEAD — Santa Claus is present only during the Winter Festival, so his quests can only be accepted then. -->
       <p class="text-sm">
-        Accept this quest only during
-        {#each data.seasons as season, index (season)}
-          {index > 0 ? " or " : ""}<SeasonLabel {season} inSentence />
-        {/each}.
+        Accept this quest only during {data.seasons
+          .map(seasonInSentence)
+          .join(" or ")}.
         {#if data.quest.is_repeatable}
           <!-- Source: server-scripts/PlayerQuests.cs:CanAcceptInternal — a repeatable quest can be accepted again 8 hours after completion. -->
           You can accept it again 8 hours after completion.

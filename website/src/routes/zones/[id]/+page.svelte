@@ -26,7 +26,12 @@
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
-  import { SEASONAL_EVENTS_HREF } from "$lib/data/seasonal-events";
+  import {
+    SEASONAL_EVENTS_HREF,
+    SEASONS,
+    seasonInSentence,
+    type Season,
+  } from "$lib/data/seasonal-events";
   import { ROLE_CONFIG, getActiveRoles } from "$lib/utils/roles";
   import Crown from "@lucide/svelte/icons/crown";
   import Shield from "@lucide/svelte/icons/shield";
@@ -50,6 +55,7 @@
   import BookOpen from "@lucide/svelte/icons/book-open";
   import CircleHelp from "@lucide/svelte/icons/circle-help";
   import Megaphone from "@lucide/svelte/icons/megaphone";
+  import CalendarDays from "@lucide/svelte/icons/calendar-days";
   import {
     hostsHerbRequests,
     hostsOreRequests,
@@ -67,6 +73,7 @@
   import TrapEffect from "$lib/components/TrapEffect.svelte";
 
   let { data } = $props();
+  const SEASON_ORDER_LIST = Object.keys(SEASONS) as Season[];
 
   // Split monsters by type
   function isCritter(m: ZoneMonster): boolean {
@@ -967,49 +974,53 @@
 
   {#if data.monsters.some((monster) => monster.season) || data.npcs.some((npc) => npc.season)}
     <section class="mb-8">
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 class="text-xl font-semibold">Seasonal events</h2>
+      <div class="mb-4 flex items-center gap-2">
+        <h2 class="flex items-center gap-2 text-xl font-semibold">
+          <CalendarDays class="h-5 w-5 text-violet-500" />
+          Seasonal Events
+        </h2>
         <a
           href={SEASONAL_EVENTS_HREF}
-          class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-          >Dates, rewards and seasonal shops</a
+          class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
+          <CircleHelp class="h-4 w-4" />
+          How seasonal events work
+        </a>
       </div>
-      <div class="grid gap-4 md:grid-cols-2">
-        {#each data.monsters.filter((monster) => monster.season) as monster (monster.id)}
-          <div class="rounded-md border bg-muted/30 p-4 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <EntityLink
-                href="/monsters/{monster.id}"
-                name={monster.name}
-                domain="monster"
-                entityId={monster.id}
-                variant="text"
-              />
-              <SeasonLabel season={monster.season!} />
-            </div>
-            <p class="text-sm text-muted-foreground">
-              Level {monster.level_min}{monster.level_max !== monster.level_min
-                ? `-${monster.level_max}`
-                : ""}
-              · {monster.spawn_count} spawns
-            </p>
-          </div>
-        {/each}
-        {#each data.npcs.filter((npc) => npc.season) as npc (npc.id)}
-          <div class="rounded-md border bg-muted/30 p-4 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <EntityLink
-                href="/npcs/{npc.id}"
-                name={npc.name}
-                domain="npc"
-                entityId={npc.id}
-                variant="text"
-              />
-              <SeasonLabel season={npc.season!} />
-            </div>
-            <RoleBadges roles={npc.roles} />
-          </div>
+      <div class="space-y-3 rounded-md border bg-muted/30 p-4">
+        {#each SEASON_ORDER_LIST.filter((season) => data.monsters.some((m) => m.season === season) || data.npcs.some((n) => n.season === season)) as season (season)}
+          <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD; server-scripts/Npc.cs:Start,UpdateServer_IDLE — seasonal monsters and NPCs are present only during their season. -->
+          <p class="text-muted-foreground">
+            Only during {seasonInSentence(season)}:
+          </p>
+          <ul class="list-disc space-y-1 pl-5">
+            {#each data.monsters.filter((m) => m.season === season) as monster (monster.id)}
+              <li>
+                <a
+                  href="/monsters/{monster.id}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >{monster.name}</a
+                >, level {monster.level_min}{monster.level_max !==
+                monster.level_min
+                  ? ` to ${monster.level_max}`
+                  : ""}, {monster.spawn_count}
+                {monster.spawn_count === 1 ? "spawn" : "spawns"}
+              </li>
+            {/each}
+            {#each data.npcs.filter((n) => n.season === season) as npc (npc.id)}
+              <li>
+                <a
+                  href="/npcs/{npc.id}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >{npc.name}</a
+                >{#if getActiveRoles(npc.roles).length}, {getActiveRoles(
+                    npc.roles,
+                  )
+                    .map((role) => role.label.toLowerCase())
+                    .join(", ")}{/if}
+              </li>
+            {/each}
+          </ul>
         {/each}
       </div>
     </section>
