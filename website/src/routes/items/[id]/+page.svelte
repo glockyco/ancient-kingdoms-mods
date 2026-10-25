@@ -852,7 +852,7 @@
             <div class="grid grid-cols-2 gap-3">
               {#if data.item.weapon_proc_effect_id}
                 <div
-                  class="flex justify-between items-center p-2 rounded bg-muted col-span-2"
+                  class="flex justify-between items-center gap-2 p-2 rounded bg-muted col-span-2"
                 >
                   <!-- Source: server-scripts/WeaponItem.cs:procOnSpellCast; Skills.cs:TrySpellCastWeaponProc — a flagged weapon rolls after damaging spells instead of on hits. -->
                   <span class="text-sm font-medium"
@@ -878,7 +878,7 @@
               {/if}
               {#if data.item.weapon_delay > 0}
                 <div
-                  class="flex justify-between items-center p-2 rounded bg-muted"
+                  class="flex justify-between items-center gap-2 p-2 rounded bg-muted"
                 >
                   <span class="text-sm font-medium">Attack Delay</span>
                   <span class="text-sm font-bold">{data.item.weapon_delay}</span
@@ -888,7 +888,7 @@
               {#if computed.stats}
                 {#each computed.stats as { field, value } (field.field)}
                   <div
-                    class="flex justify-between items-center p-2 rounded bg-muted"
+                    class="flex justify-between items-center gap-2 p-2 rounded bg-muted"
                   >
                     <span class="text-sm font-medium"
                       >{statFieldName(field, "item")}</span
@@ -1593,7 +1593,7 @@
             <div class="space-y-2">
               {#each computed.armorSetAttributeBonuses as bonus (bonus.stat_id)}
                 <div
-                  class="flex items-center justify-between p-2 rounded bg-muted"
+                  class="flex items-center justify-between gap-2 p-2 rounded bg-muted"
                 >
                   <span>{statName(bonus.stat_id as StatId, "item")}</span>
                   <span class={styles.valuePositive}
@@ -1614,7 +1614,7 @@
             <div class="space-y-2">
               {#each computed.armorSetSkillBonuses as bonus (bonus.skill_id)}
                 <div
-                  class="flex items-center justify-between p-2 rounded bg-muted"
+                  class="flex items-center justify-between gap-2 p-2 rounded bg-muted"
                 >
                   <a href="/skills/{bonus.skill_id}" class={styles.link}>
                     {bonus.skill_name}
