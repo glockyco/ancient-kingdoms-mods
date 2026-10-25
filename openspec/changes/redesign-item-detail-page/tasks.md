@@ -8,7 +8,7 @@
 ## 2. Item readers
 
 - [x] 2.1 Derive the taught item's name in `ITEM_DETAIL_SELECT` in `website/src/lib/queries/items.ts` as `taught_by_recipe_name` already is, and update `meta-description.ts`. Verify a database test reads Cold Resistance Potion as the item Cold Resistance Potion Recipe teaches.
-- [ ] 2.2 Add zones to drop rows in `website/src/lib/server/item-sources.ts` and `website/src/lib/types/item-sources.ts`, taken from the kill method's spawn providers, or the altar's zone for an altar event, and none otherwise. Verify a database test in `website/src/lib/queries/popup.db.test.ts` or a sibling that Black Pearl's Fire Templar rows name Despair at 10% and Molten Sanctuary at 1%, and Ashen Key Shard's names only Molten Sanctuary.
+- [x] 2.2 Add zones to drop rows in `website/src/lib/server/item-sources.ts` and `website/src/lib/types/item-sources.ts`, taken from the kill method's spawn providers, or the altar's zone for an altar event, and none otherwise. Verify a database test in `website/src/lib/queries/popup.db.test.ts` or a sibling that Black Pearl's Fire Templar rows name Despair at 10% and Molten Sanctuary at 1%, and Ashen Key Shard's names only Molten Sanctuary.
 
 ## 3. Opening row
 

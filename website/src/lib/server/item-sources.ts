@@ -125,6 +125,24 @@ export function isAltarTierReward(method: MethodView, itemId: string): boolean {
   );
 }
 
+/** Zones of the spawns or altars that provide a kill method, sorted by name. */
+function methodZones(
+  model: AcquisitionModel,
+  method: MethodView,
+): ItemSources["monsters"][number]["zones"] {
+  const zones = new Map<string, string>();
+  for (const provider of method.providers) {
+    const kind = provider.ref.kind;
+    if (kind !== "monster_spawns" && kind !== "altars") continue;
+    const zoneId = sourceEntity(model, kind, provider.ref.id)?.zone_id;
+    const zone = sourceEntity(model, "zones", zoneId);
+    if (zone) zones.set(String(zone.id), str(zone, "name"));
+  }
+  return [...zones]
+    .map(([zone_id, zone_name]) => ({ zone_id, zone_name }))
+    .sort((a, b) => a.zone_name.localeCompare(b.zone_name));
+}
+
 function monsterRow(
   model: AcquisitionModel,
   method: MethodView,
@@ -156,6 +174,7 @@ function monsterRow(
     is_elite: Boolean(detail.is_elite),
     drop_rate: rate,
     seasons: projectMethodSeasons(model, method),
+    zones: methodZones(model, method),
   };
   if (levels.length) {
     row.monster_level_min = Math.min(...levels);

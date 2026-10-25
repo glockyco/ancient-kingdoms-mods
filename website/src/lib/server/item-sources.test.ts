@@ -673,6 +673,28 @@ test("seasonal sources carry drop, quest and containing-pack seasons", async () 
   }
 });
 
+test("drop rows name the zones whose placements carry the drop", async () => {
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  try {
+    const templarRows = async (itemId: string) =>
+      (await getItemSources(db, itemId)).monsters
+        .filter((row) => row.monster_id === "fire_templar")
+        .map((row) => ({
+          zones: row.zones.map((zone) => zone.zone_name),
+          rate: row.drop_rate,
+        }));
+    expect(await templarRows("black_pearl")).toEqual([
+      { zones: ["Despair"], rate: expect.closeTo(0.1, 2) },
+      { zones: ["Molten Sanctuary"], rate: expect.closeTo(0.01, 2) },
+    ]);
+    expect(await templarRows("ashen_key_shard")).toEqual([
+      { zones: ["Molten Sanctuary"], rate: expect.closeTo(0.01, 2) },
+    ]);
+  } finally {
+    db.close();
+  }
+});
+
 test("seasonal shop and currency uses share projected offer seasons", async () => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
   try {

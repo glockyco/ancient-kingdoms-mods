@@ -66,6 +66,8 @@ export interface MonsterSource {
   is_elite: boolean;
   drop_rate: number;
   seasons: readonly Season[];
+  /** Zones of the placements or altars that carry this drop, by name. Empty when no placement carries it. */
+  zones: readonly { zone_id: string; zone_name: string }[];
   per_kill_chance?: number;
   per_kill_chance_with_fatecharm?: number;
   /** The Fatecharm consumed for the boosted chance. */
