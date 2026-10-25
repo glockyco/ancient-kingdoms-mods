@@ -847,6 +847,7 @@
       <p class="mt-3 text-sm text-muted-foreground">
         Appears only during <SeasonLabel
           season={data.monster.season}
+          inSentence
         />{#if spawnWindow}, from {spawnWindow} game time, for {spawnWindowRealMinutes(
             data.monster.spawn_time_start,
             data.monster.spawn_time_end,

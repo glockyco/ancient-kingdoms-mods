@@ -41,7 +41,7 @@ import { getRoleLabel } from "$lib/utils/roles";
 
 import type { Item } from "$lib/queries/items";
 import type { ItemSources, ItemUsages } from "$lib/types/item-sources";
-import { SEASONS, type Season } from "$lib/data/seasonal-events";
+import { seasonInSentence, type Season } from "$lib/data/seasonal-events";
 
 /** Optional pre-loaded data the description may incorporate. */
 export interface ItemMetaContext {
@@ -282,13 +282,7 @@ function itemStatPhrase(item: Item): string {
 
 function seasonalItemSourcePhrase(ctx: ItemMetaContext): string {
   const during = (seasons: readonly Season[]) =>
-    joinList(
-      seasons.map((season) =>
-        season === "christmas"
-          ? `the ${SEASONS[season].name}`
-          : SEASONS[season].name,
-      ),
-    );
+    joinList(seasons.map(seasonInSentence));
   const sources = ctx.sources;
   if (!sources) return ` Obtained during ${during(ctx.seasons!)}.`;
   const phrases: string[] = [];
@@ -309,13 +303,13 @@ function seasonalItemSourcePhrase(ctx: ItemMetaContext): string {
   if (sources.quests.length) {
     // Source: server-scripts/Npc.cs:Start — seasonal quest givers are hidden outside their season.
     phrases.push(
-      `Rewarded by ${joinList([...new Set(sources.quests.map((row) => row.quest_name))])}. These quests are offered during ${during(ctx.seasons!)}.`,
+      `Rewarded by ${joinList([...new Set(sources.quests.map((row) => row.quest_name))])} during ${during(ctx.seasons!)}.`,
     );
   }
   // Source: server-scripts/PackItem.cs:Use — opening a pack delivers finalAmountReceived of its item.
   for (const pack of sources.packs)
     phrases.push(
-      `From ${during(pack.seasons)}: open ${pack.pack_item_name} (${formatNumber(pack.amount)} per pack).`,
+      `Found in ${pack.pack_item_name} (${formatNumber(pack.amount)} per pack) during ${during(pack.seasons)}.`,
     );
   return phrases.length
     ? ` ${phrases.join(" ")}`
@@ -874,7 +868,7 @@ export function monsterDescription(
         : "";
   // Source: server-scripts/Monster.cs:UpdateServer_DEAD — Halloween monsters only spawn while Halloween runs.
   if (monster.season)
-    origin += ` Appears only during ${SEASONS[monster.season].name}.`;
+    origin += ` Appears only during ${seasonInSentence(monster.season)}.`;
   return `Level ${range} ${species}${classification}.${origin}${monster.drop_summary ? ` ${monster.drop_summary}` : ""}${respawn}`;
 }
 
@@ -995,7 +989,7 @@ export function npcDescription(
 
   // Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE,UpdateServer_DEAD — seasonal NPCs are hidden outside their season.
   const season = npc.season
-    ? ` Present only during ${npc.season === "christmas" ? "the " : ""}${SEASONS[npc.season].name}.`
+    ? ` Present only during ${seasonInSentence(npc.season)}.`
     : "";
   return `${primary}${location}${questCount}.${season}${factionPhrase}${tailPhrase}`;
 }
@@ -1249,7 +1243,7 @@ export function questDescription(
   const objectiveSentence = buildObjectiveSentence(quest, objectives);
   // Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE,UpdateServer_DEAD; server-scripts/PlayerQuests.cs:CanAcceptInternal — seasonal NPC quests can only be accepted during their season and repeatable quests reopen after 8 hours.
   const seasonal = quest.seasons?.length
-    ? ` Accept only during ${joinList(quest.seasons.map((season) => `${season === "christmas" ? "the " : ""}${SEASONS[season].name}`))}.${quest.is_repeatable ? " Repeatable 8 hours after completion." : ""}`
+    ? ` Accept only during ${joinList(quest.seasons.map(seasonInSentence))}.${quest.is_repeatable ? " Repeatable 8 hours after completion." : ""}`
     : "";
   return `${tier}${levelPhrase}.${objectiveSentence}${seasonal}`;
 }
@@ -1663,7 +1657,7 @@ function skillOwnershipPhrase(skill: SkillDescriptionInput): string | null {
 export function skillDescription(skill: SkillDescriptionInput): string {
   // Source: server-scripts/Player.cs:Start; server-scripts/EnviromentSystem.cs:CheckSpecialEvents — every online player receives the active season's buff.
   if (skill.season)
-    return `${skill.effect_summary ?? "Double XP"}. Granted to every online player during ${skill.season === "christmas" ? "the " : ""}${SEASONS[skill.season].name}.`;
+    return `${skill.effect_summary ?? "Double XP"}. Granted to every online player during ${seasonInSentence(skill.season)}.`;
   // Source: server-scripts/NecromancerDeathBloomSkill.cs:CorrectedTarget — another living Player or non-familiar Pet only.
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet — owned living combat pet, not a familiar or mercenary.
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — toggles the form buff.

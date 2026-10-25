@@ -14,9 +14,11 @@
     season: Season;
     /** A header badge, or a label inside a row or a sentence. */
     variant?: "badge" | "inline";
+    /** Put the article a sentence needs before the name, as in "the Winter Festival". */
+    inSentence?: boolean;
   }
 
-  let { season, variant = "inline" }: Props = $props();
+  let { season, variant = "inline", inSentence = false }: Props = $props();
 
   // Each season has one icon and tone everywhere it is named.
   const PRESENTATION: Record<Season, { icon: Component; tone: string }> = {
@@ -25,9 +27,10 @@
   };
 
   const Icon = $derived(PRESENTATION[season].icon);
+  const article = $derived(inSentence ? SEASONS[season].article : null);
 </script>
 
-<a
+{#if article}{`${article} `}{/if}<a
   href={seasonHref(season)}
   title="{SEASONS[season].name}, {seasonDates(season)} (UTC dates)"
   class={variant === "badge"

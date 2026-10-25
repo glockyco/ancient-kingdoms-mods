@@ -296,9 +296,10 @@
       <Card.Content class="space-y-3 text-sm">
         <!-- Source: server-scripts/Player.cs:Start; server-scripts/EnviromentSystem.cs:CheckSpecialEvents — every online player receives the season's refreshed buff. -->
         <p>
-          Every online player has this buff during {data.season === "christmas"
-            ? "the "
-            : ""}<SeasonLabel season={data.season} />.
+          Every online player has this buff during <SeasonLabel
+            season={data.season}
+            inSentence
+          />.
         </p>
         <!-- Source: server-scripts/Skills.cs:hasDoubleExp — multiple Double XP buffs still give only one doubling. -->
         <p>

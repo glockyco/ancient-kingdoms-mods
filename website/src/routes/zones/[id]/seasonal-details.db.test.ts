@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { query } from "$lib/db.server";
-import { SEASONS, type Season } from "$lib/data/seasonal-events";
+import type { Season } from "$lib/data/seasonal-events";
 import { load as monsterLoader } from "../../monsters/[id]/+page.server";
 import { load as npcLoader } from "../../npcs/[id]/+page.server";
 import { load as questLoader } from "../../quests/[id]/+page.server";
@@ -134,7 +134,11 @@ describe("seasonal detail pages", () => {
       expect(data.season).toBe(season.id);
       expect(data.learningRanks).toEqual([]);
       expect(data.description).toContain(
-        `Granted to every online player during ${season.id === "christmas" ? "the " : ""}${SEASONS[season.id].name}`,
+        {
+          halloween: "Granted to every online player during Halloween.",
+          christmas:
+            "Granted to every online player during the Winter Festival.",
+        }[season.id],
       );
       expect(data.effectSummary).toContain("cooking");
       expect(data.effectSummary).toContain("scribing & augmentation");

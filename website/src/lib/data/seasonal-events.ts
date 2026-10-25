@@ -6,6 +6,8 @@ interface MonthDay {
 
 interface SeasonDefinition {
   readonly name: string;
+  /** The article a sentence puts before the name, as in "during the Winter Festival". */
+  readonly article: "the" | null;
   /** The season's section on the Seasonal Events page. */
   readonly anchor: string;
   /** First and last UTC dates of the season, both included. */
@@ -17,17 +19,25 @@ interface SeasonDefinition {
 export const SEASONS = {
   halloween: {
     name: "Halloween",
+    article: null,
     anchor: "halloween",
     start: { month: 10, day: 19 },
     end: { month: 11, day: 1 },
   },
   christmas: {
     name: "Winter Festival",
+    article: "the",
     anchor: "winter-festival",
     start: { month: 12, day: 19 },
     end: { month: 1, day: 6 },
   },
 } as const satisfies Record<string, SeasonDefinition>;
+
+/** The season's name as it reads inside a sentence, for example "the Winter Festival". */
+export function seasonInSentence(season: Season): string {
+  const { article, name } = SEASONS[season];
+  return article ? `${article} ${name}` : name;
+}
 
 /** The game's season keys, as the export records them on seasons, actors and offers. */
 export type Season = keyof typeof SEASONS;

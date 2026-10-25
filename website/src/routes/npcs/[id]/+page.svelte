@@ -562,9 +562,7 @@
             >{spawn.zone_name}</a
           >
         {/each}
-        only during {data.npc.season === "christmas" ? "the " : ""}<SeasonLabel
-          season={data.npc.season}
-        />.
+        only during <SeasonLabel season={data.npc.season} inSentence />.
       </p>
     {/if}
 

@@ -153,9 +153,7 @@
       <p class="text-sm">
         Accept this quest only during
         {#each data.seasons as season, index (season)}
-          {index > 0 ? " or " : ""}{season === "christmas"
-            ? "the "
-            : ""}<SeasonLabel {season} />
+          {index > 0 ? " or " : ""}<SeasonLabel {season} inSentence />
         {/each}.
         {#if data.quest.is_repeatable}
           <!-- Source: server-scripts/PlayerQuests.cs:CanAcceptInternal — a repeatable quest can be accepted again 8 hours after completion. -->
