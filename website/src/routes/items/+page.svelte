@@ -32,7 +32,7 @@
   import { ITEMS_PAGE_SIZE, type ItemListPayload } from "$lib/utils/item-list";
   import { getItemTooltips } from "$lib/queries/items";
   import { formatStatField, statField, statFieldName } from "$lib/stats";
-  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import SeasonIcons from "$lib/components/SeasonIcons.svelte";
   import { SEASONS } from "$lib/data/seasonal-events";
 
   let { data } = $props();
@@ -395,7 +395,7 @@
       {qualities[q]?.name ?? `Q${q}`}
     </span>
   {:else if cell.column.id === "name"}
-    <div class="flex flex-wrap items-center gap-2">
+    <div class="flex items-center gap-1.5">
       <ItemLink
         itemId={row.original.id}
         itemName={row.original.name}
@@ -407,9 +407,7 @@
         imageKind="icon"
         class="whitespace-nowrap"
       />
-      {#each row.original.seasons as season (season)}
-        <SeasonLabel {season} variant="inline" />
-      {/each}
+      <SeasonIcons seasons={row.original.seasons} />
     </div>
   {:else if cell.column.id === "item_level"}
     <span class="ml-auto">{row.original.item_level || "-"}</span>

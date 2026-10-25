@@ -8,6 +8,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import SeasonIcons from "$lib/components/SeasonIcons.svelte";
   import {
     SEASON_ORDER,
     SEASONAL_EVENTS_HREF,
@@ -280,8 +281,8 @@
     return cols;
   });
 
-  // Seasonal offers use the sale table's columns, with the season under the
-  // item name. One item sold in both seasons stays two rows, because each
+  // Seasonal offers use the sale table's columns, with the season's icon beside
+  // the item name. One item sold in both seasons stays two rows, because each
   // season is a separate offer. Rows come ordered by season, then by name.
   type SeasonalItemSold = NpcItemSold & { season: Season };
   const seasonalRows: SeasonalItemSold[] = $derived(
@@ -436,7 +437,7 @@
   row: Row<NpcItemSold> | Row<SeasonalItemSold>;
 })}
   {#if cell.column.id === "item_name"}
-    <div class="min-w-0">
+    <div class="flex min-w-0 items-center gap-1.5">
       <ItemLink
         itemId={row.original.item_id}
         itemName={row.original.item_name}
@@ -446,11 +447,9 @@
         variant="reference"
         fallback={Package}
       />
-      {#if "season" in row.original}
-        <div class="mt-0.5 pl-9">
-          <SeasonLabel season={row.original.season} />
-        </div>
-      {/if}
+      <SeasonIcons
+        seasons={"season" in row.original ? [row.original.season] : []}
+      />
     </div>
   {:else if cell.column.id === "price"}
     <span class="ml-auto">{row.original.price.toLocaleString()}</span>

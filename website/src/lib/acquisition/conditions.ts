@@ -667,7 +667,7 @@ function describePredicate(
     case "game_clock_window":
       return `Game time ${p.includeStart ? "from" : "after"} ${p.startHour}:00 ${p.includeEnd ? "through" : "until"} ${p.endHour}:00`;
     case "season_active":
-      return `During ${seasonInSentence(p.season)}, ${seasonDates(p.season)} (UTC dates)`;
+      return `During ${seasonInSentence(p.season)}, ${seasonDates(p.season)}`;
     case "altar_tier":
       return `Activating player's level plus total veteran points ${
         p.maximumScore === null

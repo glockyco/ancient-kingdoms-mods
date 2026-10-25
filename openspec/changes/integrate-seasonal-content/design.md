@@ -35,11 +35,11 @@ Season dates are constants in `CheckSpecialEvents`, not exportable data. They st
 
 The shared reader adds a typed predicate `{ kind: "season_active", season }` with subject `current_world`. It attaches where the game enforces the season:
 
-| Fact | Requirement root |
-| --- | --- |
-| Seasonal vendor offer | method root, purchase phase |
+| Fact                            | Requirement root                                                |
+| ------------------------------- | --------------------------------------------------------------- |
+| Seasonal vendor offer           | method root, purchase phase                                     |
 | Placement of a seasonal monster | provider root, beside the summon-trigger roots in `assemble.ts` |
-| Placement of a seasonal NPC | provider root |
+| Placement of a seasonal NPC     | provider root                                                   |
 
 Completion of a Winter Festival quest at Grimnir Stonehammer gets no season root, because the game does not gate completion. Its seasonal dependency comes through `quest_state active`, whose only route is acceptance from Santa.
 
@@ -59,7 +59,7 @@ Alternative: recursive loading in the website. It keeps one implementation but e
 
 ### 5. Presentation shares one season label
 
-A `SeasonLabel` component renders the season's icon and name and links to its section. Detail pages put it in the header badge row and in source rows. Lists use it in the name cell and offer a Season facet. The map uses it in tooltips, popup callouts and source rows. The component owns each season's icon and tone, so Ghost for Halloween and Snowflake for the Winter Festival are not chosen per page. The season module stays free of components, because Node scripts import it through the acquisition model. The item source summary keeps a `seasonal` type for shop offers, labelled "Seasonal shop", and other rows carry their seasons.
+A `SeasonLabel` component renders the season's icon and name and links to its section. Detail pages put it in the header badge row. Table rows, in lists and in detail page tables, show only the icon beside the name through `SeasonIcons`, because a text label beside or under a name wrapped rows unevenly. The icon link carries the season's name for assistive technology and its name and dates on hover. Lists also offer a Season facet. The map uses the text label in tooltips, popup callouts and source rows. The component owns each season's icon and tone, so Ghost for Halloween and Snowflake for the Winter Festival are not chosen per page, and the light tones keep 3:1 contrast because the icon alone can carry the season. The season module stays free of components, because Node scripts import it through the acquisition model. The item source summary keeps a `seasonal` type for shop offers, labelled "Seasonal shop", and other rows carry their seasons.
 
 ### 6. The map presents seasonal content as row data
 

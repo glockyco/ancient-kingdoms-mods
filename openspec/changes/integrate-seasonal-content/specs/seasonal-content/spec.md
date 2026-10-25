@@ -84,13 +84,19 @@ An NPC page and its map popup SHALL list the NPC's seasonal stock separately fro
 
 ### Requirement: Lists filter by season
 
-The monster, NPC, quest and item lists SHALL label seasonal rows and SHALL offer a filter that selects the content of one season.
+The monster, NPC, quest and item lists SHALL mark seasonal rows and SHALL offer a filter that selects the content of one season. A table row SHALL mark its seasons with each season's icon beside the row's name, linked to the season's section and named to assistive technology and on hover, so the marker never wraps the row.
 
 #### Scenario: Filtering items by Halloween
 
 - **WHEN** a visitor filters the item list to Halloween
 - **THEN** the list shows the Halloween treats, costumes, tokens and fireworks
 - **AND** it does not show year-round items with seasonal names
+
+#### Scenario: An item sold in both seasons
+
+- **WHEN** a visitor finds Emerald Pop in the item list
+- **THEN** a ghost and a snowflake follow its name on the same line
+- **AND** hovering either names its season and dates
 
 ### Requirement: Quest pages state seasonal availability and repetition
 

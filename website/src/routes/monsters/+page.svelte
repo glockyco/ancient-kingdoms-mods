@@ -1,7 +1,7 @@
 <script lang="ts">
   import Skull from "@lucide/svelte/icons/skull";
   import EntityLink from "$lib/components/EntityLink.svelte";
-  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import SeasonIcons from "$lib/components/SeasonIcons.svelte";
   import { SEASONS } from "$lib/data/seasonal-events";
   import { SvelteMap } from "svelte/reactivity";
   import {
@@ -256,7 +256,7 @@
       />
     </div>
   {:else if cell.column.id === "name"}
-    <div class="flex flex-wrap items-center gap-2">
+    <div class="flex items-center gap-1.5">
       <EntityLink
         href="/monsters/{row.original.id}"
         name={row.original.name}
@@ -269,9 +269,7 @@
         size={32}
         class="flex whitespace-nowrap"
       />
-      {#if row.original.season}
-        <SeasonLabel season={row.original.season} variant="inline" />
-      {/if}
+      <SeasonIcons seasons={row.original.season ? [row.original.season] : []} />
     </div>
   {:else if cell.column.id === "level_min"}
     {@const hasVariance = row.original.level_min !== row.original.level_max}

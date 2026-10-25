@@ -1,7 +1,7 @@
 <script lang="ts">
   import Users from "@lucide/svelte/icons/users";
   import EntityLink from "$lib/components/EntityLink.svelte";
-  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import SeasonIcons from "$lib/components/SeasonIcons.svelte";
   import { SEASONS } from "$lib/data/seasonal-events";
   import { SvelteMap } from "svelte/reactivity";
   import {
@@ -225,9 +225,7 @@
         <IconBadge icon={Sparkles} iconClass="text-amber-500">Notable</IconBadge
         >
       {/if}
-      {#if row.original.season}
-        <SeasonLabel season={row.original.season} variant="inline" />
-      {/if}
+      <SeasonIcons seasons={row.original.season ? [row.original.season] : []} />
     </div>
   {:else if cell.column.id === "faction"}
     <span class="whitespace-nowrap">{row.original.faction || "-"}</span>

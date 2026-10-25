@@ -25,7 +25,7 @@
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
-  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import SeasonIcons from "$lib/components/SeasonIcons.svelte";
   import {
     SEASONAL_EVENTS_HREF,
     SEASONS,
@@ -284,7 +284,7 @@
 })}
   {@const hasVariance = row.original.level_min !== row.original.level_max}
   {#if cell.column.id === "name"}
-    <div class="flex flex-col items-start gap-1">
+    <div class="flex min-w-0 items-center gap-1.5">
       <EntityLink
         href="/monsters/{row.original.id}"
         name={row.original.name}
@@ -298,7 +298,7 @@
         class="min-w-0 max-w-full"
         nameClass="truncate"
       />
-      {#if row.original.season}<SeasonLabel season={row.original.season} />{/if}
+      <SeasonIcons seasons={row.original.season ? [row.original.season] : []} />
     </div>
   {:else if cell.column.id === "level"}
     <span class="ml-auto"
@@ -395,7 +395,7 @@
   row: Row<ZoneNpc>;
 })}
   {#if cell.column.id === "name"}
-    <div class="flex flex-col items-start gap-1">
+    <div class="flex min-w-0 items-center gap-1.5">
       <EntityLink
         href="/npcs/{row.original.id}"
         name={row.original.name}
@@ -409,7 +409,7 @@
         class="min-w-0 max-w-full"
         nameClass="truncate"
       />
-      {#if row.original.season}<SeasonLabel season={row.original.season} />{/if}
+      <SeasonIcons seasons={row.original.season ? [row.original.season] : []} />
     </div>
   {:else if cell.column.id === "roles"}
     <RoleBadges roles={row.original.roles} />

@@ -18,7 +18,7 @@
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import { QUEST_FLAG_CONFIG } from "$lib/utils/quests";
-  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import SeasonIcons from "$lib/components/SeasonIcons.svelte";
   import { SEASONS } from "$lib/data/seasonal-events";
 
   let { data } = $props();
@@ -216,16 +216,14 @@
   row: Row<QuestRow>;
 })}
   {#if cell.column.id === "name"}
-    <div class="flex flex-wrap items-center gap-2">
+    <div class="flex items-center gap-1.5">
       <a
         href="/quests/{row.original.id}"
         class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
       >
         {row.original.name}
       </a>
-      {#each row.original.seasons as season (season)}
-        <SeasonLabel {season} variant="inline" />
-      {/each}
+      <SeasonIcons seasons={row.original.seasons} />
     </div>
   {:else if cell.column.id === "display_type"}
     <QuestTypeBadge type={row.original.display_type} />
