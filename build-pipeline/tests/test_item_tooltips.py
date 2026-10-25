@@ -8,7 +8,23 @@ from compendium.denormalizers.items.equipment import _denormalize_armor_sets
 from compendium.denormalizers.items.tooltips import (
     _convert_unity_markup_to_html,
     run,
+    tooltip_stat_fields,
 )
+
+
+def test_tooltip_states_only_stats_with_a_placeholder():
+    template = (
+        "{DEFENSEBONUS} AC\n"
+        "+{CRITICALCHANCEBONUS}% Critical Chance\n"
+        "{DELAY} Delay\n"
+        "+10 Magic Resist\n"
+        "Tempo: quickens your movements."
+    )
+    assert tooltip_stat_fields(template) == [
+        "critical_chance",
+        "defense",
+        "weapon_delay",
+    ]
 
 
 @pytest.mark.parametrize("alignment", ["left", "center", "right", "justify"])

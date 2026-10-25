@@ -12,6 +12,71 @@ from rich.console import Console
 
 console = Console()
 
+# Source: server-scripts/EquipmentItem.cs:ToolTip — the game fills each placeholder with the item's own stat value. Movement speed has no placeholder.
+_STAT_PLACEHOLDERS: dict[str, str] = {
+    "defense": "DEFENSEBONUS",
+    "health_bonus": "HEALTHBONUS",
+    "mana_bonus": "MANABONUS",
+    "energy_bonus": "ENERGYBONUS",
+    "strength": "STRENGTHBONUS",
+    "constitution": "CONSTITUTIONBONUS",
+    "dexterity": "DEXTERITYBONUS",
+    "intelligence": "INTELLIGENCEBONUS",
+    "wisdom": "WISDOMBONUS",
+    "charisma": "CHARISMABONUS",
+    "magic_resist": "MAGICRESISTBONUS",
+    "poison_resist": "POISONRESISTBONUS",
+    "fire_resist": "FIRERESISTBONUS",
+    "cold_resist": "COLDRESISTBONUS",
+    "disease_resist": "DISEASERESISTBONUS",
+    "damage": "DAMAGEBONUS",
+    "magic_damage": "MAGICDAMAGEBONUS",
+    "haste": "HASTEBONUS",
+    "spell_haste": "SPELLHASTEBONUS",
+    "accuracy": "ACCURACYBONUS",
+    "block_chance": "BLOCKCHANCEBONUS",
+    "critical_chance": "CRITICALCHANCEBONUS",
+    "resist_fear_chance": "FEARRESISTBONUS",
+    "critical_resist": "CRITICALRESISTBONUS",
+    "hp_regen_bonus": "HPREGENBONUS",
+    "mana_regen_bonus": "MANAREGENBONUS",
+}
+
+# Source: server-scripts/EquipmentItem.cs:ToolTip — these fractions are written as percent with format "0.##".
+_PERCENT_STATS = frozenset(
+    {
+        "haste",
+        "spell_haste",
+        "accuracy",
+        "block_chance",
+        "critical_chance",
+        "resist_fear_chance",
+        "critical_resist",
+    }
+)
+
+
+def _format_stat(field: str, value: float) -> str:
+    """Format a stat the way the game fills its tooltip placeholder."""
+    if field in _PERCENT_STATS:
+        return f"{abs(value * 100):.2f}".rstrip("0").rstrip(".") if value else "0"
+    return str(value)
+
+
+def tooltip_stat_fields(template: str) -> list[str]:
+    """Stat fields whose value the item's tooltip states through a placeholder.
+
+    A number typed into the template is not counted: it can differ from the stat.
+    """
+    fields = [
+        field
+        for field, placeholder in _STAT_PLACEHOLDERS.items()
+        if f"{{{placeholder}}}" in template
+    ]
+    if "{DELAY}" in template:
+        fields.append("weapon_delay")
+    return sorted(fields)
+
 
 def _convert_unity_markup_to_html(text: str) -> str:
     """Convert Unity TextMeshPro markup tags to HTML."""
@@ -134,76 +199,16 @@ def _parse_tooltip(item: dict, stat_names: dict[str, str | None]) -> str:
     # Build replacements dict for placeholders
     replacements: dict[str, str] = {
         "CATEGORY": item.get("slot") or "",
-        # Equipment stats
         "DURABILITY": (
             "<color=#DA4ADC>Durability: 100%</color>"
             if stats.get("max_durability")
             else ""
         ),
-        "DEFENSEBONUS": str(stats.get("defense", 0)),
-        "HEALTHBONUS": str(stats.get("health_bonus", 0)),
-        "MANABONUS": str(stats.get("mana_bonus", 0)),
-        "ENERGYBONUS": str(stats.get("energy_bonus", 0)),
-        # Primary attributes
-        "STRENGTHBONUS": str(stats.get("strength", 0)),
-        "CONSTITUTIONBONUS": str(stats.get("constitution", 0)),
-        "DEXTERITYBONUS": str(stats.get("dexterity", 0)),
-        "INTELLIGENCEBONUS": str(stats.get("intelligence", 0)),
-        "WISDOMBONUS": str(stats.get("wisdom", 0)),
-        "CHARISMABONUS": str(stats.get("charisma", 0)),
-        # Resistances
-        "MAGICRESISTBONUS": str(stats.get("magic_resist", 0)),
-        "POISONRESISTBONUS": str(stats.get("poison_resist", 0)),
-        "FIRERESISTBONUS": str(stats.get("fire_resist", 0)),
-        "COLDRESISTBONUS": str(stats.get("cold_resist", 0)),
-        "DISEASERESISTBONUS": str(stats.get("disease_resist", 0)),
-        # Weapon stats
-        "DAMAGEBONUS": str(stats.get("damage", 0)),
-        "MAGICDAMAGEBONUS": str(stats.get("magic_damage", 0)),
         "DELAY": str(item.get("weapon_delay") or 0),
-        # Combat mechanics (percentage values stored as 0.0-1.0, display as 0-100)
-        # Matches C#'s "0.##" format: up to 2 decimal places, trailing zeros removed
-        # Note: The raw tooltips already include % suffix, so we only output the number
-        "HASTEBONUS": (
-            f"{abs(stats['haste'] * 100):.2f}".rstrip("0").rstrip(".")
-            if stats.get("haste")
-            else "0"
-        ),
-        "SPELLHASTEBONUS": (
-            f"{abs(stats['spell_haste'] * 100):.2f}".rstrip("0").rstrip(".")
-            if stats.get("spell_haste")
-            else "0"
-        ),
-        "ACCURACYBONUS": (
-            f"{abs(stats['accuracy'] * 100):.2f}".rstrip("0").rstrip(".")
-            if stats.get("accuracy")
-            else "0"
-        ),
-        "BLOCKCHANCEBONUS": (
-            f"{abs(stats['block_chance'] * 100):.2f}".rstrip("0").rstrip(".")
-            if stats.get("block_chance")
-            else "0"
-        ),
-        "CRITICALCHANCEBONUS": (
-            f"{abs(stats['critical_chance'] * 100):.2f}".rstrip("0").rstrip(".")
-            if stats.get("critical_chance")
-            else "0"
-        ),
-        "FEARRESISTBONUS": (
-            f"{abs(stats['resist_fear_chance'] * 100):.2f}".rstrip("0").rstrip(".")
-            if stats.get("resist_fear_chance")
-            else "0"
-        ),
-        "CRITICALRESISTBONUS": (
-            f"{abs(stats['critical_resist'] * 100):.2f}".rstrip("0").rstrip(".")
-            if stats.get("critical_resist")
-            else "0"
-        ),
-        "HPREGENBONUS": str(stats.get("hp_regen_bonus", 0)),
-        "MANAREGENBONUS": str(stats.get("mana_regen_bonus", 0)),
-        # Weapon requirements
         "REQUIREDAMMO": item.get("weapon_required_ammo_id") or "",
     }
+    for field, placeholder in _STAT_PLACEHOLDERS.items():
+        replacements[placeholder] = _format_stat(field, stats.get(field, 0))
 
     # Replace all placeholders
     for key, value in replacements.items():
@@ -322,8 +327,12 @@ def run(conn: sqlite3.Connection) -> None:
 
         if tooltip_html:
             conn.execute(
-                "UPDATE items SET tooltip_html = ? WHERE id = ?",
-                (tooltip_html, item["id"]),
+                "UPDATE items SET tooltip_html = ?, tooltip_stat_fields = ? WHERE id = ?",
+                (
+                    tooltip_html,
+                    json.dumps(tooltip_stat_fields(item["tooltip"])),
+                    item["id"],
+                ),
             )
             updated_count += 1
 

@@ -30,6 +30,8 @@ export interface Item {
   icon_path: string;
   tooltip: string;
   tooltip_html: string;
+  /** JSON array of stat fields whose value the tooltip states through a placeholder. */
+  tooltip_stat_fields: string;
   comments: string;
   slot: string | null;
   weapon_category: string | null;
@@ -116,6 +118,7 @@ export interface Item {
   augment_attribute_bonuses: string | null; // JSON
   // Alchemy recipe (for recipe items)
   recipe_potion_learned_id: string | null;
+  /** Name of the item the recipe teaches, read from that item. */
   recipe_potion_learned_name: string | null;
   alchemy_recipe_level_required: number | null;
   taught_by_recipe_id: string | null;
@@ -134,6 +137,7 @@ export const ITEM_DETAIL_SELECT = `SELECT i.*,
    WHERE d.display_kind = 'alchemy' AND (d.declared_result_item_id = i.id OR d.declared_result_item_id = i.recipe_potion_learned_id)) AS alchemy_recipe_level_required,
   (SELECT t.id FROM items t WHERE t.recipe_potion_learned_id = i.id ORDER BY t.name, t.id LIMIT 1) AS taught_by_recipe_id,
   (SELECT t.name FROM items t WHERE t.recipe_potion_learned_id = i.id ORDER BY t.name, t.id LIMIT 1) AS taught_by_recipe_name,
+  (SELECT p.name FROM items p WHERE p.id = i.recipe_potion_learned_id) AS recipe_potion_learned_name,
   (SELECT MAX(d.experience) FROM acquisition_recipe_details d WHERE d.display_kind = 'alchemy' AND d.declared_result_item_id = i.id) AS alchemy_exp,
   (SELECT MAX(r.num_items) FROM item_pool_definitions p JOIN loot_chest_rules r ON r.pool_id = p.pool_id WHERE p.item_id = i.id) AS chest_num_items,
   (SELECT json_group_array(json_object('probability', e.probability, 'duplicate_group', e.duplicate_group, 'resolution', e.resolution))

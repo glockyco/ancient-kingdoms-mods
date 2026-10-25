@@ -373,6 +373,7 @@ CREATE TABLE items (
     icon_path TEXT DEFAULT '',
     tooltip TEXT DEFAULT '',
     tooltip_html TEXT DEFAULT '',  -- Pre-rendered HTML tooltip
+    tooltip_stat_fields TEXT NOT NULL DEFAULT '[]',  -- JSON: stat fields whose value tooltip_html states through a placeholder
     comments TEXT DEFAULT '',
 
     -- Equipment properties
@@ -455,7 +456,6 @@ CREATE TABLE items (
     augment_attribute_bonuses TEXT,   -- JSON: [{"stat_id": "strength", "bonus": 10}, ...]
     augment_is_defensive INTEGER,  -- NULL for non-augments; 1=Defensive (armor slots: Head/Chest/Legs/Feet/Hands/Bracers/Belt/Shield), 0=Offensive (weapon slots). Source: server-scripts/AugmentItem.cs isDefensiveAugment
     recipe_potion_learned_id TEXT REFERENCES items(id),
-    recipe_potion_learned_name TEXT,
     relic_buff_id TEXT REFERENCES skills(id),
     relic_buff_name TEXT,
     is_ornamentation_token BOOLEAN DEFAULT 0
