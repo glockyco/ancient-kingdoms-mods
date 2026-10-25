@@ -12,6 +12,7 @@ import {
   sourceEntity,
 } from "./item-sources";
 import { SEASONS, type Season } from "$lib/data/seasonal-events";
+import { formatNumber } from "$lib/utils/format";
 
 export interface ItemSourceSummary {
   item_id: string;
@@ -133,7 +134,7 @@ export function itemSourceSummariesFromModel(
                 "merge",
                 input.item_id,
                 method.kind === "fragment"
-                  ? `Combine ${input.amount} ${name("items", input.item_id)}`
+                  ? `Combine ${formatNumber(input.amount)} ${name("items", input.item_id)}`
                   : name("items", input.item_id),
               );
           break;

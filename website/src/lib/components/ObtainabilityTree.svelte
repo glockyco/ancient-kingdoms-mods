@@ -9,6 +9,7 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import Combine from "@lucide/svelte/icons/combine";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import { formatNumber } from "$lib/utils/format";
 
   interface Props {
     node: ObtainabilityNode;
@@ -78,7 +79,7 @@
         {/each}
         {#if moreCount > 0}
           <span class="text-muted-foreground">
-            +{moreCount} more
+            +{formatNumber(moreCount)} more
           </span>
         {/if}
       </div>
@@ -119,7 +120,9 @@
     {/if}
 
     {#if displayAmount > 1}
-      <span class="text-muted-foreground text-sm">x{displayAmount}</span>
+      <span class="text-muted-foreground text-sm"
+        >x{formatNumber(displayAmount)}</span
+      >
     {/if}
 
     {#if !hasChildren}
@@ -183,7 +186,9 @@
                   {/if}
                 {/each}
                 {#if moreCount > 0}
-                  <span class="text-muted-foreground">+{moreCount} more</span>
+                  <span class="text-muted-foreground"
+                    >+{formatNumber(moreCount)} more</span
+                  >
                 {/if}
               </div>
             </div>

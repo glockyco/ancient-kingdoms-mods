@@ -164,7 +164,7 @@
     />
     {#if row.original.count > 1}
       <span class="text-muted-foreground"
-        >&nbsp;({row.original.count} traps)</span
+        >&nbsp;({formatNumber(row.original.count)} traps)</span
       >
     {/if}
   {:else if cell.column.id === "mechanics"}

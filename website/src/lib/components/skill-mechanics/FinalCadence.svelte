@@ -4,6 +4,7 @@
   import { getMechanicsContext } from "./context";
   import { DEFENSE_RATES } from "$lib/calculation/combat";
   import ResistChance from "./ResistChance.svelte";
+  import { formatNumber } from "$lib/utils/format";
 
   const mechanics = getMechanicsContext();
   const { skill } = $derived(mechanics);
@@ -58,8 +59,9 @@
   <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,AddHealingAggro — actual healing divided by six rounds up and adds threat to nearby monsters fighting the healed ally. -->
   <p class="text-muted-foreground">
     For each ally healed, healing adds threat equal to a sixth of the Hit Points
-    restored, rounded up, on monsters within {2 * skill.cast_range!.base_value} yd
-    of the caster that are fighting that ally.
+    restored, rounded up, on monsters within {formatNumber(
+      2 * skill.cast_range!.base_value,
+    )} yd of the caster that are fighting that ally.
   </p>
   <!-- Source: server-scripts/Combat.cs:712-721,902-919,1610-1651 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
   <p class="text-muted-foreground">

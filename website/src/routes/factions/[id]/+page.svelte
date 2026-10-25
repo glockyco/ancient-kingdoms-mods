@@ -88,15 +88,6 @@
     return effect ? formatNumber(effect.amount_max, { decimals: 2 }) : "-";
   }
 
-  /**
-   * Sort key for a pre-formatted amount: the top of the range, ungrouped.
-   * The helpers hand back display strings like "31,400" or "15-21".
-   */
-  function amountSortValue(formatted: string): number {
-    const top = formatted.split("-").pop() ?? "";
-    return Number(top.replace(/,/g, "")) || 0;
-  }
-
   function monsterLevel(monster: FactionMonsterRow): string {
     return monster.level_min === monster.level_max
       ? `${monster.level_min}`
@@ -135,7 +126,12 @@
         id: "amount",
         header: "On kill",
         size: 130,
-        accessorFn: (row) => amountSortValue(monsterAmount(row, direction)),
+        accessorFn: (row) =>
+          monsterKillReputation(row).find(
+            (effect) =>
+              effect.direction === direction &&
+              effect.factions.includes(data.faction.name),
+          )?.amount_max ?? 0,
       },
       { id: "location", header: "Location", size: 90, enableSorting: false },
     ];
@@ -151,7 +147,12 @@
         id: "amount",
         header: "On kill",
         size: 130,
-        accessorFn: (row) => amountSortValue(npcAmount(row, direction)),
+        accessorFn: (row) =>
+          npcKillReputation(row).find(
+            (effect) =>
+              effect.direction === direction &&
+              effect.factions.includes(data.faction.name),
+          )?.amount_max ?? 0,
       },
       { id: "location", header: "Location", size: 90, enableSorting: false },
     ];
@@ -235,13 +236,13 @@
 
 {#snippet reputationValue(value: number, positive: boolean)}
   <span class={positive ? GAIN_CLASS : LOSS_CLASS}>
-    {positive ? "+" : "−"}{Math.abs(value).toLocaleString()}
+    {positive ? "+" : "−"}{formatNumber(Math.abs(value))}
   </span>
 {/snippet}
 
 {#snippet requirementValue(value: number)}
   <span>{tierFor(value)}</span>
-  <span class="text-muted-foreground">&nbsp;({value.toLocaleString()})</span>
+  <span class="text-muted-foreground">&nbsp;({formatNumber(value)})</span>
 {/snippet}
 
 {#snippet monsterCell(
@@ -461,7 +462,7 @@
       size={28}
     />
   {:else if cell.column.id === "requires"}
-    Requires 15,000 reputation
+    Requires {formatNumber(15000)} reputation
   {:else if cell.column.id === "location"}
     <MapLink entityId={row.original.id} entityType="npc" compact />
   {:else}
@@ -504,7 +505,7 @@
         tierFor(row.original.faction_required_to_buy)}</span
     >
     <span class="text-muted-foreground"
-      >&nbsp;({row.original.faction_required_to_buy.toLocaleString()})</span
+      >&nbsp;({formatNumber(row.original.faction_required_to_buy)})</span
     >
   {:else}
     {cell.getValue()}
@@ -531,7 +532,7 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "base_price"}
-    {row.original.base_price.toLocaleString()} gold
+    {formatNumber(row.original.base_price)} gold
   {:else if cell.column.id === "faction_required"}
     {@render requirementValue(row.original.faction_required)}
   {:else if cell.column.id === "location"}
@@ -595,9 +596,9 @@
     </div>
 
     <p class="mt-3 text-sm text-muted-foreground">
-      {data.faction.members.length.toLocaleString()} members ·
-      {data.faction.monstersImprove.length.toLocaleString()} monsters raise reputation
-      · {data.faction.questGrants.length.toLocaleString()} quests grant reputation
+      {formatNumber(data.faction.members.length)} members ·
+      {formatNumber(data.faction.monstersImprove.length)} monsters raise reputation
+      · {formatNumber(data.faction.questGrants.length)} quests grant reputation
     </p>
 
     <p class="mt-2 text-sm text-muted-foreground">
@@ -641,7 +642,7 @@
       {#if data.faction.vendors.length > 0}
         <div>
           <h3 class="mb-3 text-lg font-medium">
-            Faction vendors ({data.faction.vendors.length})
+            Faction vendors ({formatNumber(data.faction.vendors.length)})
           </h3>
           <DataTable
             data={data.faction.vendors}
@@ -659,7 +660,7 @@
       {#if data.faction.gatedItems.length > 0}
         <div>
           <h3 class="mb-3 text-lg font-medium">
-            Items ({data.faction.gatedItems.length})
+            Items ({formatNumber(data.faction.gatedItems.length)})
           </h3>
           <DataTable
             data={data.faction.gatedItems}
@@ -680,7 +681,7 @@
       {#if data.faction.houses.length > 0}
         <div>
           <h3 class="mb-3 text-lg font-medium">
-            Houses ({data.faction.houses.length})
+            Houses ({formatNumber(data.faction.houses.length)})
           </h3>
           <DataTable
             data={data.faction.houses}
@@ -698,7 +699,7 @@
       {#if data.faction.questRequirements.length > 0}
         <div>
           <h3 class="mb-3 text-lg font-medium">
-            Quests ({data.faction.questRequirements.length})
+            Quests ({formatNumber(data.faction.questRequirements.length)})
           </h3>
           <DataTable
             data={data.faction.questRequirements}
@@ -722,7 +723,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Users class="h-5 w-5 text-blue-500" />
-        Members ({data.faction.members.length})
+        Members ({formatNumber(data.faction.members.length)})
       </h2>
       <DataTable
         data={data.faction.members}

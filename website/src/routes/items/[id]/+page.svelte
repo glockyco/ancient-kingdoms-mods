@@ -25,6 +25,7 @@
     formatItemType,
     itemListType,
     formatPercent,
+    formatNumber,
   } from "$lib/utils/format";
   import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
   import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
@@ -458,7 +459,7 @@
       item_id: content.item_id,
       item_name: content.item_name,
       value: content.amount,
-      label: String(content.amount),
+      label: formatNumber(content.amount),
     })),
   );
   const possibleItemRows = $derived(
@@ -501,10 +502,6 @@
       !isTool &&
       !tooltipStatFields.has("weapon_delay"),
   );
-
-  function formatGold(amount: number): string {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
-  }
 
   // Relation tables. Each keeps the name first and its number second, so a phone shows both before the table scrolls.
   // Number columns are sized to fit "100.0%" and a header with its sort icon, so a phone shows them whole.
@@ -697,7 +694,11 @@
 </script>
 
 {#snippet number(value: string | number)}
-  <span class="ml-auto tabular-nums">{value}</span>
+  <span class="ml-auto tabular-nums"
+    >{typeof value === "number"
+      ? formatNumber(value, { decimals: 20 })
+      : value}</span
+  >
 {/snippet}
 
 {#snippet percent(value: number)}
@@ -740,7 +741,7 @@
           >{material.item_name}</a
         >
         <span class="tabular-nums text-muted-foreground"
-          >×{material.amount}</span
+          >×{formatNumber(material.amount)}</span
         >
       </li>
     {/each}
@@ -837,16 +838,18 @@
   {:else if cell.column.id === "price"}
     <span class="ml-auto tabular-nums {styles.valueCurrency}">
       {#if vendor.currency_item_id}
-        {vendor.price}
+        {formatNumber(vendor.price)}
         <a
           href={resolve("/items/[id]", { id: vendor.currency_item_id })}
           class={styles.link}>{vendor.currency_item_name}</a
         >
       {:else}
-        {formatGold(vendor.price)}g
+        {formatNumber(vendor.price)}g
       {/if}
       {#if vendor.amount && vendor.amount > 1}
-        <span class="text-muted-foreground">for {vendor.amount}</span>
+        <span class="text-muted-foreground"
+          >for {formatNumber(vendor.amount)}</span
+        >
       {/if}
     </span>
   {:else if cell.column.id === "requirement"}
@@ -943,7 +946,7 @@
       {@render number(
         gather.amount_min === gather.amount_max
           ? gather.amount_max
-          : `${gather.amount_min}-${gather.amount_max}`,
+          : `${formatNumber(gather.amount_min)}-${formatNumber(gather.amount_max)}`,
       )}
     {/if}
   {:else if cell.column.id === "zone"}
@@ -1266,7 +1269,7 @@
             </div>
             <div class={styles.fact}>
               <dt class={styles.label}>Fragments Needed</dt>
-              <dd>{data.item.fragment_amount_needed}</dd>
+              <dd>{formatNumber(data.item.fragment_amount_needed)}</dd>
             </div>
           </dl>
         </Card.Content>
@@ -1450,7 +1453,7 @@
             {#if data.item.max_stack > 1}
               <div class={styles.fact}>
                 <dt class={styles.label}>Max Stack</dt>
-                <dd>{data.item.max_stack}</dd>
+                <dd>{formatNumber(data.item.max_stack)}</dd>
               </div>
             {/if}
             {#if data.item.backpack_slots > 0}
@@ -1469,13 +1472,13 @@
             {#if computed.maxDurability && !isAugment}
               <div class={styles.fact}>
                 <dt class={styles.label}>Max Durability</dt>
-                <dd>{computed.maxDurability}</dd>
+                <dd>{formatNumber(computed.maxDurability)}</dd>
               </div>
             {/if}
             {#if data.item.mount_speed > 0}
               <div class={styles.fact}>
                 <dt class={styles.label}>Mount Speed</dt>
-                <dd>{data.item.mount_speed}</dd>
+                <dd>{formatNumber(data.item.mount_speed, { decimals: 20 })}</dd>
               </div>
             {/if}
             {#if data.item.food_type}
@@ -1497,7 +1500,7 @@
                 <dt class={styles.label}>Buy Price</dt>
                 <dd class={styles.valueCurrency}>
                   {#if computed.soldBy[0].currency_item_id}
-                    {formatGold(data.item.buy_price)}
+                    {formatNumber(data.item.buy_price)}
                     <a
                       href={resolve("/items/[id]", {
                         id: computed.soldBy[0].currency_item_id,
@@ -1507,7 +1510,7 @@
                       {computed.soldBy[0].currency_item_name}
                     </a>
                   {:else}
-                    {formatGold(data.item.buy_price)}g
+                    {formatNumber(data.item.buy_price)}g
                   {/if}
                 </dd>
               </div>
@@ -1516,7 +1519,7 @@
               <div class={styles.fact}>
                 <dt class={styles.label}>Sell Price</dt>
                 <dd class={styles.valueCurrency}>
-                  {formatGold(data.item.sell_price)}g
+                  {formatNumber(data.item.sell_price)}g
                 </dd>
               </div>
             {/if}
@@ -1526,7 +1529,7 @@
                 <dt class={styles.label}>Essence Value</dt>
                 <dd>
                   <a href="/items/primal_essence" class={styles.link}
-                    >{data.item.primal_essence_value} Primal Essence</a
+                    >{formatNumber(data.item.primal_essence_value)} Primal Essence</a
                   >
                 </dd>
               </div>
@@ -1580,7 +1583,9 @@
               <dt class={styles.label}>
                 Restores {statName("health", "item")}
               </dt>
-              <dd class={styles.valuePositive}>+{data.item.usage_health} HP</dd>
+              <dd class={styles.valuePositive}>
+                +{formatNumber(data.item.usage_health)} HP
+              </dd>
             </div>
           {/if}
           {#if data.item.usage_mana > 0}
@@ -1589,7 +1594,7 @@
                 Restores {statName("mana", "item")}
               </dt>
               <dd class="text-blue-600 dark:text-blue-400">
-                +{data.item.usage_mana} MP
+                +{formatNumber(data.item.usage_mana)} MP
               </dd>
             </div>
           {/if}
@@ -1599,7 +1604,7 @@
                 Restores {statName("rage", "item")}
               </dt>
               <dd class={styles.valueCurrency}>
-                +{data.item.usage_energy}
+                +{formatNumber(data.item.usage_energy)}
                 {statName("rage", "item")}
               </dd>
             </div>
@@ -1858,10 +1863,10 @@
             <div class={styles.label}>Removing</div>
             <!-- Source: server-scripts/UINpcTrading.cs:168-173,253-257 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
             <div class={styles.value}>
-              Visit an Augmenter to remove a socketed augment. Removal costs {formatGold(
+              Visit an Augmenter to remove a socketed augment. Removal costs {formatNumber(
                 5000,
-              )}g for a common augment, {formatGold(10000)}g for a magic
-              augment, or {formatGold(15000)}g for an epic augment. The
+              )}g for a common augment, {formatNumber(10000)}g for a magic
+              augment, or {formatNumber(15000)}g for an epic augment. The
               Augmenter returns it to your inventory.
             </div>
           </div>
@@ -1958,12 +1963,11 @@
     >
       {#snippet description()}
         {#if hasFixedChestContents}
-          Each opening gives {Math.min(
-            data.item.chest_num_items,
-            chestRewardRows.length,
+          Each opening gives {formatNumber(
+            Math.min(data.item.chest_num_items, chestRewardRows.length),
           )} fixed {data.item.chest_num_items === 1 ? "item" : "items"}.
         {:else}
-          Each opening gives up to {data.item.chest_num_items}
+          Each opening gives up to {formatNumber(data.item.chest_num_items)}
           {data.item.chest_num_items === 1 ? "item" : "items"}. An item cannot
           appear twice in one opening.
         {/if}
@@ -2139,7 +2143,7 @@
             <SeasonLabel season={offer.season} variant="inline" />
             <span class="-mt-2 sm:mt-0 sm:text-right {styles.valueCurrency}">
               {#if offer.currency_item_id}
-                {offer.price}
+                {formatNumber(offer.price)}
                 <a
                   href={resolve("/items/[id]", {
                     id: offer.currency_item_id,
@@ -2149,10 +2153,10 @@
                   {offer.currency_item_name}
                 </a>
               {:else}
-                {formatGold(offer.price)}g
+                {formatNumber(offer.price)}g
               {/if}
               {#if offer.amount > 1}
-                ({offer.amount}×)
+                ({formatNumber(offer.amount)}×)
               {/if}
             </span>
           {/each}
@@ -2342,7 +2346,7 @@
           </div>
           <div class={styles.fact}>
             <dt class={styles.label}>Blessing Cost</dt>
-            <dd class={styles.valueCurrency}>{formatGold(75)}g per rune</dd>
+            <dd class={styles.valueCurrency}>{formatNumber(75)}g per rune</dd>
           </div>
           <div class={styles.fact}>
             <dt class={styles.label}>Blessed By</dt>
@@ -2506,7 +2510,7 @@
           <div class={styles.fact}>
             <dt class={styles.label}>Cost</dt>
             <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1830-1837 -->
-            <dd>{formatGold(10000)}g + Token of Redemption</dd>
+            <dd>{formatNumber(10000)}g + Token of Redemption</dd>
           </div>
           <div class={styles.fact}>
             <dt class={styles.label}>Available From</dt>
@@ -2539,7 +2543,7 @@
           </div>
           <div class={styles.fact}>
             <dt class={styles.label}>Cost</dt>
-            <dd class={styles.valueCurrency}>{formatGold(75)}g per rune</dd>
+            <dd class={styles.valueCurrency}>{formatNumber(75)}g per rune</dd>
           </div>
           <div class={styles.fact}>
             <dt class={styles.label}>Available From</dt>

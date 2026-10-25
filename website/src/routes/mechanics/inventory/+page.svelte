@@ -12,7 +12,7 @@
     SOURCE_TYPE_CONFIG,
     type ItemSourceType,
   } from "$lib/constants/source-types";
-  import { getQualityTextColorClass } from "$lib/utils/format";
+  import { formatNumber, getQualityTextColorClass } from "$lib/utils/format";
   import { reputationTierName } from "$lib/utils/reputation";
   import type {
     BackpackSource,
@@ -39,13 +39,9 @@
 
   let { data }: { data: InventoryMechanicsPageData } = $props();
 
-  function formatGold(value: number): string {
-    return value === 0 ? "Free" : value.toLocaleString();
-  }
-
   function getHouseRequirement(house: HouseStorageLocation): string {
     if (house.faction_id && house.faction_required > 0) {
-      return `${reputationTierName(data.reputationTiers, house.faction_required)} (${house.faction_required.toLocaleString()})`;
+      return `${reputationTierName(data.reputationTiers, house.faction_required)} (${formatNumber(house.faction_required)})`;
     }
     if (house.faction_id) return "No reputation requirement";
     return "None recorded";
@@ -220,7 +216,7 @@
                     />
                   </td>
                   <td class="py-2 pr-4 text-right font-mono"
-                    >{backpack.backpack_slots}</td
+                    >{formatNumber(backpack.backpack_slots)}</td
                   >
                   <td class="py-2 pr-4 text-right font-mono">
                     {backpack.backpack_is_unique ? "Yes" : "No"}
@@ -349,9 +345,11 @@
               <tr class="border-b border-border/50 hover:bg-muted/30">
                 <td class="py-2 pr-4">{row.tab}</td>
                 <td class="py-2 pr-4 text-right font-mono"
-                  >{formatGold(row.cost)}</td
+                  >{row.cost === 0 ? "Free" : formatNumber(row.cost)}</td
                 >
-                <td class="py-2 text-right font-mono">{row.totalSlots}</td>
+                <td class="py-2 text-right font-mono"
+                  >{formatNumber(row.totalSlots)}</td
+                >
               </tr>
             {/each}
           </tbody>
@@ -472,7 +470,7 @@
                         >{:else}Unknown{/if}
                     </td>
                     <td class="py-2 pr-4 text-right font-mono"
-                      >{house.base_price.toLocaleString()}</td
+                      >{formatNumber(house.base_price)}</td
                     >
                     <td class="py-2 pr-4">
                       <!-- Source: server-scripts/Player.cs:TargetRpcHouse; Utils.cs:GetFactionRankName — the purchase panel names the required reputation rank. -->
@@ -534,10 +532,10 @@
                       />
                     </td>
                     <td class="py-2 pr-4 font-mono"
-                      >{chest.slot_end - chest.slot_start + 1} slots</td
+                      >{formatNumber(chest.slot_end - chest.slot_start + 1)} slots</td
                     >
                     <td class="py-2 pr-4 text-right font-mono"
-                      >{chest.structure_price.toLocaleString()}</td
+                      >{formatNumber(chest.structure_price)}</td
                     >
                   </tr>
                 {/each}
@@ -760,7 +758,9 @@
           >
             <span class="block truncate text-sm">Template {row.template}</span>
             <span class="block truncate font-mono text-foreground"
-              >{row.cost === 0 ? "Free" : `${formatGold(row.cost)} gold`}</span
+              >{row.cost === 0
+                ? "Free"
+                : `${formatNumber(row.cost)} gold`}</span
             >
           </div>
         {/each}

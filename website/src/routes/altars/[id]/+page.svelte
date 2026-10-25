@@ -7,6 +7,7 @@
   import * as Card from "$lib/components/ui/card";
   import {
     formatDuration,
+    formatNumber,
     formatPercent as formatFraction,
   } from "$lib/utils/format";
   import type { AltarWave } from "$lib/types/altars";
@@ -205,13 +206,15 @@
         <!-- Wave Count -->
         <div class="flex justify-between">
           <span class="text-muted-foreground">Waves</span>
-          <span>{data.altar.totalWaves}</span>
+          <span>{formatNumber(data.altar.totalWaves)}</span>
         </div>
 
         <!-- Event Radius -->
         <div class="flex justify-between">
           <span class="text-muted-foreground">Event Radius</span>
-          <span>{data.altar.radiusEvent} yd</span>
+          <span
+            >{formatNumber(data.altar.radiusEvent, { decimals: 20 })} yd</span
+          >
         </div>
 
         <!-- Init Message -->
@@ -277,13 +280,14 @@
           >
             <div>
               <span class="text-muted-foreground">Veteran Bonus:</span>
-              <span class="font-medium ml-1">+{veteranBonus}</span>
+              <span class="font-medium ml-1">+{formatNumber(veteranBonus)}</span
+              >
             </div>
             <div class="text-muted-foreground">→</div>
             <div>
               <span class="text-muted-foreground">Effective Level:</span>
               <span class="font-medium ml-1 text-green-400"
-                >{effectiveLevel}</span
+                >{formatNumber(effectiveLevel)}</span
               >
             </div>
             <div class="text-muted-foreground">→</div>
@@ -294,7 +298,7 @@
                   ? 'text-green-400'
                   : 'text-red-400'}"
               >
-                {levelAdjustment >= 0 ? "+" : ""}{levelAdjustment}
+                {levelAdjustment >= 0 ? "+" : ""}{formatNumber(levelAdjustment)}
               </span>
             </div>
           </div>
@@ -404,7 +408,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Swords class="h-5 w-5 text-red-500" />
-        Waves ({data.waves.length})
+        Waves ({formatNumber(data.waves.length)})
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4">
@@ -462,7 +466,7 @@
                           isElite={monster.isElite}
                         />
                         {#if monster.count > 1}
-                          {monster.count}x
+                          {formatNumber(monster.count)}x
                         {/if}
                         {monster.monsterName}
                       </a>

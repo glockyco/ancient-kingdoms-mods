@@ -325,7 +325,7 @@
       >
     </span>
   {:else if cell.column.id === "spawn_count"}
-    <span class="ml-auto">{row.original.spawn_count}</span>
+    <span class="ml-auto">{formatNumber(row.original.spawn_count)}</span>
   {:else if isRespawnColumn(cell.column.id)}
     <RespawnCells columnId={cell.column.id} row={row.original} />
   {:else}
@@ -374,7 +374,7 @@
       {/if}
     </span>
   {:else if cell.column.id === "total_waves"}
-    <span class="ml-auto">{row.original.total_waves}</span>
+    <span class="ml-auto">{formatNumber(row.original.total_waves)}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -475,7 +475,7 @@
       </a>
       {#if row.original.item_reward_amount > 1}
         <span class="text-muted-foreground"
-          >&nbsp;×1–{row.original.item_reward_amount}</span
+          >&nbsp;×1–{formatNumber(row.original.item_reward_amount)}</span
         >
       {:else}
         <span class="text-muted-foreground">&nbsp;×1</span>
@@ -487,7 +487,9 @@
     {formatPercent(chestRewardChance(row.original))}
   {:else if cell.column.id === "drops"}
     {#if row.original.drop_count > 0}
-      <span class="text-muted-foreground">{row.original.drop_count} items</span>
+      <span class="text-muted-foreground"
+        >{formatNumber(row.original.drop_count)} items</span
+      >
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
@@ -610,7 +612,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Crown class="h-5 w-5 text-cyan-500" />
-        Bosses ({bosses.length})
+        Bosses ({formatNumber(bosses.length)})
       </h2>
       <DataTable
         data={bosses}
@@ -635,7 +637,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Shield class="h-5 w-5 text-purple-500" />
-        Elites ({elites.length})
+        Elites ({formatNumber(elites.length)})
       </h2>
       <DataTable
         data={elites}
@@ -660,7 +662,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Sword class="h-5 w-5 text-red-500" />
-        Creatures ({creatures.length})
+        Creatures ({formatNumber(creatures.length)})
       </h2>
       <DataTable
         data={creatures}
@@ -685,7 +687,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Flame class="h-5 w-5 text-orange-500" />
-        Altars ({data.altars.length})
+        Altars ({formatNumber(data.altars.length)})
       </h2>
       <DataTable
         data={data.altars}
@@ -747,7 +749,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <PawPrint class="h-5 w-5 text-green-500" />
-        Critters ({critters.length})
+        Critters ({formatNumber(critters.length)})
       </h2>
       <DataTable
         data={critters}
@@ -772,7 +774,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Users class="h-5 w-5 text-blue-500" />
-        NPCs ({data.npcs.length})
+        NPCs ({formatNumber(data.npcs.length)})
       </h2>
       <DataTable
         data={data.npcs}
@@ -793,7 +795,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Box class="h-5 w-5 text-sky-500" />
-        Chests ({data.chests.length})
+        Chests ({formatNumber(data.chests.length)})
       </h2>
       <DataTable
         data={data.chests}
@@ -814,7 +816,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <TriangleAlert class="h-5 w-5 text-rose-600" />
-        Traps ({data.traps.length})
+        Traps ({formatNumber(data.traps.length)})
       </h2>
       <DataTable
         data={data.traps}
@@ -835,7 +837,7 @@
     <section class="mb-8">
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
-        Resources ({data.gatherResources.length})
+        Resources ({formatNumber(data.gatherResources.length)})
       </h2>
 
       <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -845,7 +847,7 @@
               class="mb-3 font-medium text-green-600 dark:text-green-400 flex items-center gap-2"
             >
               <Leaf class="h-4 w-4" />
-              Plants ({plants.length})
+              Plants ({formatNumber(plants.length)})
             </h3>
             <ul class="space-y-1">
               {#each plants as resource (resource.id)}
@@ -871,7 +873,7 @@
               class="mb-3 font-medium text-amber-600 dark:text-amber-400 flex items-center gap-2"
             >
               <Pickaxe class="h-4 w-4" />
-              Minerals ({minerals.length})
+              Minerals ({formatNumber(minerals.length)})
             </h3>
             <ul class="space-y-1">
               {#each minerals as resource (resource.id)}
@@ -897,7 +899,7 @@
               class="mb-3 font-medium text-purple-600 dark:text-purple-400 flex items-center gap-2"
             >
               <Sparkles class="h-4 w-4" />
-              Radiant Sparks ({radiantSparks.length})
+              Radiant Sparks ({formatNumber(radiantSparks.length)})
             </h3>
             <ul class="space-y-1">
               {#each radiantSparks as resource (resource.id)}
@@ -923,7 +925,7 @@
               class="mb-3 font-medium text-cyan-600 dark:text-cyan-400 flex items-center gap-2"
             >
               <Fish class="h-4 w-4" />
-              Fishing Spots ({fishingSpots.length})
+              Fishing Spots ({formatNumber(fishingSpots.length)})
             </h3>
             <ul class="space-y-1">
               {#each fishingSpots as resource (resource.id)}
@@ -951,7 +953,7 @@
               class="mb-3 font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2"
             >
               <Scroll class="h-4 w-4" />
-              Other ({otherResources.length})
+              Other ({formatNumber(otherResources.length)})
             </h3>
             <ul class="space-y-1">
               {#each otherResources as resource (resource.id)}
@@ -1148,7 +1150,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Layers class="h-5 w-5 text-slate-500" />
-        Areas ({data.subZones.length})
+        Areas ({formatNumber(data.subZones.length)})
       </h2>
       <div class="flex flex-wrap gap-2">
         {#each data.subZones as subZone (subZone.id)}
@@ -1172,7 +1174,7 @@
     <section class="mb-8">
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <MapPin class="h-5 w-5 text-emerald-500" />
-        Connected Zones ({data.connectedZones.length})
+        Connected Zones ({formatNumber(data.connectedZones.length)})
       </h2>
       <div class="flex flex-wrap gap-2">
         {#each data.connectedZones as zone (zone.id)}

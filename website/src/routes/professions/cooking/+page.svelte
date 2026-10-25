@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -92,8 +93,8 @@
 
   const recipeCountLabel = $derived(
     filteredRecipes.length === data.recipes.length
-      ? `${data.recipes.length}`
-      : `${filteredRecipes.length} of ${data.recipes.length}`,
+      ? formatNumber(data.recipes.length)
+      : `${formatNumber(filteredRecipes.length)} of ${formatNumber(data.recipes.length)}`,
   );
 
   // Roman numerals for tier display
@@ -197,7 +198,7 @@
     <section class="space-y-4">
       <h2 class="text-xl font-semibold flex items-center gap-2">
         <MapPin class="h-5 w-5 text-emerald-500" />
-        Cooking Oven Locations ({data.locations.length})
+        Cooking Oven Locations ({formatNumber(data.locations.length)})
       </h2>
       <div class="rounded-lg border overflow-x-auto">
         <table class="w-full whitespace-nowrap">
@@ -304,13 +305,13 @@
           <div class="p-3 text-right border-t">
             {#if xp}
               <MechanicsLink section="experience"
-                >{xp.toLocaleString()}</MechanicsLink
+                >{formatNumber(xp)}</MechanicsLink
               >
             {:else}
               <span class="text-muted-foreground">—</span>
             {/if}
           </div>
-          <div class="p-3 text-right border-t">{recipeCount}</div>
+          <div class="p-3 text-right border-t">{formatNumber(recipeCount)}</div>
         {/each}
       </div>
     </div>
@@ -412,7 +413,9 @@
                       imageAvailable={mat.visual_public_path}
                       quality={mat.quality}
                     />
-                    <span class="text-muted-foreground">×{mat.amount}</span>
+                    <span class="text-muted-foreground"
+                      >×{formatNumber(mat.amount)}</span
+                    >
                   </span>
                 {/each}
               </div>

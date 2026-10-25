@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import { tick } from "svelte";
   import { browser } from "$app/environment";
   import {
@@ -1250,8 +1251,9 @@
       <div class="border-t p-2">
         <p class="px-1 pb-2 text-sm text-muted-foreground">
           {#if viewportMarkers.total > 0}
-            {viewportMarkers.markers.length} of {viewportMarkers.total} markers. Nearest
-            to the view centre first.
+            {formatNumber(viewportMarkers.markers.length)} of {formatNumber(
+              viewportMarkers.total,
+            )} markers. Nearest to the view centre first.
           {:else}
             No markers in view for the enabled layers.
           {/if}

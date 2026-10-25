@@ -1,6 +1,6 @@
 import type { DamageTerm, DamageType, LinearValue } from "$lib/types/skills";
 import { iround, multiplyF32 } from "$lib/calculation/unity-math";
-import { formatDuration } from "./format";
+import { formatDuration, formatNumber } from "$lib/utils/format";
 
 /** Returns true when a LinearValue field has at least one non-zero component.
  * The DB stores all LinearValue fields as JSON objects even when both components
@@ -250,14 +250,10 @@ function parseLinearValue(
   return field;
 }
 
-/** "1,234" or "−0.5", with a true minus sign. */
-function formatNumber(value: number): string {
-  return value.toLocaleString("en-US").replace(/^-/, "−");
-}
-
 /** 0.15 as "15%", 0.025 as "2.5%", −0.05 as "−5%". */
 function formatPercent(value: number): string {
-  return `${String(parseFloat((value * 100).toFixed(2))).replace(/^-/, "−")}%`;
+  const rounded = parseFloat((value * 100).toFixed(2));
+  return `${formatNumber(rounded === 0 ? 0 : rounded, { decimals: 2 })}%`;
 }
 
 /**
@@ -644,7 +640,7 @@ function formatCrowdControl(
     const durSuffix = !fearDur
       ? ""
       : fearDur.bonus_per_level === 0
-        ? ` (${fearDur.base_value / 2}-${fearDur.base_value}s)`
+        ? ` (${formatNumber(fearDur.base_value / 2)}-${formatNumber(fearDur.base_value)}s)`
         : ` (50-100% of ${formatLinearDuration(fearDur.base_value, fearDur.bonus_per_level)})`;
     parts.push(
       `${stun ? "else " : ""}${formatLinearPercent(fear, options)} fear${durSuffix}`,
@@ -726,7 +722,7 @@ function formatSummons(skill: Skill): string[] {
       parts.push(`summons 1x ${name} per player/mercenary${suffix}`);
     } else {
       const count = skill.summon_count_per_cast ?? 1;
-      parts.push(`summons ${count}x ${name}${suffix}`);
+      parts.push(`summons ${formatNumber(count)}x ${name}${suffix}`);
     }
   }
 
@@ -1078,8 +1074,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   veteran_awareness:
     "reveals nearby monsters on minimap (not in Temple of Valaark)",
   // Source: server-scripts/Combat.cs:DealDamageAt,IsParry — during the cast, your target's single-target physical hits are blocked and 50% of the damage, rounded and clamped to 1-5,000, is dealt back.
-  parry:
-    "while casting, blocks your target's physical melee hits & counters 50% (max 5,000)",
+  parry: `while casting, blocks your target's physical melee hits & counters 50% (max ${formatNumber(5000)})`,
   // Source: server-scripts/SummonSkill.cs:Apply — on summon, the pet takes rank × 10% of your attributes and adds rank × 10% of your AC and resists.
   symbiosis:
     "pet gets 10% × rank of your attributes, AC & resistances when summoned (max 50%)",

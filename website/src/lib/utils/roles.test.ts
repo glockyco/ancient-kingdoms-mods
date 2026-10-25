@@ -3,7 +3,12 @@ import { NPC_ROLE_BITS } from "$lib/types/map";
 import type { NpcRoles } from "$lib/types/npcs";
 import { getNpcRoles } from "$lib/utils/tooltip";
 import { missingAnchors } from "$lib/testing/route-anchors";
-import { normalizeRoles, ROLE_CONFIG, ROLE_RULES } from "./roles";
+import {
+  normalizeRoles,
+  ROLE_CONFIG,
+  ROLE_DESCRIPTIONS,
+  ROLE_RULES,
+} from "./roles";
 
 describe("NPC role configuration", () => {
   it("surfaces guild management NPCs in role config and map bitmasks", () => {
@@ -34,6 +39,21 @@ describe("NPC role configuration", () => {
     const bit = (NPC_ROLE_BITS as Record<string, number>).isBarber;
     expect(bit).toBe(21);
     expect(getNpcRoles(1 << bit)).toContain("Barber");
+  });
+
+  it("groups service prices and reputation requirements", () => {
+    expect(ROLE_DESCRIPTIONS.is_faction_vendor!.details![0]).toContain(
+      "15\u202F000 reputation",
+    );
+    expect(ROLE_DESCRIPTIONS.is_faction_vendor!.details![0]).toContain(
+      "Friendly 14\u202F000 / 20\u202F000",
+    );
+    expect(ROLE_DESCRIPTIONS.is_bank!.details![1]).toContain(
+      "100\u202F000 gold",
+    );
+    expect(ROLE_DESCRIPTIONS.is_augmenter!.details![0]).toContain(
+      "10\u202F000 gold",
+    );
   });
 
   it("links every service to a section that exists", () => {

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -23,7 +24,7 @@
     buildCollectionPage({
       path: "/recipes",
       name: "Recipes — Ancient Kingdoms Compendium",
-      description: `Find ${data.recipes.length.toLocaleString()} recipes for crafting, alchemy, cooking, and scribing.`,
+      description: `Find ${formatNumber(data.recipes.length)} recipes for crafting, alchemy, cooking, and scribing.`,
       items: data.recipes.map((recipe) => ({
         name: recipe.result_item_name,
         path: `/recipes/${recipe.id}`,
@@ -210,7 +211,7 @@
     />
     {#if row.original.result_amount > 1}
       <span class="text-muted-foreground ml-1"
-        >x{row.original.result_amount}</span
+        >x{formatNumber(row.original.result_amount)}</span
       >
     {/if}
   {:else if cell.column.id === "ingredient1"}
@@ -227,7 +228,7 @@
           <span>{row.original.ingredients[0].item_name}</span>
         {/if}
         <span class="text-muted-foreground">
-          x{row.original.ingredients[0].amount}</span
+          x{formatNumber(row.original.ingredients[0].amount)}</span
         >
       </span>
     {:else}
@@ -247,7 +248,7 @@
           <span>{row.original.ingredients[1].item_name}</span>
         {/if}
         <span class="text-muted-foreground">
-          x{row.original.ingredients[1].amount}</span
+          x{formatNumber(row.original.ingredients[1].amount)}</span
         >
       </span>
     {:else}
@@ -267,7 +268,7 @@
           <span>{row.original.ingredients[2].item_name}</span>
         {/if}
         <span class="text-muted-foreground">
-          x{row.original.ingredients[2].amount}</span
+          x{formatNumber(row.original.ingredients[2].amount)}</span
         >
       </span>
     {:else}
@@ -296,7 +297,7 @@
 
 <Seo
   title="Recipes - Ancient Kingdoms"
-  description={`Find ${data.recipes.length.toLocaleString()} crafting, alchemy, cooking, and scribing recipes with ingredients, stations, tiers, and results.`}
+  description={`Find ${formatNumber(data.recipes.length)} crafting, alchemy, cooking, and scribing recipes with ingredients, stations, tiers, and results.`}
   path="/recipes"
 />
 

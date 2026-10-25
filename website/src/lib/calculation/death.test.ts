@@ -10,7 +10,7 @@ describe("death recovery", () => {
     }).result;
     expect(result).toContain("50 XP");
     expect(result).toContain("76 XP");
-    expect(result).toContain("1,200 Hit Points");
+    expect(result).toContain("1\u202F200 Hit Points");
     expect(result).toContain("100 Mana");
     expect(
       deathRecovery().example!({ lostXp: 103, maxHealth: 2000, maxMana: 500 })

@@ -2,7 +2,11 @@
   import type { EntityId } from "$lib/entities/registry";
   import { entityRegistry } from "$lib/entities/registry";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
-  import { getQualityTextColorClass, toRomanNumeral } from "$lib/utils/format";
+  import {
+    getQualityTextColorClass,
+    toRomanNumeral,
+    formatNumber,
+  } from "$lib/utils/format";
   import {
     getActiveRoles,
     normalizeRoles,
@@ -156,7 +160,7 @@
   {/if}
   {#if result.spawnCount}
     <span class="shrink-0 text-xs text-muted-foreground"
-      >{result.spawnCount}
+      >{formatNumber(result.spawnCount)}
       {result.category === "item" || result.category === "quest"
         ? "locations"
         : "spawns"}</span

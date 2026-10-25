@@ -21,6 +21,7 @@
     type Season,
   } from "$lib/data/seasonal-events";
   import {
+    formatNumber,
     formatSpawnTimeWindow,
     getQualityTextColorClass,
     spawnWindowRealMinutes,
@@ -43,7 +44,8 @@
   /** Whole days while two or more remain, then hours and minutes. */
   const timeUntil = (target: Date, from: Date) => {
     const ms = Math.max(0, target.getTime() - from.getTime());
-    if (ms >= 2 * MS_PER_DAY) return `${Math.floor(ms / MS_PER_DAY)} days`;
+    if (ms >= 2 * MS_PER_DAY)
+      return `${formatNumber(Math.floor(ms / MS_PER_DAY))} days`;
     const minutes = Math.floor(ms / 60_000);
     return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
   };
@@ -174,7 +176,7 @@
       season === "halloween"
         ? {
             season,
-            gist: `${names(data.monsters)} spawn at night in ${data.huntZones.length} zones and drop tokens and ${costumePieces.length} costume pieces.`,
+            gist: `${names(data.monsters)} spawn at night in ${formatNumber(data.huntZones.length)} zones and drop tokens and ${formatNumber(costumePieces.length)} costume pieces.`,
             more: "Spawns, drops and treats",
           }
         : {
@@ -182,7 +184,7 @@
             gist: data.npcs
               .map(
                 (npc) =>
-                  `${npc.name} offers ${data.quests.length} quests in ${npc.zone_name} that reward tokens and coins.`,
+                  `${npc.name} offers ${formatNumber(data.quests.length)} quests in ${npc.zone_name} that reward tokens and coins.`,
               )
               .join(" "),
             more: "Quests and treats",
@@ -209,7 +211,7 @@
     class="inline-flex shrink-0 items-center gap-2 font-medium text-foreground"
     title={data.items[offer.currency_id].name}
   >
-    {offer.price}
+    {formatNumber(offer.price)}
     {#if data.itemIconPaths[offer.currency_id]}<img
         src="/{data.itemIconPaths[offer.currency_id]}"
         alt={data.items[offer.currency_id].name}
@@ -439,7 +441,10 @@
         </p>
         <div class="grid gap-3 sm:grid-cols-2">
           {#each fireworks as offer (offer.item_id)}
-            {@render offerTile(offer, `${offer.amount} per purchase`)}
+            {@render offerTile(
+              offer,
+              `${formatNumber(offer.amount)} per purchase`,
+            )}
           {/each}
         </div>
         {@render mapLinks([
@@ -482,7 +487,7 @@
                 >
                 {#each data.monsters as monster (monster.id)}
                   <td class="text-right tabular-nums"
-                    >{zone.counts[monster.id]}</td
+                    >{formatNumber(zone.counts[monster.id])}</td
                   >
                 {/each}
               </tr>
@@ -596,7 +601,7 @@
                           href={quest.objective.href}
                           name={quest.objective.name}
                         />
-                        ×{quest.objective.amount}{/if}
+                        ×{formatNumber(quest.objective.amount)}{/if}
                     </dd>
                     <dt>Where</dt>
                     <dd class="text-foreground">
@@ -621,14 +626,14 @@
                     Recommended level {quest.level_recommended}
                   </p>
                   <p class="font-medium text-foreground">
-                    {quest.xp.toLocaleString("en-US")} XP
+                    {formatNumber(quest.xp)} XP
                   </p>
                   <div class="space-y-2">
                     {#each quest.rewards as reward (reward.item_id)}<div
                         class="flex items-center gap-2"
                       >
                         <span class="font-medium text-foreground"
-                          >{reward.amount}×</span
+                          >{formatNumber(reward.amount)}×</span
                         >{@render itemLink(reward.item_id)}
                       </div>{/each}
                   </div>

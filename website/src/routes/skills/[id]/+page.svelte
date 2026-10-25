@@ -14,7 +14,7 @@
     hasLinearValue,
     convertTooltip,
   } from "$lib/skills/skill-format";
-  import { formatPercent } from "$lib/utils/format";
+  import { formatNumber, formatPercent } from "$lib/utils/format";
   import { spellInterval } from "$lib/calculation/combat";
   import { skillFacts } from "$lib/skills/skill-facts";
   import { mechanicsSections } from "$lib/skills/mechanics-sections";
@@ -480,7 +480,7 @@
               <!-- Source: server-scripts/PlayerSkills.cs:CmdUpgrade,CmdUpgradeVeteran — each rank pays the skill's required points from the corresponding pool. -->
               <dt class="text-muted-foreground">Cost per Rank</dt>
               <dd class="font-medium">
-                {skill.required_skill_points}
+                {formatNumber(skill.required_skill_points)}
                 {skill.is_veteran ? "veteran points" : "skill points"}
               </dd>
             </div>
@@ -492,7 +492,9 @@
                   ? "Veteran Points Already Spent"
                   : "Class Skill Points Already Spent"}
               </dt>
-              <dd class="font-medium">{skill.required_spent_points}</dd>
+              <dd class="font-medium">
+                {formatNumber(skill.required_spent_points)}
+              </dd>
             </div>
           {/if}
           {#if skill.prerequisite_skill_id}
@@ -547,10 +549,12 @@
           <p
             class="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
           >
-            Each rank costs {skill.required_skill_points} veteran points, but a game
-            defect counts it as 1 point toward your Veteran Level and the next veteran
-            point's experience cost. A token reset refunds 1 point per rank, so each
-            reset loses {skill.required_skill_points - 1}
+            Each rank costs {formatNumber(skill.required_skill_points)} veteran points,
+            but a game defect counts it as 1 point toward your Veteran Level and the
+            next veteran point's experience cost. A token reset refunds 1 point per
+            rank, so each reset loses {formatNumber(
+              skill.required_skill_points - 1,
+            )}
             {skill.required_skill_points - 1 === 1 ? "point" : "points"} per rank.
           </p>
         {/if}
@@ -1018,7 +1022,9 @@
                 >{/each}
               lasts on a character at a time.
             {:else}
-              Only one of this effect and {data.categorySkills.length} other
+              Only one of this effect and {formatNumber(
+                data.categorySkills.length,
+              )} other
               {skill.buff_category} effects lasts on a character at a time.
             {/if}
             The newest ends the others.
@@ -1585,9 +1591,11 @@
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
           <TriangleAlert class="h-5 w-5 text-rose-600" />
-          Applied by Traps ({data.appliedByTraps.reduce(
-            (total, usage) => total + usage.trap_count,
-            0,
+          Applied by Traps ({formatNumber(
+            data.appliedByTraps.reduce(
+              (total, usage) => total + usage.trap_count,
+              0,
+            ),
           )})
         </Card.Title>
       </Card.Header>
@@ -1596,7 +1604,9 @@
           {#each data.appliedByTraps as usage (`${usage.zone_id}-${usage.type}`)}
             <p>
               {TRAP_TYPE_LABELS[usage.type]}
-              <span class="text-muted-foreground">×{usage.trap_count} in</span>
+              <span class="text-muted-foreground"
+                >×{formatNumber(usage.trap_count)} in</span
+              >
               <a
                 href="/zones/{usage.zone_id}"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -1647,7 +1657,7 @@
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
           <Skull class="h-5 w-5 text-red-500" />
-          Used by Monsters ({data.usedByMonsters.length})
+          Used by Monsters ({formatNumber(data.usedByMonsters.length)})
         </Card.Title>
       </Card.Header>
       <Card.Content>

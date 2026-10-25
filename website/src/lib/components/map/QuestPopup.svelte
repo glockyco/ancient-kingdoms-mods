@@ -217,7 +217,7 @@
             <div class="flex items-baseline gap-1">
               {#if obj.type === "kill"}
                 <span class="text-muted-foreground">Kill</span>
-                <span>{obj.amount}×</span>
+                <span>{formatNumber(obj.amount)}×</span>
                 {#if obj.targetId}
                   <MapEntityLink
                     href={buildEntityUrl(obj.targetId, "monster")}
@@ -233,7 +233,7 @@
                 {/if}
               {:else if obj.type === "gather" && obj.targetId}
                 <span class="text-muted-foreground">Gather</span>
-                <span>{obj.amount}×</span>
+                <span>{formatNumber(obj.amount)}×</span>
                 <MapItemLink
                   itemId={obj.targetId}
                   itemName={obj.targetName}
@@ -245,7 +245,7 @@
                 />
               {:else if obj.type === "have" && obj.targetId}
                 <span class="text-muted-foreground">Have</span>
-                <span>{obj.amount}×</span>
+                <span>{formatNumber(obj.amount)}×</span>
                 <MapItemLink
                   itemId={obj.targetId}
                   itemName={obj.targetName}
@@ -257,7 +257,8 @@
                 />
               {:else if obj.type === "deliver" && obj.targetId}
                 <span class="text-muted-foreground">Deliver</span>
-                {#if obj.amount > 0}<span>{obj.amount}×</span>{/if}
+                {#if obj.amount > 0}<span>{formatNumber(obj.amount)}×</span
+                  >{/if}
                 <MapItemLink
                   itemId={obj.targetId}
                   itemName={obj.targetName}
@@ -312,7 +313,8 @@
                 {/if}
               {:else}
                 <span class="text-muted-foreground">{obj.type}</span>
-                {#if obj.amount > 1}<span>{obj.amount}×</span>{/if}
+                {#if obj.amount > 1}<span>{formatNumber(obj.amount)}×</span
+                  >{/if}
                 <span class="truncate">{obj.targetName}</span>
               {/if}
             </div>

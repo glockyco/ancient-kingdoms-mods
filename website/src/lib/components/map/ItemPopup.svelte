@@ -299,7 +299,7 @@
                   {formatNumber(vendor.price)}g
                 {/if}
                 {#if vendor.resultAmount && vendor.resultAmount > 1}
-                  ({vendor.resultAmount}×)
+                  ({formatNumber(vendor.resultAmount)}×)
                 {/if}
               </span>
             </div>
@@ -324,7 +324,7 @@
                 />
               {:else}g{/if}
               {#if group.offer.resultAmount && group.offer.resultAmount > 1}
-                for {group.offer.resultAmount}
+                for {formatNumber(group.offer.resultAmount)}
               {/if}
             </div>
             <div class="max-h-40 space-y-1 overflow-y-auto pr-2">
@@ -357,7 +357,7 @@
                 onSelect={onSelectItem}
               />
               <span class="shrink-0 text-muted-foreground"
-                >{pack.resultAmount}x</span
+                >{formatNumber(pack.resultAmount)}x</span
               >
             </div>
           {/each}
@@ -568,7 +568,9 @@
           {#each details.craftingSources as recipe, recipeIndex (recipeIndex)}
             {#each recipe.materials as material, materialIndex (materialIndex)}
               <div class="flex items-center gap-1">
-                <span class="text-muted-foreground">{material.amount}x</span>
+                <span class="text-muted-foreground"
+                  >{formatNumber(material.amount)}x</span
+                >
                 <MapItemLink
                   itemId={material.itemId}
                   itemName={material.itemName}

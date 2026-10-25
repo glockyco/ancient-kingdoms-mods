@@ -31,6 +31,7 @@
   import {
     formatPercent as formatFraction,
     formatDuration,
+    formatNumber,
     formatSkillType,
     formatSpawnTimeWindow,
     spawnWindowRealMinutes,
@@ -655,7 +656,7 @@
       {/if}
     </div>
   {:else if cell.column.id === "spawn_count"}
-    <span class="ml-auto">{row.original.spawn_count}</span>
+    <span class="ml-auto">{formatNumber(row.original.spawn_count)}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -696,8 +697,9 @@
   {:else if cell.column.id === "objective"}
     {#if row.original.display_type === "Kill"}
       <span
-        >Kill{#if row.original.amount > 0}&nbsp;×{row.original
-            .amount}{/if}</span
+        >Kill{#if row.original.amount > 0}&nbsp;×{formatNumber(
+            row.original.amount,
+          )}{/if}</span
       >
     {:else if row.original.item_id && row.original.item_name}
       <span
@@ -705,10 +707,12 @@
           itemId={row.original.item_id}
           itemName={row.original.item_name}
           quality={row.original.quality}
-        />{#if row.original.amount > 0}&nbsp;×{row.original.amount}{/if}</span
+        />{#if row.original.amount > 0}&nbsp;×{formatNumber(
+            row.original.amount,
+          )}{/if}</span
       >
     {:else if row.original.amount > 0}
-      <span>×{row.original.amount}</span>
+      <span>×{formatNumber(row.original.amount)}</span>
     {/if}
   {:else}
     {cell.getValue()}
@@ -762,10 +766,14 @@
     <span class="text-sm">{cell.getValue()}</span>
   {:else if cell.column.id === "cooldown"}
     {@const val = cell.getValue() as number}
-    <span class="ml-auto">{val > 0 ? `${val}s` : ""}</span>
+    <span class="ml-auto"
+      >{val > 0 ? `${formatNumber(val, { decimals: 20 })}s` : ""}</span
+    >
   {:else if cell.column.id === "cast_time"}
     {@const val = cell.getValue() as number}
-    <span class="ml-auto">{val > 0 ? `${val}s` : ""}</span>
+    <span class="ml-auto"
+      >{val > 0 ? `${formatNumber(val, { decimals: 20 })}s` : ""}</span
+    >
   {:else}
     {cell.getValue()}
   {/if}
@@ -853,7 +861,7 @@
       {#if data.monster.base_exp > 0}
         <span
           >Base XP: <MechanicsLink section="experience"
-            >{data.monster.base_exp.toLocaleString()}</MechanicsLink
+            >{formatNumber(data.monster.base_exp)}</MechanicsLink
           ></span
         >
       {/if}
@@ -1009,7 +1017,7 @@
               <div class="bg-muted/30 rounded-md border p-3">
                 <span>
                   This monster cannot respawn while {summon.kill_count > 1
-                    ? `${summon.kill_count} copies of `
+                    ? `${formatNumber(summon.kill_count)} copies of `
                     : ""}</span
                 >
                 <a
@@ -1048,7 +1056,7 @@
                 </a>
                 <span>
                   from respawning while {summon.kill_count > 1
-                    ? `${summon.kill_count} copies of this monster are`
+                    ? `${formatNumber(summon.kill_count)} copies of this monster are`
                     : "this monster is"} alive in
                 </span>
                 <a
@@ -1145,7 +1153,7 @@
                 {#if sage.cost > 0}
                   <span> for </span>
                   <span class="text-yellow-600 dark:text-yellow-400"
-                    >{sage.cost.toLocaleString()} gold</span
+                    >{formatNumber(sage.cost)} gold</span
                   >
                 {/if}
                 <span>.</span>
@@ -1254,13 +1262,13 @@
         <div>
           <div class="text-sm text-muted-foreground">Attack Power</div>
           <div class="font-medium">
-            {displayDamage.toLocaleString()}
+            {formatNumber(displayDamage)}
           </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Spell Power</div>
           <div class="font-medium">
-            {displayMagicDamage.toLocaleString()}
+            {formatNumber(displayMagicDamage)}
           </div>
         </div>
         <div>
@@ -1278,19 +1286,19 @@
         <div>
           <div class="text-sm text-muted-foreground">Health</div>
           <div class="font-medium">
-            {displayHealth.toLocaleString()}
+            {formatNumber(displayHealth)}
           </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Health Recovery</div>
           <div class="font-medium">
-            {data.monster.health_regen_base.toLocaleString()} / sec
+            {formatNumber(data.monster.health_regen_base, { decimals: 3 })} / sec
           </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Armor Class</div>
           <div class="font-medium">
-            {displayDefense.toLocaleString()}
+            {formatNumber(displayDefense)}
           </div>
         </div>
         <div>
@@ -1311,7 +1319,7 @@
             <div class="font-medium">
               {data.monster.chase_limit_scope === "nowhere"
                 ? "None"
-                : `${data.monster.follow_distance.toLocaleString()} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
+                : `${formatNumber(data.monster.follow_distance, { decimals: 3 })} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
             </div>
           </div>
         {/if}
@@ -1329,7 +1337,7 @@
                       resist.value,
                     )}"
                   >
-                    {resist.name}: {resist.value}
+                    {resist.name}: {formatNumber(resist.value)}
                   </span>
                 {/each}
               </div>
@@ -1359,7 +1367,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Zap class="h-5 w-5 text-purple-500" />
-        Abilities ({data.skills.length})
+        Abilities ({formatNumber(data.skills.length)})
       </h2>
       <DataTable
         data={displayedSkills}
@@ -1410,7 +1418,9 @@
         >
           {#if data.monster.gold_min !== null && data.monster.gold_max !== null && hasGold}
             <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              {data.monster.gold_min.toLocaleString()} - {data.monster.gold_max.toLocaleString()}
+              {formatNumber(data.monster.gold_min)} - {formatNumber(
+                data.monster.gold_max,
+              )}
               gold
               {#if data.monster.probability_drop_gold < 1}
                 <span class="text-muted-foreground font-normal">
@@ -1458,7 +1468,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Scroll class="h-5 w-5 text-orange-500" />
-        Related Quests ({data.quests.length})
+        Related Quests ({formatNumber(data.quests.length)})
       </h2>
       <DataTable
         data={data.quests}
@@ -1512,7 +1522,7 @@
             at level {invasion.minimum_level} to {invasion.maximum_level}{invasion.health_multiplier ===
             1
               ? ""
-              : ` with ${invasion.health_multiplier} times its normal health`}.
+              : ` with ${formatNumber(invasion.health_multiplier, { decimals: 20 })} times its normal health`}.
           </li>
         {/each}
         {#each data.regionalHunts as hunt (hunt.region_zone_id)}

@@ -20,7 +20,7 @@ export function reputationExample(
     steps: [
       {
         name: `${statName("health")} contribution`,
-        expression: "Monster's maximum Hit Points ÷ 2,000",
+        expression: `Monster's maximum Hit Points ÷ ${formatNumber(2000)}`,
         rounding: "nearest",
       },
       {
@@ -45,7 +45,7 @@ export function reputationExample(
       ],
       result: `+${formatNumber(gain)} reputation with each faction it raises, −${formatNumber(loss)} with each faction it lowers`,
       working: [
-        `${statName("health")} contribution: ${formatNumber(health)} ÷ 2,000 = ${formatNumber(healthContribution)}, rounded`,
+        `${statName("health")} contribution: ${formatNumber(health)} ÷ ${formatNumber(2000)} = ${formatNumber(healthContribution)}, rounded`,
         `Base gain: ${level} + ${formatNumber(healthContribution)} = ${formatNumber(base)}`,
         `Reputation gained: ${formatNumber(base)} × ${factor} = ${formatNumber(gain)}`,
         `Reputation lost: ${level} × ${lossFactor === 0.75 ? "75%" : lossFactor} = ${formatNumber(loss)}`,

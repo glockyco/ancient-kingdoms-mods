@@ -488,7 +488,7 @@
     {@const house = entity as HouseMapEntity}
     <div class="flex justify-between border-t pt-2">
       <span class="text-muted-foreground">Base price</span>
-      <span>{house.basePrice.toLocaleString()} gold</span>
+      <span>{formatNumber(house.basePrice)} gold</span>
     </div>
     {#if house.subZoneName}
       <div class="flex justify-between">
@@ -505,7 +505,7 @@
     {#if house.factionRequired > 0}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Faction required</span>
-        <span>{house.factionRequired.toLocaleString()}</span>
+        <span>{formatNumber(house.factionRequired)}</span>
       </div>
     {/if}
   {/if}
@@ -579,7 +579,7 @@
       {@const count = monster.summonKillCount ?? 1}
       <div class="rounded bg-purple-500/20 px-2 py-1 text-purple-300">
         <span class="text-purple-400">This monster cannot spawn while</span>
-        {#if count > 1}{count}
+        {#if count > 1}{formatNumber(count)}
         {/if}
         {#if monster.summonKillMonsterId}
           <button
@@ -630,7 +630,7 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-yellow-400"></span>
         <span class="text-muted-foreground"
-          >Patrol route has {monster.patrolWaypoints.length} point{monster
+          >Patrol route has {formatNumber(monster.patrolWaypoints.length)} point{monster
             .patrolWaypoints.length === 1
             ? ""
             : "s"}</span
@@ -640,7 +640,7 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
         <span class="text-muted-foreground"
-          >Wanders {monster.moveDistance.toFixed(0)} yd</span
+          >Wanders {formatNumber(monster.moveDistance, { decimals: 0 })} yd</span
         >
       </div>
     {/if}
@@ -813,7 +813,7 @@
         <div class="flex justify-between">
           <span class="text-muted-foreground">Cost</span>
           <span class="text-yellow-500"
-            >{npc.teleportPrice.toLocaleString()} gold</span
+            >{formatNumber(npc.teleportPrice)} gold</span
           >
         </div>
       {/if}
@@ -881,7 +881,7 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
         <span class="text-muted-foreground"
-          >Wanders {npc.moveDistance.toFixed(0)} yd</span
+          >Wanders {formatNumber(npc.moveDistance, { decimals: 0 })} yd</span
         >
       </div>
     {/if}
@@ -1490,7 +1490,11 @@
               <span class="shrink-0 text-muted-foreground">
                 {#if drop.amountMin !== undefined && drop.amountMax !== undefined}
                   <span class="mr-1">
-                    ×{drop.amountMin}{#if drop.amountMax !== drop.amountMin}–{drop.amountMax}{/if}
+                    ×{formatNumber(
+                      drop.amountMin,
+                    )}{#if drop.amountMax !== drop.amountMin}–{formatNumber(
+                        drop.amountMax,
+                      )}{/if}
                   </span>
                 {/if}
                 {#if drop.dropRateMax !== undefined}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -50,7 +51,7 @@
 
 <Seo
   title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`Radiant Seeker raises the Radiant Aether chance from 5% to 25%. Find ${data.resource.node_count} Radiant Sparks across ${data.resource.zones.length} zones and learn how Aether changes combat.`}
+  description={`Radiant Seeker raises the Radiant Aether chance from 5% to 25%. Find ${formatNumber(data.resource.node_count)} Radiant Sparks across ${formatNumber(data.resource.zones.length)} zones and learn how Aether changes combat.`}
   path="/professions/radiant_seeker"
 />
 
@@ -94,8 +95,9 @@
         <div>
           <p class="font-medium">Find a Radiant Spark.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            The world has {data.resource.node_count} sparks in {data.resource
-              .zones.length}
+            The world has {formatNumber(data.resource.node_count)} sparks in {formatNumber(
+              data.resource.zones.length,
+            )}
             zones. You do not need a tool.
           </p>
         </div>
@@ -121,7 +123,9 @@
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             Each spark has a 5% to 25% chance to give Radiant Aether, depending
             on your Radiant Seeker skill. The spark returns after a random
-            {mechanics.respawnSeconds[0]} to {mechanics.respawnSeconds[1].toLocaleString()}
+            {formatNumber(mechanics.respawnSeconds[0])} to {formatNumber(
+              mechanics.respawnSeconds[1],
+            )}
             seconds (1 minute 40 seconds to 1 hour).
           </p>
         </div>
@@ -199,8 +203,9 @@
       <div>
         <h2 class="text-xl font-semibold">Spark locations</h2>
         <p class="mt-1 text-sm text-muted-foreground">
-          {data.resource.node_count} Radiant Sparks across {data.resource.zones
-            .length}
+          {formatNumber(data.resource.node_count)} Radiant Sparks across {formatNumber(
+            data.resource.zones.length,
+          )}
           zones.
         </p>
       </div>
@@ -217,7 +222,7 @@
               >{zone.zone_name}</a
             >
             <span class="tabular-nums text-muted-foreground"
-              >{zone.node_count}</span
+              >{formatNumber(zone.node_count)}</span
             >
           </div>
           <div class="h-1.5 overflow-hidden rounded-full bg-muted">

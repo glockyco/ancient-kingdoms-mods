@@ -775,20 +775,21 @@ internal static class SkillEffectFormatter
     }
 
     /// <summary>Mirror of formatSkillEffect's local <c>formatPercent</c>: value*100, two
-    /// decimal places, dropping trailing zeros and the decimal when the result is whole, with a
-    /// true minus sign. No grouping.</summary>
+    /// decimal places, dropping trailing zeros and the decimal when the result is whole, with
+    /// thousands grouping and a true minus sign.</summary>
     private static string FormatPercent(double value)
     {
         var pct = value * 100.0;
         var rounded = System.Math.Round(pct, 2, System.MidpointRounding.AwayFromZero);
         var text = rounded == System.Math.Round(rounded)
-            ? ((long)rounded).ToString(Inv)
-            : rounded.ToString("0.0###", Inv);
+            ? ((long)rounded).ToString("#,##0", Inv)
+            : rounded.ToString("#,##0.0###", Inv);
         return TrueMinus(text) + "%";
     }
 
-    /// <summary>Mirror of formatSkillEffect's <c>formatNumber</c>, JS <c>Number.toLocaleString()</c>
-    /// (en-US) with a true minus sign: thousands grouping, up to three fraction digits.</summary>
+    /// <summary>Mirror of formatSkillEffect's <c>formatNumber</c> with a true minus sign: thousands
+    /// grouping, up to three fraction digits. The website groups with U+202F, but this text is
+    /// drawn inside the game, which shows English numbers with a comma.</summary>
     private static string FormatNumber(double value) => TrueMinus(value.ToString("#,##0.###", Inv));
 
     private static string TrueMinus(string text) =>

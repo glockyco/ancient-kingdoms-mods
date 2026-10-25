@@ -238,7 +238,7 @@
                     class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
                   >
                     {#if profession.tracking_type === "count_based" && profession.tracking_denominator}
-                      {profession.tracking_denominator}
+                      {formatNumber(profession.tracking_denominator)}
                       {profession.id === "lore_keeping"
                         ? "books to collect"
                         : "areas to discover"}

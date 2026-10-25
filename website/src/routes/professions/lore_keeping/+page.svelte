@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -116,7 +117,9 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
-        <span class="whitespace-nowrap">Books: {data.books.length}</span>
+        <span class="whitespace-nowrap"
+          >Books: {formatNumber(data.books.length)}</span
+        >
         {#if data.profession.achievement_id}
           <AchievementLink
             achievementId={data.profession.achievement_id}
@@ -131,7 +134,7 @@
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <BookOpen class="h-5 w-5 text-indigo-500" />
-      Books ({data.books.length})
+      Books ({formatNumber(data.books.length)})
     </h2>
     <div class="rounded-lg border overflow-x-auto">
       <table class="w-full min-w-[1200px] table-fixed">

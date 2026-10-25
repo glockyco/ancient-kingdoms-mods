@@ -173,14 +173,14 @@ export function bardCharmResistance(): Calculation {
         value !== raw ? `, limited to ${percent(value)}` : "";
       return {
         given: [
-          `Level ${level}, ${charisma} Charisma`,
-          `Level ${monsterLevel} monster, ${magicResist} Magic Resist`,
+          `Level ${level}, ${formatNumber(charisma)} Charisma`,
+          `Level ${monsterLevel} monster, ${formatNumber(magicResist)} Magic Resist`,
         ],
         result: `${percent(chance)} chance to resist Charm`,
         working: [
           `Level adjustment: (${monsterLevel} − ${level}) × ${DEFENSE_RATES.levelTermPerLevel} = ${percent(rawAdjustment)}${limited(rawAdjustment, adjustment)}`,
-          `Base resist chance: ${magicResist} × ${DEFENSE_RATES.resistChancePerPoint} ${adjustment < 0 ? "−" : "+"} ${percent(Math.abs(adjustment))} = ${percent(rawBase)}${limited(rawBase, base)}`,
-          `Charm resist chance: ${percent(base)} + ${Math.max(0, difference)} × ${perLevel} − ${Math.max(0, charisma)} × ${perCharisma} = ${percent(rawChance)}${limited(rawChance, chance)}`,
+          `Base resist chance: ${formatNumber(magicResist)} × ${DEFENSE_RATES.resistChancePerPoint} ${adjustment < 0 ? "−" : "+"} ${percent(Math.abs(adjustment))} = ${percent(rawBase)}${limited(rawBase, base)}`,
+          `Charm resist chance: ${percent(base)} + ${Math.max(0, difference)} × ${perLevel} − ${formatNumber(Math.max(0, charisma))} × ${perCharisma} = ${percent(rawChance)}${limited(rawChance, chance)}`,
         ],
       };
     },

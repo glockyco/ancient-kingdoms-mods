@@ -6,6 +6,7 @@ import {
   type Table,
   type SortingState,
 } from "@tanstack/table-core";
+import { formatNumber } from "$lib/utils/format";
 
 /**
  * Creates a TanStack Table instance for Svelte.
@@ -19,6 +20,17 @@ export function createSvelteTable<TData extends RowData>(
     onStateChange: () => {},
     renderFallbackValue: null,
     ...options,
+    defaultColumn: {
+      cell: ({ getValue }) => {
+        const value = getValue();
+        return typeof value === "number"
+          ? formatNumber(value, { decimals: 20 })
+          : value == null
+            ? null
+            : String(value);
+      },
+      ...options.defaultColumn,
+    },
   };
 
   const table = createTable(resolvedOptions);
@@ -27,6 +39,7 @@ export function createSvelteTable<TData extends RowData>(
   table.setOptions((prev) => ({
     ...prev,
     ...options,
+    defaultColumn: resolvedOptions.defaultColumn,
     state: {
       ...prev.state,
       ...options.state,

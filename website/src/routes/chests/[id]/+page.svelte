@@ -6,6 +6,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import {
     formatDuration,
+    formatNumber,
     formatPercent as formatFraction,
   } from "$lib/utils/format";
   import Key from "@lucide/svelte/icons/key";
@@ -18,10 +19,6 @@
   let { data }: { data: PageData } = $props();
   const rewardChance = $derived(chestRewardChance(data.chest));
 
-  // Format gold amounts with narrow space thousands separator
-  function formatGold(amount: number): string {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
-  }
   function formatPercent(
     value: number,
     options: Parameters<typeof formatFraction>[1] = {
@@ -152,9 +149,9 @@
             <div class="text-sm text-muted-foreground mb-1">Gold</div>
             <div class="font-medium text-yellow-600 dark:text-yellow-400">
               {#if data.chest.gold_min === data.chest.gold_max}
-                {formatGold(data.chest.gold_min)} gold
+                {formatNumber(data.chest.gold_min)} gold
               {:else}
-                {formatGold(data.chest.gold_min)} - {formatGold(
+                {formatNumber(data.chest.gold_min)} - {formatNumber(
                   data.chest.gold_max,
                 )} gold
               {/if}
@@ -174,7 +171,7 @@
               </a>
               {#if data.chest.item_reward_amount > 1}
                 <span class="text-muted-foreground">
-                  ×1–{data.chest.item_reward_amount}
+                  ×1–{formatNumber(data.chest.item_reward_amount)}
                 </span>
               {:else}
                 <span class="text-muted-foreground"> ×1 </span>

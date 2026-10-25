@@ -6,6 +6,7 @@
   import { cn } from "$lib/utils.js";
   import { STAT_CATEGORIES, ALL_STAT_KEYS } from "$lib/constants/stats";
   import { statField, statFieldName } from "$lib/stats";
+  import { formatNumber } from "$lib/utils/format";
   import {
     getStatCounts,
     getMatchingItemIds,
@@ -138,9 +139,10 @@
 
       <div class="text-muted-foreground flex items-center gap-4 text-sm">
         <span>
-          Showing <span class="text-foreground font-medium">{filteredRows}</span
+          Showing <span class="text-foreground font-medium"
+            >{formatNumber(filteredRows)}</span
           >
-          of {totalRows} items
+          of {formatNumber(totalRows)} items
         </span>
         {#if selectedStats.size > 0}
           <Button
@@ -198,10 +200,10 @@
                     <!-- Not loaded yet -->
                   {:else if !showDeltas || selectedStats.size === 0}
                     <!-- No deltas or no selection: show absolute count -->
-                    {count}
+                    {formatNumber(count)}
                   {:else if delta !== undefined && delta !== 0}
                     <!-- Has selection: show new total + delta -->
-                    {newTotal}
+                    {newTotal === undefined ? "" : formatNumber(newTotal)}
                     <span
                       class={cn(
                         "text-xs",
@@ -210,11 +212,11 @@
                           : "text-muted-foreground/60",
                       )}
                     >
-                      ({delta > 0 ? "+" : ""}{delta})
+                      ({delta > 0 ? "+" : ""}{formatNumber(delta)})
                     </span>
                   {:else}
                     <!-- Delta is 0 or undefined: just show the number -->
-                    {newTotal}
+                    {newTotal === undefined ? "" : formatNumber(newTotal)}
                   {/if}
                 </span>
               </button>

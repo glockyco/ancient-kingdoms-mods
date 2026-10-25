@@ -9,7 +9,7 @@ describe("formatStat", () => {
   });
 
   test("shows a whole-number stat with thousands separators", () => {
-    expect(formatStat("health", 12500)).toBe("12,500");
+    expect(formatStat("health", 12500)).toBe("12\u202F500");
   });
 
   test("shows a rate with at most two decimals", () => {

@@ -115,7 +115,7 @@
       level: LEVEL_CAP,
       unlock: "Further experience earns veteran points.",
       href: "#veteran-points",
-      extra: "Unlock a second specialization for 10,000 gold.",
+      extra: "Unlock a second specialization for 10 000 gold.",
       extraHref: "/mechanics/character#skills-and-specializations",
     },
   ]);
@@ -195,7 +195,8 @@
   const VET_X_TICKS = $derived(
     Array.from({ length: 5 }, (_, index) => (index * MAX_VETERAN_POINTS) / 4),
   );
-  const millions = (value: number) => `${Math.round(value / 1_000_000)}M`;
+  const millions = (value: number) =>
+    `${formatNumber(Math.round(value / 1_000_000))}M`;
 
   // Source: server-scripts/Experience.cs:BalanceExperienceReward — BalanceExperienceReward selects the level-gap multiplier.
   // The switch is keyed on your level minus the monster's level.
@@ -596,7 +597,7 @@
               class="tick"
               x={vetX(tick)}
               y={VET_CHART.bottom + 18}
-              text-anchor="middle">{tick}</text
+              text-anchor="middle">{formatNumber(tick)}</text
             >
           {/each}
           <line
@@ -650,7 +651,7 @@
         >
           <span class="font-semibold">At</span>
           <span class="font-mono text-lg font-medium text-foreground"
-            >{pickedVeteran}</span
+            >{formatNumber(pickedVeteran)}</span
           >
           <span class="font-semibold">total veteran points</span>
         </label>
@@ -687,18 +688,19 @@
               {formatNumber(veteranRuns, {
                 decimals: 1,
                 trailingZeros: true,
-                grouping: false,
               })}&times;
             </dd>
           </div>
         </dl>
         <!-- Source: server-scripts/Experience.cs:max; server-scripts/PlayerSkills.cs:GetTotalVeteranPoints — these totals sum each point's XP cost without ranks that cost 2 points. -->
         <p class="text-sm text-muted-foreground">
-          If you never learn a rank that costs 2 points, reaching {MAX_VETERAN_POINTS}
+          If you never learn a rank that costs 2 points, reaching {formatNumber(
+            MAX_VETERAN_POINTS,
+          )}
           total veteran points takes
           {formatNumber(VETERAN_TOTAL)} XP, roughly {formatNumber(
             VETERAN_TOTAL / TOTAL_TO_CAP,
-            { decimals: 0, trailingZeros: true, grouping: false },
+            { decimals: 0, trailingZeros: true },
           )}
           times the XP from level 1 to {LEVEL_CAP}.
         </p>
@@ -715,8 +717,8 @@
         <p class="text-sm text-muted-foreground">
           Your total includes only 1 point per learned veteran skill rank, even
           if the rank costs 2 points. This bug lowers your total by 1 for each
-          2-point rank you learn and cuts the next point's XP cost by 20,000 XP.
-          Resetting refunds only 1 of the 2 points.
+          2-point rank you learn and cuts the next point's XP cost by
+          20&#8239;000 XP. Resetting refunds only 1 of the 2 points.
         </p>
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Player.cs:11238-11273; server-scripts/Npc.cs:1832-1850; server-scripts/PlayerSkills.cs:1906-1933 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
@@ -729,7 +731,7 @@
           {:else}
             The Veteran Master
           {/if}
-          resets your learned veteran skill ranks for 10,000 gold and a
+          resets your learned veteran skill ranks for 10&#8239;000 gold and a
           {#if data.redemptionToken}
             <ItemLink
               itemId={data.redemptionToken.id}
@@ -747,7 +749,7 @@
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Experience.cs:372-407 — earning stops at 200 total points and pays out the max-level reward item instead. -->
           <span class="block"
-            >You can earn up to {MAX_VETERAN_POINTS} total veteran points.</span
+            >You can earn up to {formatNumber(MAX_VETERAN_POINTS)} total veteran points.</span
           >
           <span class="block"
             >At that total, each filled experience bar grants a
@@ -1156,7 +1158,7 @@
                 >Scroll of Knowledge II</a
               ></td
             >
-            <td class="p-2 text-right font-mono">1,000</td>
+            <td class="p-2 text-right font-mono">1&#8239;000</td>
           </tr>
           <tr class="border-b hover:bg-muted/30">
             <td class="p-2"
@@ -1166,7 +1168,7 @@
                 >Scroll of Knowledge III</a
               ></td
             >
-            <td class="p-2 text-right font-mono">5,000</td>
+            <td class="p-2 text-right font-mono">5&#8239;000</td>
           </tr>
           <tr class="border-b hover:bg-muted/30">
             <td class="p-2"
@@ -1176,7 +1178,7 @@
                 >Scroll of Knowledge IV</a
               ></td
             >
-            <td class="p-2 text-right font-mono">25,000</td>
+            <td class="p-2 text-right font-mono">25&#8239;000</td>
           </tr>
           <tr class="border-b hover:bg-muted/30">
             <td class="p-2"
@@ -1186,7 +1188,7 @@
                 >Scroll of Knowledge V</a
               ></td
             >
-            <td class="p-2 text-right font-mono">100,000</td>
+            <td class="p-2 text-right font-mono">100&#8239;000</td>
           </tr>
           <tr class="hover:bg-muted/30">
             <td class="p-2"
@@ -1196,7 +1198,7 @@
                 >Scroll of Illumination</a
               ></td
             >
-            <td class="p-2 text-right font-mono">1,500,000</td>
+            <td class="p-2 text-right font-mono">1&#8239;500&#8239;000</td>
           </tr>
         </tbody>
       </table>
@@ -1239,11 +1241,11 @@
           </tr>
           <tr class="border-b hover:bg-muted/30">
             <td class="p-2">Tier IV</td>
-            <td class="p-2 text-right font-mono">4,000</td>
+            <td class="p-2 text-right font-mono">4&#8239;000</td>
           </tr>
           <tr class="hover:bg-muted/30">
             <td class="p-2">Tier V</td>
-            <td class="p-2 text-right font-mono">10,000</td>
+            <td class="p-2 text-right font-mono">10&#8239;000</td>
           </tr>
         </tbody>
       </table>
@@ -1314,8 +1316,8 @@
     <Card.Content>
       <!-- Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — isScribingTable overrides num5 = level.current * 100 -->
       <p class="text-sm text-muted-foreground">
-        Each successful craft gives 100 XP per character level: 4,000 XP at
-        level 40. Double XP buffs double that reward.
+        Each successful craft gives 100 XP per character level: 4&#8239;000 XP
+        at level 40. Double XP buffs double that reward.
       </p>
       <p class="text-sm text-muted-foreground">
         Find scroll recipes in <a

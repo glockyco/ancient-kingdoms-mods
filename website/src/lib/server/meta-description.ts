@@ -514,7 +514,7 @@ function backpackDescription(item: Item): string {
   const slots = item.backpack_slots > 0 ? item.backpack_slots : 0;
   const slotPhrase =
     slots > 0
-      ? ` that adds ${slots} inventory slots while equipped in your Combined Backpack`
+      ? ` that adds ${formatNumber(slots)} inventory slots while equipped in your Combined Backpack`
       : "";
   const equipPhrase = item.backpack_is_unique
     ? " You can equip only one copy of it."
@@ -527,7 +527,8 @@ function packDescription(item: Item, ctx: ItemMetaContext): string {
   const contents = ctx.packContents ?? [];
   if (contents.length > 0) {
     const c = contents[0];
-    const phrase = c.amount > 1 ? `${c.amount} × ${c.item_name}` : c.item_name;
+    const phrase =
+      c.amount > 1 ? `${formatNumber(c.amount)} × ${c.item_name}` : c.item_name;
     return `Redeems for ${phrase}.`;
   }
   return `Redeems for a fixed item bundle.`;
@@ -572,15 +573,15 @@ function chestContainerDescription(item: Item): string {
     : item.chest_num_items;
   const itemsWord = n === 1 ? "item" : "items";
   return fixed
-    ? `Contains ${n} fixed ${itemsWord}.`
-    : `Yields up to ${n} ${itemsWord} from a chance-based reward pool.`;
+    ? `Contains ${formatNumber(n)} fixed ${itemsWord}.`
+    : `Yields up to ${formatNumber(n)} ${itemsWord} from a chance-based reward pool.`;
 }
 
 function randomDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/RandomItem.cs:6 — yields one of items[] at random
   const n = ctx.randomOutcomes?.length ?? 0;
   if (n > 0) {
-    return `Yields one of ${n} possible items at random.`;
+    return `Yields one of ${formatNumber(n)} possible items at random.`;
   }
   return `Yields one item at random from a fixed pool.`;
 }
@@ -617,7 +618,7 @@ function fragmentDescription(item: Item): string {
     item.fragment_amount_needed > 0 ? item.fragment_amount_needed : 0;
   const result = item.fragment_result_item_name;
   if (need > 0 && result) {
-    return `Collect ${need} to combine into ${result}.`;
+    return `Collect ${formatNumber(need)} to combine into ${result}.`;
   }
   if (result) {
     return `Combines into ${result}.`;
@@ -666,9 +667,13 @@ function chestKeyDescription(item: Item, ctx: ItemMetaContext): string {
   const opens = ctx.chestKeyOpens;
   if (opens && opens.chestCount > 0) {
     const chestPhrase =
-      opens.chestCount === 1 ? "1 chest" : `${opens.chestCount} chests`;
+      opens.chestCount === 1
+        ? "1 chest"
+        : `${formatNumber(opens.chestCount)} chests`;
     const zonePhrase =
-      opens.zoneCount === 1 ? "1 zone" : `${opens.zoneCount} zones`;
+      opens.zoneCount === 1
+        ? "1 zone"
+        : `${formatNumber(opens.zoneCount)} zones`;
     return `Chest key. Opens ${chestPhrase} across ${zonePhrase}.`;
   }
   return `Chest key.`;
@@ -687,12 +692,14 @@ function keyDescription(ctx: ItemMetaContext): string {
     return `Keyring item.`;
   }
   const portalPhrase =
-    portals.length === 1 ? "1 portal" : `${portals.length} portals`;
+    portals.length === 1
+      ? "1 portal"
+      : `${formatNumber(portals.length)} portals`;
   const destinations = new Set(portals.map((p) => p.to_zone_id));
   if (destinations.size === 1) {
     return `Unlocks ${portalPhrase} to ${portals[0].to_zone_name}.`;
   }
-  return `Unlocks ${portalPhrase} across ${destinations.size} zones.`;
+  return `Unlocks ${portalPhrase} across ${formatNumber(destinations.size)} zones.`;
 }
 
 function questItemDescription(item: Item, ctx: ItemMetaContext): string {
@@ -738,7 +745,7 @@ function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
   // description short; users land on the detail page for the full breakdown.
   const top = counts.slice(0, 2);
   const phrases = top.map(
-    (c) => `${c.count} ${pluralize(c.category, c.count)}`,
+    (c) => `${formatNumber(c.count)} ${pluralize(c.category, c.count)}`,
   );
   const currency = counts.find((c) => c.category === "exchange");
   if (currency && counts.length === 1) {
@@ -1064,7 +1071,7 @@ export function zoneDescription(
 }
 
 function plural(n: number, singular: string, pluralForm: string): string {
-  return `${n} ${n === 1 ? singular : pluralForm}`;
+  return `${formatNumber(n)} ${n === 1 ? singular : pluralForm}`;
 }
 
 // =============================================================================
@@ -1152,7 +1159,7 @@ function renderTargetList(
     return `${verb} ${joinList(list.map((o) => (o.amount > 1 ? `${o.name} x${formatNumber(o.amount)}` : o.name)))}`;
   }
   const total = list.reduce((sum, o) => sum + Math.max(o.amount, 1), 0);
-  return `${verb} ${total} ${collective}`;
+  return `${verb} ${formatNumber(total)} ${collective}`;
 }
 
 /**
@@ -1446,8 +1453,8 @@ export function gatheringResourceDescription(
   const rewardMin = resource.item_reward_amount_min ?? 1;
   const amount =
     rewardAmount > rewardMin
-      ? `${rewardMin}-${rewardAmount}`
-      : `${rewardAmount}`;
+      ? `${formatNumber(rewardMin)}-${formatNumber(rewardAmount)}`
+      : `${formatNumber(rewardAmount)}`;
   const rewardPhrase = resource.is_radiant_spark
     ? rewardName &&
       resource.radiant_chance_min != null &&
@@ -1737,7 +1744,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   const effect = skill.effect_summary || typeLabel;
   const ownershipPhrase = ownership ? ` ${ownership}.` : "";
   return `${capitalizeFirst(effect.replace(/[.]$/, ""))}.${ownershipPhrase}${cost}${gate}`
-    .replace(/\s+/g, " ")
+    .replace(/[^\S\u202F]+/g, " ")
     .trim();
 }
 

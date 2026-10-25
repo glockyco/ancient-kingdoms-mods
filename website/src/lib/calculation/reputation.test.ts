@@ -14,18 +14,18 @@ describe("reputation calculations", () => {
     expect(reputationExample(1, 2000, false).example!({}).result).toContain(
       "−0.75",
     );
-    expect(reputationExample().example!({}).result).toContain("+31,400");
+    expect(reputationExample().example!({}).result).toContain("+31\u202F400");
   });
   it("applies boss and elite rank multipliers independently to gains and losses", () => {
     const boss = reputationExample(56, 800_000).example!({});
-    expect(boss.result.match(/\d[\d,]*/g)).toEqual(["9,120", "112"]);
+    expect(boss.result.match(/\d[\d\u202F]*/g)).toEqual(["9\u202F120", "112"]);
     const elite = reputationExample(56, 800_000, false, true).example!({});
-    expect(elite.result.match(/\d[\d,]*/g)).toEqual(["4,560", "56"]);
+    expect(elite.result.match(/\d[\d\u202F]*/g)).toEqual(["4\u202F560", "56"]);
   });
 });
 
 it("uses the Notable multiplier only for positive NPC reputation", () => {
-  expect(npcReputation().example!({}).result).toContain("+5,400");
+  expect(npcReputation().example!({}).result).toContain("+5\u202F400");
   expect(npcReputation().example!({}).result).toContain("−300");
   expect(npcReputation(1, false).example!({}).result).toContain("+1.5");
 });

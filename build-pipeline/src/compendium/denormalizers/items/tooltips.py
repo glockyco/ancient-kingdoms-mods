@@ -209,12 +209,11 @@ def _parse_tooltip(item: dict, stat_names: dict[str, str | None]) -> str:
         ).rstrip()
         parsed += f"\n\n<color=#F1D65A>Item Level: {item_level}</color>"
 
-    # Add sell price if sellable (format with space separator like in-game)
+    # Match the site's narrow no-break grouping for generated sell prices.
     sellable = item.get("sellable")
     sell_price = item.get("sell_price") or 0
     if sellable and sell_price > 0:
-        # Format price with space separators (e.g., "1 234 567")
-        formatted_price = f"{sell_price:,}".replace(",", " ")
+        formatted_price = f"{sell_price:,}".replace(",", "\u202f")
         parsed += (
             f'\n\n<align="right">{formatted_price} <color=#FFD700>●</color></align>'
         )

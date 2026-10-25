@@ -43,8 +43,8 @@
             href="/npcs?npcs.role_keys=is_guild_management"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Guild Registrar</a
-          >, you can create a guild for 10,000 gold if your character belongs to
-          no guild and your account leads no other guild.</span
+          >, you can create a guild for 10&#8239;000 gold if your character
+          belongs to no guild and your account leads no other guild.</span
         >
         <span class="block"
           >Guild names can use 3 to 20 letters, numbers, spaces, apostrophes,

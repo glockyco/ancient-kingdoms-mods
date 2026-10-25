@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import { statName } from "$lib/stats";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
@@ -38,7 +39,7 @@
     buildCollectionPage({
       path: "/mercenaries",
       name: "Mercenaries - Ancient Kingdoms Compendium",
-      description: `The ${data.mercenaries.length} hireable mercenary classes in Ancient Kingdoms, compared.`,
+      description: `The ${formatNumber(data.mercenaries.length)} hireable mercenary classes in Ancient Kingdoms, compared.`,
       items: data.mercenaries.map((m) => ({
         name: m.name,
         path: petHref(m.id, true),
@@ -102,7 +103,7 @@
 
 <Seo
   title="Mercenaries - Ancient Kingdoms"
-  description={`Compare the ${data.mercenaries.length} mercenary classes in Ancient Kingdoms. Learn how hiring, party limits, growth, stance, and resurrection work, and find every recruiter.`}
+  description={`Compare the ${formatNumber(data.mercenaries.length)} mercenary classes in Ancient Kingdoms. Learn how hiring, party limits, growth, stance, and resurrection work, and find every recruiter.`}
   path="/mercenaries"
 />
 
@@ -136,12 +137,14 @@
     <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold tabular-nums">
-          {data.mercenaries.length}
+          {formatNumber(data.mercenaries.length)}
         </div>
         <div class="text-sm text-muted-foreground">Classes</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold tabular-nums">{recruiterCount}</div>
+        <div class="text-2xl font-semibold tabular-nums">
+          {formatNumber(recruiterCount)}
+        </div>
         <div class="text-sm text-muted-foreground">Recruiters</div>
       </div>
       <div class="rounded-lg border p-4">

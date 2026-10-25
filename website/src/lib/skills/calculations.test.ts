@@ -10,8 +10,9 @@ function skill(overrides: Partial<SkillDetailView>): SkillDetailView {
   return { id: "test", max_level: 5, ...overrides } as SkillDetailView;
 }
 function resultNumbers(result: string): number[] {
-  return Array.from(result.matchAll(/\d+(?:,\d{3})*(?:\.\d+)?/g), (match) =>
-    Number(match[0].replaceAll(",", "")),
+  return Array.from(
+    result.matchAll(/\d+(?:\u202F\d{3})*(?:\.\d+)?/g),
+    (match) => Number(match[0].replaceAll("\u202F", "")),
   );
 }
 

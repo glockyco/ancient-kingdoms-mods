@@ -5,6 +5,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Separator } from "$lib/components/ui/separator";
   import { cn } from "$lib/utils.js";
+  import { formatNumber } from "$lib/utils/format";
 
   let {
     open = $bindable(false),
@@ -28,7 +29,7 @@
   {#if selectedCount > 0}
     <Separator orientation="vertical" class="mx-2 h-4" />
     <Badge variant="secondary" class="rounded-sm px-1 font-normal">
-      {selectedCount} ({mode})
+      {formatNumber(selectedCount)} ({mode})
     </Badge>
   {/if}
   <ChevronDownIcon

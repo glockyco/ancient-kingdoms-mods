@@ -46,12 +46,12 @@
   }
 
   function formatPercentagePoints(value: number, digits = 1): string {
-    return `${formatNumber(value * 100, { decimals: digits, trailingZeros: true, grouping: false })} pp`;
+    return `${formatNumber(value * 100, { decimals: digits, trailingZeros: true })} pp`;
   }
 
   function formatSignedPercentagePoints(value: number, digits = 1): string {
     const sign = value > 0 ? "+" : "";
-    return `${sign}${formatNumber(value * 100, { decimals: digits, trailingZeros: true, grouping: false })} pp`;
+    return `${sign}${formatNumber(value * 100, { decimals: digits, trailingZeros: true })} pp`;
   }
 
   function sameDestination(zone: string, subZone: string): boolean {
@@ -96,17 +96,21 @@
 
     <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.stats.map_count}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.stats.map_count)}
+        </div>
         <div class="text-sm text-muted-foreground">Treasure maps</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
-          {data.stats.relic_reward_count}
+          {formatNumber(data.stats.relic_reward_count)}
         </div>
         <div class="text-sm text-muted-foreground">Relic rewards</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.stats.zone_count}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.stats.zone_count)}
+        </div>
         <div class="text-sm text-muted-foreground">Destination zones</div>
       </div>
       <div class="rounded-lg border p-4">
@@ -142,7 +146,7 @@
             <a
               href="#treasure-maps"
               class="text-blue-600 hover:underline dark:text-blue-400"
-              >{data.treasureMaps.length} treasure maps</a
+              >{formatNumber(data.treasureMaps.length)} treasure maps</a
             >, and each treasure map leads to a Buried Treasure Chest.
           </p>
         </div>
@@ -364,7 +368,7 @@
   <section id="treasure-maps" class="space-y-4">
     <h2 class="flex items-center gap-2 text-xl font-semibold">
       <MapIcon class="h-5 w-5 text-amber-500" />
-      Treasure Maps ({data.treasureMaps.length})
+      Treasure Maps ({formatNumber(data.treasureMaps.length)})
     </h2>
 
     <div class="overflow-hidden rounded-lg border">

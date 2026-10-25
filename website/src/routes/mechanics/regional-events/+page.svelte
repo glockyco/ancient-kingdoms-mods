@@ -19,6 +19,7 @@
     huntPlayers,
     needsLevel35Player,
   } from "$lib/data/regional-events";
+  import { formatNumber } from "$lib/utils/format";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -231,7 +232,9 @@
                           >{stage.name}</span
                         >
                         <span class="text-sm tabular-nums"
-                          >{stage.upTo ? "up to " : ""}{stage.minutes} min</span
+                          >{stage.upTo ? "up to " : ""}{formatNumber(
+                            stage.minutes,
+                          )} min</span
                         >
                       </p>
                       <p class="mt-1 text-sm leading-relaxed">{stage.text}</p>
@@ -402,10 +405,10 @@
       <!-- Source: server-scripts/PlayerQuests.cs:384-392; server-scripts/Player.cs:13348-13351,13757-13770,14040-14042,14063-14067; server-scripts/Npc.cs:1608-1616,1641-1649 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
       <p>
         When the goal is reached, the region prospers for
-        {data.settings.prosperity_duration_minutes} minutes. Everyone in the region
-        gets 15% more XP from monsters, including in its dungeons, and from gathering
-        and fishing outside dungeons. Players who did not help get the bonus too.
-        Quests, crafting, exploring, and NPC kills get no bonus.
+        {formatNumber(data.settings.prosperity_duration_minutes)} minutes. Everyone
+        in the region gets 15% more XP from monsters, including in its dungeons, and
+        from gathering and fishing outside dungeons. Players who did not help get
+        the bonus too. Quests, crafting, exploring, and NPC kills get no bonus.
       </p>
       <p>
         See <MechanicsLink section="experience">Experience</MechanicsLink> for how

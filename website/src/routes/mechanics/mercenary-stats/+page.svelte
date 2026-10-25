@@ -75,15 +75,13 @@
       ? formatNumber(n / 1e6, {
           decimals: n >= 1e7 ? 0 : 1,
           trailingZeros: true,
-          grouping: false,
         }).replace(/\.0$/, "") + "M"
       : n >= 1e4
-        ? formatNumber(n / 1e3, { decimals: 0, grouping: false }) + "k"
+        ? formatNumber(n / 1e3, { decimals: 0 }) + "k"
         : n >= 1e3
           ? formatNumber(n / 1e3, {
               decimals: 1,
               trailingZeros: true,
-              grouping: false,
             }).replace(/\.0$/, "") + "k"
           : formatNumber(Math.round(n));
 

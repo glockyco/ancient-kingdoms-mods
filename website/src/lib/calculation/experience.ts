@@ -25,8 +25,7 @@ export function levelExperience(costs: readonly number[]): Calculation {
       },
       {
         name: "XP to next level, levels 41 to 49",
-        expression:
-          "602,060 XP (the level 40 requirement) × (118% to the power of (your level − 40))",
+        expression: `${formatNumber(602060)} XP (the level 40 requirement) × (118% to the power of (your level − 40))`,
         rounding: "nearest",
       },
     ],
@@ -57,7 +56,7 @@ export function veteranExperience(): Calculation {
     steps: [
       {
         name: "Next Veteran Point",
-        expression: "1,000,000 XP + 20,000 XP × total veteran points",
+        expression: `${formatNumber(1_000_000)} XP + ${formatNumber(20_000)} XP × total veteran points`,
       },
     ],
     inputs: [
@@ -70,7 +69,7 @@ export function veteranExperience(): Calculation {
       given: [`${veteran} total veteran points`],
       result: `${formatNumber(1_000_000 + veteran * 20_000)} XP for the next point`,
       working: [
-        `Next Veteran Point: 1,000,000 + 20,000 × ${veteran} = ${formatNumber(1_000_000 + veteran * 20_000)} XP`,
+        `Next Veteran Point: ${formatNumber(1_000_000)} + ${formatNumber(20_000)} × ${veteran} = ${formatNumber(1_000_000 + veteran * 20_000)} XP`,
       ],
     }),
   };

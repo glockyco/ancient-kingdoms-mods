@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -224,13 +225,15 @@
           <div class="p-3 text-right border-t">
             {#if xp}
               <MechanicsLink section="experience"
-                >{xp.toLocaleString()}</MechanicsLink
+                >{formatNumber(xp)}</MechanicsLink
               >
             {:else}
               <span class="text-muted-foreground">—</span>
             {/if}
           </div>
-          <div class="p-3 text-right border-t">{resourceCount}</div>
+          <div class="p-3 text-right border-t">
+            {formatNumber(resourceCount)}
+          </div>
         {/each}
       </div>
     </div>
@@ -240,7 +243,7 @@
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <Leaf class="h-5 w-5 text-green-500" />
-      Plants ({data.resources.length})
+      Plants ({formatNumber(data.resources.length)})
     </h2>
     <div class="rounded-lg border overflow-x-auto">
       <div

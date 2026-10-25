@@ -10,6 +10,7 @@
 
 <script lang="ts">
   import SeasonLabel from "./SeasonLabel.svelte";
+  import { formatNumber } from "$lib/utils/format";
   interface Props {
     groups: SourceLinkGroup[];
     /**
@@ -60,7 +61,7 @@
           <a
             href="/items/{itemId}"
             class="whitespace-nowrap text-xs text-muted-foreground hover:underline"
-            >+{hidden} more</a
+            >+{formatNumber(hidden)} more</a
           >
         {/if}
       </span>

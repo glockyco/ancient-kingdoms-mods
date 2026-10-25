@@ -1202,7 +1202,7 @@
                 </td>
                 <td class="py-2 pr-4">
                   {#each trigger.guards as guard, i (guard.id)}
-                    {i > 0 ? ", " : ""}{guard.count}
+                    {i > 0 ? ", " : ""}{formatNumber(guard.count)}
                     <a
                       href="/monsters/{guard.id}"
                       class="text-blue-600 dark:text-blue-400 hover:underline"

@@ -6,6 +6,7 @@ import {
   isNegativeLinear,
   convertTooltip,
 } from "./skill-format";
+import { formatSeconds } from "$lib/calculation/format";
 
 describe("skill display formatting", () => {
   test.each([
@@ -24,6 +25,12 @@ describe("skill display formatting", () => {
     expect(formatPercent(0.12345)).toBe("12.35%");
     expect(formatPercent(-0.0225)).toBe("−2.25%");
     expect(formatPercent(0.00001)).toBe("0.001%");
+    expect(formatPercent(12.345)).toBe("1\u202F234.5%");
+    expect(formatPercent(-0)).toBe("0%");
+  });
+  test("long durations group hours without changing compact units", () => {
+    expect(formatSeconds(3_600_000)).toBe("1\u202F000h");
+    expect(formatSeconds(2.45)).toBe("2.45s");
   });
   test("a level-only value is present but its sign is decided by its base", () => {
     expect(hasLinearValue(null)).toBe(false);

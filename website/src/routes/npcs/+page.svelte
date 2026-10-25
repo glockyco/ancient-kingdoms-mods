@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Users from "@lucide/svelte/icons/users";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import SeasonIcons from "$lib/components/SeasonIcons.svelte";
@@ -35,7 +36,7 @@
     buildCollectionPage({
       path: "/npcs",
       name: "NPCs — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.npcs.length.toLocaleString()} NPCs in Ancient Kingdoms.`,
+      description: `Searchable database of ${formatNumber(data.npcs.length)} NPCs in Ancient Kingdoms.`,
       items: data.npcs.map((npc) => ({
         name: npc.name,
         path: `/npcs/${npc.id}`,
@@ -246,7 +247,7 @@
         </IconBadge>
         {#if zones.length > 1}
           <span class="text-muted-foreground text-xs self-center"
-            >+{zones.length - 1}</span
+            >+{formatNumber(zones.length - 1)}</span
           >
         {/if}
       {:else}
@@ -319,7 +320,7 @@
 
 <Seo
   title="NPCs - Ancient Kingdoms"
-  description={`${data.npcs.length.toLocaleString()} NPCs sortable by zone, faction, and role — merchants, quest givers, skill masters, faction vendors, bankers, and innkeepers.`}
+  description={`${formatNumber(data.npcs.length)} NPCs sortable by zone, faction, and role — merchants, quest givers, skill masters, faction vendors, bankers, and innkeepers.`}
   path="/npcs"
 />
 

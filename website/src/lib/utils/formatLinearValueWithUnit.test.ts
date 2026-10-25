@@ -10,6 +10,7 @@ describe("unit-bearing skill formulas", () => {
     [1, 1, "s", "1s × rank"],
     [10, -1, "s", "10s − 1s × (rank − 1)"],
     [1, 4, "", "1 + 4 × (rank − 1)"],
+    [1234.5, 1000, " yd", "1\u202F234.5 yd + 1\u202F000 yd × (rank − 1)"],
   ])(
     "states %s + %s per rank with %s from its rank-1 value",
     (base, perLevel, unit, expected) => {

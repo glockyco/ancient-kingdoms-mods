@@ -15,7 +15,7 @@
 
 <Seo
   title={detailTitle(data.profession.name, { family: "Profession" })}
-  description={`${data.profession.description} All ${data.areas.length} areas with their zones, zone monster levels and discovery XP.`}
+  description={`${data.profession.description} All ${formatNumber(data.areas.length)} areas with their zones, zone monster levels and discovery XP.`}
   path="/professions/exploring"
 />
 
@@ -68,7 +68,7 @@
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <MapPin class="h-5 w-5 text-emerald-500" />
-      Areas to discover ({data.areas.length})
+      Areas to discover ({formatNumber(data.areas.length)})
     </h2>
     <div class="rounded-lg border overflow-x-auto">
       <table class="w-full whitespace-nowrap">

@@ -210,7 +210,7 @@
     {@const value = cell.getValue() as number}
     <span class="ml-auto">
       {#if value > 0}
-        {value}
+        {formatNumber(value)}
       {:else}
         <span class="text-muted-foreground">-</span>
       {/if}

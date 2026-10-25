@@ -9,6 +9,7 @@
     type SortingState,
   } from "$lib/components/ui/data-table";
   import MapLink from "$lib/components/MapLink.svelte";
+  import { formatNumber } from "$lib/utils/format";
 
   type MapTarget = Pick<
     ComponentProps<typeof MapLink>,
@@ -85,7 +86,7 @@
 
 <section class="space-y-3">
   <h2 id="{urlKey}-title" class="font-semibold leading-none">
-    {title} ({rows.length})
+    {title} ({formatNumber(rows.length)})
   </h2>
   {#if description}
     <div class="text-sm text-muted-foreground">{@render description()}</div>

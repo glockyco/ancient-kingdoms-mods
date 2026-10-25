@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
@@ -89,8 +90,9 @@
       <p
         class="mt-5 max-w-xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg"
       >
-        Ancient Kingdoms has {data.total} Steam achievements. Each entry shows its
-        unlock condition unless Steam hides it, and links to related compendium pages.
+        Ancient Kingdoms has {formatNumber(data.total)} Steam achievements. Each entry
+        shows its unlock condition unless Steam hides it, and links to related compendium
+        pages.
       </p>
     </div>
 
@@ -121,7 +123,7 @@
               >
                 <span>{group.name}</span>
                 <span class="text-xs tabular-nums"
-                  >{group.achievements.length}</span
+                  >{formatNumber(group.achievements.length)}</span
                 >
               </a>
             </li>
@@ -163,7 +165,7 @@
             class="hidden min-w-20 text-right text-xs tabular-nums text-muted-foreground sm:block"
             aria-live="polite"
           >
-            {visibleCount}
+            {formatNumber(visibleCount)}
             {visibleCount === 1 ? "result" : "results"}
           </output>
         </div>
@@ -208,7 +210,7 @@
                 </p>
               </div>
               <span class="text-xs tabular-nums text-foreground/70">
-                {group.achievements.length}
+                {formatNumber(group.achievements.length)}
                 {group.achievements.length === 1
                   ? "achievement"
                   : "achievements"}

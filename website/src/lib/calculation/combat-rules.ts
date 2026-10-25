@@ -421,15 +421,15 @@ export const threatCalculation: Calculation = {
     return {
       given: [
         "10 extra threat from a single-target skill",
-        "2,000 attacker maximum Hit Points",
+        `${number(2000)} attacker maximum Hit Points`,
         "201 starting damage",
         `50% stun chance for ${seconds(3)}`,
         `10% fear chance for ${seconds(5)}`,
-        "5,000 target current Hit Points",
+        `${number(5000)} target current Hit Points`,
       ],
       result: `${number(result.total)} threat gained`,
       working: [
-        `Skill threat: 10 + 2,000 ÷ 3 = 10 + ${number(result.health)} = ${number(skillThreat)}, with the Hit Points share rounded`,
+        `Skill threat: 10 + ${number(2000)} ÷ 3 = 10 + ${number(result.health)} = ${number(skillThreat)}, with the Hit Points share rounded`,
         `Stun threat: 50% × ${seconds(3)} × 10 = ${number(result.stun)}, rounded`,
         `Fear threat: 10% × ${seconds(5)} × 10 = ${number(result.fear)}, rounded`,
         `Control threat: ${number(result.stun)} + ${number(result.fear)} = ${number(result.stun + result.fear)}`,

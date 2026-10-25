@@ -19,7 +19,7 @@
     ResourceDropListView,
   } from "$lib/types/gather-items";
   import type { ResourceZoneInfo } from "$lib/queries/gather-items.server";
-  import { formatGatheringRespawn } from "$lib/utils/format";
+  import { formatGatheringRespawn, formatNumber } from "$lib/utils/format";
 
   let { data } = $props();
 
@@ -27,7 +27,7 @@
     buildCollectionPage({
       path: "/gather-items",
       name: "Gathering Resources — Ancient Kingdoms Compendium",
-      description: `Find ${data.resources.length.toLocaleString()} plants, minerals, fishing spots, and radiant sparks by tier and zone.`,
+      description: `Find ${formatNumber(data.resources.length)} plants, minerals, fishing spots, and radiant sparks by tier and zone.`,
       items: data.resources.map((resource) => ({
         name: resource.name,
         path: `/gather-items/${resource.id}`,
@@ -251,7 +251,9 @@
   {:else if cell.column.id === "drops"}
     {@const drops = row.original.drops}
     {#if drops.length > 0}
-      <span class="text-muted-foreground">{drops.length} items</span>
+      <span class="text-muted-foreground"
+        >{formatNumber(drops.length)} items</span
+      >
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
@@ -269,7 +271,7 @@
         </a>
         {#if zones.length > 1}
           <span class="text-muted-foreground text-xs self-center"
-            >+{zones.length - 1}</span
+            >+{formatNumber(zones.length - 1)}</span
           >
         {/if}
       {:else}
@@ -328,7 +330,7 @@
   />
 
   <h1 class="text-3xl font-bold">
-    Gathering Resources ({data.resources.length})
+    Gathering Resources ({formatNumber(data.resources.length)})
   </h1>
 
   <DataTable

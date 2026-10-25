@@ -63,9 +63,9 @@
   const TIER_UNLOCKS: Record<number, string> = {
     0: "NPCs of this faction refuse services",
     1: "NPCs of this faction refuse services",
-    4: "Faction vendors, at 15,000 (Friendly 14,000 / 20,000 in the faction panel)",
-    6: "Recipes, costumes, and pets, at 221,000 (Ally 0 / 500,000 in the faction panel)",
-    7: "Mounts, at 721,000 (Revered 0 / 1,279,000 in the faction panel)",
+    4: "Faction vendors, at 15 000 (Friendly 14 000 / 20 000 in the faction panel)",
+    6: "Recipes, costumes, and pets, at 221 000 (Ally 0 / 500 000 in the faction panel)",
+    7: "Mounts, at 721 000 (Revered 0 / 1 279 000 in the faction panel)",
   };
 
   /**
@@ -212,14 +212,14 @@
                       class="text-blue-600 dark:text-blue-400 hover:underline"
                       >Houses</a
                     >
-                    at 21,000.
+                    at 21&#8239;000.
                     <a
                       href="/quests/29_trial_of_the_ancients"
                       class="text-blue-600 dark:text-blue-400 hover:underline"
                       >Trial of the Ancients</a
                     >
-                    requires 21,000 with Elven Kingdom (Honored 0 / 200,000 in the
-                    faction panel).
+                    requires 21&#8239;000 with Elven Kingdom (Honored 0 / 200&#8239;000
+                    in the faction panel).
                   {:else if TIER_UNLOCKS[tier.id]}
                     {TIER_UNLOCKS[tier.id]}
                   {:else}
@@ -236,7 +236,8 @@
       <p>
         From Neutral through Revered, the faction panel shows your progress
         toward the next tier, not your total reputation. It rounds down to whole
-        points. A total of 15,000 reads Friendly 14,000 / 20,000.
+        points. A total of 15&#8239;000 reads Friendly 14&#8239;000 /
+        20&#8239;000.
       </p>
       <!-- Source: server-scripts/Npc.cs:1742-1748; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
       <p>
@@ -305,7 +306,7 @@
             href="/monsters/avatar_of_water"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Avatar of Water</a
-          > is a level 56 boss with 800,000 maximum Hit Points. Killing it raises
+          > is a level 56 boss with 800&#8239;000 maximum Hit Points. Killing it raises
           your reputation with Elven Kingdom, Children of Illithor, and Army of Order,
           and lowers your reputation with Ancient Gods.</span
         >
@@ -462,7 +463,8 @@
             class="font-bold text-blue-600 dark:text-blue-400 hover:underline"
             >Faction vendors</a
           >
-          require 15,000 reputation (Friendly 14,000 / 20,000 in the faction panel).
+          require 15&#8239;000 reputation (Friendly 14&#8239;000 / 20&#8239;000 in
+          the faction panel).
         </li>
         <li>
           <!-- Source: server-scripts/UINpcTrading.cs:452-456 — per-item faction requirement against the vendor's faction. -->
@@ -475,8 +477,8 @@
             href="/mechanics/housing"
             class="font-bold text-blue-600 dark:text-blue-400 hover:underline"
             >Houses</a
-          > each require 21,000 reputation with their own faction (Honored 0 / 200,000
-          in the faction panel).
+          > each require 21&#8239;000 reputation with their own faction (Honored 0
+          / 200&#8239;000 in the faction panel).
         </li>
         <li>
           <!-- Source: server-scripts/PlayerQuests.cs:131-143 — every quest faction requirement must be met. -->
@@ -525,8 +527,8 @@
           as your points keep increasing.</span
         >
         <span class="block"
-          >At Hated, it shows 0 out of 10,000 at −13,000 or lower, even as your
-          points keep decreasing.</span
+          >At Hated, it shows 0 out of 10&#8239;000 at −13&#8239;000 or lower,
+          even as your points keep decreasing.</span
         >
       </p>
     </Card.Content>

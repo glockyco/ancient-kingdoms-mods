@@ -49,6 +49,15 @@ describe("merchant calculations", () => {
       merchantPrice(false).example!({ itemValue: 1000, charisma: 200 }).result,
     ).toContain("750 gold");
   });
+  it("groups high Charisma in the inputs and discount explanation", () => {
+    const example = merchantPrice(false).example!({
+      itemValue: 2000,
+      charisma: 1000,
+    });
+    expect(example.given).toContain("1\u202F000 Charisma");
+    expect(example.working.join(" ")).toContain("0.2% × 1\u202F000");
+    expect(example.result).toBe("1\u202F500 gold paid");
+  });
   it("uses the tooltip percentage for damaged and intact repair estimates", () => {
     expect(evaluateRepair(1000, 0.3, 100).total).toBe(280);
     expect(evaluateRepair(1000, 1, 100).missing).toBe(0);

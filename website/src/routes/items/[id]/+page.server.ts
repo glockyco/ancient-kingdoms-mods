@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
+import { formatNumber } from "$lib/utils/format";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ItemDetailPageData } from "$lib/types/items";
@@ -195,7 +196,7 @@ export const load: PageServerLoad = async ({
   }
   if (item.item_type === "structure") {
     acquisitionNotes.push(
-      `Buy and place this furniture through the house panel for ${item.structure_price.toLocaleString("en-US")} gold while at a house owned by your account.`,
+      `Buy and place this furniture through the house panel for ${formatNumber(item.structure_price)} gold while at a house owned by your account.`,
     );
   }
   const sourceView = projectItemSources(model, params.id);

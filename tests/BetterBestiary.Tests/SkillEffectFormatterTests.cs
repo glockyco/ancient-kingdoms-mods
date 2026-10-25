@@ -46,9 +46,13 @@ public class SkillEffectFormatterTests
         var mismatches = new List<string>();
         foreach (var c in cases)
         {
+            // The website groups thousands with U+202F. The mod draws text inside the game,
+            // which shows English numbers with a comma, so the separator is the one
+            // deliberate difference between the two.
+            var expected = c.expected.Replace('\u202F', ',');
             var actual = SkillEffectFormatter.Format(c.input);
-            if (actual != c.expected)
-                mismatches.Add($"  {c.skill_id}: expected «{c.expected}» got «{actual}»");
+            if (actual != expected)
+                mismatches.Add($"  {c.skill_id}: expected «{expected}» got «{actual}»");
         }
 
         Assert.True(

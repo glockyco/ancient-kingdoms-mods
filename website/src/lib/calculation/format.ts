@@ -1,10 +1,7 @@
 import { addF32, multiplyF32 } from "$lib/calculation/unity-math";
 import type { CalculationInput } from "$lib/types/calculation";
 import type { LinearValue } from "$lib/types/skills";
-
-/** "1,234" */
-export const formatNumber = (value: number): string =>
-  value.toLocaleString("en-US").replace(/^-/, "−");
+import { formatNumber } from "$lib/utils/format";
 
 /**
  * 0.125 → "12.5%". Two decimals, trailing zeros dropped. A nonzero value too
@@ -19,7 +16,8 @@ export function formatPercent(value: number): string {
     });
     return `${digits.replace(/^-/, "−")}%`;
   }
-  return `${String(Number(percent.toFixed(2))).replace(/^-/, "−")}%`;
+  const rounded = Number(percent.toFixed(2));
+  return `${formatNumber(rounded === 0 ? 0 : rounded, { decimals: 2 })}%`;
 }
 
 /**
@@ -41,7 +39,7 @@ export function formatSeconds(value: number): string {
     sign +
     parts
       .filter(([amount]) => amount > 0)
-      .map(([amount, unit]) => `${amount}${unit}`)
+      .map(([amount, unit]) => `${formatNumber(amount)}${unit}`)
       .join(" ")
   );
 }

@@ -449,7 +449,7 @@
         <!-- Source: server-scripts/UISkills.cs:295-326 — switching requires no unspent class skill points, no combat, an idle living player, and a 10-minute interval. -->
         <p>
           <span class="block"
-            >At level 50, a second specialization costs 10,000 gold.</span
+            >At level 50, a second specialization costs 10&#8239;000 gold.</span
           >
           <span class="block"
             >To switch, spend all your class skill points and be alive, out of
@@ -492,8 +492,8 @@
             >A class-skill reset costs 100 gold below level 10.</span
           >
           <span class="block"
-            >The price rises to 250 at level 10, 500 at level 20, 1,000 at level
-            30, and 3,000 at level 40.</span
+            >The price rises to 250 at level 10, 500 at level 20, 1&#8239;000 at
+            level 30, and 3&#8239;000 at level 40.</span
           >
         </p>
         <!-- Source: server-scripts/Npc.cs:OnInteract; server-scripts/Player.cs:UserCode_CmdResetAttributes — attribute and class-skill resets use the same price; active debuffs prevent an attribute reset. -->
@@ -532,7 +532,7 @@
                 >{data.veteranMaster.name}</a
               >, the Veteran Master,
             {:else}The Veteran Master{/if}
-            resets veteran skills for 10,000 gold and one
+            resets veteran skills for 10&#8239;000 gold and one
             {#if data.redemptionToken}
               <ItemLink
                 itemId={data.redemptionToken.id}

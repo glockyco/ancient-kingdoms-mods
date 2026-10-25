@@ -7,6 +7,7 @@ from compendium.db import create_database
 from compendium.denormalizers.items.equipment import _denormalize_armor_sets
 from compendium.denormalizers.items.tooltips import (
     _convert_unity_markup_to_html,
+    _parse_tooltip,
     run,
     tooltip_stat_fields,
 )
@@ -78,6 +79,15 @@ def test_color_and_price_alignment_remain_supported():
     assert result == (
         '<div style="text-align: right">250 <span style="color: #FFD700">●</span></div>'
     )
+
+
+def test_sell_price_uses_narrow_no_break_grouping():
+    result = _parse_tooltip(
+        {"tooltip": "Quoted game text: 12 345", "sellable": True, "sell_price": 12345},
+        {},
+    )
+    assert '12\u202f345 <span style="color: #FFD700">●</span>' in result
+    assert "Quoted game text: 12 345" in result
 
 
 @pytest.mark.parametrize("item_name", ["Constitution", "Exported Attribute Name"])

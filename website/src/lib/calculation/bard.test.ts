@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { charmResistChance, finalCadenceMelody } from "./bard";
+import {
+  bardCharmResistance,
+  charmResistChance,
+  finalCadenceMelody,
+} from "./bard";
 
 describe("Final Cadence Melody", () => {
   it("rounds exact halves to even after the Melody bonus", () => {
@@ -32,5 +36,19 @@ describe("Bard Charm resistance", () => {
   it("floors negative Charisma and final resistance at zero", () => {
     expect(charmResistChance(50, 50, 100, -100)).toBeCloseTo(0.05);
     expect(charmResistChance(50, 50, 100, 1000)).toBe(0);
+  });
+  it("groups high character stats in the resistance explanation", () => {
+    const example = bardCharmResistance().example!({
+      level: 50,
+      monsterLevel: 50,
+      magicResist: 2000,
+      charisma: 1000,
+    });
+    expect(example.given).toContain("Level 50, 1\u202F000 Charisma");
+    expect(example.given).toContain(
+      "Level 50 monster, 2\u202F000 Magic Resist",
+    );
+    expect(example.working.join(" ")).toContain("2\u202F000 ×");
+    expect(example.working.join(" ")).toContain("1\u202F000 ×");
   });
 });

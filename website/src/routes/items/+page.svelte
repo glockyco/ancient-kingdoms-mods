@@ -117,13 +117,13 @@
 
     // Equipment/weapons: show stat count (pre-computed in SQL)
     if (type === "equipment" || type === "weapon") {
-      if (item.stat_count > 0) return `${item.stat_count} stats`;
+      if (item.stat_count > 0) return `${formatNumber(item.stat_count)} stats`;
       return "-";
     }
 
     // Mounts: show movement speed
     if (type === "mount" && item.mount_speed > 0) {
-      return `${item.mount_speed} speed`;
+      return `${formatNumber(item.mount_speed, { decimals: 20 })} speed`;
     }
 
     // Potions: show tier from alchemy recipe level
@@ -133,7 +133,7 @@
 
     // Backpacks: show capacity
     if (type === "backpack" && item.backpack_slots > 0) {
-      return `${item.backpack_slots} slots`;
+      return `${formatNumber(item.backpack_slots)} slots`;
     }
 
     if (type === "augment") {

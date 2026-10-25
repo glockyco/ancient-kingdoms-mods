@@ -279,7 +279,7 @@
             <p class="text-muted-foreground">Fight beside you</p>
           </div>
           <span class="ml-auto tabular-nums text-muted-foreground"
-            >{kindCounts.Companion}</span
+            >{formatNumber(kindCounts.Companion)}</span
           >
         </div>
         <dl class="divide-y">
@@ -358,7 +358,7 @@
             <p class="text-muted-foreground">Buff you, never fight</p>
           </div>
           <span class="ml-auto tabular-nums text-muted-foreground"
-            >{kindCounts.Familiar}</span
+            >{formatNumber(kindCounts.Familiar)}</span
           >
         </div>
         <dl class="divide-y">
@@ -390,7 +390,7 @@
             <p class="text-muted-foreground">Follow you for company</p>
           </div>
           <span class="ml-auto tabular-nums text-muted-foreground"
-            >{kindCounts.Pet}</span
+            >{formatNumber(kindCounts.Pet)}</span
           >
         </div>
         <dl class="divide-y">

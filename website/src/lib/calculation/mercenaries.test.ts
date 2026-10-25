@@ -40,7 +40,7 @@ describe("mercenary calculations", () => {
     expect(
       mercenaryPrice().example!({ level: 50, veteran: total, charisma: 0 })
         .result,
-    ).toContain("1,305 gold");
+    ).toContain("1\u202F305 gold");
     expect(
       mercenaryPrice(true).example!({ level: 50, veteran: total, charisma: 0 })
         .result,

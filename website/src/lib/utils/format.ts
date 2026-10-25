@@ -34,8 +34,12 @@ export function formatPercent(
       .toLocaleString("en-US", { maximumSignificantDigits: 2 })
       .replace(/^-/, "−")}%`;
   }
-  const rounded = percent.toFixed(decimals);
-  return `${(trailingZeros ? rounded : String(Number(rounded))).replace(/^-/, "−")}%`;
+  const rounded = Number(percent.toFixed(decimals));
+  // Without trailing zeros a value that rounds to zero reads "0%", not "−0%".
+  return `${formatNumber(trailingZeros ? rounded : rounded || 0, {
+    decimals,
+    trailingZeros,
+  })}%`;
 }
 
 /** Format a number with grouping and a true minus sign. */
@@ -45,7 +49,7 @@ export function formatNumber(
     decimals,
     trailingZeros = false,
     grouping = true,
-    groupSeparator = ",",
+    groupSeparator = "\u202F",
   }: {
     decimals?: number;
     trailingZeros?: boolean;
@@ -75,8 +79,8 @@ export function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds - hours * 3600) / 60);
   const remainingSeconds = seconds - hours * 3600 - minutes * 60;
-  let text = hours > 0 ? `${hours}h` : "";
-  if (minutes > 0) text += `${text ? " " : ""}${minutes}m`;
+  let text = hours > 0 ? `${formatNumber(hours)}h` : "";
+  if (minutes > 0) text += `${text ? " " : ""}${formatNumber(minutes)}m`;
   if (remainingSeconds > 0) {
     text += `${text ? " " : ""}${formatNumber(remainingSeconds)}s`;
   }

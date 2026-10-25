@@ -24,6 +24,7 @@
   import Castle from "@lucide/svelte/icons/castle";
   import {
     formatDuration,
+    formatNumber,
     formatPercent as formatFraction,
   } from "$lib/utils/format";
   import { chestRewardChance } from "$lib/utils/chest-reward";
@@ -36,7 +37,7 @@
     buildCollectionPage({
       path: "/chests",
       name: "Chests — Ancient Kingdoms Compendium",
-      description: `Find ${data.chests.length.toLocaleString()} chests by zone, key, reward, and respawn time.`,
+      description: `Find ${formatNumber(data.chests.length)} chests by zone, key, reward, and respawn time.`,
       items: data.chests.map((chest) => ({
         name: chest.name,
         path: `/chests/${chest.id}`,
@@ -65,11 +66,6 @@
       drops: chestDropsMap.get(c.id) || [],
     })),
   );
-
-  // Format gold amounts with narrow space thousands separator
-  function formatGold(amount: number): string {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
-  }
 
   // Get unique zones for filter
   const uniqueZones = $derived(
@@ -271,9 +267,9 @@
     {#if row.original.gold_min > 0 || row.original.gold_max > 0}
       <span class="text-yellow-600 dark:text-yellow-400">
         {#if row.original.gold_min === row.original.gold_max}
-          {formatGold(row.original.gold_min)}
+          {formatNumber(row.original.gold_min)}
         {:else}
-          {formatGold(row.original.gold_min)}–{formatGold(
+          {formatNumber(row.original.gold_min)}–{formatNumber(
             row.original.gold_max,
           )}
         {/if}
@@ -291,7 +287,7 @@
       </a>
       {#if row.original.item_reward_amount > 1}
         <span class="text-muted-foreground"
-          >&nbsp;×1–{row.original.item_reward_amount}</span
+          >&nbsp;×1–{formatNumber(row.original.item_reward_amount)}</span
         >
       {:else}
         <span class="text-muted-foreground">&nbsp;×1</span>
@@ -315,7 +311,7 @@
 
 <Seo
   title="Chests - Ancient Kingdoms"
-  description={`Find ${data.chests.length.toLocaleString()} chests on the world map, with required keys, gold ranges, item rewards, and respawn times.`}
+  description={`Find ${formatNumber(data.chests.length)} chests on the world map, with required keys, gold ranges, item rewards, and respawn times.`}
   path="/chests"
 />
 
@@ -326,7 +322,7 @@
 
   <h1 class="text-3xl font-bold flex items-center gap-3">
     <Box class="h-8 w-8 text-sky-500" />
-    Chests ({data.chests.length})
+    Chests ({formatNumber(data.chests.length)})
   </h1>
 
   <DataTable

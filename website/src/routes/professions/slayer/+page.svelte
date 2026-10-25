@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
@@ -102,7 +103,7 @@
         return "-";
       const count = target.source_summon_kill_count ?? 1;
       const plural = count > 1 ? "s" : "";
-      return `Blocked while ${count} ${target.source_summon_kill_monster_name}${plural} alive`;
+      return `Blocked while ${formatNumber(count)} ${target.source_summon_kill_monster_name}${plural} alive`;
     }
     if (target.spawn_type === "placeholder") {
       const chance =
@@ -284,7 +285,7 @@
         >{#if target.source_altar_wave !== null}, wave {target.source_altar_wave +
             1}{/if}
       {:else if target.spawn_type === "summon" && target.source_summon_kill_monster_id && (target.source_summon_kill_count ?? 0) > 0}
-        Blocked while {target.source_summon_kill_count}
+        Blocked while {formatNumber(target.source_summon_kill_count ?? 0)}
         <a
           href="/monsters/{target.source_summon_kill_monster_id}"
           class="text-blue-600 hover:underline dark:text-blue-400"
@@ -348,7 +349,7 @@
 
 <Seo
   title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`Slayer reduces the damage that bosses and elites deal to you, up to 10% at full mastery. All ${data.targets.length} Slayer targets with levels, zones, spawn requirements, and respawn times.`}
+  description={`Slayer reduces the damage that bosses and elites deal to you, up to 10% at full mastery. All ${formatNumber(data.targets.length)} Slayer targets with levels, zones, spawn requirements, and respawn times.`}
   path="/professions/slayer"
 />
 
@@ -387,8 +388,8 @@
         <div>
           <p class="font-medium">Find a boss or an elite.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Only these {data.targets.length} targets give Slayer mastery. When you
-            come near one, your Bestiary adds it with zero kills.
+            Only these {formatNumber(data.targets.length)} targets give Slayer mastery.
+            When you come near one, your Bestiary adds it with zero kills.
           </p>
           <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:14114-14121; server-scripts/UIBestiaryDetail.cs:152-156 — approach discovery and loot discovery are separate records. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">

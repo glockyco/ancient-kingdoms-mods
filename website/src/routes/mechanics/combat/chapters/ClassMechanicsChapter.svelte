@@ -69,7 +69,7 @@
     <p>
       Your Ward and Mana Shield still absorb the hit first. Parry blocks the
       rest and returns half of it to the attacker, <RoundedTerm />, at least 1
-      and at most 5,000. For example, 101 remaining damage returns 50.
+      and at most 5&#8239;000. For example, 101 remaining damage returns 50.
     </p>
   </Topic>
 

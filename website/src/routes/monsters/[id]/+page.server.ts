@@ -21,7 +21,7 @@ import type {
 } from "$lib/types/monsters";
 import type { Season } from "$lib/data/seasonal-events";
 import { monsterDescription } from "$lib/server/meta-description";
-import { formatPercent } from "$lib/utils/format";
+import { formatNumber, formatPercent } from "$lib/utils/format";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import { getAchievementsLinkingTo } from "$lib/queries/achievements.server";
 import { MONSTER_ABILITIES_QUERY } from "$lib/skills/monsterAbilitiesQuery";
@@ -156,7 +156,7 @@ export const load: PageServerLoad = async ({
         );
       if (experienceVaries)
         labels.push(
-          `${Number(method.detail.exp_multiplier) * 100}% experience`,
+          `${formatNumber(Number(method.detail.exp_multiplier) * 100, { decimals: 20 })}% experience`,
         );
       return [method.methodId, labels.join(" · ")];
     }),
@@ -930,7 +930,7 @@ export const load: PageServerLoad = async ({
           ? monster.respawn_time
           : undefined,
       drop_summary: topMetadataDrop
-        ? `Drops ${topMetadataDrop.item_name}${topMetadataDrop.per_kill_chance != null ? ` (${formatPercent(topMetadataDrop.per_kill_chance, { decimals: 2 })} per kill)` : ""}${metadataItemCount > 1 ? ` and ${metadataItemCount - 1} other items` : ""}.`
+        ? `Drops ${topMetadataDrop.item_name}${topMetadataDrop.per_kill_chance != null ? ` (${formatPercent(topMetadataDrop.per_kill_chance, { decimals: 2 })} per kill)` : ""}${metadataItemCount > 1 ? ` and ${formatNumber(metadataItemCount - 1)} other items` : ""}.`
         : null,
       triggered_origins: [
         ...(spawns.placeholder

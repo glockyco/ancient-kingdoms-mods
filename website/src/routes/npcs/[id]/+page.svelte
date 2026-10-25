@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     type ColumnDef,
@@ -88,14 +89,14 @@
 
       if (isWorldBoss) {
         return data.npc.gold_required_respawn_dungeon > 0
-          ? `Resets World Boss respawn timers for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> gold.`
+          ? `Resets World Boss respawn timers for <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(data.npc.gold_required_respawn_dungeon)}</span> gold.`
           : `Resets World Boss respawn timers.`;
       }
 
       const target = `<a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a>`;
 
       return data.npc.gold_required_respawn_dungeon > 0
-        ? `Resets respawn timers for monsters in ${target}. The base fee is <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> gold before your Charisma discount (up to 25%).`
+        ? `Resets respawn timers for monsters in ${target}. The base fee is <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(data.npc.gold_required_respawn_dungeon)}</span> gold before your Charisma discount (up to 25%).`
         : `Resets respawn timers for monsters in ${target}.`;
     }
 
@@ -109,7 +110,7 @@
           const from = `<a href="/zones/${route.fromZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${route.fromZoneName}</a>`;
           const to = `<a href="/zones/${route.toZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${route.toZoneName}</a>`;
           return route.price > 0
-            ? `Teleports players from ${from} to ${to} for <span class="text-yellow-600 dark:text-yellow-400">${route.price.toLocaleString()}</span> gold.`
+            ? `Teleports players from ${from} to ${to} for <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(route.price)}</span> gold.`
             : `Teleports players from ${from} to ${to}.`;
         })
         .join("<br>");
@@ -359,11 +360,13 @@
   }
 
   function formatTime(seconds: number): string {
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+    if (seconds < 60) return `${formatNumber(seconds, { decimals: 20 })}s`;
+    if (seconds < 3600) return `${formatNumber(Math.floor(seconds / 60))}m`;
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    return mins > 0
+      ? `${formatNumber(hours)}h ${formatNumber(mins)}m`
+      : `${formatNumber(hours)}h`;
   }
 </script>
 
@@ -452,7 +455,7 @@
       />
     </div>
   {:else if cell.column.id === "price"}
-    <span class="ml-auto">{row.original.price.toLocaleString()}</span>
+    <span class="ml-auto">{formatNumber(row.original.price)}</span>
   {:else if cell.column.id === "currency"}
     {#if row.original.currency_item_id}
       <a
@@ -469,7 +472,7 @@
       <span class="text-purple-600 dark:text-purple-400">
         {row.original.faction_tier_name ?? "Required"}
         <span class="text-muted-foreground font-normal"
-          >({row.original.faction_required.toLocaleString()})</span
+          >({formatNumber(row.original.faction_required)})</span
         >
       </span>
     {:else}
@@ -745,27 +748,29 @@
           </div>
           <div>
             <div class="text-sm text-muted-foreground">Health</div>
-            <div class="font-medium">{data.npc.health.toLocaleString()}</div>
+            <div class="font-medium">{formatNumber(data.npc.health)}</div>
           </div>
           {#if data.npc.mana > 0}
             <div>
               <div class="text-sm text-muted-foreground">Mana</div>
-              <div class="font-medium">{data.npc.mana.toLocaleString()}</div>
+              <div class="font-medium">{formatNumber(data.npc.mana)}</div>
             </div>
           {/if}
           <div>
             <div class="text-sm text-muted-foreground">Attack Power</div>
-            <div class="font-medium">{data.npc.damage}</div>
+            <div class="font-medium">{formatNumber(data.npc.damage)}</div>
           </div>
           {#if data.npc.magic_damage > 0}
             <div>
               <div class="text-sm text-muted-foreground">Spell Power</div>
-              <div class="font-medium">{data.npc.magic_damage}</div>
+              <div class="font-medium">
+                {formatNumber(data.npc.magic_damage)}
+              </div>
             </div>
           {/if}
           <div>
             <div class="text-sm text-muted-foreground">Armor Class</div>
-            <div class="font-medium">{data.npc.defense}</div>
+            <div class="font-medium">{formatNumber(data.npc.defense)}</div>
           </div>
           {#if data.npc.block_chance > 0}
             <div>
@@ -808,7 +813,7 @@
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                         : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}"
                     >
-                      {resist.name}: {resist.value}
+                      {resist.name}: {formatNumber(resist.value)}
                     </span>
                   {/each}
                 </div>
@@ -836,7 +841,9 @@
           <div class="mt-4 pt-4 border-t">
             <div class="text-sm text-muted-foreground mb-1">Gold Drop</div>
             <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              {data.npc.gold_min.toLocaleString()} - {data.npc.gold_max.toLocaleString()}
+              {formatNumber(data.npc.gold_min)} - {formatNumber(
+                data.npc.gold_max,
+              )}
               gold
               {#if data.npc.probability_drop_gold < 1}
                 <span class="text-muted-foreground font-normal">
@@ -955,7 +962,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
-        Item Drops ({data.drops.length})
+        Item Drops ({formatNumber(data.drops.length)})
       </h2>
       <DataTable
         data={data.drops}
@@ -976,7 +983,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Scroll class="h-5 w-5 text-orange-500" />
-        Quests ({data.questsOffered.length})
+        Quests ({formatNumber(data.questsOffered.length)})
       </h2>
       <DataTable
         data={data.questsOffered}
@@ -998,7 +1005,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Scroll class="h-5 w-5 text-orange-500" />
-        Quests Completed Here ({data.questsCompletedHere.length})
+        Quests Completed Here ({formatNumber(data.questsCompletedHere.length)})
       </h2>
       <DataTable
         data={data.questsCompletedHere}
@@ -1019,7 +1026,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <ShoppingBag class="h-5 w-5 text-green-500" />
-        Items for Sale ({data.itemsSold.length})
+        Items for Sale ({formatNumber(data.itemsSold.length)})
       </h2>
       <DataTable
         data={data.itemsSold}
@@ -1041,7 +1048,7 @@
       <div class="mb-4 flex items-center gap-2">
         <h2 class="flex items-center gap-2 text-xl font-semibold">
           <ShoppingBag class="h-5 w-5 text-green-500" />
-          Seasonal Stock ({seasonalRows.length})
+          Seasonal Stock ({formatNumber(seasonalRows.length)})
         </h2>
         <a
           href={SEASONAL_EVENTS_HREF}

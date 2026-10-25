@@ -28,7 +28,11 @@ describe("mercenary stat worked examples", () => {
       curves,
       "Dwarf",
     ).example!({});
-    expect(example.result.match(/\d[\d,]*/g)).toEqual(["8,875", "216", "215"]);
+    expect(example.result.match(/\d[\d\u202F]*/g)).toEqual([
+      "8\u202F875",
+      "216",
+      "215",
+    ]);
   });
   it("rounds Intelligence halves to even before adding veteran points", () => {
     const low = mercenaryStats(classAt("Wizard", 10, 0), 10, 0, curves, "Human")

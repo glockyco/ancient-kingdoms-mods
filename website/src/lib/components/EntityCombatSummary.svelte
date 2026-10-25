@@ -7,6 +7,7 @@
   import Snowflake from "@lucide/svelte/icons/snowflake";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Sword from "@lucide/svelte/icons/sword";
+  import { formatNumber } from "$lib/utils/format";
 
   interface Props {
     titleId: string;
@@ -48,10 +49,10 @@
 
   function formatCompactNumber(value: number): string {
     if (value >= 10000) {
-      return `${Math.round(value / 1000).toLocaleString()}K`;
+      return `${formatNumber(Math.round(value / 1000))}K`;
     }
 
-    return value.toLocaleString();
+    return formatNumber(value);
   }
 </script>
 
@@ -70,9 +71,7 @@
             <Sparkles class="h-5 w-5" />
           </span>
           <span class="sr-only">Magic Resist: </span>
-          <span class="text-lg font-semibold"
-            >{magicResist.toLocaleString()}</span
-          >
+          <span class="text-lg font-semibold">{formatNumber(magicResist)}</span>
         </div>
         <div class="flex items-center gap-3" title="Poison Resist">
           <span
@@ -82,8 +81,7 @@
             <Skull class="h-5 w-5" />
           </span>
           <span class="sr-only">Poison Resist: </span>
-          <span class="text-lg font-semibold"
-            >{poisonResist.toLocaleString()}</span
+          <span class="text-lg font-semibold">{formatNumber(poisonResist)}</span
           >
         </div>
         <div class="flex items-center gap-3" title="Fire Resist">
@@ -94,9 +92,7 @@
             <Flame class="h-5 w-5" />
           </span>
           <span class="sr-only">Fire Resist: </span>
-          <span class="text-lg font-semibold"
-            >{fireResist.toLocaleString()}</span
-          >
+          <span class="text-lg font-semibold">{formatNumber(fireResist)}</span>
         </div>
         <div class="flex items-center gap-3" title="Cold Resist">
           <span
@@ -106,9 +102,7 @@
             <Snowflake class="h-5 w-5" />
           </span>
           <span class="sr-only">Cold Resist: </span>
-          <span class="text-lg font-semibold"
-            >{coldResist.toLocaleString()}</span
-          >
+          <span class="text-lg font-semibold">{formatNumber(coldResist)}</span>
         </div>
         <div class="flex items-center gap-3" title="Disease Resist">
           <span
@@ -119,7 +113,7 @@
           </span>
           <span class="sr-only">Disease Resist: </span>
           <span class="text-lg font-semibold"
-            >{diseaseResist.toLocaleString()}</span
+            >{formatNumber(diseaseResist)}</span
           >
         </div>
       </div>
@@ -161,7 +155,7 @@
             <Sword class="h-5 w-5" />
           </span>
           <span class="sr-only">Attack Power: </span>
-          <span class="text-lg font-semibold">{damage.toLocaleString()}</span>
+          <span class="text-lg font-semibold">{formatNumber(damage)}</span>
         </div>
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
@@ -175,7 +169,7 @@
           </span>
           <span class="sr-only">Spell Power: </span>
           <span class="min-w-0 text-lg font-semibold break-words"
-            >{magicDamage.toLocaleString()}</span
+            >{formatNumber(magicDamage)}</span
           >
         </div>
         <div
@@ -189,7 +183,7 @@
             <Shield class="h-5 w-5" />
           </span>
           <span class="sr-only">Armor Class: </span>
-          <span class="text-lg font-semibold">{defense.toLocaleString()}</span>
+          <span class="text-lg font-semibold">{formatNumber(defense)}</span>
         </div>
         {@render metadata?.()}
       </div>

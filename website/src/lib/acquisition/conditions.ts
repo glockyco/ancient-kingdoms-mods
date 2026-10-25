@@ -8,7 +8,7 @@ import {
   seasonIncludes,
   seasonInSentence,
 } from "../data/seasonal-events";
-import { toRomanNumeral } from "../utils/format";
+import { formatNumber, toRomanNumeral } from "$lib/utils/format";
 import type {
   AcquisitionRows,
   DataRow,
@@ -591,19 +591,19 @@ function describePredicate(
     case "metric_at_least": {
       switch (p.metric) {
         case "level":
-          return `Level ${p.amount} or higher`;
+          return `Level ${formatNumber(p.amount)} or higher`;
         case "total_veteran_points":
-          return `At least ${p.amount} total veteran ${p.amount === 1 ? "point" : "points"}`;
+          return `At least ${formatNumber(p.amount)} total veteran ${p.amount === 1 ? "point" : "points"}`;
         case "available_skill_points":
-          return `At least ${p.amount} available skill ${p.amount === 1 ? "point" : "points"}`;
+          return `At least ${formatNumber(p.amount)} available skill ${p.amount === 1 ? "point" : "points"}`;
         case "available_veteran_points":
-          return `At least ${p.amount} available veteran ${p.amount === 1 ? "point" : "points"}`;
+          return `At least ${formatNumber(p.amount)} available veteran ${p.amount === 1 ? "point" : "points"}`;
         case "spent_skill_points":
-          return `At least ${p.amount} skill ${p.amount === 1 ? "point" : "points"} spent`;
+          return `At least ${formatNumber(p.amount)} skill ${p.amount === 1 ? "point" : "points"} spent`;
         case "spent_veteran_points":
-          return `At least ${p.amount} veteran ${p.amount === 1 ? "point" : "points"} spent`;
+          return `At least ${formatNumber(p.amount)} veteran ${p.amount === 1 ? "point" : "points"} spent`;
         case "equipped_item_level":
-          return `Total equipped item level ${p.amount} or higher`;
+          return `Total equipped item level ${formatNumber(p.amount)} or higher`;
         case "adventuring_fraction":
           return `Adventuring ${p.amount * 100}% or higher`;
         default:
@@ -613,9 +613,9 @@ function describePredicate(
     case "identity_is":
       return `${p.identityKind}: ${requirementName(names, p.identityKind === "class" ? "classes" : "races", p.id)}`;
     case "item_count":
-      return `${p.amount} ${requirementName(names, "items", p.itemId)} in ${p.location.replaceAll("_", " ")}`;
+      return `${formatNumber(p.amount)} ${requirementName(names, "items", p.itemId)} in ${p.location.replaceAll("_", " ")}`;
     case "faction_at_least":
-      return `${requirementName(names, "factions", p.factionId)} standing at least ${p.standing}`;
+      return `${requirementName(names, "factions", p.factionId)} standing at least ${formatNumber(p.standing)}`;
     case "quest_state":
       return `${requirementName(names, "quests", p.questId)} ${p.state.replaceAll("_", " ")}`;
     case "quest_progress": {
@@ -623,22 +623,22 @@ function describePredicate(
       if (target) {
         switch (p.counterKind) {
           case "kill":
-            return `Defeat ${target} ×${p.amount}`;
+            return `Defeat ${target} ×${formatNumber(p.amount)}`;
           case "gather":
-            return `Gather ${target} ×${p.amount}`;
+            return `Gather ${target} ×${formatNumber(p.amount)}`;
           case "brew":
-            return `Successfully brew ${target} ${p.amount === 1 ? "once" : `${p.amount} times`}`;
+            return `Successfully brew ${target} ${p.amount === 1 ? "once" : `${formatNumber(p.amount)} times`}`;
           case "location":
             return `Visit ${target}`;
         }
       }
       switch (p.counterKind) {
         case "kill":
-          return `Defeat the quest's required monsters ×${p.amount}`;
+          return `Defeat the quest's required monsters ×${formatNumber(p.amount)}`;
         case "gather":
-          return `Gather the quest's required items ×${p.amount}`;
+          return `Gather the quest's required items ×${formatNumber(p.amount)}`;
         case "brew":
-          return `Successfully brew the required quest item ${p.amount === 1 ? "once" : `${p.amount} times`}`;
+          return `Successfully brew the required quest item ${p.amount === 1 ? "once" : `${formatNumber(p.amount)} times`}`;
         case "location":
           return "Visit the quest location";
       }

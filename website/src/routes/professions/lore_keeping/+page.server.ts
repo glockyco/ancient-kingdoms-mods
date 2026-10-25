@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import { formatNumber } from "$lib/utils/format";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ObtainabilityNode } from "$lib/types/recipes";
@@ -166,7 +167,10 @@ async function getSourceSummary(
     const moreCount = materials.length - 1;
     return {
       type: "merge",
-      label: moreCount > 0 ? `${firstName} + ${moreCount} more` : firstName,
+      label:
+        moreCount > 0
+          ? `${firstName} + ${formatNumber(moreCount)} more`
+          : firstName,
     };
   }
 

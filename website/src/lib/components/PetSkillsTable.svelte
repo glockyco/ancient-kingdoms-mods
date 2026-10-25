@@ -13,6 +13,7 @@
     formatLinearValue,
   } from "$lib/utils/formatSkillEffect";
   import type { ClassSkill } from "$lib/queries/classes.server";
+  import { formatNumber } from "$lib/utils/format";
 
   let { skills, urlKey }: { skills: ClassSkill[]; urlKey: string } = $props();
 
@@ -108,7 +109,10 @@
   {:else if cell.column.id === "effect"}
     <span class="text-sm">{cell.getValue()}</span>
   {:else if RIGHT_ALIGNED.has(cell.column.id)}
-    <span class="ml-auto">{cell.getValue()}</span>
+    {@const value = cell.getValue()}
+    <span class="ml-auto"
+      >{typeof value === "number" ? formatNumber(value) : value}</span
+    >
   {:else}
     {cell.getValue()}
   {/if}

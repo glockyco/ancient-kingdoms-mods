@@ -8,7 +8,7 @@
   import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import { formatGatheringRespawn } from "$lib/utils/format";
+  import { formatGatheringRespawn, formatNumber } from "$lib/utils/format";
   import {
     DWARF_STARTING_MINING_PERCENT,
     MINING_SUCCESS_FLOOR,
@@ -80,7 +80,7 @@
 
 <Seo
   title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`Mining raises your success chance on higher-tier ore. ${data.ores.length} ores across ${data.totalNodes} nodes, with success odds, respawn timers, bonus gems, and what each ore is used for.`}
+  description={`Mining raises your success chance on higher-tier ore. ${formatNumber(data.ores.length)} ores across ${formatNumber(data.totalNodes)} nodes, with success odds, respawn timers, bonus gems, and what each ore is used for.`}
   path="/professions/mining"
 />
 
@@ -299,11 +299,13 @@
 
       <p class="text-pretty text-sm text-muted-foreground">
         With {bestPickaxe?.name ?? `a quality-${pickaxeQuality} pickaxe`} at {skillLevel}%,
-        you can try {mineableTiers.length} of {data.ores.length} ores.
+        you can try {formatNumber(mineableTiers.length)} of {formatNumber(
+          data.ores.length,
+        )} ores.
         {#if payingTiers.length === 0}
           None of them gives Mining skill.
         {:else}
-          {payingTiers.length}
+          {formatNumber(payingTiers.length)}
           of them still {payingTiers.length === 1 ? "gives" : "give"} Mining skill,
           at {gainChance.toFixed(0)}% for each success.
         {/if}
@@ -379,13 +381,15 @@
                 {/if}
               </td>
               <td class="p-3 text-right tabular-nums"
-                >{ore.gathering_exp.toLocaleString()}</td
+                >{formatNumber(ore.gathering_exp)}</td
               >
               <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — depleted minerals respawn between half and the full wait. -->
               <td class="p-3 text-right tabular-nums text-muted-foreground">
                 {formatGatheringRespawn("Mineral", ore.respawn_time)}
               </td>
-              <td class="p-3 text-right tabular-nums">{ore.node_count}</td>
+              <td class="p-3 text-right tabular-nums"
+                >{formatNumber(ore.node_count)}</td
+              >
             </tr>
           {/each}
         </tbody>
@@ -396,7 +400,8 @@
   <section id="where" class="space-y-4">
     <h2 class="text-xl font-semibold">Where to mine</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      There are {data.totalNodes} nodes. Each ore is in two to four zones.
+      There are {formatNumber(data.totalNodes)} nodes. Each ore is in two to four
+      zones.
     </p>
     <div class="space-y-5">
       {#each data.ores as ore (ore.id)}
@@ -424,7 +429,7 @@
                 ></div>
               </div>
               <span class="text-right tabular-nums text-muted-foreground"
-                >{zone.node_count}</span
+                >{formatNumber(zone.node_count)}</span
               >
             </div>
           {/each}
@@ -481,7 +486,7 @@
             <a
               href="/recipes"
               class="text-blue-600 hover:underline dark:text-blue-400"
-              >{ore.recipe_count}
+              >{formatNumber(ore.recipe_count)}
               {ore.recipe_count === 1 ? "recipe" : "recipes"}</a
             >
           {:else}
@@ -515,7 +520,7 @@
                 </td>
                 <td class="p-3 text-muted-foreground">{quest.ore_name}</td>
                 <td class="p-3 text-right tabular-nums"
-                  >{quest.amount}
+                  >{formatNumber(quest.amount)}
                   <span class="text-xs text-muted-foreground"
                     >{quest.purpose.toLowerCase()}</span
                   ></td

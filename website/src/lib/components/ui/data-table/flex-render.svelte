@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet, Component } from "svelte";
+  import { formatNumber } from "$lib/utils/format";
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   type Props = {
@@ -20,14 +21,16 @@
   function resolveToString(): string | null {
     if (content == null) return null;
     if (typeof content === "string") return content;
-    if (typeof content === "number") return String(content);
+    if (typeof content === "number")
+      return formatNumber(content, { decimals: 20 });
     if (typeof content === "function") {
       // Check if it's a simple accessor function (returns string/number)
       // vs a component or snippet
       try {
         const result = (content as (props: any) => unknown)(props);
         if (typeof result === "string") return result;
-        if (typeof result === "number") return String(result);
+        if (typeof result === "number")
+          return formatNumber(result, { decimals: 20 });
         if (result == null) return null;
       } catch {
         // Function threw - probably a component constructor, not a function

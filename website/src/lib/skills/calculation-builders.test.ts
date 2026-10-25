@@ -38,8 +38,9 @@ function resultNumbers(
     (calculation.inputs ?? []).map((input) => [input.key, input.value]),
   );
   const result = calculation.example!({ ...values, ...overrides }).result;
-  return Array.from(result.matchAll(/-?\d+(?:,\d{3})*(?:\.\d+)?/g), (match) =>
-    Number(match[0].replaceAll(",", "")),
+  return Array.from(
+    result.matchAll(/-?\d+(?:\u202F\d{3})*(?:\.\d+)?/g),
+    (match) => Number(match[0].replaceAll("\u202F", "")),
   );
 }
 const player = (classId: string): Caster => ({ kind: "player", classId });

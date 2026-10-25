@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getCoreRowModel, type SortingState } from "@tanstack/table-core";
+import {
+  getCoreRowModel,
+  getSortedRowModel,
+  type SortingState,
+} from "@tanstack/table-core";
 import { createSvelteTable, toggleSingleColumnSorting } from "./create-table";
 
 describe("single-column header sorting", () => {
@@ -33,4 +37,24 @@ describe("single-column header sorting", () => {
     toggleSingleColumnSorting(table, "level");
     expect(sorting).toEqual([{ id: "level", desc: false }]);
   });
+});
+
+it("formats default numeric cells without changing numeric sorting values", () => {
+  const table = createSvelteTable({
+    data: [{ amount: 10000 }, { amount: 999 }, { amount: 1234.56789 }],
+    columns: [{ accessorKey: "amount" }],
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    state: { sorting: [{ id: "amount", desc: false }] },
+  });
+  const cells = table.getRowModel().rows.map((row) => row.getAllCells()[0]);
+  expect(cells.map((cell) => cell.getValue())).toEqual([
+    999, 1234.56789, 10000,
+  ]);
+  expect(
+    cells.map((cell) => {
+      const render = cell.column.columnDef.cell;
+      return typeof render === "function" ? render(cell.getContext()) : render;
+    }),
+  ).toEqual(["999", "1\u202F234.56789", "10\u202F000"]);
 });

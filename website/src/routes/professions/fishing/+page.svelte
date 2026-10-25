@@ -27,7 +27,11 @@
     type FishingOutcomeRow,
     type FishPoolItem,
   } from "$lib/utils/fishing";
-  import { getQualityTextColorClass, toRomanNumeral } from "$lib/utils/format";
+  import {
+    formatNumber,
+    getQualityTextColorClass,
+    toRomanNumeral,
+  } from "$lib/utils/format";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -237,7 +241,7 @@
   function getFallbackSummaryForSpot(level: number): string {
     const fishCount = getFallbackFishForSpot(level).length;
     if (fishCount === 0) return "—";
-    return `${getFallbackTierLabelsForSpot(level)} (${fishCount})`;
+    return `${getFallbackTierLabelsForSpot(level)} (${formatNumber(fishCount)})`;
   }
 
   function getFishPoolByTier(tier: number): FishPoolItem[] {
@@ -345,23 +349,33 @@
 
     <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.stats.rod_count}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.stats.rod_count)}
+        </div>
         <div class="text-sm text-muted-foreground">Fishing rods</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.stats.spot_count}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.stats.spot_count)}
+        </div>
         <div class="text-sm text-muted-foreground">Fishing spots</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.stats.fish_count}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.stats.fish_count)}
+        </div>
         <div class="text-sm text-muted-foreground">Fish</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.stats.food_count}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.stats.food_count)}
+        </div>
         <div class="text-sm text-muted-foreground">Fish foods</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.stats.potion_count}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.stats.potion_count)}
+        </div>
         <div class="text-sm text-muted-foreground">Fish potions</div>
       </div>
     </div>
@@ -406,7 +420,9 @@
             >.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            You can fish at {data.stats.spot_count} spots across {spotTiers.length}
+            You can fish at {formatNumber(data.stats.spot_count)} spots across {formatNumber(
+              spotTiers.length,
+            )}
             tiers, from Tier {toRomanNumeral(lowestSpotTier)} to Tier
             {toRomanNumeral(highestSpotTier)}.
           </p>
@@ -679,7 +695,7 @@
             XP per successful cast
           </div>
           <div class="text-2xl font-semibold">
-            {fishingExperienceForTier(selectedSpot.level).toLocaleString()}
+            {formatNumber(fishingExperienceForTier(selectedSpot.level))}
           </div>
         </div>
         <div class="rounded-lg border p-4">
@@ -800,7 +816,9 @@
   </section>
   <section id="fishing-rods" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
-      <h2 class="text-xl font-semibold">Fishing Rods ({data.rods.length})</h2>
+      <h2 class="text-xl font-semibold">
+        Fishing Rods ({formatNumber(data.rods.length)})
+      </h2>
     </div>
     <div class="mt-4 overflow-hidden rounded-lg border">
       <div class="overflow-x-auto">
@@ -882,7 +900,9 @@
   <section id="fishing-spots" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
       <MapPin class="h-5 w-5 text-emerald-500" />
-      <h2 class="text-xl font-semibold">Fishing Spots ({data.spots.length})</h2>
+      <h2 class="text-xl font-semibold">
+        Fishing Spots ({formatNumber(data.spots.length)})
+      </h2>
     </div>
     <div class="mt-4 overflow-hidden rounded-lg border">
       <div class="overflow-x-auto">
@@ -966,7 +986,7 @@
         {@const pool = getFishPoolByTier(tier)}
         <div class="rounded-lg border p-4">
           <div class="mb-2 font-medium">
-            Tier {toRomanNumeral(tier - 1)} fish ({pool.length})
+            Tier {toRomanNumeral(tier - 1)} fish ({formatNumber(pool.length)})
           </div>
           <div class="flex flex-wrap gap-x-3 gap-y-1">
             {#each pool as fish (fish.itemId)}
@@ -989,7 +1009,7 @@
     <div class="flex items-center gap-2">
       <Fish class="h-5 w-5 text-cyan-500" />
       <h2 class="text-xl font-semibold">
-        Fishing Trash ({trashFish.length})
+        Fishing Trash ({formatNumber(trashFish.length)})
       </h2>
     </div>
     <div class="mt-4 overflow-hidden rounded-lg border">
@@ -1024,7 +1044,9 @@
   <section id="fish-foods" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
       <ChefHat class="h-5 w-5 text-orange-500" />
-      <h2 class="text-xl font-semibold">Fish Foods ({data.foods.length})</h2>
+      <h2 class="text-xl font-semibold">
+        Fish Foods ({formatNumber(data.foods.length)})
+      </h2>
     </div>
     <div class="mt-4 overflow-hidden rounded-lg border">
       <div class="overflow-x-auto">
@@ -1066,7 +1088,7 @@
                         />
                         {#if ingredient.amount > 1}
                           <span class="text-xs text-muted-foreground">
-                            ×{ingredient.amount}
+                            ×{formatNumber(ingredient.amount)}
                           </span>
                         {/if}
                       </span>
@@ -1086,7 +1108,7 @@
       <div class="flex items-center gap-2">
         <FlaskConical class="h-5 w-5 text-purple-500" />
         <h2 class="text-xl font-semibold">
-          Fish Potions ({data.potions.length})
+          Fish Potions ({formatNumber(data.potions.length)})
         </h2>
       </div>
       <div class="mt-4 overflow-hidden rounded-lg border">
@@ -1131,7 +1153,7 @@
                           />
                           {#if ingredient.amount > 1}
                             <span class="text-xs text-muted-foreground">
-                              ×{ingredient.amount}
+                              ×{formatNumber(ingredient.amount)}
                             </span>
                           {/if}
                         </span>

@@ -2,6 +2,7 @@
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { formatLinear } from "$lib/skills/skill-format";
   import { getMechanicsContext } from "./context";
+  import { formatNumber } from "$lib/utils/format";
 
   const mechanics = getMechanicsContext();
   const { skill } = $derived(mechanics);
@@ -23,7 +24,9 @@
     >
     <span class="block"
       >You counter for half the damage left after Armor Class, Ward and Mana
-      Shield, rounded, from 1 to 5,000. A 400-damage hit returns 200. See <a
+      Shield, rounded, from 1 to {formatNumber(5000)}. A 400-damage hit returns
+      200. See
+      <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#parry">Parry's calculation</a
       >. Fully absorbed hits do not trigger it.</span

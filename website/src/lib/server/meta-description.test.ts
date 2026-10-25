@@ -194,7 +194,7 @@ test("recipe metadata preserves ingredient amounts and zero-based tiers", () => 
     ],
   );
   assert.ok(out.includes("V"));
-  assert.ok(out.includes("2,500"));
+  assert.ok(out.includes("2\u202F500"));
   assert.ok(out.includes("Gold Ore"));
   assert.ok(!out.includes("level 4"));
 });

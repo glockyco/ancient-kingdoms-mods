@@ -35,6 +35,7 @@
   import {
     formatEquipmentCategory,
     formatSkillType,
+    formatNumber,
     getQualityTextColorClass,
   } from "$lib/utils/format";
   import {
@@ -604,7 +605,7 @@
   {:else if cell.column.id === "required_spent_points"}
     <span class="ml-auto">
       {#if row.original.required_spent_points}
-        {row.original.required_spent_points}
+        {formatNumber(row.original.required_spent_points)}
       {:else}
         <span class="text-muted-foreground">—</span>
       {/if}
@@ -634,7 +635,7 @@
       {#if (cell.getValue() as number) < 1}
         <span class="text-muted-foreground">—</span>
       {:else}
-        {cell.getValue()}
+        {formatNumber(cell.getValue() as number)}
       {/if}
     </span>
   {:else if cell.column.id === "effect"}
@@ -745,7 +746,7 @@
               <sourceConfig.icon
                 class="h-4 w-4 shrink-0 {sourceConfig.color}"
               />
-              <span class="text-muted-foreground">×{count}</span>
+              <span class="text-muted-foreground">×{formatNumber(count)}</span>
             </span>
           {/if}
         {/each}
@@ -1062,7 +1063,7 @@
     <section id="equipment" class="scroll-mt-4">
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
-        Armor & Weapons ({data.items.length})
+        Armor & Weapons ({formatNumber(data.items.length)})
       </h2>
 
       <DataTable
@@ -1093,7 +1094,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Zap class="h-5 w-5 text-purple-500" />
-        Skills ({data.skills.length})
+        Skills ({formatNumber(data.skills.length)})
       </h2>
       <DataTable
         data={data.skills}

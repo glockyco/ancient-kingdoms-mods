@@ -13,18 +13,18 @@ describe("experience calculations", () => {
     costs[39] = 602060;
     costs[40] = 710431;
     expect(levelExperience(costs).example!({ level: 40 }).result).toContain(
-      "602,060",
+      "602\u202F060",
     );
     expect(levelExperience(costs).example!({ level: 41 }).result).toContain(
-      "710,431",
+      "710\u202F431",
     );
   });
   it("uses the current unspent-plus-ranks veteran total", () => {
     expect(veteranExperience().example!({ veteran: 199 }).result).toContain(
-      "4,980,000",
+      "4\u202F980\u202F000",
     );
     expect(veteranExperience().example!({ veteran: 8 + 51 }).result).toContain(
-      "2,180,000",
+      "2\u202F180\u202F000",
     );
   });
   it("rounds a split upward and the party bonus to even", () => {

@@ -15,6 +15,7 @@
   import { Input } from "$lib/components/ui/input";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import RoundedText from "$lib/components/RoundedText.svelte";
+  import { formatNumber } from "$lib/utils/format";
   import {
     forget,
     loadRemembered,
@@ -195,7 +196,7 @@
                     {/each}
                   {:else}
                     {#each input.options ?? [] as option (option)}
-                      <option value={option}>{option}</option>
+                      <option value={option}>{formatNumber(option)}</option>
                     {/each}
                   {/if}
                 </select>

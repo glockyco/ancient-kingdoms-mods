@@ -3,6 +3,7 @@
  */
 
 import type { NpcRoles } from "$lib/types/npcs";
+import { formatNumber } from "$lib/utils/format";
 
 /** Role category for icon grouping */
 export type RoleCategory =
@@ -166,7 +167,7 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_faction_vendor: {
     description: "Sells items exclusive to its faction.",
     details: [
-      "You need at least 15,000 reputation with this faction (Friendly 14,000 / 20,000 in the faction panel).",
+      `You need at least ${formatNumber(15000)} reputation with this faction (Friendly ${formatNumber(14000)} / ${formatNumber(20000)} in the faction panel).`,
     ],
   },
   // Source: server-scripts/Npc.cs:InteractNpc; server-scripts/UINpcTrading.cs:581-590 — the trading window offers only equipment with durability above zero.
@@ -180,7 +181,7 @@ export const ROLE_DESCRIPTIONS: Partial<
     description: "Gives you access to your bank.",
     details: [
       "Each tab has 30 slots. You start with 1 tab and can unlock 9 more.",
-      "Tabs cost 200, 1,000, 2,000, 5,000, 10,000, 15,000, 20,000, 50,000, then 100,000 gold.",
+      `Tabs cost 200, ${formatNumber(1000)}, ${formatNumber(2000)}, ${formatNumber(5000)}, ${formatNumber(10000)}, ${formatNumber(15000)}, ${formatNumber(20000)}, ${formatNumber(50000)}, then ${formatNumber(100000)} gold.`,
     ],
   },
   can_repair_equipment: {
@@ -189,20 +190,20 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_skill_master: {
     description: "Resets your class skill points.",
     details: [
-      "The reset costs 100 gold at levels 1–9, 250 at 10–19, 500 at 20–29, 1,000 at 30–39, or 3,000 at 40+.",
+      `The reset costs 100 gold at levels 1-9, 250 at 10-19, 500 at 20-29, ${formatNumber(1000)} at 30-39, or ${formatNumber(3000)} at 40+.`,
     ],
   },
   is_veteran_master: {
     description: "Resets your veteran skill points.",
     details: [
-      'The reset costs 10,000 gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.',
+      `The reset costs ${formatNumber(10000)} gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.`,
     ],
   },
   // Source: server-scripts/Player.cs:5222-5237,11323-11341 — reset clears the current specialization allocation and refuses curses or debuffs.
   is_reset_attributes: {
     description: "Resets attribute points for your current specialization.",
     details: [
-      "The reset costs 100 gold at levels 1–9, 250 at 10–19, 500 at 20–29, 1,000 at 30–39, or 3,000 at 40+.",
+      `The reset costs 100 gold at levels 1-9, 250 at 10-19, 500 at 20-29, ${formatNumber(1000)} at 30-39, or ${formatNumber(3000)} at 40+.`,
       "A curse or debuff prevents the reset.",
     ],
   },
@@ -238,13 +239,16 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_augmenter: {
     description: "Removes augments from equipment and returns them to you.",
     details: [
-      "Removal costs 10,000 gold for a Magic augment, 15,000 for an Epic augment, and 5,000 for any other augment.",
+      `Removal costs ${formatNumber(10000)} gold for a Magic augment, ${formatNumber(15000)} for an Epic augment, and ${formatNumber(5000)} for any other augment.`,
       "Wear the equipment or bring it in your inventory.",
     ],
   },
   is_guild_management: {
     description: "Creates guilds and manages memberships.",
-    details: ["A new guild costs 10,000 gold.", "A guild can have 10 members."],
+    details: [
+      `A new guild costs ${formatNumber(10000)} gold.`,
+      "A guild can have 10 members.",
+    ],
   },
   // Source: server-scripts/Npc.cs:OnAggro,CanAttack — nearby guards assist against attackable players, pets and aggressive monsters.
   is_guard: {

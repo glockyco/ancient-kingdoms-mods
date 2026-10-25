@@ -78,7 +78,7 @@ function prettySeconds(seconds: number): string {
     [Math.trunc(milliseconds / 60000) % 60, "m"],
   ]
     .filter(([value]) => Number(value) > 0)
-    .map(([value, unit]) => `${value}${unit}`);
+    .map(([value, unit]) => `${formatNumber(Number(value))}${unit}`);
   const remainder = milliseconds % 60000;
   if (remainder > 0) {
     parts.push(
@@ -180,7 +180,6 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
         ? formatStatField(mapped, number).replace("%", "")
         : formatNumber(number, {
             decimals: 2,
-            grouping: false,
           });
     }
   }
@@ -199,11 +198,11 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
     DOTEXECUTEBONUS: values.DAMAGEOVERTIMEEXECUTEBONUS,
     BARDSONGDURATIONBONUS: formatNumber(
       skill.bard_song_duration_bonus_per_level * 100,
-      { decimals: 2, grouping: false },
+      { decimals: 2 },
     ),
     FOODANDDRINKBUFFDURATIONBONUS: formatNumber(
       skill.food_and_drink_buff_duration_bonus_per_level * 100,
-      { decimals: 2, grouping: false },
+      { decimals: 2 },
     ),
     CADENCEDAMAGE: values.DAMAGE,
     CADENCEHEAL: values.HEALSHEALTH,
@@ -215,7 +214,7 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
       roundTooltipInteger(
         skill.damage.base_value * (multiplier > 0 ? multiplier : 1),
       ),
-      { decimals: 2, grouping: false },
+      { decimals: 2 },
     );
   }
   // Base attacks depend on the equipped weapon, so their damage line cannot be resolved here.

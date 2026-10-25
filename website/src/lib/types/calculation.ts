@@ -42,7 +42,7 @@ export interface CalculationInput {
 export interface CalculationExample {
   /** The inputs the example assumes, worded for display, such as "100 Wisdom". */
   given: string[];
-  /** The outcome as a phrase without a final period, such as "Heals 1,040 Health". */
+  /** The outcome as a phrase without a final period, such as "Heals 200 Hit Points". */
   result: string;
   /**
    * The substituted arithmetic, one line per step and in step order, each as

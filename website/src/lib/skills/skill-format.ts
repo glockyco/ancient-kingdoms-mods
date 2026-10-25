@@ -47,10 +47,6 @@ export function formatLinearPercentAbs(value: LinearValue | null): string {
   });
 }
 
-export function formatNumber(n: number): string {
-  return n.toLocaleString();
-}
-
 export function formatPercent(n: number): string {
   return formatCalculationPercent(n);
 }

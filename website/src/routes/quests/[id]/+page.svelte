@@ -292,12 +292,12 @@
                     <span class="text-purple-600 dark:text-purple-400">
                       {faction.tier_name}
                       <span class="text-muted-foreground font-normal"
-                        >({faction.faction_value.toLocaleString()})</span
+                        >({formatNumber(faction.faction_value)})</span
                       >
                     </span>
                   {:else}
                     <span class="text-muted-foreground"
-                      >({faction.faction_value.toLocaleString()})</span
+                      >({formatNumber(faction.faction_value)})</span
                     >
                   {/if}
                 </div>
@@ -443,7 +443,9 @@
                 >
                   {target.name}
                 </a>
-                <span class="text-muted-foreground">x{target.amount}</span>
+                <span class="text-muted-foreground"
+                  >x{formatNumber(target.amount)}</span
+                >
               </div>
             {/each}
 
@@ -462,7 +464,9 @@
                   tooltipHtml={item.tooltip_html}
                   imageAvailable={data.itemIconPaths[item.id]}
                 />
-                <span class="text-muted-foreground">x{item.amount}</span>
+                <span class="text-muted-foreground"
+                  >x{formatNumber(item.amount)}</span
+                >
               </div>
             {/each}
 
@@ -490,7 +494,9 @@
                   tooltipHtml={item.tooltip_html}
                   imageAvailable={data.itemIconPaths[item.id]}
                 />
-                <span class="text-muted-foreground">x{item.amount}</span>
+                <span class="text-muted-foreground"
+                  >x{formatNumber(item.amount)}</span
+                >
               </div>
             {/each}
 
@@ -510,7 +516,9 @@
                   imageAvailable={data.itemIconPaths[item.id]}
                 />
                 {#if item.amount > 1}
-                  <span class="text-muted-foreground">x{item.amount}</span>
+                  <span class="text-muted-foreground"
+                    >x{formatNumber(item.amount)}</span
+                  >
                 {/if}
               </div>
             {/each}
@@ -549,7 +557,7 @@
                   imageAvailable={data.itemIconPaths[data.potionItem.id]}
                 />
                 <span class="text-muted-foreground"
-                  >x{data.potionItem.amount}</span
+                  >x{formatNumber(data.potionItem.amount)}</span
                 >
               </div>
             {/if}
@@ -701,7 +709,9 @@
                       imageAvailable={data.itemIconPaths[item.item_id]}
                     />
                     {#if item.amount && item.amount > 1}
-                      <span class="text-muted-foreground">×{item.amount}</span>
+                      <span class="text-muted-foreground"
+                        >×{formatNumber(item.amount)}</span
+                      >
                     {/if}
                   </div>
                 {/each}

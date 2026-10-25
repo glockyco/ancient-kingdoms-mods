@@ -1,3 +1,5 @@
+import { formatNumber } from "$lib/utils/format";
+
 export interface SpecialMechanicLink {
   href: string;
   label: string;
@@ -42,7 +44,7 @@ const VALAARK_INVULNERABILITY: SpecialMechanic = {
       "One stew makes Valaark vulnerable for a random duration from 1m to 4m 59s.",
     ],
     [
-      "While Valaark is vulnerable, two of his five resistances, chosen at random, drop to 200. The other three stay at 2,000.",
+      `While Valaark is vulnerable, two of his five resistances, chosen at random, drop to 200. The other three stay at ${formatNumber(2000)}.`,
     ],
     [
       "A stew used while Valaark is already vulnerable is not consumed and does not extend the timer.",

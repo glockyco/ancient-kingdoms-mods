@@ -21,6 +21,7 @@
   import {
     formatPercent as formatFraction,
     formatDuration,
+    formatNumber,
     getQualityTextColorClass,
   } from "$lib/utils/format";
   import {
@@ -477,7 +478,7 @@
       {row.original.zone_name}
     </a>
   {:else if cell.column.id === "spawn_count"}
-    <span class="ml-auto">{row.original.spawn_count}</span>
+    <span class="ml-auto">{formatNumber(row.original.spawn_count)}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -552,7 +553,7 @@
       {#if resource.gathering_exp && resource.gathering_exp > 0}
         <span
           >Gathering XP: <MechanicsLink section="experience"
-            >{resource.gathering_exp}</MechanicsLink
+            >{formatNumber(resource.gathering_exp)}</MechanicsLink
           ></span
         >
       {/if}
@@ -876,7 +877,7 @@
           </a>
           {#if resource.item_reward_amount > 1}
             <span class="text-muted-foreground">
-              ×1–{resource.item_reward_amount}
+              ×1–{formatNumber(resource.item_reward_amount)}
             </span>
           {:else}
             <span class="text-muted-foreground"> ×1 </span>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import { iround } from "$lib/calculation/unity-math";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
@@ -135,25 +136,25 @@
     <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
-          {data.stats.craftable_scroll_count}
+          {formatNumber(data.stats.craftable_scroll_count)}
         </div>
         <div class="text-sm text-muted-foreground">Craftable scrolls</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
-          {data.stats.scaling_scroll_count}
+          {formatNumber(data.stats.scaling_scroll_count)}
         </div>
         <div class="text-sm text-muted-foreground">Scaling scrolls</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
-          {data.stats.fixed_rank_scroll_count}
+          {formatNumber(data.stats.fixed_rank_scroll_count)}
         </div>
         <div class="text-sm text-muted-foreground">Fixed-rank scrolls</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
-          {data.stats.scribing_table_count}
+          {formatNumber(data.stats.scribing_table_count)}
         </div>
         <div class="text-sm text-muted-foreground">Scribing tables</div>
       </div>
@@ -312,7 +313,7 @@
     <div>
       <h2 class="flex items-center gap-2 text-xl font-semibold">
         <Scroll class="h-5 w-5 text-purple-500" />
-        Craftable Scrolls ({data.recipes.length})
+        Craftable Scrolls ({formatNumber(data.recipes.length)})
       </h2>
     </div>
 
@@ -394,7 +395,7 @@
                             quality={mat.quality}
                           />
                           <span class="text-muted-foreground"
-                            >×{mat.amount}</span
+                            >×{formatNumber(mat.amount)}</span
                           >
                         </span>
                       {/each}
@@ -451,7 +452,7 @@
     <section id="scribing-tables" class="space-y-4">
       <h2 class="flex items-center gap-2 text-xl font-semibold">
         <MapPin class="h-5 w-5 text-emerald-500" />
-        Scribing Table Locations ({data.locations.length})
+        Scribing Table Locations ({formatNumber(data.locations.length)})
       </h2>
       <div class="overflow-x-auto rounded-lg border">
         <table class="w-full whitespace-nowrap">

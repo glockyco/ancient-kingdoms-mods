@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -115,7 +116,7 @@
       {#if data.recipe.xp > 0}
         <span
           >XP: <MechanicsLink section="experience"
-            >{data.recipe.xp.toLocaleString()}</MechanicsLink
+            >{formatNumber(data.recipe.xp)}</MechanicsLink
           ></span
         >
       {/if}
@@ -165,7 +166,9 @@
                 {:else}
                   <span>{mat.item_name}</span>
                 {/if}
-                <span class="text-muted-foreground">x{mat.amount}</span>
+                <span class="text-muted-foreground"
+                  >x{formatNumber(mat.amount)}</span
+                >
               </div>
             {/each}
           </div>
@@ -186,7 +189,9 @@
               fallback={Package}
             />
             {#if output.amount !== null && output.amount > 1}
-              <span class="text-muted-foreground">x{output.amount}</span>
+              <span class="text-muted-foreground"
+                >x{formatNumber(output.amount)}</span
+              >
             {/if}
           </div>
         </div>

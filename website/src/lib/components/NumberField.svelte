@@ -1,5 +1,6 @@
 <script lang="ts">
   import RangeSlider from "$lib/components/RangeSlider.svelte";
+  import { formatNumber } from "$lib/utils/format";
 
   let {
     label,
@@ -63,7 +64,9 @@
     >
   </div>
   <RangeSlider {value} {min} {max} {label} {onchange} />
-  <div class="ticks"><span>{min}</span><span>{max}</span></div>
+  <div class="ticks">
+    <span>{formatNumber(min)}</span><span>{formatNumber(max)}</span>
+  </div>
 </div>
 
 <style>

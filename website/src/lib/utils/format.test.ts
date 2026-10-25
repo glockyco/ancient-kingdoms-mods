@@ -56,17 +56,16 @@ describe("formatPercent", () => {
     expect(
       formatPercent(-0.0000123, { decimals: 2, trailingZeros: true }),
     ).toBe("−0.00%");
+    expect(formatPercent(12.345, { decimals: 1 })).toBe("1\u202F234.5%");
   });
 });
 
 describe("formatNumber", () => {
-  test("keeps the caller's grouping separator", () => {
-    expect(formatNumber(1234567, { groupSeparator: "\u202F" })).toBe(
-      "1\u202F234\u202F567",
-    );
-    expect(formatNumber(-1234, { groupSeparator: "\u202F" })).toBe(
-      "−1\u202F234",
-    );
+  test("defaults to narrow no-break grouping independently of locale", () => {
+    expect(formatNumber(1234567)).toBe("1\u202F234\u202F567");
+    expect(formatNumber(-1234)).toBe("−1\u202F234");
+    expect(formatNumber(1234.5, { decimals: 1 })).toBe("1\u202F234.5");
+    expect(formatNumber(1234, { groupSeparator: "_" })).toBe("1_234");
   });
 
   test("retains locale rounding for grouped decimal numbers", () => {
@@ -75,8 +74,8 @@ describe("formatNumber", () => {
   });
   test.each([
     [0, "0"],
-    [1234, "1,234"],
-    [-1234, "−1,234"],
+    [1234, "1\u202F234"],
+    [-1234, "−1\u202F234"],
     [-1.5, "−1.5"],
     [1.23456, "1.235"],
     [0.0000123, "0"],
@@ -85,14 +84,14 @@ describe("formatNumber", () => {
   });
 
   test.each([
-    [0, "1234", "1,234"],
-    [1, "1234.0", "1,234.0"],
-    [2, "1234.00", "1,234.00"],
-    [3, "1234.000", "1,234.000"],
+    [0, "1234", "1\u202F234"],
+    [1, "1234.0", "1\u202F234.0"],
+    [2, "1234.00", "1\u202F234.00"],
+    [3, "1234.000", "1\u202F234.000"],
   ] as const)(
     "respects precision %s with and without grouping",
     (decimals, fixed, grouped) => {
-      expect(formatNumber(1234, { decimals })).toBe("1,234");
+      expect(formatNumber(1234, { decimals })).toBe("1\u202F234");
       expect(formatNumber(1234, { decimals, trailingZeros: true })).toBe(
         grouped,
       );
@@ -104,7 +103,7 @@ describe("formatNumber", () => {
   );
 
   test("rounds the last shown decimal and preserves the minus sign", () => {
-    expect(formatNumber(-1234.567, { decimals: 2 })).toBe("−1,234.57");
+    expect(formatNumber(-1234.567, { decimals: 2 })).toBe("−1\u202F234.57");
     expect(formatNumber(-1234.567, { decimals: 2, grouping: false })).toBe(
       "−1234.57",
     );

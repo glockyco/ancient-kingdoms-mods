@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import { onMount } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
   import Seo from "$lib/components/Seo.svelte";
@@ -315,15 +316,21 @@
 
     <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.quests.length}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.quests.length)}
+        </div>
         <div class="text-sm text-muted-foreground">Adventurer quests</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.questGivers.length}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.questGivers.length)}
+        </div>
         <div class="text-sm text-muted-foreground">Taskgivers</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-2xl font-semibold">{data.merchants.length}</div>
+        <div class="text-2xl font-semibold">
+          {formatNumber(data.merchants.length)}
+        </div>
         <div class="text-sm text-muted-foreground">Vendors</div>
       </div>
       <div class="rounded-lg border p-4">
@@ -444,7 +451,7 @@
       <div>
         <h2 class="flex items-center gap-2 text-xl font-semibold">
           <Scroll class="h-5 w-5 text-orange-500" />
-          Adventurer Quests ({data.quests.length})
+          Adventurer Quests ({formatNumber(data.quests.length)})
         </h2>
       </div>
       {#if hasClassRewards}
@@ -584,7 +591,7 @@
                           {objective.target_name}
                         </a>
                         <span class="text-muted-foreground">
-                          ×{objective.amount}
+                          ×{formatNumber(objective.amount)}
                         </span>
                       </div>
                     {/each}
@@ -646,7 +653,7 @@
       <div>
         <h2 class="flex items-center gap-2 text-xl font-semibold">
           <Store class="h-5 w-5 text-amber-500" />
-          Adventurer Vendor Unlocks ({data.vendorUnlocks.length})
+          Adventurer Vendor Unlocks ({formatNumber(data.vendorUnlocks.length)})
         </h2>
       </div>
 
@@ -671,7 +678,7 @@
             <span
               class="rounded-full border bg-muted/30 px-2 py-0.5 text-xs text-muted-foreground"
             >
-              {group.unlocks.length} items
+              {formatNumber(group.unlocks.length)} items
             </span>
           </div>
 
@@ -729,7 +736,7 @@
       <div id="adventurer-taskgivers" class="space-y-4">
         <h2 class="flex items-center gap-2 text-xl font-semibold">
           <Users class="h-5 w-5 text-blue-500" />
-          Adventurer Taskgivers ({data.questGivers.length})
+          Adventurer Taskgivers ({formatNumber(data.questGivers.length)})
         </h2>
         <div class="grid gap-3">
           {#each data.questGivers as giver (giver.npc_id)}
@@ -766,7 +773,7 @@
       <div id="adventurer-vendors" class="space-y-4">
         <h2 class="flex items-center gap-2 text-xl font-semibold">
           <Store class="h-5 w-5 text-amber-500" />
-          Adventurer Vendors ({data.merchants.length})
+          Adventurer Vendors ({formatNumber(data.merchants.length)})
         </h2>
         <div class="grid gap-3">
           {#each data.merchants as merchant (merchant.npc_id)}

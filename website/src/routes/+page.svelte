@@ -296,7 +296,7 @@
           Show
           {#each ZONE_COLUMNS as columns (columns)}
             <span class="more-count" data-columns={columns}
-              >{zoneCount - 2 * columns}</span
+              >{formatNumber(zoneCount - 2 * columns)}</span
             >
           {/each}
           more zones

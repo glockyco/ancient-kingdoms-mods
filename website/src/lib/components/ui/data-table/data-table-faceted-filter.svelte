@@ -11,6 +11,7 @@
   import { Separator } from "$lib/components/ui/separator";
   import { Badge } from "$lib/components/ui/badge";
   import type { Component } from "svelte";
+  import { formatNumber } from "$lib/utils/format";
 
   let {
     column,
@@ -53,12 +54,12 @@
               variant="secondary"
               class="rounded-sm px-1 font-normal lg:hidden"
             >
-              {selectedValues.size}
+              {formatNumber(selectedValues.size)}
             </Badge>
             <div class="hidden space-x-1 lg:flex">
               {#if selectedValues.size > 2}
                 <Badge variant="secondary" class="rounded-sm px-1 font-normal">
-                  {selectedValues.size} selected
+                  {formatNumber(selectedValues.size)} selected
                 </Badge>
               {:else}
                 {#each options.filter( (opt) => selectedValues.has(opt.value) ) as option (option.value)}
@@ -119,7 +120,7 @@
                   <span
                     class="ms-auto flex size-4 items-center justify-center font-mono text-xs"
                   >
-                    {facets.get(option.value)}
+                    {formatNumber(facets.get(option.value)!)}
                   </span>
                 {/if}
               </Command.Item>
