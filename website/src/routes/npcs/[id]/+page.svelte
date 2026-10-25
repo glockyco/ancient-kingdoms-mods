@@ -280,22 +280,23 @@
     return cols;
   });
 
-  // Seasonal offers use the sale table with a Season column. One item sold in
-  // both seasons stays two rows, because each season is a separate offer.
+  // Seasonal offers use the sale table's columns, with the season under the
+  // item name. One item sold in both seasons stays two rows, because each
+  // season is a separate offer. Rows come ordered by season, then by name.
   type SeasonalItemSold = NpcItemSold & { season: Season };
   const seasonalRows: SeasonalItemSold[] = $derived(
-    data.seasonalStock.flatMap((group) =>
-      group.items.map((item) => ({ ...item, season: group.season })),
-    ),
+    data.seasonalStock
+      .flatMap((group) =>
+        group.items.map((item) => ({ ...item, season: group.season })),
+      )
+      .sort(
+        (a, b) =>
+          SEASON_ORDER[a.season] - SEASON_ORDER[b.season] ||
+          a.item_name.localeCompare(b.item_name),
+      ),
   );
   const seasonalColumns: ColumnDef<SeasonalItemSold>[] = [
     { accessorKey: "item_name", header: "Item", minSize: 250 },
-    {
-      id: "season",
-      header: "Season",
-      size: 180,
-      accessorFn: (row) => SEASON_ORDER[row.season],
-    },
     { accessorKey: "price", header: "Price", size: 100 },
     {
       id: "currency",
@@ -377,15 +378,21 @@
   {:else if cell.column.id === "flags"}
     <QuestFlagBadges quest={row.original} />
   {:else if cell.column.id === "name"}
-    <a
-      href="/quests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-    >
-      {row.original.name}
-    </a>
-    {#each row.original.seasons ?? [] as season (season)}
-      <SeasonLabel {season} />
-    {/each}
+    <div class="min-w-0">
+      <a
+        href="/quests/{row.original.id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+      >
+        {row.original.name}
+      </a>
+      {#if row.original.seasons?.length}
+        <div class="mt-0.5 flex flex-wrap gap-x-3">
+          {#each row.original.seasons as season (season)}
+            <SeasonLabel {season} />
+          {/each}
+        </div>
+      {/if}
+    </div>
   {:else if cell.column.id === "class"}
     <ClassPills
       classes={(row.original.class_requirements || []).map((c) =>
@@ -428,18 +435,23 @@
   cell: Cell<NpcItemSold, unknown> | Cell<SeasonalItemSold, unknown>;
   row: Row<NpcItemSold> | Row<SeasonalItemSold>;
 })}
-  {#if cell.column.id === "season" && "season" in row.original}
-    <SeasonLabel season={row.original.season} />
-  {:else if cell.column.id === "item_name"}
-    <ItemLink
-      itemId={row.original.item_id}
-      itemName={row.original.item_name}
-      quality={row.original.quality}
-      tooltipHtml={row.original.tooltip_html}
-      imageAvailable={row.original.visual_public_path}
-      variant="reference"
-      fallback={Package}
-    />
+  {#if cell.column.id === "item_name"}
+    <div class="min-w-0">
+      <ItemLink
+        itemId={row.original.item_id}
+        itemName={row.original.item_name}
+        quality={row.original.quality}
+        tooltipHtml={row.original.tooltip_html}
+        imageAvailable={row.original.visual_public_path}
+        variant="reference"
+        fallback={Package}
+      />
+      {#if "season" in row.original}
+        <div class="mt-0.5 pl-9">
+          <SeasonLabel season={row.original.season} />
+        </div>
+      {/if}
+    </div>
   {:else if cell.column.id === "price"}
     <span class="ml-auto">{row.original.price.toLocaleString()}</span>
   {:else if cell.column.id === "currency"}
@@ -1045,10 +1057,7 @@
         columns={seasonalColumns}
         renderCell={renderItemSoldCell}
         renderHeader={renderItemSoldHeader}
-        initialSorting={[
-          { id: "season", desc: false },
-          { id: "item_name", desc: false },
-        ]}
+        initialSorting={[]}
         urlKey="npc-{data.npc.id}-seasonal"
         pageSize={10}
         zebraStripe={true}

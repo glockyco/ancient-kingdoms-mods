@@ -77,7 +77,7 @@ describe("Seasonal Events page data", () => {
       data.quests.find((q) => q.id === "the_spirit_of_winter"),
     ).toMatchObject({
       objective: {
-        verb: "Gather",
+        verb: "Deliver",
         amount: 10,
         href: "/items/primrose_flowers",
         name: "Primrose Flowers",

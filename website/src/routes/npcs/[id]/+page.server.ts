@@ -173,23 +173,28 @@ export const load: PageServerLoad = async ({
       faction_tier_name: item.faction_required_tier_name,
     };
     return (seasons.length ? seasons : [null]).map((season) => ({
-      ...offer,
+      offer,
       season,
     }));
   });
   // The game's sale list can repeat an identical offer, which the page lists once.
-  const itemsSold = [
+  const uniqueOffers = [
     ...new Map(
-      offers.map((offer) => [
-        `${offer.item_id}:${offer.currency_item_id}:${offer.price}:${offer.season}`,
-        offer,
+      offers.map((entry) => [
+        `${entry.offer.item_id}:${entry.offer.currency_item_id}:${entry.offer.price}:${entry.season}`,
+        entry,
       ]),
     ).values(),
   ];
+  const itemsSold = uniqueOffers
+    .filter((entry) => entry.season === null)
+    .map((entry) => entry.offer);
   const seasonalStock = (Object.keys(SEASON_ORDER) as Season[])
     .map((season) => ({
       season,
-      items: itemsSold.filter((offer) => offer.season === season),
+      items: uniqueOffers
+        .filter((entry) => entry.season === season)
+        .map((entry) => entry.offer),
     }))
     .filter((group) => group.items.length > 0);
   const skills = db
@@ -452,7 +457,7 @@ export const load: PageServerLoad = async ({
     description,
     questsOffered,
     questsCompletedHere,
-    itemsSold: itemsSold.filter((offer) => offer.season === null),
+    itemsSold,
     seasonalStock,
     drops: [],
     spawns,

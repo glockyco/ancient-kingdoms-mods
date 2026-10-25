@@ -304,16 +304,17 @@ export async function getSeasonalEvents(execute: AcquisitionQuery) {
         xp: Number(q.reward_experience),
         completer_id: npc.id,
         completer_name: String(npc.name),
+        // The verb is the quest type the quest page and list show, such as Deliver or Kill.
         objective: item
           ? {
-              verb: "Gather",
+              verb: String(q.display_type),
               amount: objective.amount,
               href: `/items/${item.item_id}`,
               name: String(entities("items").get(item.item_id)!.name),
             }
           : monster
             ? {
-                verb: "Kill",
+                verb: String(q.display_type),
                 amount: objective.amount,
                 href: `/monsters/${monster.monster_id}`,
                 name: String(

@@ -1501,31 +1501,36 @@
             <Card.Title level={2}>Seasonal Shop</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-3">
-            <div class="space-y-2">
+            <!--
+              Two columns keep every price at the right edge from sm up. On
+              narrow phones every row stacks its price under its season, so no
+              row wraps differently from another.
+            -->
+            <div
+              class="grid grid-cols-1 gap-y-3 sm:grid-cols-[auto_1fr] sm:items-baseline sm:gap-x-4 sm:gap-y-2"
+            >
               {#each data.sources.seasonal as offer (`${offer.season}_${offer.currency_item_id}_${offer.price}`)}
-                <div
-                  class="flex flex-wrap justify-between items-center gap-x-4 gap-y-1"
+                <SeasonLabel season={offer.season} variant="inline" />
+                <span
+                  class="-mt-2 sm:mt-0 sm:text-right {styles.valueCurrency}"
                 >
-                  <SeasonLabel season={offer.season} variant="inline" />
-                  <span class={styles.valueCurrency}>
-                    {#if offer.currency_item_id}
-                      {offer.price}
-                      <a
-                        href={resolve("/items/[id]", {
-                          id: offer.currency_item_id,
-                        })}
-                        class={styles.link}
-                      >
-                        {offer.currency_item_name}
-                      </a>
-                    {:else}
-                      {formatGold(offer.price)}g
-                    {/if}
-                    {#if offer.amount > 1}
-                      ({offer.amount}×)
-                    {/if}
-                  </span>
-                </div>
+                  {#if offer.currency_item_id}
+                    {offer.price}
+                    <a
+                      href={resolve("/items/[id]", {
+                        id: offer.currency_item_id,
+                      })}
+                      class={styles.link}
+                    >
+                      {offer.currency_item_name}
+                    </a>
+                  {:else}
+                    {formatGold(offer.price)}g
+                  {/if}
+                  {#if offer.amount > 1}
+                    ({offer.amount}×)
+                  {/if}
+                </span>
               {/each}
             </div>
             <p class={styles.label}>

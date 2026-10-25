@@ -2,7 +2,6 @@
   import { base } from "$app/paths";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
-  import SeasonLabel from "$lib/components/SeasonLabel.svelte";
   import { seasonHref, seasonInSentence } from "$lib/data/seasonal-events";
   import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
@@ -52,6 +51,15 @@
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
 
   let { data }: { data: PageData } = $props();
+
+  /** How each kind of item grants this skill, in player terms. */
+  const GRANT_LABELS: Record<string, string> = {
+    food_buff: "food",
+    potion_buff: "potion",
+    relic_buff: "relic",
+    scroll: "scroll",
+    weapon_proc: "weapon on-hit effect",
+  };
 
   const skill = $derived(data.skill);
   const skillIconSrc = $derived(
@@ -264,9 +272,6 @@
       {/if}
 
       <DungeonRestrictionBadge allowDungeon={skill.allow_dungeon} />
-      {#if data.season}
-        <SeasonLabel season={data.season} variant="badge" />
-      {/if}
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -1524,10 +1529,15 @@
               >
                 {item.item_name}
               </a>
-              <span class="text-xs text-muted-foreground">({item.type})</span>
+              <span class="text-sm text-muted-foreground"
+                >({GRANT_LABELS[item.type]})</span
+              >
               {#if item.probability !== undefined && item.probability < 1}
-                <span class="text-xs text-muted-foreground">
-                  {formatPercent(item.probability, { decimals: 1 })} chance
+                <span class="text-sm text-muted-foreground">
+                  {formatPercent(item.probability, { decimals: 1 })} chance{item.type ===
+                  "weapon_proc"
+                    ? " on hit"
+                    : ""}
                 </span>
               {/if}
             </div>

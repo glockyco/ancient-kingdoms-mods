@@ -201,7 +201,6 @@
     tooltipHtml={item.tooltip_html}
     imageAvailable={data.itemIconPaths[id]}
     variant="reference"
-    class="no-underline hover:underline"
   />
 {/snippet}
 
