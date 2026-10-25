@@ -155,9 +155,8 @@ public class GatherItemExporter : BaseExporter
                 {
                     if (drop.item != null)
                     {
-                        gatherItemData.random_drops.Add(new ItemDrop
+                        gatherItemData.random_drops.Add(new ItemDrop(SanitizeId(drop.item.name))
                         {
-                            item_id = SanitizeId(drop.item.name),
                             rate = drop.probability
                         });
                     }

@@ -63,13 +63,10 @@ public class NpcExporter : BaseExporter
             Il2Cpp.Npc canonical = group.FirstOrDefault(n => n.gameObject == null || !n.gameObject.scene.IsValid())
                                  ?? group.First();
 
-            var npcData = new NpcData
+            var npcData = new NpcData(name, canonical.name, canonical.race ?? "Unknown")
             {
                 // Identity
-                id = name,  // canonical ID (sanitized name)
-                name = canonical.name,
                 faction = string.IsNullOrEmpty(canonical.faction) ? null : canonical.faction,
-                race = canonical.race ?? "Unknown",
 
                 // Roles and services
                 roles = new NpcRoles
@@ -208,9 +205,8 @@ public class NpcExporter : BaseExporter
                 {
                     if (questOffer == null || questOffer.quest == null || string.IsNullOrEmpty(questOffer.quest.name))
                         throw new InvalidOperationException($"{name}: missing quest at offer index {npcData.quest_offers.Count}.");
-                    npcData.quest_offers.Add(new NpcQuestOfferData
+                    npcData.quest_offers.Add(new NpcQuestOfferData(SanitizeId(questOffer.quest.name))
                     {
-                        quest_id = SanitizeId(questOffer.quest.name),
                         offer_index = npcData.quest_offers.Count,
                         accept_here = questOffer.acceptHere,
                         complete_here = questOffer.completeHere
@@ -225,9 +221,8 @@ public class NpcExporter : BaseExporter
                 {
                     if (item != null)
                     {
-                        npcData.items_sold.Add(new ItemSold
+                        npcData.items_sold.Add(new ItemSold(SanitizeId(item.name))
                         {
-                            item_id = SanitizeId(item.name),
                             price = (int)item.buyPrice,
                             currency_item_id = item.buyToken != null && !string.IsNullOrEmpty(item.buyToken.name)
                                 ? SanitizeId(item.buyToken.name)
@@ -244,9 +239,8 @@ public class NpcExporter : BaseExporter
                 {
                     if (drop.item != null)
                     {
-                        npcData.drops.Add(new ItemDrop
+                        npcData.drops.Add(new ItemDrop(SanitizeId(drop.item.name))
                         {
-                            item_id = SanitizeId(drop.item.name),
                             rate = drop.probability
                         });
                     }

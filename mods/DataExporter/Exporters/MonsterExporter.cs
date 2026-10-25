@@ -103,20 +103,16 @@ public class MonsterExporter : BaseExporter
 
     internal static MonsterData BuildDefinition(Il2Cpp.Monster canonical, string name)
     {
-            var monsterData = new MonsterData
+            var monsterData = new MonsterData(name, canonical.name,
+                canonical.typeMonster ?? "Unknown", canonical.classMonster ?? "Unknown", canonical.zoneMonster ?? "")
             {
                 // Identity
-                id = name,  // canonical ID (sanitized name)
-                name = canonical.name,
                 loot_zone_number = canonical.idZone,
                 is_summoned_pet = canonical.isSummonedPet,
 
                 // Base stats
                 level = canonical.level.current,
                 health = canonical.health.max,
-                type_name = canonical.typeMonster ?? "Unknown",
-                class_name = canonical.classMonster ?? "Unknown",
-                zone_bestiary = canonical.zoneMonster ?? "",
 
                 // Combat stats (calculated at base level)
                 damage = canonical.combat?.damage ?? 0,
@@ -266,9 +262,8 @@ public class MonsterExporter : BaseExporter
             {
                 if (drop == null || drop.item == null || string.IsNullOrEmpty(drop.item.name))
                     throw new System.InvalidOperationException($"{name}: missing template drop item. Reload World.");
-                monsterData.drops.Add(new ItemDrop
+                monsterData.drops.Add(new ItemDrop(SanitizeId(drop.item.name))
                 {
-                    item_id = SanitizeId(drop.item.name),
                     rate = drop.probability
                 });
             }

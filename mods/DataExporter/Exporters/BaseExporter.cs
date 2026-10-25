@@ -228,7 +228,7 @@ public abstract class BaseExporter
             var points = new List<Point2>(vertices.Length);
             foreach (var vertex in vertices)
                 points.Add(new Point2((float)vertex.X, (float)vertex.Y));
-            return new TriggerArea { shape = "polygon", points = points };
+            return new TriggerArea("polygon") { points = points };
         }
         // Unity scales a circle collider by its larger absolute axis scale.
         var scale = circle.transform.lossyScale;
@@ -236,7 +236,7 @@ public abstract class BaseExporter
         if (!(radius > 0))
             throw new InvalidOperationException($"Collider {collider.name}: circle has no area. Reload World.");
         var center = circle.transform.TransformPoint(new Vector3(circle.offset.x, circle.offset.y, 0f));
-        return new TriggerArea { shape = "circle", center = new Point2(center.x, center.y), radius = radius };
+        return new TriggerArea("circle") { center = new Point2(center.x, center.y), radius = radius };
     }
 
     /// <summary>The middle of a trigger area's extent, used to place it in a zone.</summary>

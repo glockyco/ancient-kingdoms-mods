@@ -1,19 +1,34 @@
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace DataExporter.Models;
 
 public class ItemDrop
 {
+    public ItemDrop(string item_id)
+    {
+        this.item_id = item_id;
+    }
+
     public string item_id { get; set; }
     public float rate { get; set; }
 }
 
 public class MonsterSpawnData
 {
+    public MonsterSpawnData(string id, string monster_id, string zone_id, Position position)
+    {
+        this.id = id;
+        this.monster_id = monster_id;
+        this.zone_id = zone_id;
+        this.position = position;
+    }
+
     public string id { get; set; }
     public string monster_id { get; set; }
     public string zone_id { get; set; }
-    public string sub_zone_id { get; set; }
+    public string? sub_zone_id { get; set; }
     public Position position { get; set; }
     public int loot_zone_number { get; set; }
     public bool loot_respawn { get; set; }
@@ -53,6 +68,15 @@ public class MonsterSpawnData
 
 public class MonsterData
 {
+    public MonsterData(string id, string name, string type_name, string class_name, string zone_bestiary)
+    {
+        this.id = id;
+        this.name = name;
+        this.type_name = type_name;
+        this.class_name = class_name;
+        this.zone_bestiary = zone_bestiary;
+    }
+
     // Identity
     public string id { get; set; }
     public string name { get; set; }
@@ -129,7 +153,7 @@ public class MonsterData
     public bool is_summonable { get; set; }
     /// <summary>The season this monster spawns in, or null when it spawns all year.</summary>
     [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
-    public string season { get; set; }
+    public string? season { get; set; }
     public bool is_forgotten_altar_event { get; set; }
 
     // Combat flags
@@ -149,7 +173,7 @@ public class MonsterData
     public int spawn_time_start { get; set; }
     public int spawn_time_end { get; set; }
     public float placeholder_spawn_probability { get; set; }
-    public string placeholder_monster_id { get; set; }
+    public string? placeholder_monster_id { get; set; }
 
     // Loot and rewards
     public int gold_min { get; set; }
@@ -161,14 +185,14 @@ public class MonsterData
     // Messages and interactions
     public List<string> aggro_messages { get; set; } = new();
     public float aggro_message_probability { get; set; }
-    public string summon_message { get; set; }
+    public string? summon_message { get; set; }
 
     // Faction changes
     public List<string> improve_faction { get; set; } = new();
     public List<string> decrease_faction { get; set; } = new();
 
     // Lore and visuals (boss-specific)
-    public string lore_boss { get; set; }
+    public string? lore_boss { get; set; }
 
     // Skills (skill_ids[0] is default attack, [1+] are special abilities)
     public List<string> skill_ids { get; set; } = new();

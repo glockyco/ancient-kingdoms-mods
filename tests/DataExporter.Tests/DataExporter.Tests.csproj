@@ -8,6 +8,7 @@
     <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
     <IsPackable>false</IsPackable>
     <RollForward>Major</RollForward>
   </PropertyGroup>

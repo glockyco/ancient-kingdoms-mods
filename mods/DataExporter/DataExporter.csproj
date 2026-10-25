@@ -5,6 +5,7 @@
     <AssemblyName>DataExporter</AssemblyName>
     <RootNamespace>DataExporter</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <WarningsAsErrors>$(WarningsAsErrors);nullable</WarningsAsErrors>
   </PropertyGroup>
 
   <!-- Generate constants file with export path from Local.props -->

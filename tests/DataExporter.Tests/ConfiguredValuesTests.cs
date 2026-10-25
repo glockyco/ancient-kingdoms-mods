@@ -12,14 +12,14 @@ public class ConfiguredValuesTests
     [Fact]
     public void CapturedLootKeepsOrderedRepeatsAndZeroPositionAfterSourceAndReaderMutation()
     {
-        var spawn = new MonsterSpawnData
+        var spawn = new MonsterSpawnData("monster_zone_0_0", "monster", "zone", new Position(0, 0, 0))
         {
-            id = "monster_zone_0_0", position = new Position(0, 0, 0), loot_zone_number = 0,
+            loot_zone_number = 0,
             loot_respawn = false, loot_exp_multiplier = 0.25f,
             loot_drops = new List<ItemDrop>
             {
-                new() { item_id = "bag", rate = 0.2f },
-                new() { item_id = "bag", rate = 0.4f }
+                new("bag") { rate = 0.2f },
+                new("bag") { rate = 0.4f }
             }
         };
         var source = new List<MonsterSpawnData> { spawn };
@@ -51,11 +51,12 @@ public class ConfiguredValuesTests
     [Fact]
     public void ExactPortalTargetAndAbsentTargetSurviveSerialization()
     {
-        var portal = new PortalData { need_monster_dead_spawn_id = "monster_zone_1_2" };
+        var portal = new PortalData("portal", "from", new Position(1, 2, 0), "to",
+            new Position(3, 4, 0), new Position(0, 1, 0)) { need_monster_dead_spawn_id = "monster_zone_1_2" };
         var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
         var value = JObject.Parse(JsonConvert.SerializeObject(portal, settings));
         Assert.Equal("monster_zone_1_2", value.Value<string>("need_monster_dead_spawn_id"));
-        portal.need_monster_dead_spawn_id = null!;
+        portal.need_monster_dead_spawn_id = null;
         value = JObject.Parse(JsonConvert.SerializeObject(portal, settings));
         Assert.Equal(JTokenType.Null, value["need_monster_dead_spawn_id"]!.Type);
     }
@@ -63,10 +64,10 @@ public class ConfiguredValuesTests
     [Fact]
     public void DistinctStationOffersDoNotBecomeTypeWideMembership()
     {
-        var one = new List<RecipeOfferData> { new() { definition_key = "first", offer_index = 0 } };
-        var two = new List<RecipeOfferData> { new() { definition_key = "second", offer_index = 0 } };
+        var one = new List<RecipeOfferData> { new("first") { offer_index = 0 } };
+        var two = new List<RecipeOfferData> { new("second") { offer_index = 0 } };
         var values = new ConfiguredValues(new Dictionary<string, object> { ["one"] = one, ["two"] = two });
-        one.Add(new RecipeOfferData { definition_key = "second", offer_index = 1 });
+        one.Add(new RecipeOfferData("second") { offer_index = 1 });
         Assert.Equal("first", Assert.Single(values.Read<List<RecipeOfferData>>("one")).definition_key);
         Assert.Equal("second", Assert.Single(values.Read<List<RecipeOfferData>>("two")).definition_key);
     }
@@ -74,9 +75,8 @@ public class ConfiguredValuesTests
     [Fact]
     public void ExactSummonTargetsAndGuardsRemainCapturedWhenSourceReferencesChange()
     {
-        var trigger = new SummonTriggerData
+        var trigger = new SummonTriggerData("Monster", "same_template", "Same Template", new Position(0, 0, 0), "")
         {
-            summoned_entity_type = "Monster", summoned_entity_id = "same_template",
             summoned_monster_spawn_id = "same_template_zone_1_2",
             placeholder_monster_ids = new List<string> { "guard_zone_3_4", "guard_zone_5_6" }
         };
@@ -96,9 +96,9 @@ public class ConfiguredValuesTests
     {
         var offers = new List<NpcQuestOfferData>
         {
-            new() { quest_id = "quest", offer_index = 0, accept_here = true, complete_here = false },
-            new() { quest_id = "quest", offer_index = 1, accept_here = false, complete_here = true },
-            new() { quest_id = "quest", offer_index = 2, accept_here = false, complete_here = false }
+            new("quest") { offer_index = 0, accept_here = true, complete_here = false },
+            new("quest") { offer_index = 1, accept_here = false, complete_here = true },
+            new("quest") { offer_index = 2, accept_here = false, complete_here = false }
         };
         var values = new ConfiguredValues(new Dictionary<string, object> { ["offers"] = offers });
         offers[0].complete_here = true;
@@ -107,5 +107,57 @@ public class ConfiguredValuesTests
             row => { Assert.Equal(0, row.offer_index); Assert.True(row.accept_here); Assert.False(row.complete_here); },
             row => { Assert.Equal(1, row.offer_index); Assert.False(row.accept_here); Assert.True(row.complete_here); },
             row => { Assert.Equal(2, row.offer_index); Assert.False(row.accept_here); Assert.False(row.complete_here); });
+    }
+
+    [Fact]
+    public void RequiredDtoMembersAndOptionalAbsencesSurviveSnapshotCloning()
+    {
+        var origin = new Position(1, 2, 3);
+        var npc = new NpcSpawnData("spawn", "npc", "zone", origin, new Position(4, 5, 6));
+        var portal = new PortalData("portal", "from", origin, "to", new Position(7, 8, 9), new Position(0, 1, 0));
+        var housing = new HousingCatalogData("house")
+        {
+            workstations = new List<HomeWorkstationData>
+            {
+                new("root/station", "crafting")
+                {
+                    recipe_offers = new List<RecipeOfferData> { new("recipe") }
+                }
+            }
+        };
+        var values = new ConfiguredValues(new Dictionary<string, object>
+        {
+            ["npc"] = npc, ["portal"] = portal, ["housing"] = housing,
+            ["monster"] = new MonsterData("monster", "Monster", "Unknown", "Unknown", ""),
+            ["definition"] = new NpcData("npc", "NPC", "Unknown"),
+            ["sold"] = new ItemSold("item"),
+            ["area"] = new TriggerArea("polygon") { points = new List<Point2> { new(1, 2) } }
+        });
+
+        var capturedNpc = values.Read<NpcSpawnData>("npc");
+        Assert.Equal("spawn", capturedNpc.id);
+        Assert.Equal("npc", capturedNpc.npc_id);
+        Assert.Equal("zone", capturedNpc.zone_id);
+        Assert.Equal(1, capturedNpc.position.x);
+        Assert.Equal(4, capturedNpc.origin_follow_position.x);
+        Assert.Null(capturedNpc.teleport_destination);
+        Assert.Null(capturedNpc.teleport_zone_id);
+        var capturedPortal = values.Read<PortalData>("portal");
+        Assert.Equal("from", capturedPortal.from_zone_id);
+        Assert.Equal("to", capturedPortal.to_zone_id);
+        Assert.Equal(7, capturedPortal.destination.x);
+        Assert.Null(capturedPortal.required_item_id);
+        var workstation = Assert.Single(values.Read<HousingCatalogData>("housing").workstations);
+        Assert.Equal("root/station", workstation.component_path);
+        Assert.Equal("crafting", workstation.kind);
+        Assert.Equal("recipe", Assert.Single(workstation.recipe_offers).definition_key);
+        Assert.Equal("Monster", values.Read<MonsterData>("monster").name);
+        Assert.Equal("NPC", values.Read<NpcData>("definition").name);
+        Assert.Equal("item", values.Read<ItemSold>("sold").item_id);
+        var area = values.Read<TriggerArea>("area");
+        Assert.Equal("polygon", area.shape);
+        Assert.Null(area.center);
+        Assert.NotNull(area.points);
+        Assert.Equal(1, Assert.Single(area.points).x);
     }
 }

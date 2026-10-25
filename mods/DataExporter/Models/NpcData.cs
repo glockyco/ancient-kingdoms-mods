@@ -1,13 +1,24 @@
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace DataExporter.Models;
 
 public class NpcSpawnData
 {
+    public NpcSpawnData(string id, string npc_id, string zone_id, Position position, Position origin_follow_position)
+    {
+        this.id = id;
+        this.npc_id = npc_id;
+        this.zone_id = zone_id;
+        this.position = position;
+        this.origin_follow_position = origin_follow_position;
+    }
+
     public string id { get; set; }
     public string npc_id { get; set; }
     public string zone_id { get; set; }
-    public string sub_zone_id { get; set; }
+    public string? sub_zone_id { get; set; }
     public Position position { get; set; }
 
     // Movement and patrol
@@ -18,14 +29,19 @@ public class NpcSpawnData
     public List<Position> patrol_waypoints { get; set; } = new();
 
     // Teleport
-    public string teleport_zone_id { get; set; }
-    public Position teleport_destination { get; set; }
+    public string? teleport_zone_id { get; set; }
+    public Position? teleport_destination { get; set; }
     public int teleport_price { get; set; }
-    public string teleport_message { get; set; }
+    public string? teleport_message { get; set; }
 }
 
 public sealed class NpcQuestOfferData
 {
+    public NpcQuestOfferData(string quest_id)
+    {
+        this.quest_id = quest_id;
+    }
+
     public string quest_id { get; set; }
     public int offer_index { get; set; }
     public bool accept_here { get; set; }
@@ -57,17 +73,29 @@ public class NpcRoles
 
 public class ItemSold
 {
+    public ItemSold(string item_id)
+    {
+        this.item_id = item_id;
+    }
+
     public string item_id { get; set; }
     public int price { get; set; }
-    public string currency_item_id { get; set; }
+    public string? currency_item_id { get; set; }
 }
 
 public class NpcData
 {
+    public NpcData(string id, string name, string race)
+    {
+        this.id = id;
+        this.name = name;
+        this.race = race;
+    }
+
     // Identity
     public string id { get; set; }
     public string name { get; set; }
-    public string faction { get; set; }
+    public string? faction { get; set; }
     public string race { get; set; }
 
     // Roles and services
@@ -128,7 +156,7 @@ public class NpcData
     public bool flee_on_low_hp { get; set; }
     /// <summary>The season this NPC appears in, or null when it is present all year.</summary>
     [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
-    public string season { get; set; }
+    public string? season { get; set; }
     public bool is_notable { get; set; }
 
     // Spawning and respawn
@@ -153,7 +181,7 @@ public class NpcData
     public List<string> shout_messages { get; set; } = new();
     public List<string> aggro_messages { get; set; } = new();
     public float aggro_message_probability { get; set; }
-    public string summon_message { get; set; }
+    public string? summon_message { get; set; }
 
     // Skills (for guards and hostile NPCs)
     public List<string> skill_ids { get; set; } = new();

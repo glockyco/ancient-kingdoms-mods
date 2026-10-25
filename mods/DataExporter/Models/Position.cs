@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace DataExporter.Models;
@@ -34,8 +36,13 @@ public class Point2
 /// </summary>
 public class TriggerArea
 {
+    public TriggerArea(string shape)
+    {
+        this.shape = shape;
+    }
+
     public string shape { get; set; }
-    public Point2 center { get; set; }
+    public Point2? center { get; set; }
     public float? radius { get; set; }
-    public List<Point2> points { get; set; }
+    public List<Point2>? points { get; set; }
 }
