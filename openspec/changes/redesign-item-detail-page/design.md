@@ -37,7 +37,7 @@ Across all items, 4,735 stat values come from placeholders and 47 are typed into
 
 ### The opening row pairs the tooltip with a one-column fact list
 
-The tooltip sits in a fixed-width column beside a fact list of label and value rows. The grid stretches both cards to the row's height. One fact per row makes the list grow with the item's complexity, as the tooltip does, so the two cards end close to each other before stretching. Prototypes on Abyssal Tidehammer, Arcane Essence and Cold Dwarven Beer showed both cards ending close together. Cinderchant Boots, whose tooltip also lists its set, left the fact list noticeably shorter. Task 3.1 measures the padding on these pages before the layout is accepted.
+The tooltip sits in a fixed-width column beside a column that starts with a fact list of label and value rows. The grid stretches both columns to the row's height, and the fact list grows to fill its column. One fact per row makes the list grow with the item's complexity, as the tooltip does. The set section and the Fatecharm card follow the fact list in its column, because they restate what the tooltip says about the item itself, with links, and a set piece's tooltip is the tallest on the site. Measured after the change, the shorter column's empty space is under 30 pixels on materials and consumables, 60 to 90 pixels on fatecharms and pets, and 120 to 170 pixels on weapons, augments and set pieces, whose tooltips carry more lines than they have facts. The space sits inside the shorter card, so both columns still end together.
 
 Alternatives considered:
 

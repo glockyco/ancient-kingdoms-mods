@@ -1252,6 +1252,9 @@
     "EquipmentItem.cs:CanClassUse": {
       "span": 0
     },
+    "EquipmentItem.cs:CanEquip": {
+      "span": 0
+    },
     "EquipmentItem.cs:CanEquipMercenary": {
       "span": 0
     },
