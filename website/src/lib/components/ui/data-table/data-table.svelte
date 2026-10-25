@@ -724,11 +724,11 @@
                         />
                       {/if}
                       {#if header.column.getIsSorted() === "asc"}
-                        <ChevronUp class="h-4 w-4" />
+                        <ChevronUp class="h-4 w-4 shrink-0" />
                       {:else if header.column.getIsSorted() === "desc"}
-                        <ChevronDown class="h-4 w-4" />
+                        <ChevronDown class="h-4 w-4 shrink-0" />
                       {:else}
-                        <ChevronsUpDown class="h-4 w-4 opacity-50" />
+                        <ChevronsUpDown class="h-4 w-4 shrink-0 opacity-50" />
                       {/if}
                     </button>
                   {:else if renderHeader}

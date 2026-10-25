@@ -1,13 +1,8 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import { base, resolve } from "$app/paths";
-  import {
-    DataTable,
-    type Cell,
-    type ColumnDef,
-    type Header,
-    type Row,
-  } from "$lib/components/ui/data-table";
+  import type { Cell, ColumnDef, Row } from "$lib/components/ui/data-table";
+  import RelationTable from "$lib/components/RelationTable.svelte";
   import { formatAltarRewardTier } from "$lib/calculation/altar";
   import { SEASON_ORDER, type Season } from "$lib/data/seasonal-events";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
@@ -21,7 +16,6 @@
   import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
   import ItemTooltip from "$lib/components/ItemTooltip.svelte";
   import DropChance from "$lib/components/DropChance.svelte";
-  import ExternalLink from "@lucide/svelte/icons/external-link";
   import FishIcon from "@lucide/svelte/icons/fish";
   import { ITEM_STAT_FIELDS } from "$lib/constants/items";
   import {
@@ -66,8 +60,6 @@
     valuePositive: "text-green-600 dark:text-green-400",
     // Currency/gold values
     valueCurrency: "text-yellow-600 dark:text-yellow-400",
-    // Title of a full-width section, matching a card title.
-    sectionTitle: "font-semibold leading-none",
     // One fact per row, kept to a readable width so a value stays near its label.
     factList: "max-w-xl",
     fact: "flex items-baseline justify-between gap-4 border-b py-2 last:border-b-0 [&>dd]:text-right",
@@ -447,6 +439,33 @@
     ),
   );
 
+  const chanceLabel = (chance: number) =>
+    formatPercent(chance, { decimals: 1, trailingZeros: true });
+  const packContentRows = $derived(
+    data.packContents.map((content) => ({
+      item_id: content.item_id,
+      item_name: content.item_name,
+      value: content.amount,
+      label: String(content.amount),
+    })),
+  );
+  const possibleItemRows = $derived(
+    (data.randomOutcomes ?? []).map((outcome) => ({
+      item_id: outcome.item_id,
+      item_name: outcome.item_name,
+      value: outcome.probability,
+      label: chanceLabel(outcome.probability),
+    })),
+  );
+  const chestRewardRows = $derived(
+    computed.chestRewards.map((reward) => ({
+      item_id: reward.item_id,
+      item_name: reward.item_name,
+      value: reward.open_chance,
+      label: chanceLabel(reward.open_chance),
+    })),
+  );
+
   // Stats the item's tooltip lists, through a placeholder or an exact typed stat line.
   const tooltipStatFields = $derived(
     new Set(parseJson<string[]>(data.item.tooltip_stat_fields) ?? []),
@@ -475,17 +494,19 @@
     return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
   }
 
+  // Relation tables. Each keeps the name first and its number second, so a phone shows both before the table scrolls.
+  // Number columns are sized to fit "100.0%" and a header with its sort icon, so a phone shows them whole.
+  const NUMBER = 112;
   type DropRow = (typeof computed.droppedBy)[number];
   const dropChance = (drop: DropRow) => drop.per_kill_chance ?? drop.drop_rate;
-  // Chance sits beside the monster, so a phone shows both before the table scrolls.
   const dropColumns: ColumnDef<DropRow>[] = [
     { accessorKey: "monster_name", header: "Monster", minSize: 220 },
-    { id: "chance", accessorFn: dropChance, header: "Chance", size: 120 },
+    { id: "chance", accessorFn: dropChance, header: "Chance", size: NUMBER },
     {
       id: "level",
       accessorFn: (drop) => drop.monster_level_min,
       header: "Level",
-      size: 110,
+      size: NUMBER,
     },
     {
       id: "zone",
@@ -494,7 +515,147 @@
       minSize: 180,
     },
   ];
-  const RIGHT_ALIGNED_COLUMNS = new Set(["level", "chance"]);
+
+  type AltarDropRow = (typeof computed.rewardedByAltars)[number];
+  const altarDropColumns: ColumnDef<AltarDropRow>[] = [
+    { accessorKey: "altar_name", header: "Altar", minSize: 200 },
+    { accessorKey: "drop_rate", header: "Chance", size: NUMBER },
+    { id: "tier", header: "Reward tier", minSize: 180, enableSorting: false },
+    { accessorKey: "boss_monster_name", header: "Final boss", minSize: 180 },
+    { accessorKey: "zone_name", header: "Zone", minSize: 160 },
+  ];
+
+  type VendorRow = (typeof computed.soldBy)[number];
+  const vendorColumns = $derived<ColumnDef<VendorRow>[]>([
+    { accessorKey: "npc_name", header: "NPC", minSize: 200 },
+    { accessorKey: "price", header: "Price", size: 160 },
+    ...(computed.soldBy.some((v) => v.npc_faction && v.is_faction_vendor)
+      ? [
+          {
+            id: "requirement",
+            header: "Requires",
+            minSize: 220,
+            enableSorting: false,
+          },
+        ]
+      : []),
+  ]);
+
+  // A quest row from rewards, provided items or objectives.
+  type QuestRow = {
+    quest_id: string;
+    quest_name: string;
+    level_recommended: number;
+    class_restrictions: string[] | null;
+    is_repeatable: boolean;
+    seasons?: readonly Season[];
+    purpose?: string;
+    amount?: number;
+  };
+  const questColumns = (rows: QuestRow[], withNeed: boolean) =>
+    [
+      { accessorKey: "quest_name", header: "Quest", minSize: 240 },
+      ...(withNeed
+        ? [{ id: "need", header: "Needs", size: 128, enableSorting: false }]
+        : []),
+      { accessorKey: "level_recommended", header: "Level", size: NUMBER },
+      {
+        id: "repeats",
+        accessorFn: (quest: QuestRow) => quest.is_repeatable,
+        header: "Repeats",
+        size: 120,
+      },
+      ...(rows.some((q) => hasSpecificClassRestriction(q.class_restrictions))
+        ? [{ id: "classes", header: "Classes", minSize: 180 }]
+        : []),
+    ] as ColumnDef<QuestRow>[];
+  // Source: server-scripts/GatherInventoryQuest.cs:OnCompleted — a quest that removes its items takes them on completion, others only check that you carry them.
+  const QUEST_ITEM_NEEDS: Record<string, string> = {
+    required: "Deliver",
+    have: "Carry",
+    gather: "Gather",
+    brew: "Brew",
+    equip: "Equip",
+  };
+
+  type TreasureMapRow = (typeof computed.rewardedByTreasureMaps)[number];
+  const treasureMapColumns: ColumnDef<TreasureMapRow>[] = [
+    { accessorKey: "map_name", header: "Treasure map", minSize: 220 },
+    { accessorKey: "zone_name", header: "Dig zone", minSize: 180 },
+  ];
+
+  type GatherRow = (typeof computed.gatheredFrom)[number];
+  const gatherColumns = $derived<ColumnDef<GatherRow>[]>([
+    { accessorKey: "gather_item_name", header: "Resource", minSize: 220 },
+    { accessorKey: "rate", header: "Chance", minSize: 140 },
+    ...(computed.gatheredFrom.some((g) => (g.amount_max ?? 0) > 0)
+      ? [{ id: "amount", header: "Amount", size: NUMBER, enableSorting: false }]
+      : []),
+    { accessorKey: "zone_name", header: "Zone", minSize: 180 },
+  ]);
+
+  type ChestRow = (typeof computed.foundInChests)[number];
+  const chestColumns = $derived<ColumnDef<ChestRow>[]>([
+    { accessorKey: "zone_name", header: "Chest", minSize: 220 },
+    { accessorKey: "rate", header: "Chance", size: NUMBER },
+    ...(computed.foundInChests.some((c) => c.key_id)
+      ? [{ accessorKey: "key_name", header: "Key", minSize: 180 }]
+      : []),
+  ]);
+
+  type PackRow = (typeof computed.foundInPacks)[number];
+  const packColumns: ColumnDef<PackRow>[] = [
+    { accessorKey: "pack_name", header: "Pack", minSize: 220 },
+    { accessorKey: "amount", header: "Amount", size: NUMBER },
+  ];
+
+  type RandomLootRow = (typeof computed.foundInRandomLoot)[number];
+  const randomLootColumns: ColumnDef<RandomLootRow>[] = [
+    { accessorKey: "random_item_name", header: "Container", minSize: 220 },
+    { accessorKey: "probability", header: "Chance", size: NUMBER },
+  ];
+
+  type RecipeUseRow = (typeof computed.usedInRecipes)[number];
+  const recipeUseColumns: ColumnDef<RecipeUseRow>[] = [
+    { accessorKey: "result_item_name", header: "Makes", minSize: 220 },
+    { accessorKey: "amount", header: "Amount", size: NUMBER },
+    { id: "recipe", header: "Recipe", minSize: 160, enableSorting: false },
+  ];
+
+  type CurrencyRow = (typeof computed.usedAsCurrencyFor)[number];
+  const currencyColumns: ColumnDef<CurrencyRow>[] = [
+    { accessorKey: "item_name", header: "Buys", minSize: 220 },
+    { accessorKey: "price", header: "Price", size: NUMBER },
+  ];
+
+  type AltarUseRow = (typeof computed.requiredForAltars)[number];
+  const altarUseColumns: ColumnDef<AltarUseRow>[] = [
+    { accessorKey: "altar_name", header: "Altar", minSize: 220 },
+    { accessorKey: "zone_name", header: "Zone", minSize: 180 },
+  ];
+
+  type PortalRow = (typeof computed.requiredForPortals)[number];
+  const portalColumns: ColumnDef<PortalRow>[] = [
+    { accessorKey: "from_zone_name", header: "Portal in", minSize: 220 },
+    { accessorKey: "to_zone_name", header: "Leads to", minSize: 180 },
+  ];
+
+  type OpensChestRow = (typeof computed.opensChests)[number];
+  const opensChestColumns: ColumnDef<OpensChestRow>[] = [
+    { accessorKey: "zone_name", header: "Chest", minSize: 220 },
+  ];
+
+  // Possible items, chest rewards and pack contents all list an item with a number, sorted by the value and shown as its label.
+  type ContentRow = {
+    item_id: string;
+    item_name: string;
+    value: number;
+    label: string;
+  };
+  const contentColumns = (valueHeader: string): ColumnDef<ContentRow>[] => [
+    { accessorKey: "item_name", header: "Item", minSize: 220 },
+    { accessorKey: "value", header: valueHeader, size: NUMBER },
+  ];
 </script>
 
 <!-- A source or use that only a season offers names it on its own line under the row's name. -->
@@ -508,17 +669,21 @@
   {/if}
 {/snippet}
 
-<!-- Numeric columns align right, so their headers do too. -->
-{#snippet renderRightAlignedHeader({
-  header,
-}: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- every relation table shares this header
-  header: Header<any, unknown>;
-})}
-  {#if RIGHT_ALIGNED_COLUMNS.has(header.id)}
-    <span class="ml-auto">{header.column.columnDef.header}</span>
-  {:else}
-    {header.column.columnDef.header}
+{#snippet number(value: string | number)}
+  <span class="ml-auto tabular-nums">{value}</span>
+{/snippet}
+
+{#snippet percent(value: number)}
+  {@render number(formatPercent(value, { decimals: 1, trailingZeros: true }))}
+{/snippet}
+
+{#snippet zoneLink(zoneId: string | null | undefined, zoneName: string | null)}
+  {#if zoneId && zoneName}
+    <a href={resolve("/zones/[id]", { id: zoneId })} class={styles.link}
+      >{zoneName}</a
+    >
+  {:else if zoneName}
+    {zoneName}
   {/if}
 {/snippet}
 
@@ -548,18 +713,15 @@
       {@render seasonLabels(drop.seasons, "pl-6")}
     </div>
   {:else if cell.column.id === "level"}
-    <span class="ml-auto tabular-nums">
-      {drop.monster_level_min === drop.monster_level_max
+    {@render number(
+      drop.monster_level_min === drop.monster_level_max
         ? drop.monster_level_min
-        : `${drop.monster_level_min}-${drop.monster_level_max}`}
-    </span>
+        : `${drop.monster_level_min}-${drop.monster_level_max}`,
+    )}
   {:else if cell.column.id === "zone"}
     {#each drop.zones as zone, index (zone.zone_id)}
       {#if index > 0},
-      {/if}<a
-        href={resolve("/zones/[id]", { id: zone.zone_id })}
-        class={styles.link}>{zone.zone_name}</a
-      >
+      {/if}{@render zoneLink(zone.zone_id, zone.zone_name)}
     {/each}
   {:else if cell.column.id === "chance"}
     <span class="ml-auto tabular-nums">
@@ -569,6 +731,343 @@
         fatecharm={drop.fatecharm}
       />
     </span>
+  {/if}
+{/snippet}
+
+{#snippet renderAltarDropCell({
+  cell,
+  row,
+}: {
+  cell: Cell<AltarDropRow, unknown>;
+  row: Row<AltarDropRow>;
+})}
+  {@const altar = row.original}
+  {#if cell.column.id === "altar_name"}
+    <a
+      href={resolve("/altars/[id]", { id: altar.altar_id })}
+      class={styles.link}>{altar.altar_name}</a
+    >
+  {:else if cell.column.id === "drop_rate"}
+    {@render percent(altar.drop_rate)}
+  {:else if cell.column.id === "tier"}
+    {altar.reward_tier
+      ? formatAltarRewardTier(altar.reward_tier, altar, data.maxLevel)
+      : ""}
+  {:else if cell.column.id === "boss_monster_name"}
+    {#if altar.boss_monster_id && altar.boss_monster_name}
+      <a
+        href={resolve("/monsters/[id]", { id: altar.boss_monster_id })}
+        class={styles.link}>{altar.boss_monster_name}</a
+      >
+    {/if}
+  {:else if cell.column.id === "zone_name"}
+    {@render zoneLink(altar.zone_id, altar.zone_name)}
+  {/if}
+{/snippet}
+
+{#snippet renderVendorCell({
+  cell,
+  row,
+}: {
+  cell: Cell<VendorRow, unknown>;
+  row: Row<VendorRow>;
+})}
+  {@const vendor = row.original}
+  {#if cell.column.id === "npc_name"}
+    <a href={resolve("/npcs/[id]", { id: vendor.npc_id })} class={styles.link}
+      >{vendor.npc_name}</a
+    >
+  {:else if cell.column.id === "price"}
+    <span class="ml-auto tabular-nums {styles.valueCurrency}">
+      {#if vendor.currency_item_id}
+        {vendor.price}
+        <a
+          href={resolve("/items/[id]", { id: vendor.currency_item_id })}
+          class={styles.link}>{vendor.currency_item_name}</a
+        >
+      {:else}
+        {formatGold(vendor.price)}g
+      {/if}
+      {#if vendor.amount && vendor.amount > 1}
+        <span class="text-muted-foreground">for {vendor.amount}</span>
+      {/if}
+    </span>
+  {:else if cell.column.id === "requirement"}
+    {#if vendor.npc_faction && vendor.is_faction_vendor}
+      {vendor.required_reputation_name ?? vendor.required_reputation_tier} with
+      {vendor.npc_faction}
+    {/if}
+  {/if}
+{/snippet}
+
+{#snippet renderQuestCell({
+  cell,
+  row,
+}: {
+  cell: Cell<QuestRow, unknown>;
+  row: Row<QuestRow>;
+})}
+  {@const quest = row.original}
+  {#if cell.column.id === "quest_name"}
+    <div>
+      <a
+        href={resolve("/quests/[id]", { id: quest.quest_id })}
+        class={styles.link}>{quest.quest_name}</a
+      >
+      {@render seasonLabels(quest.seasons ?? [])}
+    </div>
+  {:else if cell.column.id === "need"}
+    {[
+      QUEST_ITEM_NEEDS[quest.purpose ?? ""] ?? quest.purpose,
+      quest.amount && quest.amount > 1 ? quest.amount : null,
+    ]
+      .filter(Boolean)
+      .join(" ")}
+  {:else if cell.column.id === "level_recommended"}
+    {@render number(quest.level_recommended)}
+  {:else if cell.column.id === "repeats"}
+    {quest.is_repeatable ? "Repeatable" : "Once"}
+  {:else if cell.column.id === "classes"}
+    {hasSpecificClassRestriction(quest.class_restrictions)
+      ? quest.class_restrictions!.map(formatClassName).join(", ")
+      : ""}
+  {/if}
+{/snippet}
+
+{#snippet renderTreasureMapCell({
+  cell,
+  row,
+}: {
+  cell: Cell<TreasureMapRow, unknown>;
+  row: Row<TreasureMapRow>;
+})}
+  {@const map = row.original}
+  {#if cell.column.id === "map_name"}
+    <a href={resolve("/items/[id]", { id: map.map_id })} class={styles.link}
+      >{map.map_name}</a
+    >
+  {:else if cell.column.id === "zone_name"}
+    {@render zoneLink(map.zone_id, map.zone_name)}
+  {/if}
+{/snippet}
+
+{#snippet renderGatherCell({
+  cell,
+  row,
+}: {
+  cell: Cell<GatherRow, unknown>;
+  row: Row<GatherRow>;
+})}
+  {@const gather = row.original}
+  {#if cell.column.id === "gather_item_name"}
+    <div class="flex items-center gap-1.5">
+      <a
+        href={resolve("/gather-items/[id]", { id: gather.gather_item_id })}
+        class={styles.link}>{gather.gather_item_name}</a
+      >
+      <MapLink entityId={gather.gather_item_id} entityType="resource" compact />
+    </div>
+  {:else if cell.column.id === "rate"}
+    <span class="ml-auto whitespace-normal text-right tabular-nums">
+      {gather.rate_note ??
+        formatPercent(gather.rate, { decimals: 1, trailingZeros: true })}
+    </span>
+  {:else if cell.column.id === "amount"}
+    {#if gather.amount_min != null && gather.amount_max != null && gather.amount_max > 0}
+      {@render number(
+        gather.amount_min === gather.amount_max
+          ? gather.amount_max
+          : `${gather.amount_min}-${gather.amount_max}`,
+      )}
+    {/if}
+  {:else if cell.column.id === "zone_name"}
+    {@render zoneLink(gather.zone_id, gather.zone_name)}
+  {/if}
+{/snippet}
+
+{#snippet renderChestCell({
+  cell,
+  row,
+}: {
+  cell: Cell<ChestRow, unknown>;
+  row: Row<ChestRow>;
+})}
+  {@const chest = row.original}
+  {#if cell.column.id === "zone_name"}
+    <div class="flex items-center gap-1.5">
+      <a
+        href={resolve("/chests/[id]", { id: chest.chest_id })}
+        class={styles.link}
+        >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
+      >
+      <MapLink entityId={chest.chest_id} entityType="chest" compact />
+    </div>
+  {:else if cell.column.id === "rate"}
+    {@render percent(chest.rate)}
+  {:else if cell.column.id === "key_name"}
+    {#if chest.key_id}
+      <a href={resolve("/items/[id]", { id: chest.key_id })} class={styles.link}
+        >{chest.key_name}</a
+      >
+    {/if}
+  {/if}
+{/snippet}
+
+{#snippet renderPackCell({
+  cell,
+  row,
+}: {
+  cell: Cell<PackRow, unknown>;
+  row: Row<PackRow>;
+})}
+  {@const pack = row.original}
+  {#if cell.column.id === "pack_name"}
+    <div>
+      <a href={resolve("/items/[id]", { id: pack.pack_id })} class={styles.link}
+        >{pack.pack_name}</a
+      >
+      {@render seasonLabels(pack.seasons)}
+    </div>
+  {:else if cell.column.id === "amount"}
+    {@render number(pack.amount)}
+  {/if}
+{/snippet}
+
+{#snippet renderRandomLootCell({
+  cell,
+  row,
+}: {
+  cell: Cell<RandomLootRow, unknown>;
+  row: Row<RandomLootRow>;
+})}
+  {@const source = row.original}
+  {#if cell.column.id === "random_item_name"}
+    <a
+      href={resolve("/items/[id]", { id: source.random_item_id })}
+      class={styles.link}>{source.random_item_name}</a
+    >
+  {:else if cell.column.id === "probability"}
+    {@render percent(source.probability)}
+  {/if}
+{/snippet}
+
+{#snippet renderRecipeUseCell({
+  cell,
+  row,
+}: {
+  cell: Cell<RecipeUseRow, unknown>;
+  row: Row<RecipeUseRow>;
+})}
+  {@const recipe = row.original}
+  {#if cell.column.id === "result_item_name"}
+    <a
+      href={resolve("/items/[id]", { id: recipe.result_item_id })}
+      class={styles.link}>{recipe.result_item_name}</a
+    >
+  {:else if cell.column.id === "amount"}
+    {@render number(recipe.amount)}
+  {:else if cell.column.id === "recipe"}
+    <a
+      href={resolve("/recipes/[id]", { id: recipe.recipe_id })}
+      class={styles.link}
+      >{recipe.recipe_type.charAt(0).toUpperCase() +
+        recipe.recipe_type.slice(1)} recipe</a
+    >
+  {/if}
+{/snippet}
+
+{#snippet renderCurrencyCell({
+  cell,
+  row,
+}: {
+  cell: Cell<CurrencyRow, unknown>;
+  row: Row<CurrencyRow>;
+})}
+  {@const offer = row.original}
+  {#if cell.column.id === "item_name"}
+    <div>
+      <a
+        href={resolve("/items/[id]", { id: offer.item_id })}
+        class={styles.link}>{offer.item_name}</a
+      >
+      {@render seasonLabels(offer.seasons)}
+    </div>
+  {:else if cell.column.id === "price"}
+    {@render number(offer.price === 0 ? "Free" : offer.price)}
+  {/if}
+{/snippet}
+
+{#snippet renderAltarUseCell({
+  cell,
+  row,
+}: {
+  cell: Cell<AltarUseRow, unknown>;
+  row: Row<AltarUseRow>;
+})}
+  {@const altar = row.original}
+  {#if cell.column.id === "altar_name"}
+    <a
+      href={resolve("/altars/[id]", { id: altar.altar_id })}
+      class={styles.link}>{altar.altar_name}</a
+    >
+  {:else if cell.column.id === "zone_name"}
+    {@render zoneLink(altar.zone_id, altar.zone_name)}
+  {/if}
+{/snippet}
+
+{#snippet renderPortalCell({
+  cell,
+  row,
+}: {
+  cell: Cell<PortalRow, unknown>;
+  row: Row<PortalRow>;
+})}
+  {@const portal = row.original}
+  {#if cell.column.id === "from_zone_name"}
+    <div class="flex items-center gap-1.5">
+      {@render zoneLink(portal.from_zone_id, portal.from_zone_name)}
+      <MapLink entityId={portal.portal_id} entityType="portal" compact />
+    </div>
+  {:else if cell.column.id === "to_zone_name"}
+    {@render zoneLink(portal.to_zone_id, portal.to_zone_name)}
+  {/if}
+{/snippet}
+
+{#snippet renderOpensChestCell({
+  cell,
+  row,
+}: {
+  cell: Cell<OpensChestRow, unknown>;
+  row: Row<OpensChestRow>;
+})}
+  {@const chest = row.original}
+  {#if cell.column.id === "zone_name"}
+    <div class="flex items-center gap-1.5">
+      <a
+        href={resolve("/chests/[id]", { id: chest.chest_id })}
+        class={styles.link}
+        >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
+      >
+      <MapLink entityId={chest.chest_id} entityType="chest" compact />
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet renderContentCell({
+  cell,
+  row,
+}: {
+  cell: Cell<ContentRow, unknown>;
+  row: Row<ContentRow>;
+})}
+  {@const content = row.original}
+  {#if cell.column.id === "item_name"}
+    <a
+      href={resolve("/items/[id]", { id: content.item_id })}
+      class={styles.link}>{content.item_name}</a
+    >
+  {:else if cell.column.id === "value"}
+    {@render number(content.label)}
   {/if}
 {/snippet}
 
@@ -591,6 +1090,14 @@
       {/if}
     </p>
   {/each}
+{/snippet}
+
+{#snippet fishingAssumptions()}
+  {FISHING_RANGE_ASSUMPTIONS}
+{/snippet}
+
+{#snippet meatRequests()}
+  {@render cookingRequests("meat")}
 {/snippet}
 
 <Seo
@@ -1424,83 +1931,52 @@
     </Card.Root>
   {/if}
   <!-- Pack Contents -->
-  {#if data.packContents.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Pack Contents</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each data.packContents as item (item.item_id)}
-            <div class="flex justify-between items-center">
-              <a href="/items/{item.item_id}" class={styles.link}>
-                {item.item_name}
-              </a>
-              <span class={styles.value}>&times;{item.amount}</span>
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if packContentRows.length > 0}
+    <RelationTable
+      title="Pack Contents"
+      rows={packContentRows}
+      columns={contentColumns("Amount")}
+      cell={renderContentCell}
+      urlKey="item-{data.item.id}-contents"
+      rightAligned={["value"]}
+    />
   {/if}
   <!-- Possible Items (for simple random items, not chest-type items) -->
-  {#if data.randomOutcomes && data.randomOutcomes.length > 0 && (!computed.chestRewards || computed.chestRewards.length === 0)}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Possible Items</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each data.randomOutcomes as item (item.item_id)}
-            <div class="flex justify-between items-center">
-              <a href="/items/{item.item_id}" class={styles.link}>
-                {item.item_name}
-              </a>
-              <span class={styles.label}>
-                {(item.probability * 100).toFixed(1)}%
-              </span>
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if possibleItemRows.length > 0 && computed.chestRewards.length === 0}
+    <RelationTable
+      title="Possible Items"
+      rows={possibleItemRows}
+      columns={contentColumns("Chance")}
+      cell={renderContentCell}
+      urlKey="item-{data.item.id}-outcomes"
+      initialSorting={[{ id: "value", desc: true }]}
+      rightAligned={["value"]}
+    />
   {/if}
   <!-- Chest Rewards -->
-  {#if computed.chestRewards && computed.chestRewards.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Chest Rewards</Card.Title>
-        <Card.Description>
-          {#if hasFixedChestContents}
-            Each opening gives {Math.min(
-              data.item.chest_num_items,
-              computed.chestRewards.length,
-            )} fixed {data.item.chest_num_items === 1 ? "item" : "items"}.
-          {:else}
-            Each opening gives up to {data.item.chest_num_items}
-            {data.item.chest_num_items === 1 ? "item" : "items"}. An item cannot
-            appear twice in one opening.
-          {/if}
-        </Card.Description>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.chestRewards as reward, index (`${reward.item_id}_${index}`)}
-            <div class="flex justify-between items-center">
-              <a href="/items/{reward.item_id}" class={styles.link}>
-                {reward.item_name}
-              </a>
-              <span class={styles.label}
-                >{formatPercent(reward.open_chance, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })}</span
-              >
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if chestRewardRows.length > 0}
+    <RelationTable
+      title="Chest Rewards"
+      rows={chestRewardRows}
+      columns={contentColumns("Chance")}
+      cell={renderContentCell}
+      urlKey="item-{data.item.id}-rewards"
+      initialSorting={[{ id: "value", desc: true }]}
+      rightAligned={["value"]}
+    >
+      {#snippet description()}
+        {#if hasFixedChestContents}
+          Each opening gives {Math.min(
+            data.item.chest_num_items,
+            chestRewardRows.length,
+          )} fixed {data.item.chest_num_items === 1 ? "item" : "items"}.
+        {:else}
+          Each opening gives up to {data.item.chest_num_items}
+          {data.item.chest_num_items === 1 ? "item" : "items"}. An item cannot
+          appear twice in one opening.
+        {/if}
+      {/snippet}
+    </RelationTable>
   {/if}
   {#if hasMechanicsNotes}
     <Card.Root class="bg-muted/30">
@@ -1613,115 +2089,38 @@
   {/if}
   <!-- Dropped By -->
   {#if computed.droppedBy.length > 0}
-    <section class="space-y-3">
-      <h2 class={styles.sectionTitle}>
-        Dropped by ({computed.droppedBy.length})
-      </h2>
-      <DataTable
-        data={computed.droppedBy}
-        columns={dropColumns}
-        renderCell={renderDropCell}
-        renderHeader={renderRightAlignedHeader}
-        initialSorting={[{ id: "chance", desc: true }]}
-        urlKey="item-{data.item.id}-drops"
-        pageSize={10}
-        zebraStripe={true}
-        paginateStaticHtml={true}
-        class="bg-muted/30"
-      />
-    </section>
+    <RelationTable
+      title="Dropped by"
+      rows={computed.droppedBy}
+      columns={dropColumns}
+      cell={renderDropCell}
+      urlKey="item-{data.item.id}-drops"
+      initialSorting={[{ id: "chance", desc: true }]}
+      rightAligned={["chance", "level"]}
+    />
   {/if}
   <!-- Dropped by Altar Boss -->
-  {#if computed.rewardedByAltars && computed.rewardedByAltars.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Dropped by Altar Boss</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.rewardedByAltars as altar, index (`${altar.altar_id}_${index}`)}
-            <div class="space-y-1">
-              <a href={`/altars/${altar.altar_id}`} class={styles.link}>
-                {altar.altar_name}
-              </a>
-              <div class="{styles.label} pl-2 space-y-0.5">
-                <div>
-                  Zone: <a href={`/zones/${altar.zone_id}`} class={styles.link}
-                    >{altar.zone_name}</a
-                  >
-                </div>
-                {#if altar.boss_monster_id && altar.boss_monster_name}
-                  <div>
-                    Boss: <a
-                      href={`/monsters/${altar.boss_monster_id}`}
-                      class={styles.link}>{altar.boss_monster_name}</a
-                    >
-                  </div>
-                {/if}
-                {#if altar.reward_tier}
-                  <div>
-                    Required: {formatAltarRewardTier(
-                      altar.reward_tier,
-                      altar,
-                      data.maxLevel,
-                    )}
-                  </div>
-                {/if}
-                <div>Drop Rate: {(altar.drop_rate * 100).toFixed(0)}%</div>
-              </div>
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.rewardedByAltars.length > 0}
+    <RelationTable
+      title="Dropped by Altar Boss"
+      rows={computed.rewardedByAltars}
+      columns={altarDropColumns}
+      cell={renderAltarDropCell}
+      urlKey="item-{data.item.id}-altar-drops"
+      initialSorting={[{ id: "drop_rate", desc: true }]}
+      rightAligned={["drop_rate"]}
+    />
   {/if}
   <!-- Sold By -->
-  {#if computed.soldBy && computed.soldBy.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Sold by</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.soldBy as vendor, index (`${vendor.npc_id}_${index}`)}
-            <div class="space-y-1">
-              <div class="flex justify-between items-center">
-                <a
-                  href={resolve("/npcs/[id]", { id: vendor.npc_id })}
-                  class={styles.link}
-                >
-                  {vendor.npc_name}
-                </a>
-                <span class={styles.valueCurrency}>
-                  {#if vendor.currency_item_id}
-                    {vendor.price}
-                    <a
-                      href={resolve("/items/[id]", {
-                        id: vendor.currency_item_id,
-                      })}
-                      class={styles.link}
-                    >
-                      {vendor.currency_item_name}
-                    </a>
-                  {:else}
-                    {formatGold(vendor.price)}g
-                  {/if}
-                  {#if vendor.amount && vendor.amount > 1}
-                    ({vendor.amount}×)
-                  {/if}
-                </span>
-              </div>
-              {#if vendor.npc_faction && vendor.is_faction_vendor}
-                <div class="{styles.label} pl-2">
-                  Requires {vendor.required_reputation_name ??
-                    vendor.required_reputation_tier} with {vendor.npc_faction}
-                </div>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.soldBy.length > 0}
+    <RelationTable
+      title="Sold by"
+      rows={computed.soldBy}
+      columns={vendorColumns}
+      cell={renderVendorCell}
+      urlKey="item-{data.item.id}-vendors"
+      rightAligned={["price"]}
+    />
   {/if}
   <!-- Seasonal Shop -->
   {#if data.sources.seasonal.length > 0}
@@ -1771,169 +2170,44 @@
     </Card.Root>
   {/if}
   <!-- Rewarded by Quests -->
-  {#if computed.rewardedBy && computed.rewardedBy.length > 0}
-    {@const repeatableQuests = computed.rewardedBy.filter(
-      (q) => q.is_repeatable,
-    )}
-    {@const oneTimeQuests = computed.rewardedBy.filter((q) => !q.is_repeatable)}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Rewarded by Quests</Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-4">
-        {#if repeatableQuests.length > 0}
-          <div>
-            <div class="{styles.label} mb-2">Repeatable Quests</div>
-            <div class="space-y-2">
-              {#each repeatableQuests as quest, index (`${quest.quest_id}_${index}`)}
-                <div>
-                  <a
-                    href={resolve("/quests/[id]", { id: quest.quest_id })}
-                    class={styles.link}
-                  >
-                    {quest.quest_name}
-                    <span class={styles.label}>
-                      (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
-                        {quest.class_restrictions
-                          .map(formatClassName)
-                          .join(", ")}{/if})
-                    </span>
-                  </a>
-                  {@render seasonLabels(quest.seasons)}
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
-
-        {#if oneTimeQuests.length > 0}
-          <div>
-            <div class="{styles.label} mb-2">One-Time Quests</div>
-            <div class="space-y-2">
-              {#each oneTimeQuests as quest, index (`${quest.quest_id}_${index}`)}
-                <div>
-                  <a
-                    href={resolve("/quests/[id]", { id: quest.quest_id })}
-                    class={styles.link}
-                  >
-                    {quest.quest_name}
-                    <span class={styles.label}>
-                      (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
-                        {quest.class_restrictions
-                          .map(formatClassName)
-                          .join(", ")}{/if})
-                    </span>
-                  </a>
-                  {@render seasonLabels(quest.seasons)}
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
+  {#if computed.rewardedBy.length > 0}
+    <RelationTable
+      title="Rewarded by Quests"
+      rows={computed.rewardedBy as QuestRow[]}
+      columns={questColumns(computed.rewardedBy as QuestRow[], false)}
+      cell={renderQuestCell}
+      urlKey="item-{data.item.id}-quest-rewards"
+      initialSorting={[{ id: "level_recommended", desc: false }]}
+      rightAligned={["level_recommended"]}
+    />
   {/if}
   <!-- Provided by Quests -->
-  {#if computed.providedByQuests && computed.providedByQuests.length > 0}
-    {@const repeatableQuests = computed.providedByQuests.filter(
-      (q) => q.is_repeatable,
-    )}
-    {@const oneTimeQuests = computed.providedByQuests.filter(
-      (q) => !q.is_repeatable,
-    )}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Provided by Quests</Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-4">
-        {#if repeatableQuests.length > 0}
-          <div>
-            <div class="{styles.label} mb-2">Repeatable Quests</div>
-            <div class="space-y-2">
-              {#each repeatableQuests as quest, index (`${quest.quest_id}_${index}`)}
-                <div>
-                  <a
-                    href={resolve("/quests/[id]", { id: quest.quest_id })}
-                    class={styles.link}
-                  >
-                    {quest.quest_name}
-                    <span class={styles.label}>
-                      (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
-                        {quest.class_restrictions
-                          .map(formatClassName)
-                          .join(", ")}{/if})
-                    </span>
-                  </a>
-                  {@render seasonLabels(quest.seasons)}
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
-
-        {#if oneTimeQuests.length > 0}
-          <div>
-            <div class="{styles.label} mb-2">One-Time Quests</div>
-            <div class="space-y-2">
-              {#each oneTimeQuests as quest, index (`${quest.quest_id}_${index}`)}
-                <div>
-                  <a
-                    href={resolve("/quests/[id]", { id: quest.quest_id })}
-                    class={styles.link}
-                  >
-                    {quest.quest_name}
-                    <span class={styles.label}>
-                      (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
-                        {quest.class_restrictions
-                          .map(formatClassName)
-                          .join(", ")}{/if})
-                    </span>
-                  </a>
-                  {@render seasonLabels(quest.seasons)}
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
+  {#if computed.providedByQuests.length > 0}
+    <RelationTable
+      title="Provided by Quests"
+      rows={computed.providedByQuests as QuestRow[]}
+      columns={questColumns(computed.providedByQuests as QuestRow[], false)}
+      cell={renderQuestCell}
+      urlKey="item-{data.item.id}-quest-provided"
+      initialSorting={[{ id: "level_recommended", desc: false }]}
+      rightAligned={["level_recommended"]}
+    />
   {/if}
   <!-- Rewarded by Treasure Maps -->
-  {#if computed.rewardedByTreasureMaps && computed.rewardedByTreasureMaps.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Rewarded by Treasure Maps</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.rewardedByTreasureMaps as map (map.map_id)}
-            <div>
-              <a href="/items/{map.map_id}" class={styles.link}>
-                {map.map_name}
-              </a>
-              {#if map.zone_name}
-                <span class={styles.label}>({map.zone_name})</span>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.rewardedByTreasureMaps.length > 0}
+    <RelationTable
+      title="Rewarded by Treasure Maps"
+      rows={computed.rewardedByTreasureMaps}
+      columns={treasureMapColumns}
+      cell={renderTreasureMapCell}
+      urlKey="item-{data.item.id}-treasure-maps"
+    />
   {/if}
   <!-- Crafted From (exclude alchemy items which have their own "Crafted by" section) -->
   {#if computed.craftedFrom && computed.craftedFrom.length > 0 && !data.item.taught_by_recipe_id}
     <Card.Root class="bg-muted/30">
       <Card.Header>
-        <Card.Title level={2} class="flex items-center gap-2">
-          Crafted from Recipe
-          <a
-            href="/recipes/{computed.craftedFrom[0].recipe_id}"
-            class="text-muted-foreground hover:text-foreground transition-colors"
-            title="View recipe details"
-          >
-            <ExternalLink class="h-4 w-4" />
-          </a>
-        </Card.Title>
+        <Card.Title level={2}>Crafted from Recipe</Card.Title>
       </Card.Header>
       <Card.Content>
         <div class="space-y-1">
@@ -1949,6 +2223,12 @@
             </div>
           {/each}
         </div>
+        <a
+          href={resolve("/recipes/[id]", {
+            id: computed.craftedFrom[0].recipe_id,
+          })}
+          class="mt-3 inline-block text-sm {styles.link}">View the recipe</a
+        >
         {@render cookingRequests("dish")}
       </Card.Content>
     </Card.Root>
@@ -1957,18 +2237,7 @@
     <!-- Crafted by -->
     <Card.Root class="bg-muted/30">
       <Card.Header>
-        <Card.Title level={2} class="flex items-center gap-2">
-          Crafted by
-          {#if computed.craftedFrom && computed.craftedFrom.length > 0}
-            <a
-              href="/recipes/{computed.craftedFrom[0].recipe_id}"
-              class="text-muted-foreground hover:text-foreground transition-colors"
-              title="View recipe details"
-            >
-              <ExternalLink class="h-4 w-4" />
-            </a>
-          {/if}
-        </Card.Title>
+        <Card.Title level={2}>Crafted by</Card.Title>
       </Card.Header>
       <Card.Content class="space-y-4">
         <div class="grid grid-cols-3 gap-4">
@@ -2015,6 +2284,12 @@
             </div>
           {/if}
         {/if}
+        <a
+          href={resolve("/recipes/[id]", {
+            id: computed.craftedFrom[0].recipe_id,
+          })}
+          class="inline-block text-sm {styles.link}">View the recipe</a
+        >
       </Card.Content>
     </Card.Root>
   {/if}
@@ -2109,209 +2384,70 @@
     </Card.Root>
   {/if}
   <!-- Gathered From -->
-  {#if computed.gatheredFrom && computed.gatheredFrom.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Gathered from</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        {#if computed.gatheredFrom.some((gather) => gather.is_fishing_spot)}
-          <p class="mb-3 text-muted-foreground">
-            {FISHING_RANGE_ASSUMPTIONS}
-          </p>
-        {/if}
-        <div class="space-y-2">
-          {#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${gather.spawn_id ?? index}`)}
-            {#if gather.is_fishing_spot}
-              <div class="space-y-1">
-                <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <a
-                    href="/gather-items/{gather.gather_item_id}"
-                    class="{styles.link} min-w-40 flex-1"
-                  >
-                    {gather.gather_item_name}
-                  </a>
-                  <span
-                    class="{styles.label} mr-auto shrink-0 whitespace-nowrap sm:ml-auto sm:mr-0 sm:text-right"
-                  >
-                    {#if gather.rate_note}
-                      {gather.rate_note}
-                    {:else}
-                      {(gather.rate * 100).toFixed(1)}%
-                    {/if}
-                  </span>
-                </div>
-                <div class="ml-0 flex items-center gap-1.5 text-sm sm:ml-2">
-                  {#if gather.zone_name}
-                    <span class={styles.label}>{gather.zone_name}</span>
-                  {/if}
-                  <MapLink
-                    entityId={gather.gather_item_id}
-                    entityType="resource"
-                    compact
-                  />
-                </div>
-              </div>
-            {:else}
-              <div class="flex justify-between items-start gap-3">
-                <div class="flex items-center gap-1.5">
-                  <a
-                    href="/gather-items/{gather.gather_item_id}"
-                    class={styles.link}
-                  >
-                    {gather.gather_item_name}
-                  </a>
-                  {#if gather.zone_name}
-                    <span class={styles.label}>({gather.zone_name})</span>
-                  {/if}
-                  <MapLink
-                    entityId={gather.gather_item_id}
-                    entityType="resource"
-                    compact
-                  />
-                </div>
-                <span class="{styles.label} text-right">
-                  {#if gather.rate_note}
-                    {gather.rate_note}
-                  {:else}
-                    {(gather.rate * 100).toFixed(1)}%
-                  {/if}
-                  {#if gather.amount_min != null && gather.amount_max != null && gather.amount_max > 0}
-                    {#if gather.amount_min === gather.amount_max}
-                      ({gather.amount_max}×)
-                    {:else}
-                      ({gather.amount_min}-{gather.amount_max}×)
-                    {/if}
-                  {/if}
-                </span>
-              </div>
-            {/if}
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.gatheredFrom.length > 0}
+    <RelationTable
+      title="Gathered from"
+      rows={computed.gatheredFrom}
+      columns={gatherColumns}
+      cell={renderGatherCell}
+      urlKey="item-{data.item.id}-gathers"
+      initialSorting={[{ id: "rate", desc: true }]}
+      rightAligned={["rate", "amount"]}
+      description={computed.gatheredFrom.some((g) => g.is_fishing_spot)
+        ? fishingAssumptions
+        : undefined}
+    />
   {/if}
   <!-- Found in Chests -->
-  {#if computed.foundInChests && computed.foundInChests.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Found in Chests</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.foundInChests as chest, index (`${chest.chest_id}_${index}`)}
-            <div>
-              <div class="flex justify-between items-center">
-                <div class="flex items-center gap-1.5">
-                  <a href="/chests/{chest.chest_id}" class={styles.link}>
-                    Chest
-                  </a>
-                  {#if chest.zone_name}
-                    <span class={styles.label}>({chest.zone_name})</span>
-                  {/if}
-                  <MapLink
-                    entityId={chest.chest_id}
-                    entityType="chest"
-                    compact
-                  />
-                </div>
-                <span class={styles.label}
-                  >{(chest.rate * 100).toFixed(1)}%</span
-                >
-              </div>
-              {#if chest.key_id}
-                <div class="ml-2 text-sm">
-                  <span class={styles.label}>Key:</span>
-                  <a href="/items/{chest.key_id}" class={styles.link}>
-                    {chest.key_name}
-                  </a>
-                </div>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.foundInChests.length > 0}
+    <RelationTable
+      title="Found in Chests"
+      rows={computed.foundInChests}
+      columns={chestColumns}
+      cell={renderChestCell}
+      urlKey="item-{data.item.id}-chests"
+      initialSorting={[{ id: "rate", desc: true }]}
+      rightAligned={["rate"]}
+    />
   {/if}
-  {#if computed.foundInPacks && computed.foundInPacks.length > 0}
-    <!-- Found in Packs -->
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Found in Packs</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.foundInPacks as pack, index (`${pack.pack_id}_${index}`)}
-            <div class="flex justify-between items-center gap-3">
-              <div>
-                <a href="/items/{pack.pack_id}" class={styles.link}>
-                  {pack.pack_name}
-                </a>
-                {@render seasonLabels(pack.seasons)}
-              </div>
-              <span class={styles.value}>×{pack.amount}</span>
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.foundInPacks.length > 0}
+    <RelationTable
+      title="Found in Packs"
+      rows={computed.foundInPacks}
+      columns={packColumns}
+      cell={renderPackCell}
+      urlKey="item-{data.item.id}-packs"
+      rightAligned={["amount"]}
+    />
   {/if}
   <!-- Found in Random Loot -->
-  {#if computed.foundInRandomLoot && computed.foundInRandomLoot.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Found in Random Loot</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.foundInRandomLoot as randomItem, index (`${randomItem.random_item_id}_${index}`)}
-            <div class="flex justify-between items-center">
-              <a href="/items/{randomItem.random_item_id}" class={styles.link}>
-                {randomItem.random_item_name}
-              </a>
-              <span class={styles.label}>
-                {(randomItem.probability * 100).toFixed(1)}%
-              </span>
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.foundInRandomLoot.length > 0}
+    <RelationTable
+      title="Found in Random Loot"
+      rows={computed.foundInRandomLoot}
+      columns={randomLootColumns}
+      cell={renderRandomLootCell}
+      urlKey="item-{data.item.id}-random-loot"
+      initialSorting={[{ id: "probability", desc: true }]}
+      rightAligned={["probability"]}
+    />
   {/if}
 
   <!-- What it is for -->
   <!-- Used in Recipes -->
-  {#if computed.usedInRecipes && computed.usedInRecipes.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Used in Recipes</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.usedInRecipes as recipe, index (`${recipe.recipe_id}_${index}`)}
-            <div class="flex justify-between items-center">
-              <div class="flex items-center gap-1">
-                <a
-                  href="/recipes/{recipe.recipe_id}"
-                  class="text-muted-foreground hover:text-foreground transition-colors"
-                  title="View recipe details"
-                >
-                  <ExternalLink class="h-4 w-4" />
-                </a>
-                <a
-                  href={resolve("/items/[id]", { id: recipe.result_item_id })}
-                  class={styles.link}
-                >
-                  {recipe.result_item_name}
-                </a>
-              </div>
-              <span class={styles.label}>x{recipe.amount}</span>
-            </div>
-          {/each}
-        </div>
-        {@render cookingRequests("meat")}
-      </Card.Content>
-    </Card.Root>
+  {#if computed.usedInRecipes.length > 0}
+    <RelationTable
+      title="Used in Recipes"
+      rows={computed.usedInRecipes}
+      columns={recipeUseColumns}
+      cell={renderRecipeUseCell}
+      urlKey="item-{data.item.id}-recipes"
+      initialSorting={[{ id: "result_item_name", desc: false }]}
+      rightAligned={["amount"]}
+      description={data.regionalCooking.some((r) => r.role === "meat")
+        ? meatRequests
+        : undefined}
+    />
   {/if}
   {#if data.usages.merges.length > 0 && data.usages.merges[0].all_components.every((component) => component.item_id)}
     <!-- Combine To Create -->
@@ -2371,103 +2507,27 @@
     </Card.Root>
   {/if}
   <!-- Required for Quests -->
-  {#if computed.neededForQuests && computed.neededForQuests.length > 0}
-    {@const repeatableQuests = computed.neededForQuests.filter(
-      (q) => q.is_repeatable,
-    )}
-    {@const oneTimeQuests = computed.neededForQuests.filter(
-      (q) => !q.is_repeatable,
-    )}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Required for Quests</Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-4">
-        {#if repeatableQuests.length > 0}
-          <div>
-            <div class="{styles.label} mb-2">Repeatable Quests</div>
-            <div class="space-y-2">
-              {#each repeatableQuests as quest, index (`${quest.quest_id}_${quest.purpose}_${index}`)}
-                <div class="flex justify-between items-center">
-                  <a
-                    href={resolve("/quests/[id]", { id: quest.quest_id })}
-                    class={styles.link}
-                  >
-                    {quest.quest_name}
-                    <span class={styles.label}>
-                      (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
-                        {quest.class_restrictions
-                          .map(formatClassName)
-                          .join(", ")}{/if})
-                    </span>
-                  </a>
-                  <span class={styles.label}
-                    >{quest.purpose}{#if quest.amount > 0}
-                      (x{quest.amount}){/if}</span
-                  >
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
-
-        {#if oneTimeQuests.length > 0}
-          <div>
-            <div class="{styles.label} mb-2">One-Time Quests</div>
-            <div class="space-y-2">
-              {#each oneTimeQuests as quest, index (`${quest.quest_id}_${quest.purpose}_${index}`)}
-                <div class="flex justify-between items-center">
-                  <a
-                    href={resolve("/quests/[id]", { id: quest.quest_id })}
-                    class={styles.link}
-                  >
-                    {quest.quest_name}
-                    <span class={styles.label}>
-                      (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
-                        {quest.class_restrictions
-                          .map(formatClassName)
-                          .join(", ")}{/if})
-                    </span>
-                  </a>
-                  <span class={styles.label}
-                    >{quest.purpose}{#if quest.amount > 0}
-                      (x{quest.amount}){/if}</span
-                  >
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
+  {#if computed.neededForQuests.length > 0}
+    <RelationTable
+      title="Required for Quests"
+      rows={computed.neededForQuests as QuestRow[]}
+      columns={questColumns(computed.neededForQuests as QuestRow[], true)}
+      cell={renderQuestCell}
+      urlKey="item-{data.item.id}-quest-needs"
+      initialSorting={[{ id: "level_recommended", desc: false }]}
+      rightAligned={["level_recommended"]}
+    />
   {/if}
   <!-- Currency For -->
-  {#if computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Currency for</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.usedAsCurrencyFor as item (item.key)}
-            <div class="flex justify-between items-center gap-3">
-              <span>
-                <a
-                  href={resolve("/items/[id]", { id: item.item_id })}
-                  class={styles.link}
-                >
-                  {item.item_name}
-                </a>
-                {@render seasonLabels(item.seasons)}
-              </span>
-              <span class={styles.label}>
-                {item.price === 0 ? "Free" : `${item.price}x`}
-              </span>
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.usedAsCurrencyFor.length > 0}
+    <RelationTable
+      title="Currency for"
+      rows={computed.usedAsCurrencyFor}
+      columns={currencyColumns}
+      cell={renderCurrencyCell}
+      urlKey="item-{data.item.id}-currency"
+      rightAligned={["price"]}
+    />
   {/if}
   {#if data.item.id === "token_of_redemption" && data.veteranMasters.length > 0}
     <!-- Token of Redemption Usage -->
@@ -2537,77 +2597,33 @@
     </Card.Root>
   {/if}
   <!-- Required to Activate Altars -->
-  {#if computed.requiredForAltars && computed.requiredForAltars.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Required to Activate Altars</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.requiredForAltars as altar, index (`${altar.altar_id}_${index}`)}
-            <div>
-              <a href={`/altars/${altar.altar_id}`} class={styles.link}>
-                {altar.altar_name}
-              </a>
-              <span class={styles.label}>({altar.zone_name})</span>
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.requiredForAltars.length > 0}
+    <RelationTable
+      title="Required to Activate Altars"
+      rows={computed.requiredForAltars}
+      columns={altarUseColumns}
+      cell={renderAltarUseCell}
+      urlKey="item-{data.item.id}-altars"
+    />
   {/if}
   <!-- Required for Portals -->
-  {#if computed.requiredForPortals && computed.requiredForPortals.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Required for Portals</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.requiredForPortals as portal, index (`${portal.portal_id}_${index}`)}
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <a href="/zones/{portal.from_zone_id}" class={styles.link}>
-                  {portal.from_zone_name}
-                </a>
-                <MapLink
-                  entityId={portal.portal_id}
-                  entityType="portal"
-                  compact
-                />
-              </div>
-              {#if portal.to_zone_id}
-                <div class="{styles.label} pl-2">
-                  → <a href="/zones/{portal.to_zone_id}" class={styles.link}>
-                    {portal.to_zone_name}
-                  </a>
-                </div>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.requiredForPortals.length > 0}
+    <RelationTable
+      title="Required for Portals"
+      rows={computed.requiredForPortals}
+      columns={portalColumns}
+      cell={renderPortalCell}
+      urlKey="item-{data.item.id}-portals"
+    />
   {/if}
   <!-- Opens Chests -->
-  {#if computed.opensChests && computed.opensChests.length > 0}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Opens Chests</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="space-y-2">
-          {#each computed.opensChests as chest (chest.chest_id)}
-            <div class="flex items-center gap-1.5">
-              <a href="/chests/{chest.chest_id}" class={styles.link}>Chest</a>
-              {#if chest.zone_name}<span class={styles.label}
-                  >({chest.zone_name})</span
-                >{/if}
-              <MapLink entityId={chest.chest_id} entityType="chest" compact />
-            </div>
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
+  {#if computed.opensChests.length > 0}
+    <RelationTable
+      title="Opens Chests"
+      rows={computed.opensChests}
+      columns={opensChestColumns}
+      cell={renderOpensChestCell}
+      urlKey="item-{data.item.id}-opens-chests"
+    />
   {/if}
 </div>
