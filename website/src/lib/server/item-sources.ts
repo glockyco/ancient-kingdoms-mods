@@ -133,8 +133,11 @@ function methodZones(
   const zones = new Map<string, string>();
   for (const provider of method.providers) {
     const kind = provider.ref.kind;
-    if (kind !== "monster_spawns" && kind !== "altars") continue;
-    const zoneId = sourceEntity(model, kind, provider.ref.id)?.zone_id;
+    const zoneId =
+      provider.location?.zoneId ??
+      (kind === "monster_spawns" || kind === "altars"
+        ? sourceEntity(model, kind, provider.ref.id)?.zone_id
+        : undefined);
     const zone = sourceEntity(model, "zones", zoneId);
     if (zone) zones.set(String(zone.id), str(zone, "name"));
   }
@@ -465,7 +468,6 @@ export function itemSourcesFromModel(
       for (const provider of fishing
         ? method.providers
         : [method.providers[0]]) {
-        const zoneId = provider?.location?.zoneId ?? null;
         result.gathers.push({
           item_id: itemId,
           resource_id: resource.id,
@@ -481,11 +483,10 @@ export function itemSourcesFromModel(
           fishing_chance_min: fishingChances[0] ?? null,
           fishing_chance_max: fishingChances[1] ?? null,
           spawn_id: fishing ? (provider?.ref.id ?? null) : null,
-          zone_id: fishing ? zoneId : null,
-          zone_name:
-            fishing && zoneId
-              ? str(sourceEntity(model, "zones", zoneId), "name")
-              : null,
+          // A fishing row stands for one spot, any other resource for all its nodes.
+          zones: fishing
+            ? methodZones(model, { ...method, providers: [provider] })
+            : methodZones(model, method),
           amount_min: fishing
             ? null
             : quantity?.kind === "exact"

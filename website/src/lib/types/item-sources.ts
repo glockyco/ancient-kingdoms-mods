@@ -171,8 +171,7 @@ export interface GatherSource {
   fishing_chance_min: number | null;
   fishing_chance_max: number | null;
   spawn_id: string | null;
-  zone_id: string | null;
-  zone_name: string | null;
+  zones: readonly { zone_id: string; zone_name: string }[];
   amount_min: number | null;
   amount_max: number | null;
 }

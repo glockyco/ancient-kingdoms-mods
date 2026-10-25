@@ -37,7 +37,9 @@ Across all items, 4,735 stat values come from placeholders and 47 are typed into
 
 ### The opening row pairs the tooltip with a one-column fact list
 
-The tooltip sits in a fixed-width column beside a column that starts with a fact list of label and value rows. The grid stretches both columns to the row's height, and the fact list grows to fill its column. One fact per row makes the list grow with the item's complexity, as the tooltip does. The set section and the Fatecharm card follow the fact list in its column, because they restate what the tooltip says about the item itself, with links, and a set piece's tooltip is the tallest on the site. Measured after the change, the shorter column's empty space is under 30 pixels on materials and consumables, 60 to 90 pixels on fatecharms and pets, and 120 to 170 pixels on weapons, augments and set pieces, whose tooltips carry more lines than they have facts. The space sits inside the shorter card, so both columns still end together.
+The tooltip sits in a fixed-width column beside a column that starts with a fact list of label and value rows. The grid stretches both columns to the row's height, and the fact list grows to fill its column. One fact per row makes the list grow with the item's complexity, as the tooltip does. The set section, the Fatecharm and Fatecharm Fragment cards and the pet's sprite follow the fact list in its column, because they describe the item itself and a set piece's tooltip is the tallest on the site. Measured after the change, the shorter column's empty space is under 30 pixels on materials and consumables, 60 to 90 pixels on fatecharms and pets, and 120 to 170 pixels on weapons, augments and set pieces, whose tooltips carry more lines than they have facts. The space sits inside the shorter card, so both columns still end together.
+
+Every later card with a handful of facts uses the same fact list. With the page's width to itself the list lays facts side by side, label above value, so three short facts take one line instead of three. A fact whose value is a sentence keeps its label above it on a phone too.
 
 Alternatives considered:
 
@@ -59,9 +61,13 @@ Relation lists become tables in the shared `DataTable`, which already pages at a
 
 A plain list was kept for one-row sections in the prototype and rejected: a table header over one row costs a line, while mixing lists and tables would give the same relation two shapes on different pages.
 
-### Drop zones come from the method's providers
+### Source zones come from the method's providers
 
-A drop row already reads its levels from the spawn providers of its kill method. Its zones come from the same providers, deduplicated in name order. An altar event names the altar's zone. A method without placed providers names no zone. The row grouping on the page includes the zones, so two methods with the same chance in different zones stay separate rows.
+A drop row already reads its levels from the spawn providers of its kill method. Its zones come from the same providers, deduplicated in name order. An altar event names the altar's zone, and a gathering method the zones of its resource placements. A fishing row stands for one spot and names only that spot's zone. A method without placed providers names no zone. The row grouping on the page includes the zones, so two methods with the same chance in different zones stay separate rows.
+
+### Table columns size to their content
+
+A text column has a minimum width and grows to its content, and the table fills its card but never shrinks below its content. Equal shares of the free width made every flexible column as wide as the widest one's content, so one long zone list pushed the table past its card. A long cell wraps at a capped width instead. On a phone, a name column followed by a number column takes the width the number leaves, so both show before the table scrolls, and the overflow fade falls on the third column rather than on the number.
 
 ### Taught recipes resolve their name in the query
 

@@ -116,9 +116,9 @@ A relationship row SHALL offer a map link when the map can show its monster, NPC
 - **WHEN** a player reads Dropped by on Broken Map
 - **THEN** the rows for monsters in Temple of Valaark offer no map link
 
-### Requirement: Drop rows name their zone
+### Requirement: Source rows name their zones
 
-Each drop row SHALL name the zones of the placements that carry the drop, so that two chances for one monster in different zones are attributed to their zones. A drop with no placed source SHALL name no zone rather than a guessed one.
+Each drop row SHALL name the zones of the placements that carry the drop, so that two chances for one monster in different zones are attributed to their zones. Each gathering row SHALL name every zone that holds the resource, and a fishing row the zone of its spot. A row with no placed source SHALL name no zone rather than a guessed one.
 
 #### Scenario: One monster, two zones, two chances
 
@@ -129,6 +129,20 @@ Each drop row SHALL name the zones of the placements that carry the drop, so tha
 
 - **WHEN** a player opens Ashen Key Shard, which Fire Templars drop only in Molten Sanctuary
 - **THEN** its Fire Templar row names Molten Sanctuary only
+
+#### Scenario: A resource found in several zones
+
+- **WHEN** a player reads Gathered from on Black Pearl
+- **THEN** the Beryllium Ore row names Abandoned Mines, Despair, The Molten Summit and Vault of the Vanished
+
+### Requirement: A phone shows each row's name and number
+
+On a phone, a relationship table whose second column is a number SHALL show each row's name and that number without scrolling sideways. Further columns MAY scroll.
+
+#### Scenario: Drops on a phone
+
+- **WHEN** a player reads Dropped by on Black Pearl on a 390 pixel wide screen
+- **THEN** each row shows the monster and its chance in full before any scrolling
 
 ### Requirement: Set pieces state their set once outside the tooltip
 

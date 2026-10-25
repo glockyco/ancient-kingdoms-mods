@@ -695,6 +695,33 @@ test("drop rows name the zones whose placements carry the drop", async () => {
   }
 });
 
+test("gather rows name every zone that holds the resource", async () => {
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  try {
+    const gathers = (await getItemSources(db, "black_pearl")).gathers;
+    const zones = (resourceId: string) =>
+      gathers
+        .filter((row) => row.resource_id === resourceId)
+        .map((row) => row.zones.map((zone) => zone.zone_name));
+    expect(zones("beryllium_ore")).toEqual([
+      [
+        "Abandoned Mines",
+        "Despair",
+        "The Molten Summit",
+        "Vault of the Vanished",
+      ],
+    ]);
+    // A fishing row stands for one spot, so it names only that spot's zone.
+    const fishing = (await getItemSources(db, "blue_dartfish")).gathers.filter(
+      (row) => row.is_fishing_spot,
+    );
+    expect(fishing.length).toBeGreaterThan(1);
+    expect(fishing.every((row) => row.zones.length === 1)).toBe(true);
+  } finally {
+    db.close();
+  }
+});
+
 test("seasonal shop and currency uses share projected offer seasons", async () => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
   try {

@@ -68,6 +68,9 @@
     // the page's width to itself lays facts out in columns, label above value.
     factList: "grid @2xl:grid-cols-3 @2xl:gap-x-8 @2xl:gap-y-4",
     fact: "flex items-baseline justify-between gap-4 border-b py-2 last:border-b-0 [&>dd]:text-right @2xl:block @2xl:border-b-0 @2xl:py-0 @2xl:[&>dd]:text-left",
+    // A fact whose value is a sentence keeps its label above it at every width.
+    proseFact:
+      "border-b py-2 last:border-b-0 [&>dd]:mt-1 @2xl:border-b-0 @2xl:py-0 @2xl:[&>dd]:mt-0",
   } as const;
   function parseJson<T>(json: string | null): T | null {
     if (!json) return null;
@@ -101,15 +104,9 @@
         : formatPercent(chance, { decimals: 1, trailingZeros: true });
     const minPercent = percent(minChance);
     const maxPercent = percent(maxChance);
-    if (minPercent === maxPercent) return `${minPercent} per cast`;
-    return `${minPercent} to ${maxPercent} per cast`;
-  }
-
-  function formatFishingSourceNote(
-    minChance: number | null,
-    maxChance: number | null,
-  ): string | undefined {
-    return formatFishingChanceRange(minChance, maxChance) ?? undefined;
+    return minPercent === maxPercent
+      ? minPercent
+      : `${minPercent} to ${maxPercent}`;
   }
 
   const romanNumerals = ["I", "II", "III", "IV", "V"];
@@ -271,7 +268,7 @@
               g.is_fishing_spot
                 ? JSON.stringify([
                     g.resource_name,
-                    g.zone_id,
+                    g.zones.map((zone) => zone.zone_id),
                     g.fishing_source_role,
                     g.fishing_chance_min,
                     g.fishing_chance_max,
@@ -294,15 +291,14 @@
             virtual_location_count: g.virtual_location_count,
             fishing_source_role: g.fishing_source_role,
             spawn_id: g.spawn_id,
-            zone_id: g.zone_id,
-            zone_name: g.zone_name,
+            zones: g.zones,
             is_radiant_spark: g.is_radiant_spark,
             rate_note: g.is_radiant_spark
               ? "5% + 0.2% per 1% Radiant Seeker (25% at 100%)"
-              : formatFishingSourceNote(
+              : (formatFishingChanceRange(
                   g.fishing_chance_min,
                   g.fishing_chance_max,
-                ),
+                ) ?? undefined),
           })) || [],
 
       foundInChests:
@@ -445,10 +441,14 @@
   );
 
   // A row links to the map only where the map can show its entity for this item.
-  const mapTarget = (category: keyof typeof data.mapLinks) => (id: string) =>
-    data.mapLinks[category].includes(id)
-      ? { entityId: id, entityType: category }
-      : null;
+  const mapTarget =
+    (category: keyof typeof data.mapLinks) => (id: string, name: string) =>
+      data.mapLinks[category].includes(id)
+        ? { entityId: id, entityType: category, name }
+        : null;
+  // Chests have no names, so a chest is named by its zone.
+  const chestName = (zoneName: string | null) =>
+    zoneName ? `Chest in ${zoneName}` : "Chest";
   const chanceLabel = (chance: number) =>
     formatPercent(chance, { decimals: 1, trailingZeros: true });
   const packContentRows = $derived(
@@ -510,6 +510,18 @@
   // Text columns start narrow and grow with their content and the free width, so a
   // drop table's five columns fit a two-column layout at 768 pixels.
   const TEXT = 160;
+  // A row's zones, sortable by their names.
+  function zoneColumn<
+    Row extends { zones: readonly { zone_name: string }[] },
+  >(): ColumnDef<Row> {
+    return {
+      id: "zone",
+      accessorFn: (row) => row.zones.map((z) => z.zone_name).join(", "),
+      header: "Zone",
+      minSize: TEXT,
+    };
+  }
+
   type DropRow = (typeof computed.droppedBy)[number];
   const dropChance = (drop: DropRow) => drop.per_kill_chance ?? drop.drop_rate;
   const dropColumns: ColumnDef<DropRow>[] = [
@@ -521,12 +533,7 @@
       header: "Level",
       size: NUMBER,
     },
-    {
-      id: "zone",
-      accessorFn: (drop) => drop.zones.map((z) => z.zone_name).join(", "),
-      header: "Zone",
-      minSize: TEXT,
-    },
+    zoneColumn<DropRow>(),
   ];
 
   type AltarDropRow = (typeof computed.rewardedByAltars)[number];
@@ -541,7 +548,16 @@
   type VendorRow = (typeof computed.soldBy)[number];
   const vendorColumns = $derived<ColumnDef<VendorRow>[]>([
     { accessorKey: "npc_name", header: "NPC", minSize: TEXT },
-    { accessorKey: "price", header: "Price", size: 160 },
+    {
+      accessorKey: "price",
+      header: "Price",
+      // Gold fits a number column. A token name or a bundle size needs more room.
+      size: computed.soldBy.some(
+        (v) => v.currency_item_id || (v.amount ?? 1) > 1,
+      )
+        ? 160
+        : NUMBER,
+    },
     ...(computed.soldBy.some((v) => v.npc_faction && v.is_faction_vendor)
       ? [
           {
@@ -571,7 +587,11 @@
       ...(withNeed
         ? [{ id: "need", header: "Needs", size: 128, enableSorting: false }]
         : []),
-      { accessorKey: "level_recommended", header: "Level", size: NUMBER },
+      {
+        accessorKey: "level_recommended",
+        header: "Rec. Level",
+        size: NUMBER,
+      },
       {
         id: "repeats",
         accessorFn: (quest: QuestRow) => quest.is_repeatable,
@@ -599,13 +619,21 @@
   ];
 
   type GatherRow = (typeof computed.gatheredFrom)[number];
+  // A fishing chance is per cast. The header says so when every row is a fishing spot.
+  const fishingOnly = $derived(
+    computed.gatheredFrom.every((g) => g.is_fishing_spot),
+  );
   const gatherColumns = $derived<ColumnDef<GatherRow>[]>([
     { accessorKey: "gather_item_name", header: "Resource", minSize: TEXT },
-    { accessorKey: "rate", header: "Chance", minSize: 140 },
+    {
+      accessorKey: "rate",
+      header: fishingOnly ? "Chance / Cast" : "Chance",
+      size: 160,
+    },
     ...(computed.gatheredFrom.some((g) => (g.amount_max ?? 0) > 0)
       ? [{ id: "amount", header: "Amount", size: NUMBER, enableSorting: false }]
       : []),
-    { accessorKey: "zone_name", header: "Zone", minSize: TEXT },
+    zoneColumn<GatherRow>(),
   ]);
 
   type ChestRow = (typeof computed.foundInChests)[number];
@@ -701,6 +729,14 @@
   {/if}
 {/snippet}
 
+{#snippet zoneList(zones: readonly { zone_id: string; zone_name: string }[])}
+  <span class={styles.wrapCell}>
+    {#each zones as zone, index (zone.zone_id)}{index > 0
+        ? ", "
+        : ""}{@render zoneLink(zone.zone_id, zone.zone_name)}{/each}
+  </span>
+{/snippet}
+
 {#snippet entityLinks(links: { href: string; name: string }[])}
   <ul class="space-y-1">
     {#each links as link, index (index)}
@@ -758,11 +794,7 @@
         : `${drop.monster_level_min}-${drop.monster_level_max}`,
     )}
   {:else if cell.column.id === "zone"}
-    <span class={styles.wrapCell}>
-      {#each drop.zones as zone, index (zone.zone_id)}{index > 0
-          ? ", "
-          : ""}{@render zoneLink(zone.zone_id, zone.zone_name)}{/each}
-    </span>
+    {@render zoneList(drop.zones)}
   {:else if cell.column.id === "chance"}
     <span class="ml-auto tabular-nums">
       <DropChance
@@ -861,10 +893,7 @@
       {@render seasonLabels(quest.seasons ?? [])}
     </div>
   {:else if cell.column.id === "need"}
-    {[
-      QUEST_ITEM_NEEDS[quest.purpose ?? ""] ?? quest.purpose,
-      quest.amount && quest.amount > 1 ? quest.amount : null,
-    ]
+    {[QUEST_ITEM_NEEDS[quest.purpose ?? ""] ?? quest.purpose, quest.amount]
       .filter(Boolean)
       .join(" ")}
   {:else if cell.column.id === "level_recommended"}
@@ -911,9 +940,12 @@
       class={styles.link}>{gather.gather_item_name}</a
     >
   {:else if cell.column.id === "rate"}
-    <span class="ml-auto whitespace-normal text-right tabular-nums">
+    <span class="ml-auto max-w-48 whitespace-normal text-right tabular-nums">
       {gather.rate_note ??
-        formatPercent(gather.rate, { decimals: 1, trailingZeros: true })}
+        formatPercent(gather.rate, {
+          decimals: 1,
+          trailingZeros: true,
+        })}{gather.is_fishing_spot && !fishingOnly ? " per cast" : ""}
     </span>
   {:else if cell.column.id === "amount"}
     {#if gather.amount_min != null && gather.amount_max != null && gather.amount_max > 0}
@@ -923,8 +955,8 @@
           : `${gather.amount_min}-${gather.amount_max}`,
       )}
     {/if}
-  {:else if cell.column.id === "zone_name"}
-    {@render zoneLink(gather.zone_id, gather.zone_name)}
+  {:else if cell.column.id === "zone"}
+    {@render zoneList(gather.zones)}
   {/if}
 {/snippet}
 
@@ -939,8 +971,7 @@
   {#if cell.column.id === "zone_name"}
     <a
       href={resolve("/chests/[id]", { id: chest.chest_id })}
-      class={styles.link}
-      >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
+      class={styles.link}>{chestName(chest.zone_name)}</a
     >
   {:else if cell.column.id === "rate"}
     {@render percent(chest.rate)}
@@ -1081,8 +1112,7 @@
   {#if cell.column.id === "zone_name"}
     <a
       href={resolve("/chests/[id]", { id: chest.chest_id })}
-      class={styles.link}
-      >{chest.zone_name ? `Chest in ${chest.zone_name}` : "Chest"}</a
+      class={styles.link}>{chestName(chest.zone_name)}</a
     >
   {/if}
 {/snippet}
@@ -1153,7 +1183,7 @@
   <!-- Header -->
   <div>
     <div class="flex flex-wrap items-center gap-3">
-      <h1 class="text-4xl font-bold">{data.item.name}</h1>
+      <h1 class="text-3xl font-bold">{data.item.name}</h1>
       {#if data.hasMapLocation || data.hasKnownSource}
         <MapLink entityId={data.item.id} entityType="item" />
       {/if}
@@ -1251,6 +1281,23 @@
         </Card.Content>
       </Card.Root>
     {/if}
+    <!-- Summoned pet -->
+    {#if petSpriteSrc && data.petVisualAsset}
+      <Card.Root class="bg-muted/30">
+        <Card.Header>
+          <Card.Title level={2}>Pet</Card.Title>
+        </Card.Header>
+        <Card.Content class="flex justify-center">
+          <img
+            src={petSpriteSrc}
+            alt={`Pet summoned by ${data.item.name}`}
+            width={data.petVisualAsset.width}
+            height={data.petVisualAsset.height}
+            class="h-auto w-auto max-h-40 max-w-full object-contain [image-rendering:pixelated]"
+          />
+        </Card.Content>
+      </Card.Root>
+    {/if}
     <!-- Armor Set Bonuses (shown on augment items and armor pieces) -->
     {#if data.item.augment_armor_set_name}
       <Card.Root class="bg-muted/30">
@@ -1269,9 +1316,9 @@
           <!-- Set Members -->
           {#if computed.armorSetMembers && computed.armorSetMembers.length > 0}
             <div>
-              <h4 class="text-sm font-semibold mb-2">
+              <h3 class="text-sm font-semibold mb-2">
                 Set Pieces ({computed.armorSetMembers.length})
-              </h4>
+              </h3>
               <div class="flex flex-wrap gap-x-4 gap-y-1">
                 {#each computed.armorSetMembers as member (member.item_id)}
                   <ItemLink
@@ -1290,7 +1337,7 @@
           <!-- Source: server-scripts/PlayerEquipment.cs:OnEquipmentChanged — set bonuses apply at 3 pieces (attributes) and 5 pieces (skills) -->
           {#if computed.armorSetAttributeBonuses && computed.armorSetAttributeBonuses.length > 0}
             <div>
-              <h4 class="text-sm font-semibold mb-2">Set Bonuses (3 pieces)</h4>
+              <h3 class="text-sm font-semibold mb-2">Set Bonuses (3 pieces)</h3>
               <div class="space-y-2">
                 {#each computed.armorSetAttributeBonuses as bonus (bonus.stat_id)}
                   <div
@@ -1311,7 +1358,7 @@
           <!-- Skill Bonuses (5-piece) -->
           {#if computed.armorSetSkillBonuses && computed.armorSetSkillBonuses.length > 0}
             <div>
-              <h4 class="text-sm font-semibold mb-2">Set Bonuses (5 pieces)</h4>
+              <h3 class="text-sm font-semibold mb-2">Set Bonuses (5 pieces)</h3>
               <div class="space-y-2">
                 {#each computed.armorSetSkillBonuses as bonus (bonus.skill_id)}
                   <div
@@ -1483,12 +1530,13 @@
               </div>
             {/if}
             {#if data.item.primal_essence_value}
+              <!-- Like Sell Price: what a Primal Essence trader gives for the item. -->
               <div class={styles.fact}>
-                <dt class={styles.label}>Primal Essence</dt>
+                <dt class={styles.label}>Essence Value</dt>
                 <dd>
-                  <a href="/items/primal_essence" class={styles.link}>
-                    {data.item.primal_essence_value}
-                  </a>
+                  <a href="/items/primal_essence" class={styles.link}
+                    >{data.item.primal_essence_value} Primal Essence</a
+                  >
                 </dd>
               </div>
             {/if}
@@ -1649,25 +1697,6 @@
       </Card.Content>
     </Card.Root>
   {/if}
-  <!-- Summoned pet -->
-  {#if petSpriteSrc && data.petVisualAsset}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title level={2}>Pet</Card.Title>
-      </Card.Header>
-      <Card.Content class="flex-1">
-        <div class="flex h-full min-h-32 w-full items-center justify-center">
-          <img
-            src={petSpriteSrc}
-            alt={`Pet summoned by ${data.item.name}`}
-            width={data.petVisualAsset.width}
-            height={data.petVisualAsset.height}
-            class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] max-h-40"
-          />
-        </div>
-      </Card.Content>
-    </Card.Root>
-  {/if}
   {#if specialMechanics[0]}
     <Card.Root class="bg-muted/30">
       <Card.Header>
@@ -1716,6 +1745,7 @@
                 entityId={data.treasureLocation.location_id}
                 entityType="treasure"
                 compact
+                name="the dig site"
               />
             </dd>
           </div>
@@ -1745,74 +1775,55 @@
     <!-- Source: server-scripts/Player.cs:HasRadiantAether -->
     <!-- Source: server-scripts/Combat.cs:DealDamageAt -->
     <!-- Source: server-scripts/ScriptableSkill.cs:TryActivateRadiantAetherForArea -->
-    <Card.Root class="bg-muted/30">
+    <Card.Root class="@container bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Passive Effects</Card.Title>
+        <Card.Description>
+          Works while Radiant Aether is in one of your first 24 carry slots.
+          Each activation uses one.
+        </Card.Description>
       </Card.Header>
       <Card.Content>
-        <div class="space-y-4">
-          <div>
-            <div class={styles.label}>How it works</div>
-            <div class={styles.value}>
-              <p>
-                Keep Radiant Aether in one of your first 24 carry slots. An
-                ability critical hit, a hit that would kill you, or an enemy's
-                area attack or debuff can activate it. Each activation uses one
-                Radiant Aether.
-              </p>
-              <p>
-                Ability critical hits and hits that would kill you each have a
-                15% activation chance. If an area skill targets one player
-                carrying Radiant Aether, that player has a 15% chance to cancel
-                it. If it targets two or more such players, each has the lower
-                of 10% or 25% divided by their number. The first successful
-                activation cancels the skill for every target.
-              </p>
-            </div>
-          </div>
-          <div class="space-y-2">
-            <div>
-              <div class={styles.label}>
-                When an Ability Lands a Critical Hit
-              </div>
-              <div class={styles.value}>
-                <span class={styles.valuePositive}
-                  >Raises the critical multiplier from ×1.5 to ×3</span
-                >
-                before Critical Resist
-              </div>
-              <div class="italic text-muted-foreground text-sm mt-1">
+        <dl class={styles.factList}>
+          <div class={styles.proseFact}>
+            <dt class={styles.label}>Your Ability Lands a Critical Hit</dt>
+            <dd>
+              15% chance to
+              <span class={styles.valuePositive}
+                >raise the critical multiplier from ×1.5 to ×3</span
+              >
+              before Critical Resist.
+              <p class="mt-1 text-sm italic text-muted-foreground">
                 "Radiant Aether surges - your strike rends the heavens!"
-              </div>
-            </div>
+              </p>
+            </dd>
           </div>
-          <div class="space-y-2">
-            <div>
-              <div class={styles.label}>When a Hit Would Kill You</div>
-              <div class={styles.value}>
-                <span class={styles.valuePositive}>Restores all HP</span>
-                instead of dying
-              </div>
-              <div class="italic text-muted-foreground text-sm mt-1">
+          <div class={styles.proseFact}>
+            <dt class={styles.label}>A Hit Would Kill You</dt>
+            <dd>
+              15% chance to
+              <span class={styles.valuePositive}>restore all HP</span> instead
+              of dying.
+              <p class="mt-1 text-sm italic text-muted-foreground">
                 "Radiant Aether flares within you - you rise anew!"
-              </div>
-            </div>
+              </p>
+            </dd>
           </div>
-          <div class="space-y-2">
-            <div>
-              <div class={styles.label}>When an Enemy Uses an Area Skill</div>
-              <div class={styles.value}>
-                <span class={styles.valuePositive}
-                  >Cancels the skill for all targets</span
-                >, preventing its damage or debuff
-              </div>
-              <div class="italic text-muted-foreground text-sm mt-1">
-                "Radiant Aether flares brightly - your party withstand
-                &#123;SKILL_NAME&#125;!"
-              </div>
-            </div>
+          <div class={styles.proseFact}>
+            <dt class={styles.label}>An Enemy Area Skill Targets You</dt>
+            <dd>
+              <span class={styles.valuePositive}
+                >Cancels the skill for every target</span
+              >. A lone carrier has a 15% chance. With two or more carriers
+              targeted, each has the lower of 10% or 25% divided by their
+              number.
+              <p class="mt-1 text-sm italic text-muted-foreground">
+                "Radiant Aether flares brightly - your party withstand [skill
+                name]!"
+              </p>
+            </dd>
           </div>
-        </div>
+        </dl>
       </Card.Content>
     </Card.Root>
   {/if}
@@ -2078,7 +2089,8 @@
   {#if computed.droppedBy.length > 0}
     <RelationTable
       title="Dropped by"
-      mapTarget={(drop) => mapTarget("monster")(drop.monster_id)}
+      mapTarget={(drop) =>
+        mapTarget("monster")(drop.monster_id, drop.monster_name)}
       rows={computed.droppedBy}
       columns={dropColumns}
       cell={renderDropCell}
@@ -2091,7 +2103,8 @@
   {#if computed.rewardedByAltars.length > 0}
     <RelationTable
       title="Dropped by Altar Boss"
-      mapTarget={(altar) => mapTarget("altar")(altar.altar_id)}
+      mapTarget={(altar) =>
+        mapTarget("altar")(altar.altar_id, altar.altar_name)}
       rows={computed.rewardedByAltars}
       columns={altarDropColumns}
       cell={renderAltarDropCell}
@@ -2104,7 +2117,7 @@
   {#if computed.soldBy.length > 0}
     <RelationTable
       title="Sold by"
-      mapTarget={(vendor) => mapTarget("npc")(vendor.npc_id)}
+      mapTarget={(vendor) => mapTarget("npc")(vendor.npc_id, vendor.npc_name)}
       rows={computed.soldBy}
       columns={vendorColumns}
       cell={renderVendorCell}
@@ -2163,7 +2176,8 @@
   {#if computed.rewardedBy.length > 0}
     <RelationTable
       title="Rewarded by Quests"
-      mapTarget={(quest) => mapTarget("quest")(quest.quest_id)}
+      mapTarget={(quest) =>
+        mapTarget("quest")(quest.quest_id, quest.quest_name)}
       rows={computed.rewardedBy as QuestRow[]}
       columns={questColumns(computed.rewardedBy as QuestRow[], false)}
       cell={renderQuestCell}
@@ -2176,7 +2190,8 @@
   {#if computed.providedByQuests.length > 0}
     <RelationTable
       title="Provided by Quests"
-      mapTarget={(quest) => mapTarget("quest")(quest.quest_id)}
+      mapTarget={(quest) =>
+        mapTarget("quest")(quest.quest_id, quest.quest_name)}
       rows={computed.providedByQuests as QuestRow[]}
       columns={questColumns(computed.providedByQuests as QuestRow[], false)}
       cell={renderQuestCell}
@@ -2354,7 +2369,13 @@
   {#if computed.gatheredFrom.length > 0}
     <RelationTable
       title="Gathered from"
-      mapTarget={(gather) => mapTarget("resource")(gather.gather_item_id)}
+      mapTarget={(gather) =>
+        mapTarget("resource")(
+          gather.gather_item_id,
+          gather.zones.length === 1
+            ? `${gather.gather_item_name} in ${gather.zones[0].zone_name}`
+            : gather.gather_item_name,
+        )}
       rows={computed.gatheredFrom}
       columns={gatherColumns}
       cell={renderGatherCell}
@@ -2370,7 +2391,8 @@
   {#if computed.foundInChests.length > 0}
     <RelationTable
       title="Found in Chests"
-      mapTarget={(chest) => mapTarget("chest")(chest.chest_id)}
+      mapTarget={(chest) =>
+        mapTarget("chest")(chest.chest_id, chestName(chest.zone_name))}
       rows={computed.foundInChests}
       columns={chestColumns}
       cell={renderChestCell}
@@ -2454,7 +2476,8 @@
   {#if computed.neededForQuests.length > 0}
     <RelationTable
       title="Required for Quests"
-      mapTarget={(quest) => mapTarget("quest")(quest.quest_id)}
+      mapTarget={(quest) =>
+        mapTarget("quest")(quest.quest_id, quest.quest_name)}
       rows={computed.neededForQuests as QuestRow[]}
       columns={questColumns(computed.neededForQuests as QuestRow[], true)}
       cell={renderQuestCell}
@@ -2543,7 +2566,8 @@
   {#if computed.requiredForAltars.length > 0}
     <RelationTable
       title="Required to Activate Altars"
-      mapTarget={(altar) => mapTarget("altar")(altar.altar_id)}
+      mapTarget={(altar) =>
+        mapTarget("altar")(altar.altar_id, altar.altar_name)}
       rows={computed.requiredForAltars}
       columns={altarUseColumns}
       cell={renderAltarUseCell}
@@ -2554,7 +2578,11 @@
   {#if computed.requiredForPortals.length > 0}
     <RelationTable
       title="Required for Portals"
-      mapTarget={(portal) => mapTarget("portal")(portal.portal_id)}
+      mapTarget={(portal) =>
+        mapTarget("portal")(
+          portal.portal_id,
+          `Portal in ${portal.from_zone_name}`,
+        )}
       rows={computed.requiredForPortals}
       columns={portalColumns}
       cell={renderPortalCell}
@@ -2565,7 +2593,8 @@
   {#if computed.opensChests.length > 0}
     <RelationTable
       title="Opens Chests"
-      mapTarget={(chest) => mapTarget("chest")(chest.chest_id)}
+      mapTarget={(chest) =>
+        mapTarget("chest")(chest.chest_id, chestName(chest.zone_name))}
       rows={computed.opensChests}
       columns={opensChestColumns}
       cell={renderOpensChestCell}
