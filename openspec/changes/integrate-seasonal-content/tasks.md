@@ -29,24 +29,24 @@
 
 ## 6. Server consumers
 
-- [ ] 6.1 Make `item-sources.ts`, `item-usages.ts`, `item-source-summary.ts` and `obtainability.ts` read seasons from the projection, carrying seasons on drop, quest and pack rows. Delete every `season === "none"` filter. Verify existing tests pass and new tests cover a seasonal drop row and a seasonal quest row.
-- [ ] 6.2 Add season clauses to item, monster, NPC, quest and skill meta descriptions in `meta-description.ts`, stating the season and the amount and price where relevant. Verify description tests for Festive Cookie, Spook Token, Pumpkin Head, Santa Claus and Keeping the Winter Peace.
+- [x] 6.1 Make `item-sources.ts`, `item-usages.ts`, `item-source-summary.ts` and `obtainability.ts` read seasons from the projection, carrying seasons on drop, quest and pack rows. Delete every `season === "none"` filter. Verify existing tests pass and new tests cover a seasonal drop row and a seasonal quest row.
+- [x] 6.2 Add season clauses to item, monster, NPC, quest and skill meta descriptions in `meta-description.ts`, stating the season and the amount and price where relevant. Verify description tests for Festive Cookie, Spook Token, Pumpkin Head, Santa Claus and Keeping the Winter Peace.
 - [x] 6.3 Replace the raw SQL in `website/src/lib/queries/seasonal-events.server.ts` with the shared reader and update the `seasonal-events` case in `website/scripts/build-sitemap-manifest.mjs` and `page-fingerprint-fields.mjs` for the new columns. Verify the sitemap manifest builds.
 
 ## 7. Season label and detail pages
 
 - [x] 7.1 Add a `SeasonLabel` component that owns each season's icon and tone and reads name and link from `SEASONS`, and replace the existing monster and NPC badges with it. The season module stays free of components because Node scripts import it through the acquisition model. Verify both pages in light and dark mode.
-- [ ] 7.2 Item page: label Dropped by, Rewarded by Quests and Found in Packs rows with their seasons, and keep the Seasonal Shop card at 14 px or more. Verify `/items/pumpkin_costume`, `/items/winter_festival_coin`, `/items/pack_10_skyflares` and `/items/haunted_chews` in light and dark mode at desktop and phone widths.
-- [ ] 7.3 Monster and NPC pages: one sentence under the header stating the season, and seasons in the spawn table's Active column. NPC pages: a "Seasonal stock" card per season on repair merchants, with the season in the dedupe key, and the quests completed at the NPC. Verify `/monsters/witch`, `/npcs/santa_claus`, `/npcs/grimnir_stonehammer` and one other repair merchant in the browser.
-- [ ] 7.4 Quest pages: season label, a timing box saying the quest can be accepted only during the Winter Festival and repeated 8 hours after completion, and a labeled Santa in the NPCs section. Verify the three Santa quests in the browser.
-- [ ] 7.5 Skill pages for the season buffs: a "Granted to" section saying every online player has the buff during the season, no rank or learning link, and no one-hour duration. Reconcile the Double XP scope in `formatSkillEffect.ts` with the game's `hasDoubleExp` call sites, checking cooking and scribing in the code. Verify both skill pages.
-- [ ] 7.6 Zone pages: season labels in monster and NPC tables, and a "Seasonal events" section beside "Regional events". Verify `/zones/the_lone-lands` shows median 19 and lists Pumpkin Head and Witch in the seasonal section, and `/zones/everfrost` lists Santa Claus and both Halloween monsters.
+- [x] 7.2 Item page: label Dropped by, Rewarded by Quests and Found in Packs rows with their seasons, and keep the Seasonal Shop card at 14 px or more. Verify `/items/pumpkin_costume`, `/items/winter_festival_coin`, `/items/pack_10_skyflares` and `/items/haunted_chews` in light and dark mode at desktop and phone widths.
+- [x] 7.3 Monster and NPC pages: one sentence under the header stating the season, and seasons in the spawn table's Active column. NPC pages: seasonal stock on repair merchants in the sale table with a Season column, with the season in the dedupe key, and the quests completed at the NPC. Verify `/monsters/witch`, `/npcs/santa_claus`, `/npcs/grimnir_stonehammer` and one other repair merchant in the browser.
+- [x] 7.4 Quest pages: season label, a timing box saying the quest can be accepted only during the Winter Festival and repeated 8 hours after completion, and a labeled Santa in the NPCs section. Verify the three Santa quests in the browser.
+- [x] 7.5 Skill pages for the season buffs: a "Granted to" section saying every online player has the buff during the season, no rank or learning link, and no one-hour duration. Reconcile the Double XP scope in `formatSkillEffect.ts` with the game's `hasDoubleExp` call sites, checking cooking and scribing in the code. Verify both skill pages.
+- [x] 7.6 Zone pages: season labels in monster and NPC tables, and a "Seasonal Events" section beside "Regional Events" in the same form. Verify `/zones/the_lone-lands` shows median 19 and lists Pumpkin Head and Witch in the seasonal section, and `/zones/everfrost` lists Santa Claus and both Halloween monsters.
 
 ## 8. Map
 
-- [ ] 8.1 Delete `mapMethodIsVisible` and its call sites in `website/src/lib/map/acquisition.ts` and `website/src/lib/queries/popup.ts`. Add `season` to `MonsterMapEntity` and `NpcMapEntity` in `map.server.ts`. Verify `popup.db.test.ts` with new cases for Festive Cookie and a repair merchant.
-- [ ] 8.2 Item popup: "Seasonal shop" list per season with price and merchants, "Opened from" list for packs, and season labels on dropped-by and quest-reward rows. Verify `/map?entity=festive_cookie&etype=item`, `spook_token` and `winter_festival_coin` in the browser, including focus.
-- [ ] 8.3 Monster and NPC popups and tooltips: a seasonal callout before the spawn-window callout and one tooltip line. Repair-merchant popups: seasonal stock per season with item-currency prices. Verify Pumpkin Head, Santa Claus and Adventurer Argosh in the browser in light and dark mode.
+- [x] 8.1 Delete `mapMethodIsVisible` and its call sites in `website/src/lib/map/acquisition.ts` and `website/src/lib/queries/popup.ts`. Add `season` to `MonsterMapEntity` and `NpcMapEntity` in `map.server.ts`. Verify `popup.db.test.ts` with new cases for Festive Cookie and a repair merchant.
+- [x] 8.2 Item popup: "Seasonal shop" list per season with price and merchants, "Opened from" list for packs, and season labels on dropped-by and quest-reward rows. Verify `/map?entity=festive_cookie&etype=item`, `spook_token` and `winter_festival_coin` in the browser, including focus.
+- [x] 8.3 Monster, NPC and quest popups and tooltips: a seasonal callout before the spawn-window callout and one tooltip line. Repair-merchant popups: seasonal stock per season with item-currency prices. Verify Pumpkin Head, Santa Claus and Adventurer Argosh in the browser in light and dark mode.
 
 ## 9. Lists and search
 
