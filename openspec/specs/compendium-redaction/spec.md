@@ -8,10 +8,12 @@ Governs how configured redactions keep private or unreleased game content out of
 
 The pipeline SHALL provide two separately configured zone mechanisms, and a zone SHALL be subject only to the mechanisms that name it.
 
-- **Position suppression** applies to a released zone whose positions the developers asked the compendium not to publish. It preserves every entity and removes geometry.
-- **Unreleased-zone exclusion** applies to a zone that has not shipped. It removes everything related to the zone.
+#### Scenario: Mechanisms are separately configured
+- WHEN a zone is named by only one redaction mechanism
+- THEN only that mechanism applies to it
 
-Each mechanism SHALL accept an arbitrary set of zone identifiers from configuration. Neither mechanism SHALL hardcode a zone identifier.
+### Requirement: Zone redaction mechanisms preserve their distinct effects
+Position suppression SHALL preserve every entity and remove geometry for a released zone whose positions the developers asked the compendium not to publish. Unreleased-zone exclusion SHALL remove everything related to a zone that has not shipped.
 
 #### Scenario: A released zone without a map
 
@@ -30,6 +32,9 @@ Each mechanism SHALL accept an arbitrary set of zone identifiers from configurat
 - **THEN** the released zone keeps its entities
 - **AND** the unreleased zone's removal does not depend on the other zone's configuration
 
+### Requirement: Zone redaction accepts configured identifier sets
+Each mechanism SHALL accept an arbitrary set of zone identifiers from configuration. Neither mechanism SHALL hardcode a zone identifier.
+
 #### Scenario: Adding a zone
 
 - **WHEN** a zone identifier is added to either mechanism's configuration
@@ -40,8 +45,6 @@ Each mechanism SHALL accept an arbitrary set of zone identifiers from configurat
 Both mechanisms SHALL determine the columns they act on by inspecting the database schema rather than from a maintained list of tables. Discovery SHALL cover direct zone references and sub-zone references, and SHALL resolve a sub-zone reference to its parent zone.
 
 Discovery SHALL also cover zone identifiers embedded in JSON values, in both the numeric and the string zone-identifier spaces.
-
-Rationale: a maintained table list silently omits entity types added later. The list it replaced covered eleven of the twenty tables that carry a zone reference.
 
 #### Scenario: A new entity type is added
 
@@ -63,21 +66,31 @@ Rationale: a maintained table list silently omits entity types added later. The 
 
 Every reference the build acts on SHALL carry one declaration stating the direction in which it carries reachability and which geometry it governs. The direction SHALL be one of three: the row makes the entities it names reachable, the entities it names make the row reachable, or neither. Every pass SHALL read that one declaration rather than keeping its own list, so that no two passes can disagree about the same column.
 
-A reference that a row uses to name a destination SHALL NOT make that destination reachable. Otherwise a boundary into redacted content makes the redacted content reachable through the boundary itself.
-
-A declaration SHALL state the direction the data means. A row that lists the members it is composed of does not provide them, because the members provide the row.
-
-Rationale: reachability, deletion, and geometry were each derived separately from the same references. Three lists over one set of columns is three chances to classify a column three ways. Recording only whether a reference carries reachability, without its direction, forced a composed row to be declared as the source of its own parts, so removing every part left the row published with a blank member list.
-
+#### Scenario: Declared reachability direction
+- WHEN a reference is declared
+- THEN it states whether the row makes the named entities reachable, the named entities make the row reachable, or neither
 #### Scenario: A pass needs a reference's meaning
 
 - **WHEN** any pass decides what to do with a reference
 - **THEN** it uses the single declaration for that reference
 
+
+### Requirement: Destination references do not confer reachability
+
+A reference that a row uses to name a destination SHALL NOT make that destination reachable. Otherwise a boundary into redacted content makes the redacted content reachable through the boundary itself.
+
+#### Scenario: Destination does not become a source
+- WHEN a boundary names a redacted destination
+- THEN the destination does not become reachable through the boundary
 #### Scenario: A reference into redacted content
 
 - **WHEN** a published row names a redacted zone as a destination
 - **THEN** the redacted zone is not reachable through that row
+
+
+### Requirement: Reference declarations follow data direction
+
+A declaration SHALL state the direction the data means. A row that lists the members it is composed of does not provide them, because the members provide the row.
 
 #### Scenario: A row composed of the rows it names
 
@@ -126,10 +139,6 @@ Prose that merely names a zone is not a reference. Content SHALL NOT be removed 
 
 An entity SHALL be removed when every source, spawn, or user that made it reachable has itself been removed, however many references separate it from the excluded content.
 
-Following one step is not sufficient: removing spawns orphans monsters, removing monsters orphans items and skills, and removing those orphans further records.
-
-An entity that was reachable from nothing before the redaction SHALL NOT be removed by it. Unconnected content is not evidence of unreleased content, and the published compendium contains such content deliberately.
-
 #### Scenario: Removal beyond the first step
 
 - **WHEN** excluding a zone removes the only spawns of a monster
@@ -142,6 +151,9 @@ An entity that was reachable from nothing before the redaction SHALL NOT be remo
 - **THEN** it stays published
 - **AND** only the references to removed content are gone from it
 
+### Requirement: Previously unconnected entities survive redaction
+An entity that was reachable from nothing before the redaction SHALL NOT be removed by it. Unconnected content is not evidence of unreleased content, and the published compendium contains such content deliberately.
+
 #### Scenario: Unreachable content is untouched
 
 - **WHEN** an entity was reachable from no released content before the redaction
@@ -151,8 +163,6 @@ An entity that was reachable from nothing before the redaction SHALL NOT be remo
 ### Requirement: Reachability considers every reference kind
 
 Deciding whether an entity is still reachable SHALL consider every kind of reference the data supports, including references embedded in JSON values, and SHALL NOT rely on one relationship alone.
-
-Rationale: a skill can be reachable through a monster, a weapon proc, a scroll, a relic, a potion or food buff, a pet, or a class list. Judging skills by monster use alone would remove a skill that is a live weapon's proc. A monster can be reachable through a summon rather than a spawn, and two monsters in the current data have no spawn record at all.
 
 #### Scenario: Reachable through a non-obvious relationship
 
@@ -181,8 +191,6 @@ Rationale: a skill can be reachable through a monster, a weapon proc, a scroll, 
 An entity whose only reachability comes from the entities it aggregates SHALL be removed when none of those members survives, and SHALL be recorded as following them. It SHALL remain published while any member remains.
 
 An armour set bonus is such an entity. A player reaches it by wearing its member pieces, so a set whose every piece is removed is unobtainable and describes content no player can see.
-
-Rationale: naming each aggregate in the configuration records a fact rather than a rule, and a patch can change the fact. Version 0.9.31.0 gave two unreleased sets their own bonus entities, and the configuration had recorded that those two bonuses belonged to released sets. Both were published, with their set name, item level, attribute bonuses and skill bonuses.
 
 #### Scenario: Every member is removed
 
@@ -265,10 +273,6 @@ Rationale: unreleased content can exist with no reference edge at all. `old_valo
 
 Every configured way to remove an entity SHALL use the same removal machinery. A mechanism SHALL NOT delete published rows through a path of its own, because such a path follows only the references its author remembered, records no provenance, and is invisible to the verification.
 
-A mechanism that keeps an entity and removes part of its data SHALL report what it cleared, so that the ledger covers it as well.
-
-Rationale: two configured mechanisms deleted rows outside the closure. Two quests were absent from the published database and absent from the ledger, so the record of what redaction removed was incomplete while claiming to be complete. Both were correct only because a later denormalizer rebuilt the derived columns that would otherwise hold a dangling reference.
-
 #### Scenario: An entity is named for removal in configuration
 
 - **WHEN** configuration names an entity of any kind for removal
@@ -291,6 +295,9 @@ Rationale: two configured mechanisms deleted rows outside the closure. Two quest
 - **THEN** the build fails
 - **AND** it publishes nothing
 
+### Requirement: Partial redactions report cleared data
+A mechanism that keeps an entity and removes part of its data SHALL report what it cleared, so that the ledger covers it as well.
+
 #### Scenario: A mechanism removes no entity
 
 - **WHEN** a mechanism keeps its entities and removes part of their data
@@ -301,24 +308,22 @@ Rationale: two configured mechanisms deleted rows outside the closure. Two quest
 
 The build SHALL record every redaction decision in a version-controlled ledger. Each removed entity's record SHALL state the mechanism that removed it, the reason, and the already-removed entities the decision followed.
 
-Each record SHALL be identified by something that survives a game build. For a positioned placement, the ledger SHALL use the descriptive identifier prefix followed by `@x,y`, with coordinates rounded using the ledger's existing rounding. The exported identifier's signed whole-unit `_{x}_{y}` suffix SHALL be removed before forming that key. Where a row has no position or is not a placement, the record SHALL keep its identifier.
-
-The ledger SHALL retain its existing identity and rounding independently of the published placement-ID format. The ledger and the published data may identify the same row differently.
-
-A verification step SHALL compare the recorded decisions against those the current data produces and SHALL fail when they differ. Updating the ledger SHALL be a deliberate step, never a side effect of building.
-
-Rationale: the invariant check proves nothing excluded survived. The ledger proves nothing was excluded by accident. A change in what is redacted then arrives as a reviewable diff rather than as content silently disappearing. Identifying a placement by the runtime object it came from defeated that: one added spawn renumbered ninety-eight others, and a reviewer who accepts hundreds of opaque changes will accept a real one with them. A position is what the placement is.
-
 #### Scenario: An entity is removed
 
 - **WHEN** redaction removes an entity
 - **THEN** the ledger records its mechanism, its reason, and the removals it followed
+
+### Requirement: Redaction ledger identities survive game builds
+Each record SHALL be identified by something that survives a game build. For a positioned placement, the ledger SHALL use the descriptive identifier prefix followed by `@x,y`, with coordinates rounded using the ledger's existing rounding. The exported identifier's signed whole-unit `_{x}_{y}` suffix SHALL be removed before forming that key. Where a row has no position or is not a placement, the record SHALL keep its identifier.
 
 #### Scenario: A placement is recorded
 
 - **WHEN** a removed placement has a position and a published `prefix_{x}_{y}` identifier
 - **THEN** the ledger identifies it as `prefix@x,y` using its existing coordinate rounding
 - **AND** the record still names the entity the placement puts in the world
+
+### Requirement: Ledger identity stays independent of placement identifiers
+The ledger SHALL retain its existing identity and rounding independently of the published placement-ID format. The ledger and the published data may identify the same row differently.
 
 #### Scenario: A patch renumbers placements
 
@@ -330,6 +335,9 @@ Rationale: the invariant check proves nothing excluded survived. The ledger prov
 - **WHEN** a removed placement is added, moved beyond the recorded precision, or taken away
 - **THEN** the ledger changes for that placement
 - **AND** for any entry whose recorded chain names it, because the chain names the identity the placement is recorded under
+
+### Requirement: Ledger verification detects changed decisions
+A verification step SHALL compare the recorded decisions against those the current data produces and SHALL fail when they differ. Updating the ledger SHALL be a deliberate step, never a side effect of building.
 
 #### Scenario: The excluded set changes
 
@@ -351,8 +359,6 @@ Rationale: the invariant check proves nothing excluded survived. The ledger prov
 
 After redaction and the cascade complete, the build SHALL verify that no published content references redacted content, and SHALL fail when it finds one. The verification SHALL cover values of any shape, including text and JSON, so that an undeclared reference form is still caught.
 
-The identifiers the verification scans for SHALL be the removals the current data produces, in the form the published data carries them. It SHALL NOT take them from the recorded ledger, because a ledger that has not been synced names the previous removals and the verification would report a clean result for content it never checked.
-
 #### Scenario: Surviving reference
 
 - **WHEN** a published value still holds an excluded zone or removed entity identifier
@@ -368,6 +374,9 @@ The identifiers the verification scans for SHALL be the removals the current dat
 - **WHEN** a schema change introduces a reference form the discovery step does not know
 - **AND** a published value holds a redacted identifier in that form
 - **THEN** the build fails rather than publishing it
+
+### Requirement: Redaction verification scans current removals
+The identifiers the verification scans for SHALL be the removals the current data produces, in the form the published data carries them. It SHALL NOT take them from the recorded ledger, because a ledger that has not been synced names the previous removals and the verification would report a clean result for content it never checked.
 
 #### Scenario: The ledger has not been synced
 

@@ -2,7 +2,14 @@
 
 ### Requirement: Each item and monster has a distinct share card
 
-Every published item and monster detail page SHALL reference a valid 1200 × 630 PNG card. Each card SHALL show the entity name and accurate family context. Item cards SHALL state the verified item type and quality. Monster cards SHALL state a verified level or level range and classification only when supported by the data. Available source artwork SHALL appear on the corresponding card. Open Graph and Twitter metadata SHALL use the same absolute public image URL and accurate descriptive alt text.
+Every published item and monster detail page SHALL reference a valid 1200 × 630 PNG card. Each card SHALL show the entity name and accurate family context. Item cards SHALL state the verified item type and quality. Monster cards SHALL state a verified level or level range and classification only when supported by the data.
+
+#### Scenario: Verified monster identity
+- WHEN a monster's card is generated
+- THEN it shows its name, family context and only data-supported level and classification
+
+### Requirement: Share card artwork uses the corresponding entity
+Available source artwork SHALL appear on the corresponding card.
 
 #### Scenario: A monster has primary art
 
@@ -13,6 +20,13 @@ Every published item and monster detail page SHALL reference a valid 1200 × 630
 
 - **WHEN** an otherwise valid item has no source artwork
 - **THEN** its share card remains legible using text and a motif, not a broken image URL
+
+### Requirement: Social metadata agrees on card identity
+Open Graph and Twitter metadata SHALL use the same absolute public image URL and accurate descriptive alt text.
+
+#### Scenario: Shared social image
+- WHEN a detail page emits social metadata
+- THEN its Open Graph and Twitter image URLs agree and its alt text describes the card accurately
 
 ### Requirement: Share cards are safe and deterministic
 

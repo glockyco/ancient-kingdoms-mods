@@ -54,12 +54,19 @@ Profession calculators SHALL show no further skill gain at the profession's mast
 
 ### Requirement: Fishing source chances use the same rolls on each surface
 
-Item sources and fishing spot outcomes SHALL compute per-cast fish chances from the configured fish probability, uniform fish selection, bite chance, skill and costume bonuses, and applicable lower-tier fallback pools. A displayed range SHALL give the chance with the required rod at minimum usable skill and no costume pieces first, and the chance with the best rod at 100% Fishing and three Fisherman costume pieces second, and SHALL say so briefly in player terms. The range SHALL NOT be described as extrema over every possible loadout.
+Item sources and fishing spot outcomes SHALL compute per-cast fish chances from the configured fish probability, uniform fish selection, bite chance, skill and costume bonuses, and applicable lower-tier fallback pools.
 
 #### Scenario: Player compares a fish source with its spot
 
 - **WHEN** the player views the same fish and fishing spot on an item page and the map
 - **THEN** the per-cast chances match and a bite is not described as a guaranteed fish
+
+### Requirement: Fishing ranges describe their loadouts
+A displayed range SHALL give the chance with the required rod at minimum usable skill and no costume pieces first, and the chance with the best rod at 100% Fishing and three Fisherman costume pieces second, and SHALL say so briefly in player terms. The range SHALL NOT be described as extrema over every possible loadout.
+
+#### Scenario: Fishing chance range
+- WHEN a fishing chance range is displayed
+- THEN its endpoints name the required-rod minimum-skill no-costume loadout and the best-rod 100% Fishing three-piece loadout without claiming global extrema
 
 ### Requirement: No unverified combat simulator is published
 

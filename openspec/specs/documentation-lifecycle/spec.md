@@ -65,25 +65,13 @@ Once planned work has shipped, its implementation and tests become the behavior 
 legacy plan SHALL be deleted. A completed OpenSpec change MAY remain in the OpenSpec archive under
 the historical-record exemption, but SHALL NOT remain an active change.
 
-Before deleting, any rationale the implementation cannot express SHALL be relocated to where the
-decision lives. Four kinds qualify:
-
-- a rejected alternative and the reason it was rejected;
-- a constraint imposed from outside the repository, such as the shape of exported game data;
-- a measured result that justified a threshold or constant;
-- an explanation of why something is deliberately absent.
-
-Everything else — step lists, checklists, progress logs, and restatements of shipped behaviour —
-SHALL be deleted without relocation.
-
-Rationale: an absence is invisible in code. A reader can see that a constant is 1, but not that 1
-was chosen over the default after measuring 331 ms against 28 ms; and a reader can see that a
-column has no foreign key, but not that the exported data makes one impossible.
-
 #### Scenario: A plan's work shipped and the code is self-describing
 
 - **WHEN** the implementation, its tests, and its source citations already carry every decision
 - **THEN** the plan is deleted with nothing relocated
+
+### Requirement: Unexpressed rationale moves before plan deletion
+Before deleting, any rationale the implementation cannot express SHALL be relocated to where the decision lives. Four kinds qualify: a rejected alternative and why it was rejected, an outside constraint such as the shape of exported game data, a measured result justifying a threshold or constant, or an explanation of a deliberate absence.
 
 #### Scenario: A plan records a measurement behind a constant
 
@@ -96,6 +84,13 @@ column has no foreign key, but not that the exported data makes one impossible.
 - **WHEN** a plan records why a standard field, join, or integration was left out
 - **THEN** that reason moves beside the code that omits it
 - **AND** the plan is then deleted
+
+### Requirement: Shipped plan details are deleted without relocation
+Step lists, checklists, progress logs, and restatements of shipped behaviour SHALL be deleted without relocation.
+
+#### Scenario: A completed checklist
+- WHEN a shipped plan contains only implementation steps and progress
+- THEN those details are deleted without relocation
 
 ### Requirement: A superseded document is removed, not retained alongside its successor
 

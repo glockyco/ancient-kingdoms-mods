@@ -110,17 +110,34 @@ A worked example SHALL state its inputs and computed outcome using published dat
 
 ### Requirement: Readers can rerun an example with their own numbers
 
-A calculation whose result depends on the reader's character or choices SHALL offer editable inputs that rerun the same computation as the reader types. Each input SHALL be a value the reader can read in the game, such as the Attack Power the character window shows. Inputs that describe the reader's character SHALL persist in the browser across pages and update every calculation on the page until the reader resets them. Without scripts, the static example SHALL remain. A calculator SHALL cover the reader's side only and SHALL NOT model a target's defenses.
+A calculation whose result depends on the reader's character or choices SHALL offer editable inputs that rerun the same computation as the reader types. Each input SHALL be a value the reader can read in the game, such as the Attack Power the character window shows.
+
+#### Scenario: Editing an input
+- WHEN a reader changes the Attack Power input
+- THEN the example reruns its computation with that value
+
+### Requirement: Character inputs persist across calculations
+Inputs that describe the reader's character SHALL persist in the browser across pages and update every calculation on the page until the reader resets them.
 
 #### Scenario: A reader enters their maximum Health
 
 - **WHEN** a reader enters their maximum Health in one skill's example
 - **THEN** every other example on the site that uses maximum Health uses that value until the reader resets it
 
+### Requirement: Static examples remain without scripts
+Without scripts, the static example SHALL remain.
+
 #### Scenario: Scripts are disabled
 
 - **WHEN** a page renders without scripts
 - **THEN** the worked example is shown with its default inputs and no inputs are offered
+
+### Requirement: Calculators cover only the reader
+A calculator SHALL cover the reader's side only and SHALL NOT model a target's defenses.
+
+#### Scenario: Character calculation scope
+- WHEN a calculator offers character inputs
+- THEN it does not model a target's defenses
 
 ### Requirement: A general rule is stated once
 

@@ -94,7 +94,14 @@ Titles, search results and descriptions SHALL identify their subject using verif
 
 ### Requirement: Copy leads with the player's outcome
 
-Copy SHALL open with what the player gets, does or must avoid, in the game's vocabulary and with exact numbers. It SHALL state a derived number only when the player lacks an input to compute it, such as real minutes per game-time window, and SHALL NOT spell out arithmetic a player does at a glance, such as kills per token from a drop chance. It SHALL NOT open with a generic description of the game, restate a heading or the table beside it, decorate facts with flavour verbs, or explain an internal mechanism unless that mechanism changes what the player can do.
+Copy SHALL open with what the player gets, does or must avoid, in the game's vocabulary and with exact numbers.
+
+#### Scenario: Player outcome
+- WHEN copy introduces a player action
+- THEN it opens with what the player gets, does or must avoid
+
+### Requirement: Copy omits redundant and internal explanation
+Copy SHALL NOT open with a generic description of the game, restate a heading or the table beside it, decorate facts with flavour verbs, or explain an internal mechanism unless that mechanism changes what the player can do.
 
 #### Scenario: A section introduces a table
 
@@ -107,6 +114,9 @@ Copy SHALL open with what the player gets, does or must avoid, in the game's voc
 - **WHEN** the page says when an event starts or ends
 - **THEN** it gives the time in the reader's time zone
 - **AND** it does not explain UTC date handling or the server's hourly date check
+
+### Requirement: Derived numbers answer missing player inputs
+Copy SHALL state a derived number only when the player lacks an input to compute it, such as real minutes per game-time window, and SHALL NOT spell out arithmetic a player does at a glance, such as kills per token from a drop chance.
 
 #### Scenario: A chance is simple arithmetic
 
@@ -121,7 +131,7 @@ Copy SHALL open with what the player gets, does or must avoid, in the game's voc
 
 ### Requirement: Headings and sentences state facts plainly
 
-A heading SHALL name its content in the terms the site already uses for it. Copy SHALL state facts in the third person or as conditions, and SHALL NOT address the reader with slogans, advice or marketing imperatives. A label SHALL say what a value is, so no footnote has to explain a column. Copy SHALL use the words players and the game use for an action or effect, such as using an item, looting a corpse or a buff that does not stack, and SHALL NOT use literary verbs or internal terms where a plain word exists.
+A heading SHALL name its content in the terms the site already uses for it.
 
 #### Scenario: A card holds a spawn table
 
@@ -129,11 +139,24 @@ A heading SHALL name its content in the terms the site already uses for it. Copy
 - **THEN** its heading is "Spawns", as on monster pages
 - **AND** it is not a question or a call to action such as "Where to hunt"
 
+### Requirement: Sentences state facts without addressing the reader
+Copy SHALL state facts in the third person or as conditions, and SHALL NOT address the reader with slogans, advice or marketing imperatives.
+
 #### Scenario: A summary describes a currency
 
 - **WHEN** a page says what a seasonal currency is for
 - **THEN** it says what the currency buys and during which events
 - **AND** it does not use a vague verb such as "works" or an imperative such as "Spend tokens on treats"
+
+### Requirement: Labels identify their values
+A label SHALL say what a value is, so no footnote has to explain a column.
+
+#### Scenario: Table column label
+- WHEN a table column displays a value
+- THEN its label identifies the value without an explanatory footnote
+
+### Requirement: Action wording follows the game and players
+Copy SHALL use the words players and the game use for an action or effect, such as using an item, looting a corpse or a buff that does not stack, and SHALL NOT use literary verbs or internal terms where a plain word exists.
 
 #### Scenario: A potion's restriction
 

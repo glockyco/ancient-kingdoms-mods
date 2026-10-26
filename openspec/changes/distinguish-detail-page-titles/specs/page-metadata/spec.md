@@ -35,12 +35,22 @@ Titles SHALL use verified family labels and relevant, available context for item
 
 ### Requirement: Titles limit avoidable length without hiding identity
 
-The title SHALL put the useful entity name first where possible and prefer a concise descriptor. It SHOULD remain at most 60 characters and SHALL not exceed 70 when a shorter truthful unique form exists. When verified context cannot remove a collision, it SHALL use a stable, canonical entity identity as a last resort. It SHALL not truncate an entity name, invent a numeric level, or omit the brand merely to meet the budget. A title may exceed 70 characters if all shorter truthful, unique forms would lose required identity.
+The title SHALL put the useful entity name first where possible and prefer a concise descriptor. It SHOULD remain at most 60 characters and SHALL not exceed 70 when a shorter truthful unique form exists.
+
+#### Scenario: Concise truthful title
+- WHEN a shorter truthful unique title fits within 70 characters
+- THEN the title does not exceed 70 characters and prefers the useful entity name first
+
+### Requirement: Unresolved title collisions use stable identities
+When verified context cannot remove a collision, the title SHALL use a stable, canonical entity identity as a last resort.
 
 #### Scenario: Context does not distinguish two placements
 
 - **WHEN** two placements share a name, zone, and usable descriptive fields
 - **THEN** a stable placement identifier makes their titles different
+
+### Requirement: Title budgets preserve required identity
+A title SHALL NOT truncate an entity name, invent a numeric level, or omit the brand merely to meet the budget. A title may exceed 70 characters if all shorter truthful, unique forms would lose required identity.
 
 #### Scenario: An entity name is unusually long
 

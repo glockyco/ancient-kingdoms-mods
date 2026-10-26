@@ -122,13 +122,16 @@ The page of a season's Double XP buff SHALL state that every online player has t
 
 ### Requirement: The Seasonal Events page answers player questions
 
-The Seasonal Events page SHALL state, from the shared data: each season's dates, before any other content, and in the reader's browser whether it is running and when it starts or ends in the reader's time zone; what Double XP covers and that it does not stack; what earns each seasonal currency and what it buys; where seasonal monsters spawn by zone with level ranges, spawn hours in game and real time, and the chance of each seasonal drop, including costume pieces; where the seasonal NPC stands and each quest's objective, recommended level, rewards and repeat interval; and every seasonal shop item with its effect and its price, naming the currency. Places a player must go, the seasonal monsters' spawns, the seasonal NPC, each seasonal quest and the repair merchants, SHALL link to the map. A fact shared by both seasons SHALL appear once, in a section whose heading says it applies to both.
+The Seasonal Events page SHALL state each season's dates from shared data before any other content, and in the reader's browser whether it is running and when it starts or ends in the reader's time zone.
 
 #### Scenario: Checking whether an event is running
 
 - **WHEN** a player opens the page during Halloween
 - **THEN** the Halloween dates say it is running and when it ends in the player's time zone
 - **AND** the Winter Festival dates say when it starts
+
+### Requirement: Seasonal monster facts describe hunting and drops
+The Seasonal Events page SHALL state from shared data where seasonal monsters spawn by zone with level ranges, spawn hours in game and real time, and the chance of each seasonal drop, including costume pieces.
 
 #### Scenario: Choosing where to hunt
 
@@ -140,12 +143,40 @@ The Seasonal Events page SHALL state, from the shared data: each season's dates,
 - **WHEN** a player wants a Halloween costume
 - **THEN** the page lists every costume piece with the monster that drops it and its chance per kill
 
+### Requirement: Seasonal currency and shop facts explain purchases
+The Seasonal Events page SHALL state from shared data what earns each seasonal currency and what it buys, and every seasonal shop item with its effect and its price, naming the currency.
+
 #### Scenario: Holding Festival Tokens
 
 - **WHEN** a player has Festival Tokens and wonders what they are for
 - **THEN** the page shows that both events earn them and that they buy fireworks in either event
 
+### Requirement: Facts shared by seasons appear once
+A fact shared by both seasons SHALL appear once, in a section whose heading says it applies to both.
+
 #### Scenario: Fireworks are sold in both seasons
 
 - **WHEN** the page lists the firework packs
 - **THEN** they appear once, stating that both seasons sell them for Festival Tokens
+
+### Requirement: Seasonal Double XP coverage and stacking are stated
+The Seasonal Events page SHALL state from shared data what Double XP covers and that it does not stack.
+
+#### Scenario: Reading Double XP
+- WHEN a player reads about seasonal Double XP
+- THEN the page states its coverage and that it does not stack
+
+### Requirement: Seasonal NPC and quest details are stated
+The Seasonal Events page SHALL state from shared data where the seasonal NPC stands and each quest's objective, recommended level, rewards and repeat interval.
+
+#### Scenario: Reading a seasonal quest
+- WHEN a player looks for a seasonal quest
+- THEN the page states its objective, recommended level, rewards and repeat interval and where its NPC stands
+
+### Requirement: Seasonal destinations link to the map
+Places a player must go, the seasonal monsters' spawns, the seasonal NPC, each seasonal quest and the repair merchants, SHALL link to the map.
+
+#### Scenario: Finding a seasonal repair merchant
+- WHEN a player follows a repair merchant from the Seasonal Events page
+- THEN its link opens the map
+

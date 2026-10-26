@@ -2,7 +2,7 @@
 
 ### Requirement: Every detail page identifies its primary entity
 
-Every indexed detail page for items, monsters, NPCs, quests, zones, skills, summons, mercenaries, altars, gathering resources, factions, classes, chests, recipes, and professions SHALL emit a `WebPage` JSON-LD node and a distinct primary entity node. The page's canonical `url` SHALL match its HTML canonical link. The page SHALL reference the existing `WebSite` identity through `isPartOf`, and its `mainEntity` SHALL reference the entity node by absolute `@id`. Page and entity identities SHALL remain separate and stable.
+Every indexed detail page for items, monsters, NPCs, quests, zones, skills, summons, mercenaries, altars, gathering resources, factions, classes, chests, recipes, and professions SHALL emit a `WebPage` JSON-LD node and a distinct primary entity node. Page and entity identities SHALL remain separate and stable.
 
 #### Scenario: An item detail page renders
 
@@ -14,14 +14,31 @@ Every indexed detail page for items, monsters, NPCs, quests, zones, skills, summ
 - **WHEN** the profession detail page is indexed
 - **THEN** it emits one page node and one primary entity node rather than relying only on shared site JSON-LD
 
+### Requirement: Structured page identity matches canonical navigation
+The page's canonical `url` SHALL match its HTML canonical link. The page SHALL reference the existing `WebSite` identity through `isPartOf`, and its `mainEntity` SHALL reference the entity node by absolute `@id`.
+
+#### Scenario: Canonical detail graph
+- WHEN a detail page emits its graph
+- THEN its page URL matches its canonical link, `isPartOf` references the existing website identity, and `mainEntity` references its entity by absolute ID
+
 ### Requirement: Entity claims match visible, verified data
 
-An entity SHALL use `Thing` unless a narrower Schema.org type has a verified semantic fit. A verified fictional location MAY use `Place`; `containedInPlace` SHALL connect places only. Each entity SHALL include its displayed name and canonical page URL. It SHALL use an accurate page description and available, appropriate artwork when those values exist. Absent optional values SHALL be omitted, not invented. Game loot SHALL NOT be presented as commercial `Product` and non-culinary crafting SHALL NOT be presented as `Recipe`.
+An entity SHALL use `Thing` unless a narrower Schema.org type has a verified semantic fit. A verified fictional location MAY use `Place`.
+
+#### Scenario: Unverified narrower type
+- WHEN no narrower Schema.org type has a verified semantic fit
+- THEN the entity uses `Thing`
+
+### Requirement: Entity descriptions use available verified values
+Each entity SHALL include its displayed name and canonical page URL. It SHALL use an accurate page description and available, appropriate artwork when those values exist. Absent optional values SHALL be omitted, not invented.
 
 #### Scenario: A loot item lacks a primary image
 
 - **WHEN** the item's record has no usable artwork
 - **THEN** the entity node omits `image` and asserts no fabricated price, availability, or reviews
+
+### Requirement: Place relationships connect places only
+`containedInPlace` SHALL connect places only, and place properties SHALL describe only verified location relationships.
 
 #### Scenario: A chest lies in a zone
 
@@ -32,6 +49,13 @@ An entity SHALL use `Thing` unless a narrower Schema.org type has a verified sem
 
 - **WHEN** the zone is represented as `Place`
 - **THEN** its place properties describe only verified location relationships
+
+### Requirement: Game acquisition is not commercial or culinary metadata
+Game loot SHALL NOT be presented as commercial `Product` and non-culinary crafting SHALL NOT be presented as `Recipe`.
+
+#### Scenario: Non-culinary crafting
+- WHEN an item is crafted outside cooking
+- THEN its entity is not presented as a Schema.org `Recipe`
 
 ### Requirement: Rendered structured data stays safe and semantically valid
 
