@@ -42,6 +42,8 @@ public class AltarData
     // Event configuration
     public string init_event_message { get; set; }
     public int radius_event { get; set; }
+    // The event object, not the altar, is the centre of radius_event and of the wave spawn points.
+    public Position event_position { get; set; }
     public bool uses_veteran_scaling { get; set; }
 
     // Rewards (for forgotten altars only)

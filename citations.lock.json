@@ -115,6 +115,9 @@
     "AugmentItem.cs": {
       "span": 0
     },
+    "AvatarEvent.cs:CheckPlayersUp": {
+      "span": 0
+    },
     "AvatarEvent.cs:SummonMonsters": {
       "span": 0
     },
@@ -1111,6 +1114,9 @@
     "DefaultEvent.cs:231-237": {
       "sha256": "8c45e15cd4f94d7a3b22f379abe73625295d00db43c84822da04af90e8b0c2a6",
       "span": 7
+    },
+    "DefaultEvent.cs:CheckPlayersUp": {
+      "span": 0
     },
     "DefaultEvent.cs:SummonMonsters": {
       "span": 0

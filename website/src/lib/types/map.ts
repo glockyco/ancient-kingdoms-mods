@@ -215,6 +215,8 @@ export interface AltarMapEntity extends MapEntity {
   activationItemId: string | null;
   activationItemName: string | null;
   radiusEvent: number;
+  /** Centre of the event radius, which is the event object rather than the altar. */
+  eventPosition: [number, number] | null;
   // Popup fields
   totalWaves: number;
   rewardCommonName: string | null;

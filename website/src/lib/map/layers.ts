@@ -841,20 +841,22 @@ export function createLayers(context: LayerContext): any[] {
     pickable: false,
   });
 
-  // Altar event radius layer - shows the area for altar events when an altar is selected
-  const hasAltarRadius =
-    selectedEntity &&
-    selectedEntity.type === "altar" &&
-    selectedEntity.position !== null &&
-    (selectedEntity as AltarMapEntity).radiusEvent > 0;
-  const altarRadiusData = hasAltarRadius
-    ? [
-        {
-          position: selectedEntity.position,
-          radius: (selectedEntity as AltarMapEntity).radiusEvent,
-        },
-      ]
-    : [];
+  // Altar event radius layer - shows the area for altar events when an altar is selected.
+  // Source: server-scripts/DefaultEvent.cs:CheckPlayersUp; server-scripts/AvatarEvent.cs:CheckPlayersUp. The
+  // radius centres on the event object, which can sit several yards from the altar.
+  const selectedAltar =
+    selectedEntity?.type === "altar"
+      ? (selectedEntity as AltarMapEntity)
+      : null;
+  const altarRadiusData =
+    selectedAltar?.eventPosition && selectedAltar.radiusEvent > 0
+      ? [
+          {
+            position: selectedAltar.eventPosition,
+            radius: selectedAltar.radiusEvent,
+          },
+        ]
+      : [];
   const altarEventRadiusLayer = new ScatterplotLayer({
     id: "altar-event-radius",
     data: altarRadiusData,

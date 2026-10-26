@@ -164,6 +164,10 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
                 values["position_y"] = value.y
                 values["position_z"] = value.z
             # Skip position field if None (don't add columns)
+        elif field_name == "event_position":
+            values["event_position_x"] = value.x
+            values["event_position_y"] = value.y
+            values["event_position_z"] = value.z
         elif field_name == "spawn_position":
             if value is not None:
                 values["spawn_position_x"] = value.x

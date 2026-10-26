@@ -280,6 +280,10 @@ CREATE TABLE altars (
     required_activation_item_name TEXT,
     init_event_message TEXT,
     radius_event INTEGER DEFAULT 0,
+    -- The event object, not the altar, is the centre of radius_event.
+    event_position_x REAL,
+    event_position_y REAL,
+    event_position_z REAL,
     uses_veteran_scaling BOOLEAN DEFAULT 0,
     reward_common_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
     reward_common_withheld INTEGER NOT NULL DEFAULT 0 CHECK (reward_common_withheld IN (0,1)),

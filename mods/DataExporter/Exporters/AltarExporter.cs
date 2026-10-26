@@ -88,6 +88,12 @@ public class AltarExporter : BaseExporter
                 : null,
             init_event_message = defaultEvent.initEventMessage,
             radius_event = defaultEvent.radiusEvent,
+            // Source: server-scripts/DefaultEvent.cs:CheckPlayersUp. The radius check centres on the event object.
+            event_position = new Position(
+                defaultEvent.transform.position.x,
+                defaultEvent.transform.position.y,
+                defaultEvent.transform.position.z
+            ),
             uses_veteran_scaling = true,
             total_waves = defaultEvent.listWavesMonsters != null ? defaultEvent.listWavesMonsters.Count : 0
         };
@@ -162,6 +168,12 @@ public class AltarExporter : BaseExporter
                 : null,
             init_event_message = avatarEvent.initEventMessage,
             radius_event = avatarEvent.radiusEvent,
+            // Source: server-scripts/AvatarEvent.cs:CheckPlayersUp. The radius check centres on the event object.
+            event_position = new Position(
+                avatarEvent.transform.position.x,
+                avatarEvent.transform.position.y,
+                avatarEvent.transform.position.z
+            ),
             uses_veteran_scaling = false,
             total_waves = avatarEvent.listWavesMonsters != null ? avatarEvent.listWavesMonsters.Count : 0
         };

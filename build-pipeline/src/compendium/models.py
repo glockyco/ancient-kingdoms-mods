@@ -1674,6 +1674,7 @@ class AltarData(BaseModel):
     required_activation_item_name: str | None = None
     init_event_message: str = ""
     radius_event: int = 0
+    event_position: Position
     uses_veteran_scaling: bool = False
     reward_common_id: str | None = None
     reward_common_name: str | None = None
