@@ -943,6 +943,7 @@ interface AltarRow {
   radius_event: number;
   event_position_x: number | null;
   event_position_y: number | null;
+  event_spawn_positions: string | null;
   total_waves: number;
   reward_common_name: string | null;
   reward_magic_name: string | null;
@@ -969,6 +970,7 @@ function loadAltarsServer(db: Database.Database): AltarMapEntity[] {
       a.radius_event,
       a.event_position_x,
       a.event_position_y,
+      a.event_spawn_positions,
       a.total_waves,
       a.reward_common_name,
       a.reward_magic_name,
@@ -1008,6 +1010,11 @@ function loadAltarsServer(db: Database.Database): AltarMapEntity[] {
         r.event_position_x !== null && r.event_position_y !== null
           ? [r.event_position_x, -r.event_position_y]
           : null,
+      eventSpawnPositions: r.event_spawn_positions
+        ? (JSON.parse(r.event_spawn_positions) as [number, number][]).map(
+            ([x, y]): [number, number] => [x, -y],
+          )
+        : [],
       totalWaves: r.total_waves,
       rewardCommonName: r.reward_common_name,
       rewardMagicName: r.reward_magic_name,

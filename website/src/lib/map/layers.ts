@@ -874,6 +874,25 @@ export function createLayers(context: LayerContext): any[] {
     pickable: false,
   });
 
+  // Wave spawn points of the selected altar. Each monster then heads for the
+  // player who started the event (server-scripts/DefaultEvent.cs:SummonMonsters).
+  const altarSpawnLayer = new ScatterplotLayer({
+    id: "altar-spawn-points",
+    data: selectedAltar?.eventSpawnPositions ?? [],
+    visible: (selectedAltar?.eventSpawnPositions.length ?? 0) > 0,
+    getPosition: (d: [number, number]) => d,
+    getFillColor: ALTAR_RADIUS_COLORS.spawnFill,
+    getLineColor: ALTAR_RADIUS_COLORS.spawnStroke,
+    getRadius: 4,
+    radiusUnits: "pixels",
+    radiusMinPixels: 3,
+    radiusMaxPixels: 6,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    lineWidthMinPixels: 1,
+    pickable: false,
+  });
+
   const trapAreaData =
     selectedEntity?.type === "trap"
       ? ((selectedEntity as TrapMapEntity).areaPaths ?? []).map((ring) => ({
@@ -1179,6 +1198,7 @@ export function createLayers(context: LayerContext): any[] {
     ...patrolPathLayers,
     wanderRangeLayer,
     altarEventRadiusLayer,
+    altarSpawnLayer,
     trapAreaHaloLayer,
     trapAreaLayer,
     discoveryAreaLayer,

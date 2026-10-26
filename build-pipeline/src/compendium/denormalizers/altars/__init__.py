@@ -12,7 +12,13 @@ console = Console()
 
 
 def run_waves(conn: sqlite3.Connection) -> None:
-    """Enrich altar wave monsters with is_boss and is_elite from monsters table."""
+    """Enrich altar wave monsters and move their spawn points into a geometry column.
+
+    Each monster carries its authored spawn location. The distinct locations go
+    to `event_spawn_positions`, whose name marks it as geometry, so position
+    suppression clears it with the altar's other coordinates. The waves keep no
+    copy because suppression does not reach coordinates inside them.
+    """
     console.print("Enriching altar wave monsters...")
 
     cursor = conn.cursor()
@@ -24,34 +30,30 @@ def run_waves(conn: sqlite3.Connection) -> None:
         for row in cursor.fetchall()
     }
 
-    # Get all altars with waves
     cursor.execute("SELECT id, waves FROM altars WHERE waves IS NOT NULL")
     altars = cursor.fetchall()
 
-    updated = 0
     for altar_id, waves_json in altars:
-        if not waves_json:
-            continue
-
         waves = json.loads(waves_json)
-        modified = False
+        spawn_points: set[tuple[float, float]] = set()
 
         for wave in waves:
             for monster in wave.get("monsters", []):
-                monster_id = monster.get("monster_id")
-                if monster_id and monster_id in monster_info:
-                    info = monster_info[monster_id]
-                    if "is_boss" not in monster or "is_elite" not in monster:
-                        monster["is_boss"] = info["is_boss"]
-                        monster["is_elite"] = info["is_elite"]
-                        modified = True
+                location = monster.pop("spawn_location")
+                spawn_points.add((location["x"], location["y"]))
+                info = monster_info.get(monster.get("monster_id"))
+                if info is not None:
+                    monster["is_boss"] = info["is_boss"]
+                    monster["is_elite"] = info["is_elite"]
 
-        if modified:
-            cursor.execute(
-                "UPDATE altars SET waves = ? WHERE id = ?",
-                (json.dumps(waves), altar_id),
-            )
-            updated += 1
+        cursor.execute(
+            "UPDATE altars SET waves = ?, event_spawn_positions = ? WHERE id = ?",
+            (
+                json.dumps(waves),
+                json.dumps([list(point) for point in sorted(spawn_points)]),
+                altar_id,
+            ),
+        )
 
     conn.commit()
-    console.print(f"  [green]OK[/green] Enriched waves for {updated} altars")
+    console.print(f"  [green]OK[/green] Enriched waves for {len(altars)} altars")

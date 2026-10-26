@@ -217,6 +217,8 @@ export interface AltarMapEntity extends MapEntity {
   radiusEvent: number;
   /** Centre of the event radius, which is the event object rather than the altar. */
   eventPosition: [number, number] | null;
+  /** Distinct wave spawn points, empty where positions are suppressed. */
+  eventSpawnPositions: [number, number][];
   // Popup fields
   totalWaves: number;
   rewardCommonName: string | null;

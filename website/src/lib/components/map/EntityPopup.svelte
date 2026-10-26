@@ -1306,10 +1306,20 @@
     <!-- Event radius info -->
     {#if altar.radiusEvent > 0}
       <div class="flex items-center gap-2 border-t pt-2">
-        <span class="inline-block h-2 w-2 rounded-full bg-amber-400"></span>
+        <span
+          class="inline-block h-2 w-2 rounded-full border border-orange-400 bg-orange-400/20"
+        ></span>
         <span class="text-muted-foreground"
           >Event radius {altar.radiusEvent} yd</span
         >
+      </div>
+    {/if}
+    {#if altar.eventSpawnPositions.length > 0}
+      <div class="flex items-center gap-2">
+        <span
+          class="inline-block h-2 w-2 rounded-full border border-orange-900 bg-orange-400"
+        ></span>
+        <span class="text-muted-foreground">Monster spawn points</span>
       </div>
     {/if}
 

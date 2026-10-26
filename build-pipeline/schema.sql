@@ -284,6 +284,7 @@ CREATE TABLE altars (
     event_position_x REAL,
     event_position_y REAL,
     event_position_z REAL,
+    event_spawn_positions TEXT,             -- JSON: distinct [x, y] wave spawn points
     uses_veteran_scaling BOOLEAN DEFAULT 0,
     reward_common_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
     reward_common_withheld INTEGER NOT NULL DEFAULT 0 CHECK (reward_common_withheld IN (0,1)),

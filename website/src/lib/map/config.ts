@@ -132,6 +132,8 @@ export const MOVEMENT_COLORS = {
 export const ALTAR_RADIUS_COLORS = {
   fill: [251, 146, 60, 25] as [number, number, number, number], // orange-400, 10% fill
   stroke: [251, 146, 60, 200] as [number, number, number, number], // orange-400, 80% stroke
+  spawnFill: [251, 146, 60, 255] as [number, number, number, number], // orange-400 solid
+  spawnStroke: [124, 45, 18, 255] as [number, number, number, number], // orange-900
 } as const;
 
 /**

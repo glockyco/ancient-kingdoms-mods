@@ -107,6 +107,7 @@ describe("map golden invariants", () => {
       "zone-highlight",
       "wander-range",
       "altar-event-radius",
+      "altar-spawn-points",
       "trap-area-halo",
       "trap-area",
       "quest-discovery-area",
