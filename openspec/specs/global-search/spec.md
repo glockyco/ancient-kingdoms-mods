@@ -56,25 +56,46 @@ The palette SHALL show results in one list, in the order that the ranking return
 
 ### Requirement: The index covers entities, pages, sections, and filtered lists
 
-The palette SHALL return every searchable entity family except the placement families named below, every mechanics page, every overview page, and each tool page. It SHALL return each section that a mechanics page lists in its contents, labelled Topic like a guide article. When a guide article opens the same section, the article SHALL represent it, and the section's heading SHALL find the article. It SHALL contain one filtered-list result for each NPC service role, each item slot, each item type that is not a generic group, each monster classification, and each season for monsters, NPCs, quests and items that the season gates. Each filtered-list result SHALL open its list page with that filter applied and SHALL have a reviewed name.
+The palette SHALL return every searchable entity family except chests, traps, portals, workstations, houses, and treasure locations, every mechanics page, every overview page, and each tool page.
 
-Sub-zone names SHALL match their parent zone. Chests, traps, portals, workstations, houses, and treasure locations SHALL NOT appear in the palette, because their names are internal labels or they have no page of their own. Map search SHALL continue to return them.
+#### Scenario: Indexed pages
+- WHEN mechanics, overview and tool pages are published
+- THEN the palette returns them
+
+### Requirement: Mechanics sections resolve to reviewed topics
+The palette SHALL return each section that a mechanics page lists in its contents, labelled Topic like a guide article. When a guide article opens the same section, the article SHALL represent it, and the section's heading SHALL find the article.
+
+#### Scenario: Guide article represents a section
+- WHEN a guide article opens a mechanics section
+- THEN the section's heading finds the article instead of a duplicate result
+
+### Requirement: Reviewed filtered lists are indexed
+The palette SHALL contain one filtered-list result for each NPC service role, each item slot, each item type that is not a generic group, each monster classification, and each season for monsters, NPCs, quests and items that the season gates. Each filtered-list result SHALL open its list page with that filter applied and SHALL have a reviewed name.
 
 #### Scenario: A visitor searches for a service
 
 - **WHEN** a visitor searches for "banker"
 - **THEN** the first result is "Bankers", and it opens the NPC list filtered to bankers
 
+### Requirement: Sub-zone search returns the parent zone
+Sub-zone names SHALL match their parent zone.
+
 #### Scenario: A visitor searches for a town
 
 - **WHEN** a visitor searches for "Milldenn"
 - **THEN** a result opens the Crescent Coast zone page
+
+### Requirement: Placement families stay out of the palette
+Chests, traps, portals, workstations, houses, and treasure locations SHALL NOT appear in the palette, because their names are internal labels or they have no page of their own. Map search SHALL continue to return them.
 
 #### Scenario: A visitor searches for a placement name
 
 - **WHEN** a visitor searches the palette for "Milldenn"
 - **THEN** no portal, trap, chest, or workstation result appears
 - **AND** the map search for "Milldenn" still returns the Milldenn portals
+
+### Requirement: Mechanics pages and sections remain searchable
+Mechanics pages and their indexed sections SHALL be returned by their names and headings.
 
 #### Scenario: A visitor searches for a mechanics page
 
@@ -92,6 +113,9 @@ Sub-zone names SHALL match their parent zone. Chests, traps, portals, workstatio
 - **WHEN** a visitor searches for "wisdom heal bonus"
 - **THEN** the first result opens the Combat Wisdom Heal Bonus section
 
+### Requirement: Seasonal list results open their filter
+A seasonal filtered-list result SHALL open its list page with that season applied.
+
 #### Scenario: A visitor searches for seasonal items
 
 - **WHEN** a visitor searches for "halloween items"
@@ -99,36 +123,74 @@ Sub-zone names SHALL match their parent zone. Chests, traps, portals, workstatio
 
 ### Requirement: Ranking follows one ordered contract
 
-The ranking SHALL apply these rules:
+A result whose normalized name equals the normalized query SHALL rank first.
 
-1. A result whose normalized name equals the normalized query ranks first.
-2. A result SHALL match every query word. When no result matches every word, results that match some of the words SHALL be returned.
-3. The last query word SHALL match as a prefix. Other words SHALL match as whole words.
-4. A word of 4 to 7 letters SHALL tolerate one edit, and a word of 8 or more letters SHALL tolerate two edits. A shorter word SHALL match without edits.
-5. A match that needs an edit SHALL rank below an equivalent match without edits.
-6. A query that equals a full name with two adjacent letters swapped SHALL return that name first.
-7. A query word from the reviewed synonym list SHALL also match its listed terms.
-8. Normalization SHALL ignore letter case, diacritics, apostrophes, and punctuation, and SHALL treat a singular and a plural form as the same word.
-9. Results with an identical destination, including the section anchor, SHALL appear once.
-10. A section SHALL rank below another result with the same name.
-11. A section SHALL rank below its own page when the page matches the query too, unless the section's name equals the query.
-12. At most two sections of one page SHALL appear.
+#### Scenario: Exact full name
+- WHEN a query equals a result's normalized full name
+- THEN that result ranks first
+
+### Requirement: Query words match whole words and the final prefix
+A result SHALL match every query word. When no result matches every word, results that match some of the words SHALL be returned. The last query word SHALL match as a prefix. Other words SHALL match as whole words.
 
 #### Scenario: A visitor types a word from inside a name
 
 - **WHEN** a visitor searches for "sword"
 - **THEN** the results include "Iron Sword" and "Rusty Sword"
 
+### Requirement: Spelling tolerance follows word length
+A word of 4 to 7 letters SHALL tolerate one edit, and a word of 8 or more letters SHALL tolerate two edits. A shorter word SHALL match without edits.
+
+#### Scenario: Short word spelling
+- WHEN a query word has three letters
+- THEN it matches without edits
+
+### Requirement: Adjacent full-name transpositions rank first
+A query that equals a full name with two adjacent letters swapped SHALL return that name first.
+
 #### Scenario: A visitor swaps two letters
 
 - **WHEN** a visitor searches for "Depsair"
 - **THEN** the first result is the Despair zone
+
+### Requirement: Reviewed synonyms match their terms
+A query word from the reviewed synonym list SHALL also match its listed terms.
 
 #### Scenario: A visitor uses an abbreviation
 
 - **WHEN** a visitor searches for "xp"
 - **THEN** the first result opens the Experience mechanics page
 - **AND** at most two Experience sections appear
+
+### Requirement: Search normalization ignores spelling presentation
+Normalization SHALL ignore letter case, diacritics, apostrophes, and punctuation, and SHALL treat a singular and a plural form as the same word.
+
+#### Scenario: Plural query
+- WHEN a visitor searches with the plural form of a result word
+- THEN normalization treats it as the same word as its singular form
+
+### Requirement: Destinations appear once in search
+Results with an identical destination, including the section anchor, SHALL appear once.
+
+#### Scenario: Duplicate destination
+- WHEN two indexed results have the same destination and section anchor
+- THEN the destination appears once
+
+### Requirement: Sections rank below matching peers and pages
+A section SHALL rank below another result with the same name. A section SHALL rank below its own page when the page matches the query too, unless the section's name equals the query.
+
+#### Scenario: Page and section match
+- WHEN a page and its section both match and the query does not equal the section name
+- THEN the page ranks above its section
+
+### Requirement: One page contributes at most two sections
+At most two sections of one page SHALL appear.
+
+#### Scenario: Several matching page sections
+- WHEN more than two sections of one page match
+- THEN at most two of those sections appear
+
+### Requirement: Equivalent unedited matches outrank edited matches
+A match that needs an edit SHALL rank below an equivalent match without edits.
 
 #### Scenario: A short query with a similar word
 

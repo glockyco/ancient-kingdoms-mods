@@ -53,11 +53,74 @@ Adventuring, Alchemy, Cooking, Exploring, Herbalism, Hunter, Lore Keeping, Scrol
 
 ### Requirement: The nine remaining inventories cover their specific rules
 
-The migrated routes SHALL preserve their distinct game facts instead of forcing one template. Adventuring SHALL distinguish the quest queue from reward and vendor unlocks. Alchemy SHALL show recipe learning and quest provenance. Cooking SHALL relate fish and plant inputs to food effects. Exploring SHALL expose trigger locations and the city, regular, and dungeon reward distinction. Herbalism SHALL show variable yields and material consumers. Hunter SHALL explain discovery and quality drops. Lore Keeping SHALL expose full book sources. Scroll Mastery SHALL distinguish craftable and non-craftable scrolls and repair kits. Treasure Hunter SHALL distinguish maps, dig sites, relic chances, and other chest rewards.
+The migrated routes SHALL preserve their distinct game facts instead of forcing one template.
+
+#### Scenario: Distinct profession facts
+- WHEN profession inventories are migrated
+- THEN each route retains its distinct game facts
+
+### Requirement: Adventuring distinguishes queue and unlocks
+Adventuring SHALL distinguish the quest queue from reward and vendor unlocks.
+
+#### Scenario: Adventuring inventory
+- WHEN a player opens Adventuring
+- THEN the quest queue is distinct from reward and vendor unlocks
+
+### Requirement: Alchemy preserves learning provenance
+Alchemy SHALL show recipe learning and quest provenance.
+
+#### Scenario: Alchemy learning
+- WHEN a player inspects an alchemy recipe token
+- THEN the page shows recipe learning and quest provenance with the actual acquisition route and relevant map or entity links
+
+### Requirement: Cooking relates inputs to effects
+Cooking SHALL relate fish and plant inputs to food effects.
+
+#### Scenario: Cooking inventory
+- WHEN a player inspects a food's inputs
+- THEN Cooking relates its fish and plant inputs to its effects
+
+### Requirement: Exploring distinguishes trigger rewards
+Exploring SHALL expose trigger locations and the city, regular, and dungeon reward distinction.
+
+#### Scenario: Exploring inventory
+- WHEN a player inspects an exploring trigger
+- THEN its location and city, regular or dungeon reward distinction appear
+
+### Requirement: Herbalism explains yields and consumers
+Herbalism SHALL show variable yields and material consumers.
+
+#### Scenario: Herbalism inventory
+- WHEN a player inspects an herb
+- THEN variable yields and material consumers appear
+
+### Requirement: Hunter explains discovery and drops
+Hunter SHALL explain discovery and quality drops.
+
+#### Scenario: Hunter inventory
+- WHEN a player reads Hunter
+- THEN discovery and quality drops are explained
+
+### Requirement: Scroll Mastery distinguishes scroll and repair inventories
+Scroll Mastery SHALL distinguish craftable and non-craftable scrolls and repair kits.
+
+#### Scenario: Scroll Mastery inventory
+- WHEN a player opens Scroll Mastery
+- THEN craftable scrolls, non-craftable scrolls and repair kits are distinguished
+
+### Requirement: Lore Keeping exposes full book sources
+Lore Keeping SHALL expose full book sources.
+
+#### Scenario: Lore book source
+- WHEN a player inspects a lore book
+- THEN its full sources appear with acquisition routes and relevant map or entity links
+
+### Requirement: Treasure Hunter distinguishes maps and rewards
+Treasure Hunter SHALL distinguish maps, dig sites, relic chances, and other chest rewards.
 
 #### Scenario: Player follows a special source
 
-- **WHEN** a player inspects a treasure map, a lore book, or an alchemy recipe token
+- WHEN a player inspects a treasure map
 - **THEN** the page identifies its actual acquisition route and relevant map or entity links
 
 ### Requirement: Profession metadata matches game completion and rewards

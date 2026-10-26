@@ -54,9 +54,21 @@ Each page SHALL use the absolute URL of `/og-default.png` for both Open Graph an
 
 ### Requirement: A sitemap manifest supplies the sitemap
 
-The manifest SHALL include every prerendered, indexable, self-canonical page URL and the canonical home URL. It SHALL omit fishing-family aliases whose canonical tag points to a placement. The generated sitemap SHALL list URLs in sorted order. Hashed entries SHALL publish their stored `lastmod`, and bare entries SHALL omit it. Equal semantic fingerprints SHALL preserve dates, changed or new fingerprints SHALL receive the generation day's UTC date, and removed URLs SHALL disappear.
+The manifest SHALL include every prerendered, indexable, self-canonical page URL and the canonical home URL.
 
-Production SHALL use only manifest version 2 with `hash_scheme:"compendium-page-v2"`. Old or mixed schemes SHALL fail without replacing the prior manifest.
+#### Scenario: Indexable page membership
+- WHEN an indexable prerendered page has a self-canonical URL
+- THEN the manifest includes that URL
+
+### Requirement: Sitemap URLs are sorted
+The generated sitemap SHALL list URLs in sorted order.
+
+#### Scenario: Manifest order differs
+- WHEN manifest entries arrive in a different order
+- THEN sitemap URLs are still sorted
+
+### Requirement: Semantic fingerprints govern sitemap dates
+Equal semantic fingerprints SHALL preserve dates, changed or new fingerprints SHALL receive the generation day's UTC date, and removed URLs SHALL disappear.
 
 #### Scenario: One page changes while another does not
 
@@ -82,15 +94,24 @@ Production SHALL use only manifest version 2 with `hash_scheme:"compendium-page-
 - **AND** object insertion order does not affect the result
 - **AND** changed scalar values, ordered array positions and duplicate multiplicity remain distinguishable
 
+### Requirement: Sitemap lastmod requires a stored hash date
+Hashed entries SHALL publish their stored `lastmod`, and bare entries SHALL omit it.
+
 #### Scenario: A page cannot have a meaningful content hash
 
 - **WHEN** a bare URL appears in the manifest
 - **THEN** the sitemap lists it without `lastmod`
 
+### Requirement: Sitemap aliases are omitted
+The manifest SHALL omit fishing-family aliases whose canonical tag points to a placement.
+
 #### Scenario: A fishing landing alias points to its first placement
 
 - **WHEN** a family's unsuffixed page canonicalizes to a suffixed spot URL
 - **THEN** the sitemap lists the placement and omits the alias
+
+### Requirement: Production rejects obsolete sitemap schemes
+Production SHALL use only manifest version 2 with `hash_scheme:"compendium-page-v2"`. Old or mixed schemes SHALL fail without replacing the prior manifest.
 
 #### Scenario: The baseline scheme is obsolete
 

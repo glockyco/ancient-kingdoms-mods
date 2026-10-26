@@ -10,8 +10,6 @@ Defines which document owns which kind of fact, so that each reader finds one do
 
 Each fact SHALL live in the document that owns its kind, and any other document that needs it SHALL link to that home instead of restating it. The front page owns what the project is and offers. `CONTRIBUTING.md` owns setup, workflows, checks, and troubleshooting. The architecture document owns structure, invariants, and cross-cutting concepts. Each mod's README owns that mod. Skills own procedures, and OpenSpec owns required behavior.
 
-Rationale: the README grew into a grab-bag twice, because nothing named a home for a new fact other than the most visible file.
-
 #### Scenario: A workflow is added
 
 - **WHEN** a new way to run part of the pipeline is documented

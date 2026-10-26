@@ -8,8 +8,6 @@ Defines what the build guarantees about the artifacts it publishes: that unchang
 
 Building twice from the same export and the same configuration SHALL produce the same published values. A value that is estimated SHALL be estimated from a fixed starting point, and that starting point SHALL NOT depend on the order in which entities are processed.
 
-Rationale: chest drop chances moved by up to 0.0032 between builds with no data change, because the simulation drew from an unseeded generator. A reader could not tell a real change from noise, and a comparison against a recorded baseline reported differences that meant nothing.
-
 #### Scenario: Unchanged input
 
 - **WHEN** the export and the configuration are unchanged

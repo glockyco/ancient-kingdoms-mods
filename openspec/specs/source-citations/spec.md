@@ -12,8 +12,6 @@ A run SHALL fail when a reference no longer carries its recorded content, cannot
 
 A run SHALL succeed when every reference is unchanged, was found at a new position, or names a region the tool cannot judge.
 
-The distinction is load bearing. The pre-commit gate reads the whole tree, so an operator who cannot tell an advisory finding from a blocking one treats mechanical relocation as a prerequisite for every later commit.
-
 #### Scenario: Recorded content moved within the file
 
 - **WHEN** a reference no longer matches its recorded position but its recorded content is found once elsewhere in the same file
@@ -58,13 +56,12 @@ Re-anchoring SHALL apply to the whole ledger and SHALL require the game version 
 
 Re-anchoring SHALL refuse to run when a finding is positive evidence that the recorded anchor would name the wrong code, and SHALL name each such reference.
 
-A reference found at another position is such a finding. Its locator still names the old position, so an anchor taken now records the region that has moved into that position.
+#### Scenario: A wrong anchor is identified
+- WHEN a finding proves an anchor would name the wrong code
+- THEN re-anchoring refuses and names the reference
 
-A claim that names code absent from the cited region is such a finding. Either the anchor names the wrong region or the claim is stale, and an anchor taken now records the contradiction as verified.
-
-A reference whose content merely differs is not such a finding. The new content may still carry the claim, so an operator who reviewed it SHALL be able to accept it.
-
-The refusal exists because verification compares content. Once a wrong anchor is recorded, it reports as unchanged from then on and no later run can detect it.
+### Requirement: Moved and unsupported anchors refuse re-anchoring
+A reference found at another position or a claim naming code absent from the cited region SHALL be treated as positive evidence that the recorded anchor would name the wrong code.
 
 #### Scenario: The recorded content sits at another position
 
@@ -77,6 +74,9 @@ The refusal exists because verification compares content. Once a wrong anchor is
 - **WHEN** an operator re-anchors the ledger and a claim reports as unsupported
 - **THEN** the tool refuses and names that reference
 - **AND** the ledger is unchanged
+
+### Requirement: Reviewed content differences can be re-anchored
+A reference whose content merely differs is not positive evidence of a wrong anchor. An operator who reviewed the new content SHALL be able to accept it.
 
 #### Scenario: A reviewed change is accepted
 
