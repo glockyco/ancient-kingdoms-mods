@@ -1284,22 +1284,14 @@
     {#if altar.finalBossNames.length > 0}
       <div class="mt-1 rounded bg-red-500/20 px-2 py-1">
         <span class="text-red-400">Boss: </span>
-        {#each altar.finalBossNames as bossName, i (i)}
-          {#if altar.finalBossIds[i]}
-            <button
+        {#each altar.finalBossNames as bossName, i (i)}{#if i > 0},&nbsp;{/if}{#if altar.finalBossIds[i]}<button
               type="button"
               onclick={() => onSelectMonster(altar.finalBossIds[i])}
               onmouseenter={() => onHoverMonster?.(altar.finalBossIds[i])}
               onmouseleave={() => onHoverMonster?.(null)}
               class="cursor-pointer text-red-200 underline hover:opacity-80"
               >{bossName}</button
-            >
-          {:else}
-            <span class="text-red-200">{bossName}</span>
-          {/if}
-          {#if i < altar.finalBossNames.length - 1},
-          {/if}
-        {/each}
+            >{:else}<span class="text-red-200">{bossName}</span>{/if}{/each}
       </div>
     {/if}
 
