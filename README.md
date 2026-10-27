@@ -22,11 +22,11 @@ The compendium withholds some game content. [redactions.toml](redactions.toml) d
 
 ## Mods for players
 
-You need Ancient Kingdoms and MelonLoader. The latest official MelonLoader (0.7.3) does not work with the current version of the game. Use this [fixed version of MelonLoader](https://github.com/glockyco/ancient-kingdoms-mods/releases/tag/melonloader-0.7.3-unity6000.6) instead. It's an unofficial fix, and there is no help available if it doesn't work for you. It already includes FieldDefaultValueHookFix, which prevents a crash when you enter the game world. Put the other mods you download below in the game's `Mods` folder.
+You need Ancient Kingdoms and MelonLoader. The latest official MelonLoader (0.7.3) does not work with the current version of the game. Use this [fixed version of MelonLoader](https://github.com/glockyco/ancient-kingdoms-mods/releases/tag/melonloader-0.7.3-unity6000.6) instead. It's an unofficial fix, and there is no help available if it doesn't work for you. Then put the mods you download below in the game's `Mods` folder.
 
 | Mod | What it does | Download |
 | --- | --- | --- |
-| [FieldDefaultValueHookFix](mods/FieldDefaultValueHookFix/README.md) | Prevents a crash on world entry under MelonLoader. | [DLL](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll) |
+| [FieldDefaultValueHookFix](mods/FieldDefaultValueHookFix/README.md) | Prevents a crash on world entry under MelonLoader. The fixed MelonLoader already includes it. | [DLL](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll) |
 | [BetterBestiary](mods/BetterBestiary/README.md) | Shows every monster's full Bestiary page, with lore, stats, loot, and skills. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BetterBestiary.dll) |
 | [BossSkillTracker](mods/BossSkillTracker/README.md) | Shows the ability cooldowns of the bosses, elites, and fabled monsters you fight. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BossSkillTracker.dll) |
 | [BossTracker](mods/BossTracker/README.md) | Lists nearby bosses, elites, and fabled monsters with their status, distance, direction, and respawn time. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BossTracker.dll) |

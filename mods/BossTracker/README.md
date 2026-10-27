@@ -6,7 +6,7 @@ BossTracker is an unofficial MelonLoader mod for Ancient Kingdoms players tracki
 
 ## Setup
 
-Install [MelonLoader](https://github.com/LavaGang/MelonLoader) in Ancient Kingdoms. Put BossTracker.dll and [FieldDefaultValueHookFix.dll](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll) in the game's `Mods` folder. The fix prevents a crash on world entry.
+Install MelonLoader as [Mods for players](../../README.md#mods-for-players) describes, then put BossTracker.dll in the game's `Mods` folder.
 
 ## Use
 
