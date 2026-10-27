@@ -80,6 +80,14 @@ uv run compendium citations check
 
 Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
 
+The front page sends players to a fixed MelonLoader build, published as a GitHub release of this repository, because official MelonLoader cannot load the current Unity version. Settle it at every patch:
+
+- An official MelonLoader release loads the game: delete the release with `gh release delete <tag> --cleanup-tag`, and replace the front-page paragraph with a plain instruction to install MelonLoader.
+- The patch keeps the Unity version: the release still works, because it regenerates the game assemblies on first start. Rebuild it only when the published FieldDefaultValueHookFix changed.
+- The patch changes the Unity version: rebuild the release from the loader that works locally, or delete it and replace the front-page paragraph.
+
+To rebuild, start from the current release asset, which carries the player `README.txt` and `Source/`. Replace `version.dll` and `MelonLoader/` from the working game install, and `Mods/FieldDefaultValueHookFix.dll` from `website/static/mods/`. Leave out `Logs/`, `Latest.log`, `cpp2il_out/` and `Il2CppAssemblies/`, because the assemblies are derived from the game's code. In `Config.cfg`, set `GameAssemblyHash = ""` and `OldFiles = []` so the first start regenerates them. Update `Source/README.txt` and the patches to match the build. Test the zip in the game install with the original files moved aside: regeneration, main menu, and world entry on the scratch database. A new Unity version needs a new tag, so update the front-page link with it.
+
 Commit coherent concerns as they pass, in this order:
 
 1. citation reconciliation, with any mechanic it had to carry
