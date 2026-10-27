@@ -22,7 +22,7 @@ The compendium withholds some game content. [redactions.toml](redactions.toml) d
 
 ## Mods for players
 
-You need Ancient Kingdoms and [MelonLoader](https://github.com/LavaGang/MelonLoader). Install MelonLoader in the game, then put the downloaded DLLs in the game's `Mods` folder. Always include FieldDefaultValueHookFix to prevent a crash on world entry.
+You need Ancient Kingdoms and MelonLoader. The latest official MelonLoader (0.7.3) does not work with the current version of the game. Use this [fixed version of MelonLoader](https://github.com/glockyco/ancient-kingdoms-mods/releases/tag/melonloader-0.7.3-unity6000.6) instead. It's an unofficial fix, and there is no help available if it doesn't work for you. It already includes FieldDefaultValueHookFix, which prevents a crash when you enter the game world. Put the other mods you download below in the game's `Mods` folder.
 
 | Mod | What it does | Download |
 | --- | --- | --- |

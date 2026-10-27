@@ -4,7 +4,7 @@ MelonLoader mods for Ancient Kingdoms players and for building the game's compen
 
 ## Player installation
 
-Install [MelonLoader](https://github.com/LavaGang/MelonLoader) in Ancient Kingdoms, then put the downloaded DLLs in the game's `Mods` folder with FieldDefaultValueHookFix to prevent a crash on world entry. Each published mod's README below covers its controls, settings, and limits.
+[Mods for players](../README.md#mods-for-players) on the front page covers installation. Each published mod's README below covers its controls, settings, and limits.
 
 ## Published player mods
 
