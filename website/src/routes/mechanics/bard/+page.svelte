@@ -35,13 +35,13 @@
   <Card.Root id="songs" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Bard Songs and Moving Auras</Card.Title>
-      <!-- Source: server-scripts/PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:1347-1399 — a selected song recasts and renews its active duration. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:1364-1416 — a selected song recasts and renews its active duration. -->
       <Card.Description>
         Your selected song recasts automatically, renewing its duration.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-5 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerSkills.cs:1131-1140,1183-1278,2355-2391 — song casts repeat during movement or ordinary casting while the Bard can continue. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1148-1157,1200-1295,2380-2416 — song casts repeat during movement or ordinary casting while the Bard can continue. -->
       <p>
         A song keeps repeating while you move or cast other skills.<br />
         Selecting another song changes which song repeats.
@@ -52,9 +52,9 @@
         a barber, or unequip your instrument.<br />
         Click a song's icon in your buff bar to remove its effects and stop it repeating.
       </p>
-      <!-- Source: server-scripts/ScriptableSkill.cs:102-137, PlayerSkills.cs:CanContinueBardSong; PlayerSkills.cs:2355-2391 — Instrument requirements are checked before starting and during continued performance. -->
+      <!-- Source: server-scripts/ScriptableSkill.cs:102-137, PlayerSkills.cs:CanContinueBardSong; PlayerSkills.cs:2380-2416 — Instrument requirements are checked before starting and during continued performance. -->
       <p>Bard songs require an equipped instrument.</p>
-      <!-- Source: server-scripts/PlayerSkills.cs:1355-1399,1681-1696,1711-1723,1740-1752 — the default limit is two, an unlimited passive removes it, and at a limit a new song displaces the oldest refreshed entry. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1372-1416,1706-1721,1736-1748,1765-1777 — the default limit is two, an unlimited passive removes it, and at a limit a new song displaces the oldest refreshed entry. -->
       <p>
         You can keep two songs active at once by default.<br />
         A new song at the limit removes the least recently refreshed song and its
@@ -78,7 +78,7 @@
           >Final Cadence</a
         > need at least three active songs.
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:1355-1399,1617-1628,1639-1658,1740-1752 — changing the selected song does not remove earlier effects, but expiry or explicit removal does. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1372-1416,1642-1653,1664-1683,1765-1777 — changing the selected song does not remove earlier effects, but expiry or explicit removal does. -->
       <p>
         Earlier songs keep their effects when you switch songs or the repeating
         cast stops. They end when they expire, you stop them, or a new song
@@ -107,8 +107,8 @@
               </td>
             </tr>
             <!-- Source: server-scripts/BardAreaSongSkill.cs:CollectAuraCandidates — Cacophony removes Monsters with speed at most -50, other songs remove Monsters with aggroList.Count == 0. -->
-            <!-- Source: server-scripts/PlayerSkills.cs:1119-1127 — RefreshBardSongAura runs every 0.5 seconds. -->
-            <!-- Source: server-scripts/PlayerSkills.cs:1402-1417 — fresh casts call RefreshBardSongAura with freshCast true. -->
+            <!-- Source: server-scripts/PlayerSkills.cs:1136-1144 — RefreshBardSongAura runs every 0.5 seconds. -->
+            <!-- Source: server-scripts/PlayerSkills.cs:1419-1434 — fresh casts call RefreshBardSongAura with freshCast true. -->
             <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; AreaDebuffSkill.cs:ApplyToCandidates — a newly reached monster gets the Bard's threat and targets the Bard if it had no target. -->
             <tr class="border-b border-border/50">
               <th class="py-3 pr-5 text-left font-medium text-foreground"
@@ -161,7 +161,7 @@
         Every other song replaces another Bard's copy of the same song on an ally
         at each cast, including an automatic repeat. Different songs stack.
       </p>
-      <!-- Source: server-scripts/BardSongSkill.cs:26-31, Buff.cs:133-240 — Bard songs use Charisma scaling for eligible effect values. -->
+      <!-- Source: server-scripts/BardSongSkill.cs:26-31, Buff.cs:132-239 — Bard songs use Charisma scaling for eligible effect values. -->
       <!-- Source: server-scripts/Skills.cs:GetFinalHealOverTime and BuffSkill.cs:GetDebuffPowerAttribute — songs skip the Wisdom healing bonus and use Charisma before the Intelligence branch. -->
       <p>
         <a
@@ -295,19 +295,19 @@
         from you. To change creatures, first release yours by clicking the
         charm's song icon in your buff bar.
       </p>
-      <!-- Source: server-scripts/BardCharmSongSkill.cs:121-134, PlayerSkills.cs:1347-1399,1726-1733 — a successful charm is tracked as an active Bard song and occupies a slot. -->
+      <!-- Source: server-scripts/BardCharmSongSkill.cs:121-134, PlayerSkills.cs:1364-1416,1751-1758 — a successful charm is tracked as an active Bard song and occupies a slot. -->
       <p>
         Charm uses a song slot and follows the <a
           href="#songs"
           class="text-blue-600 dark:text-blue-400 hover:underline">song limit</a
         > above.
       </p>
-      <!-- Source: server-scripts/BardCharmSongSkill.cs:33-59, PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:2355-2391 — repeated casts keep the original charm target and require range and visibility to renew it. -->
+      <!-- Source: server-scripts/BardCharmSongSkill.cs:33-59, PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:2380-2416 — repeated casts keep the original charm target and require range and visibility to renew it. -->
       <p>
         Repeating the song renews your existing charm, regardless of your
         selection. Keep the creature visible and within cast range.
       </p>
-      <!-- Source: server-scripts/Monster.cs:2481-2500,2606-2622,2913-2916, PlayerSkills.cs:1639-1658,1711-1723,1824-1828; ZoneTrigger.cs:94-100 — charm ends on removal or expiry, monster death, Bard death, zone separation, or leaving the server. -->
+      <!-- Source: server-scripts/Monster.cs:2481-2500,2606-2622,2913-2916, PlayerSkills.cs:1664-1683,1736-1748,1849-1853; ZoneTrigger.cs:94-100 — charm ends on removal or expiry, monster death, Bard death, zone separation, or leaving the server. -->
       <p>
         Charm ends if its effect expires or is removed, or if the creature dies.<br
         />

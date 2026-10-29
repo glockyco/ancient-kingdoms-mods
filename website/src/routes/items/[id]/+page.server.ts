@@ -387,7 +387,7 @@ export const load: PageServerLoad = async ({
   const mergeResultName = usages.merges[0]?.result_item_name ?? null;
   // Source: server-scripts/BuffSkill.cs:7-12 — buffTime is a LinearFloat with baseValue = duration_base.
   // Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — potion buff level is resolved at use time from the player's veteran rank.
-  // Source: server-scripts/Pet.cs:2141-2154 — mercenary utility potions pass Networkowner to resolve that level. Runtime veteran rank is unknown here.
+  // Source: server-scripts/Pet.cs:2196-2209 — mercenary utility potions pass Networkowner to resolve that level. Runtime veteran rank is unknown here.
   const buffId =
     item.potion_buff_id || item.food_buff_id || item.relic_buff_id || null;
   let buffDurationSeconds: number | null = null;

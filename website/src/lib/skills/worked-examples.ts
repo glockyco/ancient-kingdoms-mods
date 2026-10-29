@@ -47,7 +47,7 @@ export function executeTick(bonus: LinearValue, rank: number): number {
   return damageOverTimeBonuses(EXAMPLE_HIT, 3, 0, atRank(bonus, rank)).total;
 }
 
-// Source: server-scripts/Combat.cs:1213-1228 — lifetap healing is FloorToInt(share × damage × (1 + summed bonuses)).
+// Source: server-scripts/Combat.cs:1212-1227 — lifetap healing is FloorToInt(share × damage × (1 + summed bonuses)).
 export function lifetapFromHit(share: LinearValue, rank: number): number {
   return lifetapHeal(EXAMPLE_HIT, atRank(share, rank), 0);
 }
@@ -57,7 +57,7 @@ export function lifetapWithBonus(bonus: LinearValue, rank: number): number {
   return lifetapHeal(EXAMPLE_HIT, 1, atRank(bonus, rank));
 }
 
-// Source: server-scripts/Combat.cs:942-956 — each victim effect heals the attacker RoundToInt(share × damage after mitigation and critical hits).
+// Source: server-scripts/Combat.cs:941-955 — each victim effect heals the attacker RoundToInt(share × damage after mitigation and critical hits).
 export function healOnHit(share: LinearValue, rank: number): number {
   return iround(multiplyF32(atRank(share, rank), EXAMPLE_HIT));
 }
@@ -67,7 +67,7 @@ export function wildStrikeHit(rank: number): number {
   return wildStrikeDamage(EXAMPLE_HIT, rank);
 }
 
-// Source: server-scripts/PlayerSkills.cs:1357,1698-1708 — learned song-duration bonuses add, then multiply the base duration.
+// Source: server-scripts/PlayerSkills.cs:1374,1723-1733 — learned song-duration bonuses add, then multiply the base duration.
 export function songDuration(baseSeconds: number, bonus: number): number {
   return multiplyF32(baseSeconds, addF32(1, bonus));
 }

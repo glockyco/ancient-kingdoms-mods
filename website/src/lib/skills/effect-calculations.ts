@@ -419,7 +419,7 @@ export interface EffectScaling {
   factor: number;
 }
 
-// Source: server-scripts/Buff.cs:47-258; BuffSkill.cs:233-250,467-530; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:453-464 — which listed effects an attribute scales, and how.
+// Source: server-scripts/Buff.cs:46-257; BuffSkill.cs:237-254,471-534; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:453-464 — which listed effects an attribute scales, and how.
 /** The listed effects of a buff or debuff that its caster's attribute scales. */
 export function effectScalings(
   skill: SkillDetailView,
@@ -478,7 +478,7 @@ export function effectScalings(
     });
 }
 
-// Source: server-scripts/Buff.cs:47-258; BuffSkill.cs:233-250,467-530; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:453-464 — signed stat getters, separate rounded attribute bonuses, and ward contribution transformation.
+// Source: server-scripts/Buff.cs:46-257; BuffSkill.cs:237-254,471-534; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:453-464 — signed stat getters, separate rounded attribute bonuses, and ward contribution transformation.
 export function effectScalingCalculation(
   skill: SkillDetailView,
   source: BuffBonusAttrSource | DebuffBonusAttrKind,

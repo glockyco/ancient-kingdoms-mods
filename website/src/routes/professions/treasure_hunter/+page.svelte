@@ -156,7 +156,7 @@
         <div class="text-sm text-muted-foreground">2</div>
         <div>
           <div>Open the map clue.</div>
-          <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/TreasureMapItem.cs:12-15; server-scripts/Player.cs:10064-10081 — using a treasure map opens its dig-site clue image. -->
+          <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/TreasureMapItem.cs:12-15; server-scripts/Player.cs:10186-10203 — using a treasure map opens its dig-site clue image. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Use the treasure map to see its dig-site clue.
           </p>

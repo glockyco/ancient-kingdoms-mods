@@ -10,7 +10,7 @@
 
 {#if skill.lifetap_healing_percent_bonus}
   {@const bonus = skill.lifetap_healing_percent_bonus}
-  <!-- Source: server-scripts/Combat.cs:1213-1228 — active or isPermanent attacker buffs sum lifetapHealingPercentBonus for FloorToInt lifetap healing. -->
+  <!-- Source: server-scripts/Combat.cs:1212-1227 — active or isPermanent attacker buffs sum lifetapHealingPercentBonus for FloorToInt lifetap healing. -->
   <div class="space-y-2">
     <h3 class="font-semibold">Lifetap Healing Bonus</h3>
     <p class="text-muted-foreground">

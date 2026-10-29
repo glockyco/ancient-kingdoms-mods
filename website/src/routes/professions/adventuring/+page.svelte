@@ -388,7 +388,7 @@
         <div class="text-sm text-muted-foreground">3</div>
         <div>
           <div>
-            <!-- Source: server-scripts/PlayerQuests.cs:50-51,227,445-446 — completed adventurer quests use DateTime.UtcNow ticks and remain completed for 24 hours. -->
+            <!-- Source: server-scripts/PlayerQuests.cs:50-51,231,454-455 — completed adventurer quests use DateTime.UtcNow ticks and remain completed for 24 hours. -->
             After you complete an Adventurer quest, it stays on a 24-hour cooldown
             for your character.
           </div>

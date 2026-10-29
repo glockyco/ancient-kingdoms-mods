@@ -800,8 +800,8 @@ function formatBuffDebuffStats(
     );
   }
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
-  // Source: server-scripts/BuffSkill.cs:illusionRace,86-96 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:6931-6941 (ReSkinPlayer picks the illusion race)
+  // Source: server-scripts/BuffSkill.cs:illusionRace,90-100 (illusionRace, HasAppearanceIllusion),
+  // server-scripts/Player.cs:6933-6943 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
   // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Skills.cs — undeadIlussion redraws a player as undead.
@@ -853,7 +853,7 @@ function formatBuffDebuffStats(
   );
 
   const lifetapHealing = parseLinearValue(skill.lifetap_healing_percent_bonus);
-  // Source: server-scripts/Combat.cs:1213-1223 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
+  // Source: server-scripts/Combat.cs:1212-1222 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
   if (lifetapHealing) {
     parts.push(
       `+${formatLinearPercent(lifetapHealing, options)} lifetap healing`,
@@ -1107,7 +1107,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-199,204-217;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:9099-9116 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:9153-9170 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — while active, a Rogue's
   // followupDefaultAttack skill, Stab, switches to Poison damage and adds the rounded 250% Dexterity
@@ -1128,10 +1128,10 @@ const HARDCODED_EFFECTS: Record<string, string> = {
     "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
   // Source: server-scripts/PlayerInventory.cs; Player.cs — the cast before a travel item takes effect, refused in combat.
   teleport: "use travel items (out of combat)",
-  // Source: server-scripts/Combat.cs:138 — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
+  // Source: server-scripts/Combat.cs:137 — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
   razor_of_wrath:
     "+1% × rank attack power, scaled by current rage (full rage = full bonus)",
-  // Source: server-scripts/Combat.cs:170 — isResourceDepending passive: magic_damage_percent_bonus × (mana.current / mana.max)
+  // Source: server-scripts/Combat.cs:169 — isResourceDepending passive: magic_damage_percent_bonus × (mana.current / mana.max)
   arcane_edge:
     "+1% × rank spell power, scaled by current mana (full mana = full bonus)",
   // Divine Intervention: +10000 all resists for 3s in area is effectively invulnerability; generic formatter would show confusing +10000 values
@@ -1258,7 +1258,7 @@ export function formatSkillEffect(
   // Only monsters enrage from a passive: DealDamageAt scans monster and NPC skill
   // lists alone, and no NPC carries a skill, so a player passive with the flag
   // changes no damage.
-  // Source: server-scripts/Combat.cs:850-893 (enrage scan and damage bonus, non-spell hits only)
+  // Source: server-scripts/Combat.cs:849-892 (enrage scan and damage bonus, non-spell hits only)
   if (skill.skill_type === "passive" && skill.is_enrage) {
     parts.push(`+${formatRange("50%", "75%")} non-spell dmg below 10% hp`);
   }
@@ -1291,7 +1291,7 @@ export function formatSkillEffect(
       `${formatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item`,
     );
   }
-  // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2123-2134 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
+  // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2178-2189 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
   if (skill.food_and_drink_buff_duration_bonus_per_level) {
     parts.push(
       `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food`,

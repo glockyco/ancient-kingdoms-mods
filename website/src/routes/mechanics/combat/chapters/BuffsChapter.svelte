@@ -110,7 +110,7 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/Buff.cs:47-228; Wisdom.cs:116-127; Combat.cs:969-982 — positive non-song effects add the selected attribute, with per-effect rounding. -->
+    <!-- Source: server-scripts/Buff.cs:46-227; Wisdom.cs:116-127; Combat.cs:968-981 — positive non-song effects add the selected attribute, with per-effect rounding. -->
     <!-- Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus — Leadership adds its stored buff attribute to both listed damage bonuses. -->
     <!-- Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity. -->
     <RefTable caption="What the buff attribute adds to each effect">
@@ -244,7 +244,7 @@
       the target's chance to resist them, to at least 0%. Other debuffs that lower
       resists get no such bonus.
     </p>
-    <!-- Source: server-scripts/TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191; BuffSkill.cs:169-190 — immunity accepts pure damage over time with an optional slow, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
+    <!-- Source: server-scripts/TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191; BuffSkill.cs:173-194 — immunity accepts pure damage over time with an optional slow, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
     <p>
       Monsters whose pages list Immune to Debuffs ignore debuffs, with these
       exceptions:
@@ -310,8 +310,8 @@
       Players and mercenaries use their own attributes. Debuffs from monsters,
       NPCs, companions and familiars add nothing.
     </p>
-    <!-- Source: server-scripts/Buff.cs:69-228; BuffSkill.cs:488-530; Skills.cs:GetFinalDamageDoT — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
-    <!-- Source: server-scripts/BuffSkill.cs:14-31,523-530 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
+    <!-- Source: server-scripts/Buff.cs:68-227; BuffSkill.cs:492-534; Skills.cs:GetFinalDamageDoT — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
+    <!-- Source: server-scripts/BuffSkill.cs:14-35,527-534 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
     <RefTable caption="What the debuff attribute adds to each effect">
       <thead>
         <tr>

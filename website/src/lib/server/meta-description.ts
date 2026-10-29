@@ -63,7 +63,7 @@ export interface ItemMetaContext {
    * base value because the applied level depends on the player's veteran rank,
    * which is unknown at SSR time.
    * Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — non-bandage potions can use Elixir Endurance. Bandages keep their base buff level.
-   * Source: server-scripts/Pet.cs:2141-2154 — mercenary utility potions resolve their buff level from the owner's veteran rank.
+   * Source: server-scripts/Pet.cs:2196-2209 — mercenary utility potions resolve their buff level from the owner's veteran rank.
    */
   buffDurationSeconds?: number | null;
   /** Whether the linked relic buff is a cleanse spell. */
@@ -368,7 +368,7 @@ function buffPhrase(
 function potionDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/PotionItem.cs:24-39,165-167 — non-bandage buff
   // levels can use Elixir Endurance; bandages return their base buff level.
-  // Source: server-scripts/Pet.cs:2141-2165 — mercenary utility potions
+  // Source: server-scripts/Pet.cs:2196-2220 — mercenary utility potions
   // resolve that level from the owner's veteran rank.
   const isBandage = item.cooldown_category === "Bandages";
   // Source: server-scripts/PotionItem.cs:8-17,62-146 — health, mana, energy,
@@ -474,7 +474,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:5354-5389 — one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:5356-5391 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -505,7 +505,7 @@ function bookDescription(item: Item): string {
 }
 
 function mountDescription(item: Item): string {
-  // Source: server-scripts/MountItem.cs:8 and Player.cs:115-123,596-600.
+  // Source: server-scripts/MountItem.cs:8 and Player.cs:115-123,598-602.
   return `Mount with a speed of ${formatNumber(item.mount_speed, { decimals: 2 })}.${levelGate(item.level_required)} Cannot be mounted in dungeons or in combat.`;
 }
 
@@ -648,7 +648,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:13132-13136,12078-12093
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:13235-13239,12181-12196
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -681,7 +681,7 @@ function chestKeyDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function keyDescription(ctx: ItemMetaContext): string {
-  // Source: server-scripts/Portal.cs:49 and InteractablePortal.cs:101 —
+  // Source: server-scripts/Portal.cs:70 and InteractablePortal.cs:101 —
   // portals gated by a key check `player.keys` (or any party member's
   // keyring) for the matching name. Source: server-scripts/ScriptableItem.cs:47
   // — items flagged `isKey` belong in the keyring.
@@ -1700,7 +1700,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32 — subtracts upgradeRequiredSkillPoints
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:7521-7531 and ScriptableSkill.cs:433-435
+  // Source: server-scripts/Player.cs:7523-7533 and ScriptableSkill.cs:433-435
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   // Veteran-tree skills with no player classes are mercenary-side veteran
@@ -1753,7 +1753,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:99; Player.cs:10819-10833,UpdateMercStatsByLevel — familiar level follows
+// Source: server-scripts/SummonSkill.cs:99; Player.cs:10942-10956,UpdateMercStatsByLevel — familiar level follows
 // summoning skill rank, companions match the summoner up to Level.max, and
 // mercenaries hire at player level and gain attributes per level.
 
@@ -1809,7 +1809,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return ` Summoned by a class skill. Its level matches yours, up to level ${input.level_max}.`;
     case "Mercenary":
-      // Source: server-scripts/Player.cs:10819-10833; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:10942-10956; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
       return " Hire one from any Mercenary Recruiter. Its level matches yours.";
   }
 }
@@ -1889,7 +1889,7 @@ export function altarDescription(altar: AltarDescriptionInput): string {
 // =============================================================================
 //
 // Role labels come from curated class metadata.
-// Source: server-scripts/Player.cs:1489-1515 — classes display Mana, Rage or Active Songs.
+// Source: server-scripts/Player.cs:1491-1517 — classes display Mana, Rage or Active Songs.
 
 interface ClassDescriptionInput {
   name: string;

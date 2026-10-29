@@ -6,7 +6,7 @@
   const { skill } = $derived(mechanics);
 </script>
 
-<!-- Source: server-scripts/BardVirtuositySkill.cs:IsDamageBonusActive,GetAdditionalDamagePercentBonus; Combat.cs:115-362 — the bonus needs three active songs, and each song beyond three adds the per-song bonus to Attack Power and Spell Power. -->
+<!-- Source: server-scripts/BardVirtuositySkill.cs:IsDamageBonusActive,GetAdditionalDamagePercentBonus; Combat.cs:114-361 — the bonus needs three active songs, and each song beyond three adds the per-song bonus to Attack Power and Spell Power. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Virtuosity</h3>
   <p>

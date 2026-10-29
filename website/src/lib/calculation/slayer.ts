@@ -3,7 +3,7 @@ import { addF32, clamp, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatNumber, formatPercent } from "$lib/utils/format";
 import { situational } from "./inputs";
 
-// Source: server-scripts/Database.cs:3428-3436 — each target adds 0.0002 × min(50, account kills) in float, and the sum is clamped between 0 and 1.
+// Source: server-scripts/Database.cs:3431-3439 — each target adds 0.0002 × min(50, account kills) in float, and the sum is clamped between 0 and 1.
 const PER_KILL = 0.0002;
 const KILL_LIMIT = 50;
 

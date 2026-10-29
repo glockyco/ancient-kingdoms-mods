@@ -1004,7 +1004,7 @@ export function composeRequirements(
         state: "not_active",
       }),
     );
-    // Source: server-scripts/PlayerQuests.cs:220-253.
+    // Source: server-scripts/PlayerQuests.cs:224-257.
     if (!quest.is_adventurer_quest && !quest.is_repeatable)
       parts.push(
         predicate({

@@ -15,7 +15,7 @@ export function achievementAnchor(id: string): string {
  * Facts the game's achievement text leaves out, shown under the description.
  */
 export const achievementNotes: Record<string, string> = {
-  // Source: server-scripts/Player.cs:11974-11982; Utils.cs:worldBosses — Scaleblight is in the game's world-boss list but not among the bosses the achievement checks.
+  // Source: server-scripts/Player.cs:12077-12085; Utils.cs:worldBosses — Scaleblight is in the game's world-boss list but not among the bosses the achievement checks.
   KILL_WORLD_BOSSES:
     "Kill each of the five bosses below at least once. Scaleblight is also a world boss but does not count.",
 };
@@ -88,7 +88,7 @@ const professionLinks: Record<string, AchievementRelationship> = {
   },
 };
 
-// Source: server-scripts/Player.cs:11718-11730 — these quest names unlock the two achievement IDs.
+// Source: server-scripts/Player.cs:11821-11833 — these quest names unlock the two achievement IDs.
 const questLinks: Record<string, AchievementRelationship> = {
   PLANESWALKER: {
     kind: "quest",
@@ -102,7 +102,7 @@ const questLinks: Record<string, AchievementRelationship> = {
   },
 };
 
-// Source: server-scripts/Player.cs:11943-11972 — each monster name maps directly to one achievement ID.
+// Source: server-scripts/Player.cs:12046-12075 — each monster name maps directly to one achievement ID.
 const monsterLinks: Record<string, AchievementRelationship> = {
   KILL_BLACK_DRAGON: {
     kind: "monster",
@@ -173,7 +173,7 @@ export const achievementRelationships: Record<
       [relationship],
     ]),
   ),
-  // Source: server-scripts/Player.cs:11974-11982 — the achievement checks these five bosses by name, each killed at least once, rather than reading the world-boss list.
+  // Source: server-scripts/Player.cs:12077-12085 — the achievement checks these five bosses by name, each killed at least once, rather than reading the world-boss list.
   KILL_WORLD_BOSSES: [
     monsterLinks.KILL_BLACK_DRAGON,
     monsterLinks.KILL_PYROTH,

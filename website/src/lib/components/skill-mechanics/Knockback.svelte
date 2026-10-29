@@ -5,7 +5,7 @@
   const { skill } = $derived(mechanics);
 </script>
 
-<!-- Source: server-scripts/Combat.cs:88 (knockbackTime = 0.25f), 90 (knockbackObstacleDamageBonus = 0.0125f), 1352-1372 -->
+<!-- Source: server-scripts/Combat.cs:87 (knockbackTime = 0.25f), 89 (knockbackObstacleDamageBonus = 0.0125f), 1351-1371 -->
 <div class="space-y-1">
   <h3 class="font-semibold">Knockback</h3>
   <p class="text-muted-foreground">
@@ -22,7 +22,7 @@
       >If an obstacle blocks the path, the target also takes 1.25% of the damage
       just dealt, rounded up to at least 1.</span
     >
-    <!-- Source: server-scripts/Combat.cs:711 — num6 is the victim's level minus the attacker's. -->
+    <!-- Source: server-scripts/Combat.cs:710 — num6 is the victim's level minus the attacker's. -->
     <span class="block"
       >Targets 15 or more levels above the attacker cannot be knocked back,
       unless the attacker is a boss.</span

@@ -394,7 +394,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerQuests.cs:440-443 — quest completion raises the start NPC's faction. -->
+      <!-- Source: server-scripts/PlayerQuests.cs:449-452 — quest completion raises the start NPC's faction. -->
       <p>
         <span class="block"
           >Handing in an ordinary quest gives 20 reputation per recommended
@@ -438,7 +438,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:13633-13637 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:13736-13740 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Click an animal within 3 yd to pet it. The same animal can grant
         reputation only once every 30 seconds.
@@ -514,7 +514,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:13633-13637, Monster.cs:3251-3263, Npc.cs:1646-1656, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:13736-13740, Monster.cs:3251-3263, Npc.cs:1646-1656, PlayerQuests.cs:449-452, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         Your reputation can keep rising above Exalted or falling below Hated.

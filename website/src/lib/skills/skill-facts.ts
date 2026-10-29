@@ -63,7 +63,7 @@ export interface ImmuneDebuffBypass {
  * A boss lets through only damage over time, optionally with a slow, that changes nothing else.
  * Other monsters with Immune to Debuffs also let through that damage over time,
  * resistance-decrease skills and positive Health Regeneration.
- * Source: server-scripts/BuffSkill.cs:169-190; TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191 — flagged non-boss monsters accept the boss rule and the two extra cases.
+ * Source: server-scripts/BuffSkill.cs:173-194; TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191 — flagged non-boss monsters accept the boss rule and the two extra cases.
  */
 export function immuneDebuffBypass(
   skill: SkillDetailView,
@@ -95,14 +95,14 @@ export function immuneDebuffBypass(
 /**
  * How each damage type is mitigated and avoided, mirroring the game one row per type.
  *
- * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:902-919 — the
+ * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:901-918 — the
  * per-damage-type switch, each read multiplied by 0.0005.
- * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:712-721 —
+ * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:711-720 —
  * Normal damage goes to GetProbResistMeleeDamage, every other type to its own GetProbResist*.
  *
  * Physical is the one type whose stat does double duty. `defense` reduces the damage at 0.0005
  * per point, and it also feeds the block roll at 0.0001 per point, because blockChance is
- * derived from it. Source: server-scripts/Combat.cs:309-321. Both physical formulas refer
+ * derived from it. Source: server-scripts/Combat.cs:308-320. Both physical formulas refer
  * to Defense.
  *
  * Stat names are looked up here and never assembled from a fragment. Appending "Resist" to a
@@ -411,7 +411,7 @@ export function skillFacts(
   const isDebuffType =
     skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff";
 
-  // Source: server-scripts/Combat.cs:1605-1649 — melee debuffs resist with Defense, the others with their matching resistance.
+  // Source: server-scripts/Combat.cs:1604-1648 — melee debuffs resist with Defense, the others with their matching resistance.
   const debuffResistance = skill.is_melee_debuff
     ? statName("armor_class")
     : skill.is_poison_debuff

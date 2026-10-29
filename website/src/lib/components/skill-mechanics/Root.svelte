@@ -13,7 +13,7 @@
 </script>
 
 <!-- Source: server-scripts/Monster.cs:UpdateServer_IDLE; Npc.cs:UpdateServer_IDLE; Pet.cs:UpdateServer_IDLE — monsters roll every 2 seconds using Magic Resist; NPCs and pets roll every second at 10%. -->
-<!-- Source: server-scripts/TargetDebuffSkill.cs:144-180; AreaDebuffSkill.cs:155-191; BuffSkill.cs:169-190 — bosses and elites automatically resist base speed bonuses below -10 unless IgnoreImmuneDebuff passes. Pure damage over time passes for both. Non-boss elites also accept resistance-decrease skills and positive Health Regeneration. -->
+<!-- Source: server-scripts/TargetDebuffSkill.cs:144-180; AreaDebuffSkill.cs:155-191; BuffSkill.cs:173-194 — bosses and elites automatically resist base speed bonuses below -10 unless IgnoreImmuneDebuff passes. Pure damage over time passes for both. Non-boss elites also accept resistance-decrease skills and positive Health Regeneration. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Root</h3>
   <p class="text-muted-foreground">

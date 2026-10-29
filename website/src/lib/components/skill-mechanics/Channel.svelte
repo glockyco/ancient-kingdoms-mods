@@ -28,7 +28,7 @@
     0.01 yd, losing the target, stun or fear interrupts the channel. An
     interruption starts the full cooldown, even if a pulse killed the target.
   </p>
-  <!-- Source: server-scripts/PlayerSkills.cs:CancelCast,534-577,2225-2229,2322-2329 — a valid replacement skill cancels the channel with full cooldown and then starts or applies. -->
+  <!-- Source: server-scripts/PlayerSkills.cs:CancelCast,551-594,2250-2254,2347-2354 — a valid replacement skill cancels the channel with full cooldown and then starts or applies. -->
   <p class="text-muted-foreground">
     Casting another skill also interrupts the channel and starts its full
     cooldown.

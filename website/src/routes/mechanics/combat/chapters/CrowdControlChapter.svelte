@@ -8,7 +8,7 @@
 <Chapter id="crowd-control">
   <Panel>
     <!-- Source: server-scripts/Monster.cs:UpdateServer_STUNNED,UpdateServer_FEAR,UpdateServer_IDLE — a stunned monster waits, a feared monster runs to random points, a rooted monster still uses skills in range, and a sleeping monster does nothing. -->
-    <!-- Source: server-scripts/Combat.cs:DealDamageAt; TargetDebuffSkill.cs:144-180; AreaDebuffSkill.cs:155-191; BuffSkill.cs:169-190 — stun skips feared targets and most Bear Mount riders, fear skips bosses and fear-immune targets, knockback skips targets 15 or more levels above a non-boss attacker, and bosses and elites resist base Movement Speed bonuses below -10 unless IgnoreImmuneDebuff passes. -->
+    <!-- Source: server-scripts/Combat.cs:DealDamageAt; TargetDebuffSkill.cs:144-180; AreaDebuffSkill.cs:155-191; BuffSkill.cs:173-194 — stun skips feared targets and most Bear Mount riders, fear skips bosses and fear-immune targets, knockback skips targets 15 or more levels above a non-boss attacker, and bosses and elites resist base Movement Speed bonuses below -10 unless IgnoreImmuneDebuff passes. -->
     <RefTable caption="Crowd control effects compared" minWidth="44rem">
       <thead>
         <tr>
@@ -95,7 +95,7 @@
         Equipment and skills add Fear Resist up to 100%, which makes you immune.
         Fear dismounts a player.
       </li>
-      <!-- Source: server-scripts/Combat.cs:1310-1314; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
+      <!-- Source: server-scripts/Combat.cs:1309-1313; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
       <li>
         A monster or NPC feared by a Necromancer player runs at half its
         Movement Speed.
@@ -154,7 +154,7 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/TargetDebuffSkill.cs:144-180; AreaDebuffSkill.cs:155-191; BuffSkill.cs:169-190 — bosses and elites resist base speed bonuses below -10 unless the immunity bypass passes. -->
+    <!-- Source: server-scripts/TargetDebuffSkill.cs:144-180; AreaDebuffSkill.cs:155-191; BuffSkill.cs:173-194 — bosses and elites resist base speed bonuses below -10 unless the immunity bypass passes. -->
     <p>
       Bosses and elite monsters automatically resist debuffs with a base
       Movement Speed bonus below −10, except damage over time with no other

@@ -23,7 +23,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You gain Rage when your auto attacks deal damage and when a single-target physical melee hit damages you.",
         source:
-          "Source: server-scripts/Combat.cs:1385-1398,1070-1089,1465-1470 — Rage gain from targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Combat.cs:1384-1397,1069-1088,1464-1469 — Rage gain from targeted physical melee hits and auto attacks",
         href: "/mechanics/combat#rage-generation",
         linkText: "Rage formulas",
       },
@@ -33,7 +33,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Each Wisdom point adds 0.4% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
-        "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
+        "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:46-59,112-149; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
@@ -61,7 +61,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Each Wisdom point adds 0.4% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
-        "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
+        "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:46-59,112-149; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
@@ -72,7 +72,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:815-820,1065-1068; server-scripts/Player.cs:11426-11432 — dungeon casting restriction and buff removal",
+          "Source: server-scripts/PlayerSkills.cs:832-837,1082-1085; server-scripts/Player.cs:11529-11535 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
@@ -129,7 +129,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when a single-target physical melee hit damages you. Passive skills and buffs can add regeneration.",
         source:
-          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1385-1398,1070-1089,1465-1470 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1384-1397,1069-1088,1464-1469 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
         href: "/mechanics/character#resources",
         linkText: "Resource rules",
       },
@@ -150,19 +150,19 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Mystic Spark costs no Mana and gives back 35% of its damage as Mana, rounded down. Damage beyond the target's remaining Hit Points does not count.",
         source:
-          "Source: server-scripts/Combat.cs:1117-1126,1127-1176 — Mystic Spark caps mana return by target health and restores it before ward absorption",
+          "Source: server-scripts/Combat.cs:1116-1125,1126-1175 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
         text: "Mana Shield spends 1 Mana per damage point absorbed. Damage beyond your remaining Mana reaches your Hit Points and ends the shield.",
         source:
-          "Source: server-scripts/Combat.cs:1177-1207 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
+          "Source: server-scripts/Combat.cs:1176-1206 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
         href: "/skills/mana_shield",
         linkText: "Mana Shield",
       },
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
         source:
-          "Source: server-scripts/Combat.cs:798-801; server-scripts/Skills.cs:1638-1655 — damage ends movement-lock sleep effects",
+          "Source: server-scripts/Combat.cs:797-800; server-scripts/Skills.cs:1638-1655 — damage ends movement-lock sleep effects",
       },
     ],
   },
@@ -181,14 +181,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You can keep two songs active at once. Polyphony removes this limit.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1681-1696 — base two-song limit plus passive slots, removed by an unlimited passive",
+          "Source: server-scripts/PlayerSkills.cs:1706-1721 — base two-song limit plus passive slots, removed by an unlimited passive",
         href: "/mechanics/bard#songs",
         linkText: "Song rules",
       },
       {
         text: "Without Polyphony, a new song replaces the oldest one when both slots are full.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1364-1398 — active songs refresh or displace the oldest while a limit applies",
+          "Source: server-scripts/PlayerSkills.cs:1381-1415 — active songs refresh or displace the oldest while a limit applies",
       },
       {
         text: "Virtuosity and Final Cadence need at least three active songs, so they require Polyphony.",
@@ -203,7 +203,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. It also strengthens Bone Aegis's Ward, Mend Undead's Health Regeneration, Ossuary Bulwark's Armor Class, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum Hit Points per point but no Health Regeneration.",
       source:
-        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:467-530; server-scripts/Buff.cs:47-60,113-150; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
+        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:471-534; server-scripts/Buff.cs:46-59,112-149; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",

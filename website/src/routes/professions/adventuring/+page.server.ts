@@ -231,7 +231,7 @@ export const load = (async (): Promise<AdventuringPageData> => {
     const objectives = objectiveStatement.all(raw.id) as QuestObjective[];
     const rewardItems = rewardStatement.all(raw.id) as QuestRewardItem[];
 
-    // Source: server-scripts/PlayerQuests.cs:394-396.
+    // Source: server-scripts/PlayerQuests.cs:403-405.
     const adventuringSkillIncrease = Math.min(
       1,
       adventuringSkillGain(raw.reward_experience),

@@ -124,7 +124,7 @@ function additiveLead(value: number, negative = false): string {
     ? `${sign}${number(value)}`
     : `${sign}${percent(value, { decimals: 2, preserveNonzero: true })} of`;
 }
-// Source: server-scripts/Buff.cs:47-258; BuffSkill.cs:233-250,467-530; Wisdom.cs:116-128 — song power multiplies a song's values, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
+// Source: server-scripts/Buff.cs:46-257; BuffSkill.cs:237-254,471-534; Wisdom.cs:116-128 — song power multiplies a song's values, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
 /** How an attribute source changes one listed value, as a note lead, or null when it does not. */
 function scalingLead(
   scaling: EffectScaling,
@@ -286,7 +286,7 @@ function cadenceNote(mercenary: boolean): string {
   return `${songPower} CHA, then ${melody[0]}, ${melody[1]} or ${melody[2]} more with 4, 5 or 6+ songs`;
 }
 
-// Source: server-scripts/Buff.cs:47-292; BardSongSkill.cs:28; BardCharmSongSkill.cs:GetCharmedDamageMultiplier — song power scales a song's values, but not speed, attributes or an additive Charisma damage over time.
+// Source: server-scripts/Buff.cs:46-283; BardSongSkill.cs:28; BardCharmSongSkill.cs:GetCharmedDamageMultiplier — song power scales a song's values, but not speed, attributes or an additive Charisma damage over time.
 /**
  * Move a song's notes onto its "Bard song" fragment when every value it shows
  * carries the same song power note.

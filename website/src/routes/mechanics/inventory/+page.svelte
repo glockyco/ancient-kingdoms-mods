@@ -293,7 +293,7 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:413 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:13805-13830 and 13840-13868 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:13908-13933 and 13943-13971 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -410,7 +410,7 @@
         <p>
           <span class="block"
             ><!-- Source: server-scripts/CustomStrucUI.cs:211-234 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 337-356 and Player.cs:13556-13568 — move mode hides the structure, then repositions the same one without charging gold. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 337-356 and Player.cs:13659-13671 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -426,7 +426,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:71-76 and 268-286 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10645-10678 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10767-10800 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >
@@ -663,15 +663,14 @@
           one item at a time.</span
         >
       </p>
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:GetRepairAllEquipment,CalculateRepairAllPrice,UserCode_CmdRepairAll__UInt32__Int64 — Repair All covers the player's and active mercenaries' equipped slots, sums the single-item prices, and refuses while in combat. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:GetRepairAllContainers,CalculateRepairAllPrice,UserCode_CmdRepairAll__UInt32__Int64 — Repair All covers the player's equipped and inventory slots and active mercenaries' equipped slots, sums the single-item prices, and refuses while in combat. -->
       <p>
         <span class="block"
-          >Repair All fixes your equipped gear and your active mercenaries' gear
-          at once, for the total of the single repair prices.</span
+          >Repair All fixes your equipped and carried gear and your active
+          mercenaries' equipped gear at once, for the total of the single repair
+          prices.</span
         >
-        <span class="block"
-          >It skips carried gear and does not work in combat.</span
-        >
+        <span class="block">It does not work in combat.</span>
       </p>
       <Calculation calculation={repairCost()} />
     </Card.Content>
@@ -776,7 +775,7 @@
           Switching applies saved choices to all 16 equipment slots.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3205-3207 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
+          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3208-3210 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
           Template 1 starts out holding the gear your character was created with.
         </li>
         <!-- Source: server-scripts/PlayerEquipment.cs:455-482,1657-1672 — active template tracks equipment changes and unlocking copies current gear then activates the new template. -->
@@ -813,7 +812,7 @@
           inventory.
         </li>
         <li>
-          <!-- Source: server-scripts/Database.cs:425-435,803-804,2711-2735 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
+          <!-- Source: server-scripts/Database.cs:425-435,805-806,2714-2738 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
           Templates belong to one character and do not carry across your other characters.
         </li>
       </ul>
@@ -907,7 +906,7 @@
           >.</span
         >
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:50-84, server-scripts/PlayerNpcTrading.cs:29-43,519-547 and server-scripts/Player.cs:4642-4645 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
+      <!-- Source: server-scripts/ScrollItem.cs:50-84, server-scripts/PlayerNpcTrading.cs:29-43,519-547 and server-scripts/Player.cs:4644-4647 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
         <span class="block">Kits do not repair inventory tools.</span>
         <span class="block"
@@ -1031,7 +1030,7 @@
         run out.
         <!-- Source: server-scripts/PlayerInventory.cs:127-132 — starting a timed scroll cast cancels the current cast and clears pending and follow-up skill state. -->
       </p>
-      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3182-3240 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
+      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3184-3242 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
       <p>
         Moving, losing your target, starting a skill, changing or removing the
         casting item, stun, fear, death, trading, or cancelling the action

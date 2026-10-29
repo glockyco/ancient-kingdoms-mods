@@ -2075,7 +2075,7 @@
         {/if}
         {#if isPet}
           <div class="space-y-2 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:4254-4284 — using the item summons the pet, or dismisses the one it already summoned. -->
+            <!-- Source: server-scripts/Player.cs:4256-4286 — using the item summons the pet, or dismisses the one it already summoned. -->
             <p>
               Use the whistle to summon the pet. Using it again dismisses that
               pet. Three pets can follow you at once.

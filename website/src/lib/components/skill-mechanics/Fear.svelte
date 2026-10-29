@@ -7,7 +7,7 @@
   const duration = $derived(fmt.atRank(skill.fear_time!, skill.max_level));
 </script>
 
-<!-- Source: server-scripts/Combat.cs:1310-1351 — DealDamageAt fear branch, reached only when the stun branch is not taken -->
+<!-- Source: server-scripts/Combat.cs:1309-1350 — DealDamageAt fear branch, reached only when the stun branch is not taken -->
 <div class="space-y-1">
   <h3 class="font-semibold">Fear</h3>
   <p class="text-muted-foreground">
@@ -29,7 +29,7 @@
       <!-- Source: server-scripts/Combat.cs:DealDamageAt — successful fear dismounts players. -->
       <span class="block">A feared player is dismounted.</span>
     {/if}
-    <!-- Source: server-scripts/Combat.cs:1310-1314; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear halves positive monster/NPC movement speed. -->
+    <!-- Source: server-scripts/Combat.cs:1309-1313; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear halves positive monster/NPC movement speed. -->
     <span class="block"
       >A monster or NPC feared by a Necromancer player moves at half its normal
       speed while feared.</span

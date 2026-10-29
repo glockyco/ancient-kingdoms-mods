@@ -2,7 +2,7 @@
  * Reputation a quest hand-in grants with its giver's faction. Adventurer
  * quests grant nothing, so they have no giver faction to credit.
  *
- * Source: server-scripts/PlayerQuests.cs:440-443 — CmdComplete adds
+ * Source: server-scripts/PlayerQuests.cs:449-452 — CmdComplete adds
  * recommendedLevel * 20 to the start NPC's faction unless adventurerQuest.
  */
 export function questReputationGain(levelRecommended: number): number {

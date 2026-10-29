@@ -365,7 +365,7 @@
       class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
     >
       <ol class="divide-y [&>li:nth-child(even)]:bg-muted/30">
-        <!-- Source: server-scripts/PlayerQuests.cs:236-253 — any one completed predecessor meets the prerequisite. -->
+        <!-- Source: server-scripts/PlayerQuests.cs:240-257 — any one completed predecessor meets the prerequisite. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">1</span>
           <div>
@@ -387,7 +387,7 @@
             </p>
           </div>
         </li>
-        <!-- Source: server-scripts/PlayerQuests.cs:463-469 — abandoning removes the quest record, including its progress. -->
+        <!-- Source: server-scripts/PlayerQuests.cs:472-478 — abandoning removes the quest record, including its progress. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">3</span>
           <div>
@@ -435,7 +435,7 @@
           </tr>
         </thead>
         <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
-          <!-- Source: server-scripts/PlayerQuests.cs:295-309,322-349; server-scripts/KillQuest.cs:16-47 — kill and location progress advances only for accepted quests. -->
+          <!-- Source: server-scripts/PlayerQuests.cs:299-313,326-353; server-scripts/KillQuest.cs:16-47 — kill and location progress advances only for accepted quests. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Kill" /></td>
             <td class="px-4 py-2">Kills after you accept</td>
@@ -446,7 +446,7 @@
             <td class="px-4 py-2">Reaching the place after you accept</td>
             <td class="px-4 py-2 text-muted-foreground">Nothing is taken</td>
           </tr>
-          <!-- Source: server-scripts/PlayerQuests.cs:333-349; server-scripts/LocationQuest.cs:13-26 — Find quests start fulfilled on acceptance. -->
+          <!-- Source: server-scripts/PlayerQuests.cs:337-353; server-scripts/LocationQuest.cs:13-26 — Find quests start fulfilled on acceptance. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Find" /></td>
             <td class="px-4 py-2">Done as soon as you accept</td>
@@ -484,7 +484,7 @@
             <td class="px-4 py-2">Every listed item equipped at once</td>
             <td class="px-4 py-2 text-muted-foreground">You keep the items</td>
           </tr>
-          <!-- Source: server-scripts/AlchemyQuest.cs:13-16; server-scripts/Player.cs:13774-13789 — brewing a matching potion advances only active, incomplete quests, and the quest is fulfilled at the target count. -->
+          <!-- Source: server-scripts/AlchemyQuest.cs:13-16; server-scripts/Player.cs:13877-13892 — brewing a matching potion advances only active, incomplete quests, and the quest is fulfilled at the target count. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Brew" /></td>
             <td class="px-4 py-2">Potions you brew after you accept</td>

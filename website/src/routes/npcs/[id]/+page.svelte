@@ -81,7 +81,7 @@
   const activeRoles = $derived(getActiveRoles(data.npc.roles));
   const specialMechanics = $derived(getNpcSpecialMechanics(data.npc.id));
 
-  // Source: server-scripts/Npc.cs:1748-1754; server-scripts/Player.cs:14712-14739 — renewal uses gold when priced and resets respawn timers for monsters in the target zone.
+  // Source: server-scripts/Npc.cs:1748-1754; server-scripts/Player.cs:14825-14852 — renewal uses gold when priced and resets respawn timers for monsters in the target zone.
   // Source: server-scripts/UINpcTrading.cs:923-931 — Charisma can reduce the fee for ordinary dungeons by up to 25%.
   function getRoleDescription(role: RoleConfig): string {
     if (role.key === "is_renewal_sage") {

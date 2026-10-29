@@ -61,7 +61,7 @@
       >.
     </p>
   {/if}
-  <!-- Source: server-scripts/TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191; BuffSkill.cs:169-190 — immunity lets through pure damage over time with an optional slow on every flagged monster, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
+  <!-- Source: server-scripts/TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191; BuffSkill.cs:173-194 — immunity lets through pure damage over time with an optional slow on every flagged monster, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
   <p class="text-muted-foreground">
     {#if bypass.boss && bypass.otherMonster}
       Immune to Debuffs does not stop this debuff.

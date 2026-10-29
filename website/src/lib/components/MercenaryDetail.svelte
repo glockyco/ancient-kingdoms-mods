@@ -152,7 +152,7 @@
         ? "text-stat-atk"
         : "text-stat-mana",
   );
-  // Source: server-scripts/Player.cs:UpdateMercStatsByLevel,11034-11049 — the veteran percentage multiplies the class's current base-resource curve before the pool is rounded.
+  // Source: server-scripts/Player.cs:UpdateMercStatsByLevel,11161-11176 — the veteran percentage multiplies the class's current base-resource curve before the pool is rounded.
   const veteranPools = $derived.by(() => {
     const curve = pet.profile.curves[classDef.type];
     const bonus = multiplyF32(veteran, VET_MULT_PER_POINT);
@@ -172,7 +172,7 @@
     if (!deathSave) return null;
     const at = (totalVeteranPoints: number) => {
       const rank = deathSaveRank(totalVeteranPoints);
-      // Source: server-scripts/Combat.cs:1404-1410, LinearInt.cs:Get, LinearFloat.cs:Get, BuffSkill.cs:buffTime — the Rage cost is energyCosts.Get(rank) and the buff lasts buffTime.Get(rank).
+      // Source: server-scripts/Combat.cs:1403-1409, LinearInt.cs:Get, LinearFloat.cs:Get, BuffSkill.cs:buffTime — the Rage cost is energyCosts.Get(rank) and the buff lasts buffTime.Get(rank).
       return {
         rage: linearAt(
           requireLinearValue(
@@ -194,7 +194,7 @@
       now: at(veteran),
       low: at(0),
       high: at(MAX_VETERAN),
-      // Source: server-scripts/Combat.cs:1408 — the cooldown is cooldown.baseValue at every rank.
+      // Source: server-scripts/Combat.cs:1407 — the cooldown is cooldown.baseValue at every rank.
       cooldown: requireLinearValue(
         deathSave.cooldown,
         `${deathSave.id} cooldown`,
@@ -358,7 +358,7 @@
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-4">
-        <!-- Source: server-scripts/Player.cs:11019-11049, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
+        <!-- Source: server-scripts/Player.cs:11146-11176, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
         <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
           {#if stats.health}{@render stat(
               "Maximum Hit Points",
@@ -507,7 +507,7 @@
           </div>
           <div>
             <h3 class="text-sm font-semibold">Veteran resource bonuses</h3>
-            <!-- Source: server-scripts/Player.cs:10834-10848,11034-11049; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
+            <!-- Source: server-scripts/Player.cs:10957-10971,11161-11176; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
               Your {veteran} total veteran points add about
               {formatNumber(veteranPools.health)} maximum Hit Points{veteranRaisesMana
@@ -717,7 +717,7 @@
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4 text-sm">
-          <!-- Source: server-scripts/Combat.cs:1256-1267,1402-1423 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the player is level 50+, the cooldown has elapsed, and the mercenary has enough Rage. -->
+          <!-- Source: server-scripts/Combat.cs:1255-1266,1401-1422 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the player is level 50+, the cooldown has elapsed, and the mercenary has enough Rage. -->
           <p>
             From level {DEATH_SAVE_MIN_LEVEL},
             <a

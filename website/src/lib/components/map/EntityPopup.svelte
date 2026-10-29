@@ -1064,7 +1064,7 @@
                   {:else}
                     <span>{portal.requiredItemName}</span>
                   {/if}
-                  <!-- Source: server-scripts/Portal.cs:47 — each player needs their own key only when requiresEveryoneKey is set; otherwise any online party member's key admits the player. -->
+                  <!-- Source: server-scripts/Portal.cs:68 — each player needs their own key only when requiresEveryoneKey is set; otherwise any online party member's key admits the player. -->
                   <a
                     href="/mechanics/world#portals"
                     class="block text-muted-foreground hover:underline"

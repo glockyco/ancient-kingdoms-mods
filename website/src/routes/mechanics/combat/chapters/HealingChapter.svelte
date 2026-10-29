@@ -104,12 +104,12 @@
   </Topic>
 
   <Topic id="lifetap">
-    <!-- Source: server-scripts/Combat.cs:1210-1228 — lifetap heals without reducing damage, and damage is not capped by the victim's remaining Health. -->
+    <!-- Source: server-scripts/Combat.cs:1209-1227 — lifetap heals without reducing damage, and damage is not capped by the victim's remaining Health. -->
     <p>
       Lifetap restores Hit Points without reducing the hit's damage. Overkill
       damage counts toward the healing.
     </p>
-    <!-- Source: server-scripts/Combat.cs:1210-1228 — lifetap healing rounds down after multiplying remaining damage by its percentage and summed active or permanent healing bonuses. -->
+    <!-- Source: server-scripts/Combat.cs:1209-1227 — lifetap healing rounds down after multiplying remaining damage by its percentage and summed active or permanent healing bonuses. -->
     <Formula calculation={lifetapCalculation()} />
   </Topic>
 </Chapter>

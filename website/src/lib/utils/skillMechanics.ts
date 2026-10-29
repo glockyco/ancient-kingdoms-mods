@@ -28,7 +28,7 @@ function groupCasters<P extends { caster: Caster }>(
   return [...groups.values()];
 }
 
-/** Source: server-scripts/Buff.cs:47-258,276-283; BuffSkill.cs:252-273; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:33-36 — integer effects scale with Charisma and round to integers. */
+/** Source: server-scripts/Buff.cs:46-257,275-278; BuffSkill.cs:256-277; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:33-36 — integer effects scale with Charisma and round to integers. */
 function hasCharismaScaledIntegerEffect(skill: SkillDetailView): boolean {
   return (
     hasNonZeroField(skill.health_max_bonus) ||
@@ -50,7 +50,7 @@ function hasCharismaScaledIntegerEffect(skill: SkillDetailView): boolean {
   );
 }
 
-/** Source: server-scripts/Buff.cs:63-262,285-292; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:38-41 — percentage fields scale with Charisma without integer rounding. */
+/** Source: server-scripts/Buff.cs:62-261,280-283; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:38-41 — percentage fields scale with Charisma without integer rounding. */
 function hasCharismaScaledPercentageEffect(skill: SkillDetailView): boolean {
   return (
     hasNonZeroField(skill.health_max_percent_bonus) ||
@@ -482,8 +482,8 @@ export function computeMechanicsSpec(
 
   // ---------- timing ----------
   // Populated for follow-up attacks and non-spell combat-pet skill 0.
-  // Source: server-scripts/Skills.cs:1141-1159; Combat.cs:341-347 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
-  // Source: server-scripts/Player.cs:3456-3493 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
+  // Source: server-scripts/Skills.cs:1141-1159; Combat.cs:340-346 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
+  // Source: server-scripts/Player.cs:3458-3495 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ caster: Caster; model: TimingModel }> = [];
 
