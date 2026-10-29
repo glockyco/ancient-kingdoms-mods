@@ -358,6 +358,11 @@
               A party holds at most {MAX_PARTY} members, including active mercenaries.
               Make room before summoning one.
             </p>
+            <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean,10916-10921 — a hire spawns only while the party and the level limit have room, otherwise it is saved to the roster. -->
+            <p>
+              A new hire joins your party right away when there is room.
+              Otherwise it waits in your roster.
+            </p>
           </div>
         </div>
       </div>
@@ -851,6 +856,7 @@
     <p class="text-sm leading-6 text-muted-foreground">
       Mercenaries skip training dummies when choosing targets automatically.
     </p>
+    <!-- Source: server-scripts/Pet.cs:UpdateServer_CASTING,HasFrontalAttackSkill,GetPreferredRangedAreaClearance — Rogues and Bards seek the back of any target; Rangers, Wizards and Necromancers add bosses and elites; ranged classes count a frontal damage skill only within its cast range plus 1, and frontal projectiles always; ranged mercenaries hold a distance outside cast-time area attacks that their range allows. -->
     <div class="overflow-x-auto rounded-lg border">
       <table class="w-full text-left text-sm">
         <thead
@@ -869,12 +875,14 @@
           <tr class="border-b bg-muted/50"
             ><th class="px-4 py-2 font-medium">Ranger, Wizard, Necromancer</th
             ><td class="px-4 py-2"
-              >Against bosses, elites, and monsters with frontal-attack skills</td
+              >Against bosses, elites, and monsters with frontal attacks that
+              can reach them</td
             ></tr
           >
           <tr class="border-b"
             ><th class="px-4 py-2 font-medium">Cleric, Druid</th><td
-              class="px-4 py-2">Against monsters with frontal-attack skills</td
+              class="px-4 py-2"
+              >Against monsters with frontal attacks that can reach them</td
             ></tr
           >
           <tr class="bg-muted/50"
@@ -885,6 +893,10 @@
         </tbody>
       </table>
     </div>
+    <p class="text-sm leading-6 text-muted-foreground">
+      Ranged mercenaries also stay outside the area of a monster's cast-time
+      area attacks when their own attack range allows it.
+    </p>
     <!-- Source: server-scripts/Pet.cs:4559-4586,4725-4762,4801-4816,5271-5309 — candidate, heal-over-time, area, and direct-heal thresholds. -->
     <div class="overflow-x-auto">
       <table class="w-full min-w-[32rem] text-left text-sm leading-6">
@@ -960,11 +972,15 @@
         must be within 20 yd of you and close enough to hit together.</span
       >
     </p>
-    <!-- Source: server-scripts/MonsterSkills.cs:177-279; Pet.cs:2811-2818,2923-2944 — telegraphed area avoidance needs a reachable safe destination; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->
+    <!-- Source: server-scripts/MonsterSkills.cs:177-279; Pet.cs:2811-2818,2923-2944 — telegraphed area avoidance needs a reachable safe destination; mercenaries react to any cast time and take the shortest safe path, companions need a cast time of at least 1 second; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
-        >Companions and mercenaries try to dodge area attacks with cast times of
-        at least 1 second when they can reach safety.</span
+        >Mercenaries try to dodge every area attack that has a cast time, and
+        run to the nearest safe spot they can reach in time.</span
+      >
+      <span class="block"
+        >Companions only dodge area attacks with cast times of at least 1
+        second.</span
       >
       <span class="block"
         >Familiars and aggressive Warriors do not try this escape.</span

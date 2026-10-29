@@ -49,7 +49,7 @@
         ? "mercenary's"
         : "Bard's"} Critical Strike.</span
     >
-    <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — living, non-hidden, same-zone, visible and attackable monsters qualify without combat or party-target requirements. The IL compares speed with -50 and skips at or below it. -->
+    <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — living, non-hidden, visible and attackable monsters qualify without combat, party-target or zone requirements. The IL compares speed with -50 and skips at or below it. -->
     <span class="block"
       >Damages every monster in range that the caster could attack, in combat or
       not, except sleeping ones.</span

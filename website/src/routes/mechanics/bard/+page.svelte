@@ -135,16 +135,18 @@
         </table>
       </div>
 
-      <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; website/data/compendium.db skills.buff_category — categorized songs apply fresh effects; other songs restore suspended effects. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; Combat.cs:1152-1171; website/data/compendium.db skills.buff_category — categorized songs apply fresh effects, a Ward song applies once per cast and restores a suspended Ward with time and absorption left, and other songs restore suspended effects. -->
       <p>
         Leaving range removes the aura. Most songs resume with the same strength
         and time left when you return, including any weakening from cleansing.<br
         />
-        March of Celerity, Anthem of Focus, Grand Symphony, Wayfarer's Rhythm, and
+        March of Celerity, Anthem of Focus, Grand Symphony, and Wayfarer's Rhythm
+        start fresh instead.<br />
         <a
           href="/skills/aegis_aria"
           class="text-blue-600 dark:text-blue-400 hover:underline">Aegis Aria</a
-        > start fresh instead.
+        > resumes with the Ward and time it had left. A Ward that is used up or runs
+        out stays gone until your next cast.
       </p>
       <!-- Source: server-scripts/PlayerSkills.cs:BeginBardSong,CompleteBardSongCast; Skills.cs:ApplyFinishedCast — automatic repeats apply a fresh cast and clear attempted recipients. -->
       <p>
@@ -234,7 +236,7 @@
           >Bard mercenaries</a
         > receive no Melody bonus.
       </p>
-      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — living, non-hidden, same-zone, visible and attackable monsters qualify without combat or party-target requirements. The IL compares speed with -50 and skips at or below it. -->
+      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — living, non-hidden, visible and attackable monsters qualify without combat, party-target or zone requirements. The IL compares speed with -50 and skips at or below it. -->
       <p>
         Final Cadence hits every monster in range that you could attack, in
         combat or not, except
