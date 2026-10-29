@@ -69,7 +69,7 @@ function createDb() {
     INSERT INTO acquisition_providers_npcs VALUES ('rod_provider', 'rod_offer', 'rod_vendor', 0);
     INSERT INTO crafting_recipes VALUES ('crafted_fishing_rod_recipe', 'crafted_fishing_rod'), ('fish_chowder_recipe', 'fish_chowder'), ('dragonbait_stew_recipe', 'dragonbait_stew');
     INSERT INTO alchemy_recipes VALUES ('fish_potion_recipe', 'fish_potion');
-    INSERT INTO acquisition_recipe_details VALUES
+    INSERT INTO acquisition_recipe_details (id, crafting_recipe_id, alchemy_recipe_id, scribing_recipe_id, declared_result_item_id, result_amount, tier, display_kind, experience) VALUES
       ('rod_recipe', 'crafted_fishing_rod_recipe', NULL, NULL, 'crafted_fishing_rod', 1, 2, 'crafting', 0),
       ('food_method', 'fish_chowder_recipe', NULL, NULL, 'fish_chowder', 1, 0, 'cooking', 0),
       ('stew_method', 'dragonbait_stew_recipe', NULL, NULL, 'dragonbait_stew', 1, 4, 'cooking', 0),
