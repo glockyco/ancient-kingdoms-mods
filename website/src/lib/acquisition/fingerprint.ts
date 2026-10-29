@@ -218,6 +218,7 @@ function createProjector(
     const target =
       p.kind === "item_count" ||
       p.kind === "party_key" ||
+      p.kind === "book_read" ||
       p.kind === "instance_eligible"
         ? identity("items", p.itemId)
         : p.kind === "identity_is"

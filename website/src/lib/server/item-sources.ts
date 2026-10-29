@@ -338,6 +338,24 @@ export function itemSourcesFromModel(
           quest.is_repeatable || quest.is_adventurer_quest,
         ),
         seasons,
+        completion_requirements:
+          method.kind === "quest_complete"
+            ? [
+                ...(model.rows.facts.quest_book_requirements ?? [])
+                  .filter((row) => row.quest_id === quest.id)
+                  .map((row) =>
+                    row.withheld
+                      ? "Read an unpublished book"
+                      : `Read ${str(sourceEntity(model, "items", row.item_id), "name")}`,
+                  ),
+                ...(model.rows.facts.quest_profession_requirements ?? [])
+                  .filter((row) => row.quest_id === quest.id)
+                  .map(
+                    (row) =>
+                      `${str(sourceEntity(model, "professions", row.profession_id), "name")} ${row.minimum_percent}%`,
+                  ),
+              ]
+            : [],
       });
     } else if (method.kind === "recipe") {
       const recipeType = detail.alchemy_recipe_id
@@ -359,6 +377,18 @@ export function itemSourcesFromModel(
         result_amount: output?.amount_min ?? num(detail, "result_amount", 1),
         tier: num(detail, "tier"),
         variant_id: method.methodId,
+        required_quest: detail.required_quest_withheld
+          ? { id: null, name: "an unpublished quest", withheld: true }
+          : typeof detail.required_quest_id === "string"
+            ? {
+                id: detail.required_quest_id,
+                name: str(
+                  sourceEntity(model, "quests", detail.required_quest_id),
+                  "name",
+                ),
+                withheld: false,
+              }
+            : null,
         materials: inputs.map((input) => ({
           item_id: input.item_id ?? "",
           item_name: input.withheld

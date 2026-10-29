@@ -80,6 +80,11 @@ const PREDICATE_FIELDS: Record<
   item_count: { strings: ["itemId", "location"], numbers: ["amount"] },
   faction_at_least: { strings: ["factionId"], numbers: ["standing"] },
   quest_state: { strings: ["questId", "state"], numbers: [] },
+  book_read: { strings: ["itemId"], numbers: [] },
+  profession_percent: {
+    strings: ["professionId"],
+    numbers: ["minimumPercent"],
+  },
   quest_progress: {
     strings: ["questId", "objectiveId", "counterKind"],
     numbers: ["amount"],
@@ -173,6 +178,17 @@ function validatePredicate(predicate: RequirementPredicate): void {
     quest_progress: {
       field: "counterKind",
       values: ["kill", "gather", "brew", "location"],
+    },
+    profession_percent: {
+      field: "professionId",
+      values: [
+        "alchemy",
+        "cooking",
+        "herbalism",
+        "mining",
+        "fishing",
+        "hunter",
+      ],
     },
     profession_floor: {
       field: "profession",
@@ -280,6 +296,14 @@ function evaluatePredicate(
       return compare(s?.identities?.[p.identityKind], (v) => v === p.id);
     case "item_count":
       return countItem(s, p);
+    case "book_read":
+      return membership(s?.books, (id) => id === p.itemId);
+    // Source: server-scripts/EpicGatherQuest.cs:MeetsAdditionalRequirements - profession levels use fractions with a 0.001 percentage point tolerance.
+    case "profession_percent":
+      return compare(
+        s?.professions?.[p.professionId],
+        (v) => v * 100 + 0.001 >= p.minimumPercent,
+      );
     case "faction_at_least": {
       const entry = s?.factions?.entries.find(
         (f) => f.factionId === p.factionId,
@@ -618,6 +642,10 @@ function describePredicate(
       return `${requirementName(names, "factions", p.factionId)} standing at least ${formatNumber(p.standing)}`;
     case "quest_state":
       return `${requirementName(names, "quests", p.questId)} ${p.state.replaceAll("_", " ")}`;
+    case "book_read":
+      return `Read ${requirementName(names, "items", p.itemId)}`;
+    case "profession_percent":
+      return `${requirementName(names, "professions", p.professionId)} ${p.minimumPercent}%`;
     case "quest_progress": {
       const target = names?.[`quest_objective:${p.objectiveId}`];
       if (target) {
@@ -997,6 +1025,19 @@ export function composeRequirements(
               standing: Number(faction.standing),
             }),
       );
+    // Source: server-scripts/EpicWeaponQuest.cs:CanChoose,IsFulfilled - the alternative must be neither active nor completed.
+    const alternative: RequirementExpression[] = [];
+    if (quest.alternative_ending_withheld) alternative.push(withheld());
+    else if (typeof quest.alternative_ending_quest_id === "string")
+      for (const state of ["not_active", "not_completed"] as const)
+        alternative.push(
+          predicate({
+            kind: "quest_state",
+            questId: quest.alternative_ending_quest_id,
+            state,
+          }),
+        );
+    parts.push(...alternative);
     parts.push(
       predicate({
         kind: "quest_state",
@@ -1030,7 +1071,36 @@ export function composeRequirements(
         }),
       );
     add(`quest:${quest.id}`, "accept", parts);
-    const objectives: RequirementExpression[] = [];
+    const objectives: RequirementExpression[] = [...alternative];
+    // Source: server-scripts/EpicGatherQuest.cs:MeetsAdditionalRequirements - every required book must have been read and every profession threshold must be met.
+    for (const book of matching(
+      "quest_book_requirements",
+      "quest_id",
+      quest.id,
+    ))
+      objectives.push(
+        book.withheld
+          ? withheld()
+          : predicate({ kind: "book_read", itemId: String(book.item_id) }),
+      );
+    for (const profession of matching(
+      "quest_profession_requirements",
+      "quest_id",
+      quest.id,
+    ))
+      objectives.push(
+        predicate({
+          kind: "profession_percent",
+          professionId: String(profession.profession_id) as
+            | "alchemy"
+            | "cooking"
+            | "herbalism"
+            | "mining"
+            | "fishing"
+            | "hunter",
+          minimumPercent: Number(profession.minimum_percent),
+        }),
+      );
     for (const objective of matching(
       "quest_objectives",
       "quest_id",

@@ -426,6 +426,7 @@ export function assembleAcquisitionModel(
     quest_class_requirements: { target: "class_id", table: "classes" },
     quest_race_requirements: { target: "race_id", table: "race_progression" },
     quest_faction_requirements: { target: "faction_id", table: "factions" },
+    quest_book_requirements: { target: "item_id", table: "items" },
   };
   for (const [table, definition] of Object.entries(restrictions)) {
     for (const row of rows.facts[table] ?? []) {
@@ -441,6 +442,15 @@ export function assembleAcquisitionModel(
         dataError(row.id, "missing required target definition");
       if (table === "skill_predecessors") integer(row, "rank", 0);
     }
+  }
+  for (const row of rows.facts.quest_profession_requirements ?? []) {
+    integer(row, "ordinal", 0);
+    integer(row, "minimum_percent", 0);
+    if (
+      Number(row.minimum_percent) > 100 ||
+      !get("professions", row.profession_id)
+    )
+      dataError(row.id, "invalid profession requirement");
   }
   const objectiveChildIds = new Map(
     [
@@ -810,6 +820,47 @@ export function assembleAcquisitionModel(
           "scribing",
         ]);
         const parts: RequirementExpression[] = [];
+        // Source: server-scripts/CraftingItems.cs:CanCraft - crafting requires the completed quest, its class, and its alternative ending gate.
+        if (detail.required_quest_withheld)
+          parts.push(
+            predicate({ kind: "withheld", reason: "unpublished_target" }),
+          );
+        else if (typeof detail.required_quest_id === "string") {
+          const quest = get("quests", detail.required_quest_id);
+          if (!quest) dataError(id, "missing required crafting quest");
+          parts.push(
+            predicate({
+              kind: "quest_state",
+              questId: quest.id,
+              state: "completed",
+            }),
+          );
+          const classes = (rows.facts.quest_class_requirements ?? [])
+            .filter((row) => row.quest_id === quest.id)
+            .map((row) =>
+              row.withheld
+                ? predicate({ kind: "withheld", reason: "unpublished_target" })
+                : predicate({
+                    kind: "identity_is",
+                    identityKind: "class",
+                    id: String(row.class_id),
+                  }),
+            );
+          if (classes.length) parts.push(combine("any", classes));
+          if (quest.alternative_ending_withheld)
+            parts.push(
+              predicate({ kind: "withheld", reason: "unpublished_target" }),
+            );
+          else if (typeof quest.alternative_ending_quest_id === "string")
+            for (const state of ["not_active", "not_completed"] as const)
+              parts.push(
+                predicate({
+                  kind: "quest_state",
+                  questId: quest.alternative_ending_quest_id,
+                  state,
+                }),
+              );
+        }
         // Source: server-scripts/Player.cs:13786-13827; server-scripts/TableUI.cs:71-98.
         // Scribing uses Alchemy success but does not require learning the recipe.
         if (method.rule_id === "alchemy")

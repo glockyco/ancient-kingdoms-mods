@@ -221,6 +221,37 @@ export const load: PageServerLoad = async ({
     race_requirements: raceRequirements,
     class_requirements: classRequirements,
     faction_requirements: factionRequirements,
+    book_requirements: db
+      .prepare(
+        `
+      SELECT r.id, r.item_id, i.name, r.withheld
+      FROM quest_book_requirements r LEFT JOIN items i ON i.id = r.item_id
+      WHERE r.quest_id = ? ORDER BY r.ordinal
+    `,
+      )
+      .all(params.id) as QuestInfo["book_requirements"],
+    profession_requirements: db
+      .prepare(
+        `
+      SELECT r.profession_id, p.name, r.minimum_percent
+      FROM quest_profession_requirements r JOIN professions p ON p.id = r.profession_id
+      WHERE r.quest_id = ? ORDER BY r.ordinal
+    `,
+      )
+      .all(params.id) as QuestInfo["profession_requirements"],
+    alternative_ending: questRaw.alternative_ending_withheld
+      ? { id: null, name: null, withheld: 1 }
+      : typeof questRaw.alternative_ending_quest_id === "string"
+        ? {
+            id: questRaw.alternative_ending_quest_id,
+            name: db
+              .prepare<[string], { name: string }>(
+                "SELECT name FROM quests WHERE id = ?",
+              )
+              .get(questRaw.alternative_ending_quest_id)!.name,
+            withheld: 0,
+          }
+        : null,
     rewards,
     tooltip: (questRaw.tooltip as string) || null,
     tooltip_complete: (questRaw.tooltip_complete as string) || null,

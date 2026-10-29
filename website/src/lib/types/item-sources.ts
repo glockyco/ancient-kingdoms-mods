@@ -121,6 +121,7 @@ export interface QuestSource {
   class_restriction: string | null; // JSON array of class names
   is_repeatable: boolean;
   seasons: readonly Season[];
+  completion_requirements?: string[];
 }
 
 /**
@@ -154,6 +155,11 @@ export interface RecipeSource {
   station_type: string | null;
   variant_id?: string;
   materials?: Array<{ item_id: string; item_name: string; amount: number }>;
+  required_quest?: {
+    id: string | null;
+    name: string;
+    withheld: boolean;
+  } | null;
 }
 
 /**

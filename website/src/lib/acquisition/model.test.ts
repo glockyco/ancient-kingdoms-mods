@@ -24,6 +24,8 @@ import { expandAcquisition } from "./expand";
 import { publicAcquisitionFingerprint } from "./fingerprint";
 import { evaluateRequirement } from "./conditions";
 import { BASELINE_ASSUMPTIONS, calculateMethodProbabilities } from "./rules";
+import { itemSourcesFromModel } from "../server/item-sources";
+import { itemUsagesFromModel } from "../server/item-usages";
 
 const require = createRequire(import.meta.url);
 const schema = readFileSync(
@@ -3131,6 +3133,249 @@ describe("exact summon provider alternatives", () => {
       expect(status(false, true)).toBe("met");
       expect(status(false, false)).toBe("unmet");
       expect(status(null, false)).toBe("unknown");
+    } finally {
+      f.db.close();
+    }
+  });
+});
+
+describe("epic quest completion gates", () => {
+  it("keeps read books separate from carried items and checks profession percentage boundaries", async () => {
+    const f = fixture();
+    try {
+      addQuest(f, "epic");
+      f.insert("achievements", {
+        id: "cook",
+        name: "Cook",
+        description: "",
+        display_order: 0,
+      });
+      f.insert("professions", {
+        id: "cooking",
+        name: "Cooking",
+        category: "crafting",
+        achievement_id: "cook",
+        tracking_type: "float_level",
+      });
+      f.insert("quest_book_requirements", {
+        id: "read-iron",
+        quest_id: "epic",
+        ordinal: 0,
+        item_id: "iron",
+      });
+      f.insert("quest_profession_requirements", {
+        id: "cook-60",
+        quest_id: "epic",
+        ordinal: 0,
+        profession_id: "cooking",
+        minimum_percent: 60,
+      });
+      const model = await f.model({
+        kind: "items",
+        itemIds: ["iron", "arrows"],
+      });
+      const root = model.methodViews.get("epic-complete")!.requirements[0];
+      const facts = (fraction: number, read: boolean) => ({
+        subjects: {
+          player: {
+            quests: {
+              entries: [{ questId: "epic", active: true, completed: false }],
+              complete: true,
+            },
+            books: { entries: read ? ["iron"] : [], complete: true },
+            professions: {
+              cooking: {
+                known: true as const,
+                value: fraction,
+                provenance: "entered" as const,
+              },
+            },
+            items: {
+              inventory: {
+                entries: [{ itemId: "iron", amount: 1 }],
+                complete: true,
+              },
+            },
+          },
+        },
+      });
+      expect(evaluateRequirement(root, facts(0.6, true)).status).toBe("met");
+      expect(evaluateRequirement(root, facts(0.59999, true)).status).toBe(
+        "met",
+      );
+      expect(evaluateRequirement(root, facts(0.59998, true)).status).toBe(
+        "unmet",
+      );
+      expect(evaluateRequirement(root, facts(0.6, false)).status).toBe("unmet");
+      expect(itemUsagesFromModel(model, "iron").quests).toMatchObject([
+        { quest_id: "epic", purpose: "read" },
+      ]);
+      expect(
+        itemSourcesFromModel(model, "arrows").quests.find(
+          (row) => row.quest_id === "epic",
+        )?.completion_requirements,
+      ).toHaveLength(2);
+      f.db
+        .prepare("UPDATE quest_book_requirements SET item_id=NULL, withheld=1")
+        .run();
+      const withheld = await f.model({ kind: "items", itemIds: ["arrows"] });
+      expect(
+        evaluateRequirement(
+          withheld.methodViews.get("epic-complete")!.requirements[0],
+          facts(0.6, true),
+        ).status,
+      ).toBe("unknown");
+    } finally {
+      f.db.close();
+    }
+  });
+
+  it("blocks accepting and completing the alternative while active or completed", async () => {
+    const f = fixture();
+    try {
+      addQuest(f, "epic");
+      addQuest(f, "alternative");
+      f.db
+        .prepare(
+          "UPDATE quests SET alternative_ending_quest_id='alternative' WHERE id='epic'",
+        )
+        .run();
+      const model = await f.model({
+        kind: "requirements",
+        entities: [{ kind: "quest", id: "epic" }],
+      });
+      for (const phase of ["accept", "complete"]) {
+        const root = model.requirements
+          .get("quest:epic")!
+          .find((root) => root.phase === phase)!;
+        for (const [active, completed, expected] of [
+          [false, false, "met"],
+          [true, false, "unmet"],
+          [false, true, "unmet"],
+        ] as const)
+          expect(
+            evaluateRequirement(root, {
+              subjects: {
+                player: {
+                  quests: {
+                    entries: [
+                      {
+                        questId: "epic",
+                        active: phase === "complete",
+                        completed: false,
+                      },
+                      { questId: "alternative", active, completed },
+                    ],
+                    complete: true,
+                  },
+                },
+              },
+            }).status,
+          ).toBe(expected);
+      }
+      f.db
+        .prepare(
+          "UPDATE quests SET alternative_ending_quest_id=NULL,alternative_ending_withheld=1 WHERE id='epic'",
+        )
+        .run();
+      const withheld = await f.model({
+        kind: "requirements",
+        entities: [{ kind: "quest", id: "epic" }],
+      });
+      expect(JSON.stringify(withheld.requirements.get("quest:epic"))).toContain(
+        '"kind":"withheld"',
+      );
+    } finally {
+      f.db.close();
+    }
+  });
+
+  it("loads recipe quest gates with class and alternative restrictions, including withheld targets", async () => {
+    const f = fixture();
+    try {
+      addQuest(f, "epic");
+      addQuest(f, "alternative");
+      addCreation(f);
+      f.insert("quest_class_requirements", {
+        id: "epic-class",
+        quest_id: "epic",
+        ordinal: 0,
+        class_id: "warrior",
+      });
+      f.db
+        .prepare(
+          "UPDATE quests SET alternative_ending_quest_id='alternative' WHERE id='epic'",
+        )
+        .run();
+      f.db
+        .prepare(
+          "UPDATE acquisition_recipe_details SET required_quest_id='epic' WHERE id='recipe-a'",
+        )
+        .run();
+      const model = await f.model({ kind: "items", itemIds: ["arrows"] });
+      const root = model.methodViews.get("recipe-a")!.requirements[0];
+      const facts = (
+        classId: string,
+        alternativeActive: boolean,
+        completed: boolean,
+      ) => ({
+        subjects: {
+          player: {
+            identities: {
+              class: {
+                known: true as const,
+                value: classId,
+                provenance: "entered" as const,
+              },
+            },
+            quests: {
+              complete: true,
+              entries: [
+                { questId: "epic", active: false, completed },
+                {
+                  questId: "alternative",
+                  active: alternativeActive,
+                  completed: false,
+                },
+              ],
+            },
+          },
+        },
+      });
+      expect(
+        evaluateRequirement(root, facts("warrior", false, true)).status,
+      ).toBe("met");
+      expect(
+        evaluateRequirement(root, facts("wizard", false, true)).status,
+      ).toBe("unmet");
+      expect(
+        evaluateRequirement(root, facts("warrior", true, true)).status,
+      ).toBe("unmet");
+      expect(
+        evaluateRequirement(root, facts("warrior", false, false)).status,
+      ).toBe("unmet");
+      expect(
+        itemSourcesFromModel(model, "arrows").recipes.find(
+          (row) => row.variant_id === "recipe-a",
+        )?.required_quest,
+      ).toMatchObject({ id: "epic", withheld: false });
+      f.db
+        .prepare(
+          "UPDATE acquisition_recipe_details SET required_quest_id=NULL,required_quest_withheld=1 WHERE id='recipe-a'",
+        )
+        .run();
+      const withheld = await f.model({ kind: "items", itemIds: ["arrows"] });
+      expect(
+        evaluateRequirement(
+          withheld.methodViews.get("recipe-a")!.requirements[0],
+          facts("warrior", false, true),
+        ).status,
+      ).toBe("unknown");
+      expect(
+        itemSourcesFromModel(withheld, "arrows").recipes.find(
+          (row) => row.variant_id === "recipe-a",
+        )?.required_quest,
+      ).toMatchObject({ id: null, withheld: true });
     } finally {
       f.db.close();
     }

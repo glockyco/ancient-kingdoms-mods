@@ -52,6 +52,7 @@ const ENTITY_TABLES = [
   "zone_triggers",
   "factions",
   "crafting_recipes",
+  "professions",
   "alchemy_recipes",
   "scribing_recipes",
   "progression_rules",
@@ -66,6 +67,8 @@ const FACT_TABLES = [
   "quest_class_requirements",
   "quest_race_requirements",
   "quest_faction_requirements",
+  "quest_book_requirements",
+  "quest_profession_requirements",
   "quest_reward_slots",
   "quest_provided_items",
   "npc_quest_memberships",
@@ -302,12 +305,19 @@ export async function queryAcquisitionRows(
       "item_id",
       initialItems,
     );
+    const books = await select(
+      "quest_book_requirements",
+      "item_id",
+      initialItems,
+    );
     const objectives = await select(
       "quest_objectives",
       "id",
       [...itemObjectives, ...brewObjectives].map((row) => row.id),
     );
-    const questIds = objectives.map((row) => text(row, "quest_id", row.id));
+    const questIds = [...objectives, ...books].map((row) =>
+      text(row, "quest_id", row.id),
+    );
     for (const row of await select(DETAIL_TABLES.quest, "quest_id", questIds))
       methodIds.add(row.id);
   }
@@ -429,11 +439,17 @@ export async function queryAcquisitionRows(
   ]);
   const selectedQuestIds = new Set([
     ...rows(DETAIL_TABLES.quest).map((row) => text(row, "quest_id", row.id)),
+    ...rows(DETAIL_TABLES.recipe).flatMap((row) =>
+      typeof row.required_quest_id === "string" ? [row.required_quest_id] : [],
+    ),
     ...initialRequirements
       .filter((ref) => ref.kind === "quest")
       .map((ref) => ref.id),
     ...selectedMemberships.map((row) => text(row, "quest_id", row.id)),
     ...rows("quest_objectives").map((row) => text(row, "quest_id", row.id)),
+    ...rows("quest_book_requirements").map((row) =>
+      text(row, "quest_id", row.id),
+    ),
   ]);
   for (const fact of FACT_TABLES.filter((fact) => fact.startsWith("quest_")))
     if (!fact.startsWith("quest_objective_"))
@@ -508,6 +524,9 @@ export async function queryAcquisitionRows(
     class_id: "classes",
     quest_id: "quests",
     predecessor_quest_id: "quests",
+    alternative_ending_quest_id: "quests",
+    required_quest_id: "quests",
+    profession_id: "professions",
     skill_id: "skills",
     predecessor_skill_id: "skills",
     treasure_location_id: "treasure_locations",

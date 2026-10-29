@@ -31,7 +31,6 @@
   import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
   import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
   import type { StatId } from "$lib/generated/stat-vocabulary";
-  import type { QuestDisplayType } from "$lib/utils/quests";
   import {
     formatStat,
     formatStatField,
@@ -581,6 +580,7 @@
     seasons?: readonly Season[];
     purpose?: string;
     amount?: number;
+    completion_requirements?: string[];
   };
   const questColumns = (rows: QuestRow[], withNeed: boolean) =>
     [
@@ -599,12 +599,13 @@
     ] as ColumnDef<QuestRow>[];
   // The quest page's objective names, so both pages describe a quest's use of the item alike.
   // Source: server-scripts/GatherInventoryQuest.cs:OnCompleted — a quest that removes its items takes them on completion, others only check that you have them.
-  const QUEST_ITEM_NEEDS: Record<string, QuestDisplayType> = {
+  const QUEST_ITEM_NEEDS: Record<string, string> = {
     required: "Deliver",
     have: "Have",
     gather: "Gather",
     brew: "Brew",
     equip: "Equip",
+    read: "Read",
   };
 
   type TreasureMapRow = (typeof computed.rewardedByTreasureMaps)[number];
@@ -896,8 +897,16 @@
       {/if}
       <SeasonIcons seasons={quest.seasons ?? []} />
     </div>
+    {#if quest.completion_requirements?.length}
+      <p class="mt-1 text-sm text-muted-foreground">
+        {quest.completion_requirements.join(", ")}
+      </p>
+    {/if}
   {:else if cell.column.id === "need"}
-    {[QUEST_ITEM_NEEDS[quest.purpose ?? ""] ?? quest.purpose, quest.amount]
+    {[
+      QUEST_ITEM_NEEDS[quest.purpose ?? ""] ?? quest.purpose,
+      quest.purpose === "read" ? null : quest.amount,
+    ]
       .filter(Boolean)
       .join(" ")}
   {:else if cell.column.id === "level_recommended"}
@@ -2257,6 +2266,17 @@
             <dd>{@render materialList(computed.craftedFrom[0].materials)}</dd>
           </div>
         </dl>
+        {#if computed.craftedFrom[0].required_quest}
+          {@const gate = computed.craftedFrom[0].required_quest}
+          <p class="mt-3">
+            Requires completing
+            {#if gate.withheld}
+              <span class="text-muted-foreground">{gate.name}</span>.
+            {:else}
+              <a href="/quests/{gate.id}" class={styles.link}>{gate.name}</a>.
+            {/if}
+          </p>
+        {/if}
         <a
           href={resolve("/recipes/[id]", {
             id: computed.craftedFrom[0].recipe_id,

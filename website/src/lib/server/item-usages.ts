@@ -63,15 +63,17 @@ export function itemUsagesFromModel(
           .map((row) => (row.withheld ? "unpublished class" : row.class_id)) ??
         [];
       const purpose =
-        use.role === "gather_counter"
-          ? "gather"
-          : use.role === "brew_counter"
-            ? "brew"
-            : use.role === "equipped"
-              ? "equip"
-              : quest?.remove_items_on_complete
-                ? "required"
-                : "have";
+        use.role === "book_read"
+          ? "read"
+          : use.role === "gather_counter"
+            ? "gather"
+            : use.role === "brew_counter"
+              ? "brew"
+              : use.role === "equipped"
+                ? "equip"
+                : quest?.remove_items_on_complete
+                  ? "required"
+                  : "have";
       result.quests.push({
         item_id: itemId,
         quest_id: id,

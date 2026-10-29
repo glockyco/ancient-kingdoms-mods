@@ -325,6 +325,12 @@ export type PredicatePayload =
       amount: number;
     }
   | { kind: "faction_at_least"; factionId: string; standing: number }
+  | { kind: "book_read"; itemId: string }
+  | {
+      kind: "profession_percent";
+      professionId: Profession | "hunter";
+      minimumPercent: number;
+    }
   | {
       kind: "quest_state";
       questId: string;
@@ -423,13 +429,14 @@ export interface SubjectFacts {
     amount: number;
   }>;
   readonly recipes?: FactCollection<string>;
+  readonly books?: FactCollection<string>;
   readonly skills?: FactCollection<{
     skillId: string;
     baseRank: number;
     tier: number;
     defaultRank: number;
   }>;
-  readonly professions?: Partial<Record<Profession, Known<number>>>;
+  readonly professions?: Partial<Record<Profession | "hunter", Known<number>>>;
   readonly tools?: FactCollection<{
     category: string;
     quality: number;

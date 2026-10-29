@@ -618,6 +618,24 @@ export function projectItemUsages(
       });
     }
   }
+  for (const book of model.rows.facts.quest_book_requirements ?? []) {
+    if (book.withheld || book.item_id !== itemId) continue;
+    const questId = String(book.quest_id);
+    uses.push({
+      itemId,
+      kind: "objective",
+      method: null,
+      phase: "fulfill",
+      role: "book_read",
+      amount: { kind: "exact", value: 1 },
+      consumed: false,
+      requirements: (model.requirements.get(`quest:${questId}`) ?? []).filter(
+        (root) => root.phase === "fulfill",
+      ),
+      useLocations: [],
+      entity: { kind: "quest", id: questId },
+    });
+  }
   for (const child of index.itemObjectives.get(itemId) ?? []) {
     const objective = index.objectives.get(child.id);
     if (!objective) dataError(child.id, "missing objective");

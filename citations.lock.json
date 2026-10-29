@@ -908,6 +908,9 @@
     "Constitution.cs:GetPoisonResistBonus": {
       "span": 0
     },
+    "CraftingItems.cs:CanCraft": {
+      "span": 0
+    },
     "CraftingStation.cs:50-58": {
       "sha256": "f1b599bc4672adb28d014f72ff4ba0f6ae1442c6673342f5ee9d271192ce8700",
       "span": 9
@@ -1215,7 +1218,13 @@
     "EnviromentSystem.cs:OnStartServer": {
       "span": 0
     },
+    "EpicGatherQuest.cs:MeetsAdditionalRequirements": {
+      "span": 0
+    },
     "EpicProfessionRequirement.cs:GetLevel": {
+      "span": 0
+    },
+    "EpicWeaponQuest.cs:CanChoose": {
       "span": 0
     },
     "EquipItemQuest.cs:9-19": {

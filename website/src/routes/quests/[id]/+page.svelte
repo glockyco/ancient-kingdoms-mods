@@ -30,7 +30,8 @@
   const hasRequirements = $derived(
     data.quest.race_requirements.length > 0 ||
       data.quest.class_requirements.length > 0 ||
-      data.quest.faction_requirements.length > 0,
+      data.quest.faction_requirements.length > 0 ||
+      data.quest.alternative_ending !== null,
   );
 
   // Check if quest has any objectives to display
@@ -40,6 +41,8 @@
       data.gatherInventoryItems.length > 0 ||
       data.requiredItems.length > 0 ||
       data.equipItems.length > 0 ||
+      data.quest.book_requirements.length > 0 ||
+      data.quest.profession_requirements.length > 0 ||
       data.potionItem !== null ||
       data.quest.tracking_quest_location ||
       data.quest.discovered_location ||
@@ -303,6 +306,23 @@
                 </div>
               {/each}
             {/if}
+            {#if data.quest.alternative_ending}
+              <!-- Source: server-scripts/EpicWeaponQuest.cs:CanChoose - an active or completed alternative blocks this quest. -->
+              <p>
+                Not available while
+                {#if data.quest.alternative_ending.withheld}
+                  <span class="text-muted-foreground">an unpublished quest</span
+                  >
+                {:else}
+                  <a
+                    href="/quests/{data.quest.alternative_ending.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{data.quest.alternative_ending.name}</a
+                  >
+                {/if}
+                is active or completed.
+              </p>
+            {/if}
           </div>
         </section>
       {/if}
@@ -538,6 +558,44 @@
                   tooltipHtml={item.tooltip_html}
                   imageAvailable={data.itemIconPaths[item.id]}
                 />
+              </div>
+            {/each}
+
+            <!-- Source: server-scripts/EpicGatherQuest.cs:MeetsAdditionalRequirements - books already read count toward completion. -->
+            {#each data.quest.book_requirements as book (book.id)}
+              <div class="flex items-center gap-2">
+                <span
+                  class="inline-flex items-center justify-center rounded px-2 py-0.5 text-xs font-medium w-16 bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200"
+                >
+                  Read
+                </span>
+                {#if book.withheld}
+                  <span class="text-muted-foreground">An unpublished book</span>
+                {:else}
+                  <a
+                    href="/items/{book.item_id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{book.name}</a
+                  >
+                {/if}
+              </div>
+            {/each}
+
+            {#each data.quest.profession_requirements as profession (profession.profession_id)}
+              <div class="flex items-center gap-2">
+                <span
+                  class="inline-flex items-center justify-center rounded px-2 py-0.5 text-xs font-medium w-16 bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200"
+                >
+                  Reach
+                </span>
+                <a
+                  href="/professions/{profession.profession_id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >{profession.name}</a
+                >
+                <span class="text-muted-foreground"
+                  >{profession.minimum_percent}%</span
+                >
               </div>
             {/each}
 

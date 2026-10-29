@@ -118,6 +118,22 @@ export interface QuestInfo {
   race_requirements: string[];
   class_requirements: string[];
   faction_requirements: QuestFactionRequirement[];
+  book_requirements: {
+    id: string;
+    item_id: string | null;
+    name: string | null;
+    withheld: number;
+  }[];
+  profession_requirements: {
+    profession_id: string;
+    name: string;
+    minimum_percent: number;
+  }[];
+  alternative_ending: {
+    id: string | null;
+    name: string | null;
+    withheld: number;
+  } | null;
   rewards: QuestRewards;
   tooltip: string | null;
   tooltip_complete: string | null;
