@@ -82,6 +82,20 @@ zone_ids = ["old_valorath"]
 # slot 18, with no effect and an empty tooltip. The skill window shows slots 0
 # to 17 (UISkills.cs), professions start at slot 19, and veteran skills at slot
 # 30, so no player ever sees it. Its rows look like any other default passive.
+#
+# The class epic chains run through released zones and end in Old Valorath.
+# Each chain is named from its first step that needs Old Valorath content: a
+# kill of one of its monsters or one of its drops. Every later step is named
+# too, with both Awakening quests of a class that offers two. A step that needs
+# a removed monster or item keeps the step and withholds the objective, and a
+# step after a removed predecessor keeps the step and withholds the
+# predecessor, so no rule over the references removes them. The earlier steps
+# of each chain stay published.
+#
+# The ten epic weapons are crafted at released crafting stations. Each recipe
+# needs its Awakening quest and an unpowered weapon that only that quest gives.
+# Both are requirements, which the redaction withholds rather than following,
+# so the stations keep the weapons reachable unless they are named.
 [entities.exclude]
 ids = [
     "old_valorath_token",
@@ -92,4 +106,37 @@ ids = [
     "valorath_royal_key",
     "new_skill_placeholder",
     "valaarks_corrupted_seal",
+    # Class epic chains from their first Old Valorath step.
+    "11_a_road_for_the_living",
+    "12_arrow_or_threshold",
+    "12_bound_to_ruin",
+    "12_the_empires_last_defenders",
+    "13_at_the_deathcallers_door",
+    "13_break_the_imperial_line",
+    "13_requiem_for_the_lost",
+    "13_silence_the_deathcaller",
+    "13_the_last_oracles_design",
+    "13_the_road_beneath_the_empire",
+    "13_the_unbroken_gate",
+    "14_awakening_dawn_of_the_entombed",
+    "14_awakening_eclipse_of_valorath",
+    "14_awakening_gravetide_cleaver",
+    "14_awakening_imperial_executioner",
+    "14_awakening_oath_of_the_fallen_empire",
+    "14_awakening_requiem_of_valorath",
+    "14_awakening_root_of_the_hollow_grove",
+    "14_awakening_scepter_of_the_last_oracle",
+    "14_awakening_soulpiercer",
+    "14_awakening_widowfang",
+    # Epic weapons.
+    "dawn_of_the_entombed",
+    "eclipse_of_valorath",
+    "gravetide_cleaver",
+    "imperial_executioner",
+    "oath_of_the_fallen_empire",
+    "requiem_of_valorath",
+    "root_of_the_hollow_grove",
+    "scepter_of_the_last_oracle",
+    "soulpiercer",
+    "widowfang",
 ]
