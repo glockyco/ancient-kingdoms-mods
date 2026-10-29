@@ -14,7 +14,7 @@
   </DialogPrimitive.Trigger>
 
   <Dialog.Content
-    class="bg-card gap-4 p-5 sm:max-w-xl sm:p-6"
+    class="bg-card gap-4 p-5 sm:max-w-lg sm:p-6"
     onOpenAutoFocus={(event) => {
       event.preventDefault();
       (event.currentTarget as HTMLElement | null)?.focus();
@@ -33,7 +33,7 @@
       class="aspect-video w-full rounded-md border object-cover"
       style="image-rendering: pixelated"
     />
-    <div class="space-y-3 text-muted-foreground">
+    <div class="space-y-3 text-pretty text-muted-foreground">
       <p>
         <a
           href="https://store.steampowered.com/news/app/2241380/view/1847920302235005"
