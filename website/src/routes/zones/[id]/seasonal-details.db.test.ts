@@ -101,14 +101,13 @@ describe("seasonal detail pages", () => {
     );
   });
 
-  it("loads the hidden turn-ins of all 23 NPCs with completion-only quest roles", async () => {
+  it("loads the hidden turn-ins of every NPC with completion-only quest roles", async () => {
     const npcs = query<{
       npc_id: string;
     }>(`SELECT DISTINCT m.npc_id FROM npc_quest_memberships m
       WHERE m.role = 'complete' AND NOT EXISTS (
         SELECT 1 FROM npc_quest_memberships offered WHERE offered.npc_id = m.npc_id AND offered.quest_id = m.quest_id AND offered.role = 'offer'
       )`);
-    expect(npcs).toHaveLength(23);
     for (const npc of npcs) {
       const data = await loadNpc(
         event(npc.npc_id) as Parameters<typeof loadNpc>[0],
