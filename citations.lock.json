@@ -1215,6 +1215,9 @@
     "EnviromentSystem.cs:OnStartServer": {
       "span": 0
     },
+    "EpicProfessionRequirement.cs:GetLevel": {
+      "span": 0
+    },
     "EquipItemQuest.cs:9-19": {
       "sha256": "d4d02cf5cadd5589ab5d45803bbf837660ef4d229cb4b06a4e3469204c4cc61a",
       "span": 11

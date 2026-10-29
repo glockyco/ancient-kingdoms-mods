@@ -468,6 +468,7 @@ class _Normalizer:
                     tier=recipe["tier"],
                     display_kind=display,
                     experience=recipe["experience"],
+                    required_quest_id=recipe.get("required_quest_id"),
                 )
                 self.cost(
                     method,
@@ -583,6 +584,7 @@ class _Normalizer:
                         if name.lower() != "all"
                     ],
                 ),
+                ("book_requirements", "item_id", quest["required_book_ids"]),
             ):
                 for ordinal, target in enumerate(values):
                     _insert(
@@ -594,6 +596,16 @@ class _Normalizer:
                         **{target_column: target},
                         withheld=0,
                     )
+            for ordinal, requirement in enumerate(quest["profession_requirements"]):
+                _insert(
+                    self.conn,
+                    "quest_profession_requirements",
+                    id=_key("quest_fact", "profession_requirements", quest_id, ordinal),
+                    quest_id=quest_id,
+                    ordinal=ordinal,
+                    profession_id=requirement["profession_id"],
+                    minimum_percent=requirement["minimum_percent"],
+                )
             for ordinal, faction in enumerate(quest["faction_requirements"]):
                 _insert(
                     self.conn,

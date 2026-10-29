@@ -720,6 +720,15 @@ class QuestRewards(BaseModel):
     items: list[QuestRewardItem] = []
 
 
+class QuestProfessionRequirement(BaseModel):
+    """A profession level an epic gather quest needs before it completes."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    profession_id: str = Field(min_length=1)
+    minimum_percent: int = Field(ge=0, le=100)
+
+
 class QuestData(BaseModel):
     """Quest data from quests.json"""
 
@@ -768,6 +777,11 @@ class QuestData(BaseModel):
     equip_items: list[str] = []  # Items to equip for quest
     given_item_on_start_id: str | None = None  # Item given when quest starts
     remove_items_on_complete: bool = False
+    # Epic gather quests also need books read and profession levels.
+    required_book_ids: list[str] = []
+    profession_requirements: list[QuestProfessionRequirement] = []
+    # An epic weapon quest cannot be taken once its alternative is active or done.
+    alternative_ending_quest_id: str | None = None
     is_find_npc_quest: bool = False
     potions_amount: int = 0
     potion_item_id: str | None = None  # Potion brewing quest
@@ -860,6 +874,8 @@ class SkillData(BaseModel):
     is_teleport: bool = False
     is_relic: bool = False
     scales_with_charisma: bool = False
+    # Multiplier on the bonus a Charisma-scaled buff gains from Charisma.
+    charisma_power_bonus_multiplier: float = Field(default=1.0, ge=0.0)
     damage_over_time_bonus_per_charisma_point: float = Field(default=0.0, ge=0.0)
     scales_with_intelligence: bool = False
     poison_disease_scales_with_intelligence: bool = False
@@ -1200,6 +1216,8 @@ class PortalData(BaseModel):
     level_required: int = 0
     item_level_required: int = 0
     is_closed: bool = False
+    # A lore trial answered at the portal grants passage instead of entering it.
+    requires_lore_trial: bool = False
 
 
 class TreasureLocationData(BaseModel):
@@ -1410,6 +1428,8 @@ class CraftingRecipeData(BaseModel):
     result_amount: int = Field(gt=0)
     materials: list[CraftingMaterial]
     station_type: Literal["crafting", "cooking"]
+    # A recipe that only players who completed this quest can craft.
+    required_quest_id: str | None
 
 
 # =============================================================================

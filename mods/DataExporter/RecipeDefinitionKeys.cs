@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +17,7 @@ public sealed class RecipeDefinitionKeys
 
     public string Register(string kind, string resultItemId, int amount,
         IEnumerable<(string ItemId, int Amount)> materials, int? level,
-        bool cooking, bool scribing, int? experience)
+        bool cooking, bool scribing, int? experience, string? requiredQuestId = null)
     {
         if (kind != "crafting" && kind != "alchemy" && kind != "scribing")
             throw new InvalidOperationException($"Unknown recipe kind '{kind}'.");
@@ -30,6 +32,7 @@ public sealed class RecipeDefinitionKeys
             return new JArray(material.ItemId, material.Amount);
         });
         // Property order is part of this private canonical encoding. Material order is native.
+        // A recipe without a required quest omits the property, so its key does not depend on it.
         var definition = new JObject
         {
             ["amount"] = amount,
@@ -38,13 +41,16 @@ public sealed class RecipeDefinitionKeys
             ["kind"] = kind,
             ["level"] = level.HasValue ? new JValue(level.Value) : JValue.CreateNull(),
             ["materials"] = new JArray(entries),
-            ["result"] = resultItemId,
-            ["scribing"] = scribing
-        }.ToString(Formatting.None);
-        var key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(definition))).ToLowerInvariant();
-        if (_definitions.TryGetValue(key, out var existing) && existing != definition)
+        };
+        if (requiredQuestId != null)
+            definition["quest"] = requiredQuestId;
+        definition["result"] = resultItemId;
+        definition["scribing"] = scribing;
+        var encoded = definition.ToString(Formatting.None);
+        var key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(encoded))).ToLowerInvariant();
+        if (_definitions.TryGetValue(key, out var existing) && existing != encoded)
             throw new InvalidOperationException($"Recipe definition key collision: {key}.");
-        _definitions[key] = definition;
+        _definitions[key] = encoded;
         return key;
     }
 }

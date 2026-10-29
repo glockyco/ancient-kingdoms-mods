@@ -43,6 +43,7 @@ def recipe(key: str, material: str = "ore", **changes) -> dict:
         "is_scribing_table": False,
         "materials": [{"item_id": material, "amount": 2}],
         "station_type": "crafting",
+        "required_quest_id": None,
         **changes,
     }
 

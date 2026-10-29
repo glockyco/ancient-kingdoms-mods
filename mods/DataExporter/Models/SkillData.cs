@@ -171,6 +171,13 @@ public class SkillData
     public bool is_teleport { get; set; }
     public bool is_relic { get; set; }
     public bool scales_with_charisma { get; set; }
+
+    /// <summary>
+    /// Multiplier on the bonus a Charisma-scaled buff gains from Charisma (BuffSkill.ScaleWithCharisma).
+    /// 1 keeps the normal bonus, and skills that are not buffs carry the game's default of 1.
+    /// </summary>
+    public float charisma_power_bonus_multiplier { get; set; } = 1f;
+
     public float damage_over_time_bonus_per_charisma_point { get; set; }
     public bool scales_with_intelligence { get; set; }
     public bool poison_disease_scales_with_intelligence { get; set; }

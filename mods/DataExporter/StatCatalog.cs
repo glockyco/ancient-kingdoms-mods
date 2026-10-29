@@ -259,6 +259,7 @@ public static class StatCatalog
         new("skill", nameof(SkillData.fear_resist_chance_bonus_cap), "Cap on an individual buff's Fear Resist bonus"),
         new("skill", nameof(SkillData.prob_ignore_cleanse), "Buff cleanse resistance chance"),
         new("skill", nameof(SkillData.damage_over_time_bonus_per_charisma_point), "Damage-over-time scaling per caster Charisma"),
+        new("skill", nameof(SkillData.charisma_power_bonus_multiplier), "Multiplier on a buff's Charisma scaling"),
         new("skill", nameof(SkillData.damage_over_time_bonus_per_intelligence_point), "Damage-over-time scaling per caster Intelligence"),
         new("skill", nameof(SkillData.lifetap_healing_percent_bonus), "Lifetap-specific healing multiplier"),
         new("skill", nameof(SkillData.additional_damage_percent_per_song), "Conditional Virtuosity damage scaling"),

@@ -37,4 +37,7 @@ public class PortalData
     [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
     public string? need_monster_dead_spawn_id { get; set; }
     public bool is_closed { get; set; }
+
+    /// <summary>A lore trial answered at the portal grants passage instead of entering it (Portal.requiresLoreTrial).</summary>
+    public bool requires_lore_trial { get; set; }
 }

@@ -137,6 +137,8 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
             "tracking_quest_location",
             "zone_id_final_npc",
             "zone_id_quest_action",
+            "required_book_ids",
+            "profession_requirements",
         },
     }
     staging_families = {

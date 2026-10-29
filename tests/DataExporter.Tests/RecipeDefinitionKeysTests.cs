@@ -36,6 +36,7 @@ public class RecipeDefinitionKeysTests
         Assert.NotEqual(first, keys.Register("crafting", "arrows", 1, materials, 2, false, false, 3500));
         Assert.NotEqual(first, keys.Register("alchemy", "arrows", 1, materials, 2, false, false, 750));
         Assert.NotEqual(first, keys.Register("scribing", "arrows", 1, materials, 2, false, true, null));
+        Assert.NotEqual(first, keys.Register("crafting", "arrows", 1, materials, 2, false, false, 750, "awakening_arrows"));
     }
 
     [Theory]

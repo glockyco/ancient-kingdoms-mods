@@ -187,6 +187,8 @@ public class QuestExporter : BaseExporter
             PopulateLocationQuestFields(quest, questData, questLocationTriggers);
             PopulateEquipItemQuestFields(quest, questData);
             PopulateAlchemyQuestFields(quest, questData);
+            PopulateEpicGatherQuestFields(quest, questData);
+            PopulateEpicWeaponQuestFields(quest, questData);
 
             questList.Add(questData);
         }
@@ -305,6 +307,52 @@ public class QuestExporter : BaseExporter
                 }
             }
         }
+    }
+
+    private void PopulateEpicGatherQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    {
+        var epicQuest = quest.TryCast<Il2Cpp.EpicGatherQuest>();
+        if (epicQuest == null) return;
+
+        if (epicQuest.requiredBooks == null || epicQuest.professionRequirements == null)
+            throw new InvalidOperationException($"Quest {questData.id}: missing epic requirement arrays.");
+        foreach (var book in epicQuest.requiredBooks)
+        {
+            // EpicGatherQuest.MeetsAdditionalRequirements fails on a missing book, so the quest cannot complete.
+            if (book == null || string.IsNullOrEmpty(book.name))
+                throw new InvalidOperationException($"Quest {questData.id}: missing required book.");
+            questData.required_book_ids.Add(SanitizeId(book.name));
+        }
+        foreach (var requirement in epicQuest.professionRequirements)
+        {
+            questData.profession_requirements.Add(new QuestProfessionRequirement
+            {
+                profession_id = EpicProfessionId(requirement.profession, questData.id),
+                minimum_percent = requirement.minimumPercent
+            });
+        }
+    }
+
+    // Source: server-scripts/EpicProfessionRequirement.cs:GetLevel — each value reads one profession level.
+    private static string EpicProfessionId(Il2Cpp.EpicProfession profession, string questId) => profession switch
+    {
+        Il2Cpp.EpicProfession.Alchemy => "alchemy",
+        Il2Cpp.EpicProfession.Herbalism => "herbalism",
+        Il2Cpp.EpicProfession.Mining => "mining",
+        Il2Cpp.EpicProfession.Fishing => "fishing",
+        Il2Cpp.EpicProfession.Cooking => "cooking",
+        Il2Cpp.EpicProfession.Hunting => "hunter",
+        _ => throw new InvalidOperationException($"Quest {questId}: unknown epic profession {profession}.")
+    };
+
+    private void PopulateEpicWeaponQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    {
+        var epicQuest = quest.TryCast<Il2Cpp.EpicWeaponQuest>();
+        if (epicQuest == null) return;
+
+        questData.alternative_ending_quest_id = epicQuest.alternativeEnding == null
+            ? null
+            : SanitizeId(epicQuest.alternativeEnding.name);
     }
 
     private void PopulateLocationQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData, Dictionary<string, QuestLocationTriggerInfo> questLocationTriggers)

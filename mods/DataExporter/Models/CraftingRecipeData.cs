@@ -15,6 +15,14 @@ public class CraftingRecipeData
     public bool is_scribing_table { get; set; }
     public List<CraftingMaterial> materials { get; set; } = new();
     public string station_type { get; set; }
+
+    /// <summary>
+    /// The quest a player must have completed to craft this recipe (CraftingItems.CanCraft), or null.
+    /// The game also requires the quest's class requirement and, for an epic weapon quest, that its
+    /// alternative ending was not chosen.
+    /// </summary>
+    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
+    public string required_quest_id { get; set; }
 }
 
 public class CraftingMaterial

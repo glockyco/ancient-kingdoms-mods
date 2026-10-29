@@ -961,7 +961,10 @@ CREATE TABLE quests (
     -- Other quest flags
     remove_items_on_complete BOOLEAN DEFAULT 0,
     is_find_npc_quest BOOLEAN DEFAULT 0,
-    increase_alchemy_skill REAL DEFAULT 0.0
+    increase_alchemy_skill REAL DEFAULT 0.0,
+    -- An epic weapon quest cannot be taken once this alternative is active or completed.
+    alternative_ending_quest_id TEXT REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    alternative_ending_withheld INTEGER NOT NULL DEFAULT 0 CHECK (alternative_ending_withheld IN (0,1))
 );
 
 CREATE INDEX idx_quests_level ON quests(level_required);
@@ -1102,6 +1105,7 @@ CREATE TABLE skills (
     is_teleport BOOLEAN DEFAULT 0,
     is_relic BOOLEAN DEFAULT 0,
     scales_with_charisma BOOLEAN DEFAULT 0,
+    charisma_power_bonus_multiplier REAL NOT NULL DEFAULT 1.0,
     damage_over_time_bonus_per_charisma_point REAL NOT NULL DEFAULT 0.0,
     scales_with_intelligence BOOLEAN NOT NULL DEFAULT 0,
     poison_disease_scales_with_intelligence BOOLEAN NOT NULL DEFAULT 0,
@@ -1214,6 +1218,7 @@ CREATE TABLE portals (
     level_required INTEGER DEFAULT 0,
     item_level_required INTEGER DEFAULT 0,
     is_closed BOOLEAN DEFAULT 0,
+    requires_lore_trial BOOLEAN NOT NULL DEFAULT 0,
 
     -- Search keywords (generated: "portal" + destination zone name)
     keywords TEXT
@@ -1745,6 +1750,9 @@ CREATE TABLE acquisition_recipe_details (
     tier INTEGER NOT NULL CHECK (tier >= 0),
     display_kind TEXT NOT NULL CHECK (display_kind IN ('crafting','cooking','alchemy','scribing')),
     experience INTEGER,
+    -- Only players who completed this quest can craft the recipe.
+    required_quest_id TEXT REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    required_quest_withheld INTEGER NOT NULL DEFAULT 0 CHECK (required_quest_withheld IN (0,1)),
     CHECK ((crafting_recipe_id IS NOT NULL)+(alchemy_recipe_id IS NOT NULL)+(scribing_recipe_id IS NOT NULL)=1)
 );
 CREATE TABLE acquisition_resource_details (
@@ -1917,6 +1925,24 @@ CREATE TABLE quest_class_requirements (
     ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
     class_id TEXT REFERENCES classes(id) DEFERRABLE INITIALLY DEFERRED,
     withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (quest_id,ordinal)
+);
+-- Books an epic gather quest needs read before it completes.
+CREATE TABLE quest_book_requirements (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (quest_id,ordinal)
+);
+-- Profession levels an epic gather quest needs before it completes.
+CREATE TABLE quest_profession_requirements (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    profession_id TEXT NOT NULL REFERENCES professions(id) DEFERRABLE INITIALLY DEFERRED,
+    minimum_percent INTEGER NOT NULL CHECK (minimum_percent BETWEEN 0 AND 100),
     UNIQUE (quest_id,ordinal)
 );
 CREATE TABLE quest_race_requirements (

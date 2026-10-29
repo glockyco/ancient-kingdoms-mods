@@ -335,6 +335,7 @@ public class SkillExporter : BaseExporter
             skillData.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
             skillData.is_decrease_resists_skill = buffSkill.isDecreaseResistsSkill;
             skillData.scales_with_charisma = buffSkill.scalesWithCharisma;
+            skillData.charisma_power_bonus_multiplier = buffSkill.charismaPowerBonusMultiplier;
             skillData.damage_over_time_bonus_per_charisma_point = buffSkill.damageOverTimeBonusPerCharismaPoint;
             skillData.scales_with_intelligence = buffSkill.scalesWithIntelligence;
             skillData.poison_disease_scales_with_intelligence = buffSkill.poisonDiseaseScalesWithIntelligence;

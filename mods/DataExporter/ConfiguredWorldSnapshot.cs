@@ -157,14 +157,16 @@ public sealed class ConfiguredWorldSnapshot
                 }).ToList();
                 var tier = (int)native.itemResult.quality;
                 var experience = tier switch { 1 => 150, 2 => 750, 3 => 3500, 4 => 10000, _ => 15 };
+                var requiredQuest = native.requiredQuest == null ? null : SanitizeId(native.requiredQuest.name);
                 var key = _keys.Register("crafting", result, 1,
                     materials.Select(material => (material.item_id, material.amount)), tier,
-                    station.isCookingOven, false, experience);
+                    station.isCookingOven, false, experience, requiredQuest);
                 _crafting.TryAdd(key, new CraftingRecipeData
                 {
                     id = result, definition_key = key, result_item_id = result, result_amount = 1,
                     tier = tier, experience = experience, is_cooking_oven = station.isCookingOven,
-                    materials = materials, station_type = station.isCookingOven ? "cooking" : "crafting"
+                    materials = materials, station_type = station.isCookingOven ? "cooking" : "crafting",
+                    required_quest_id = requiredQuest
                 });
                 offers.Add(new RecipeOfferData(key) { offer_index = offers.Count });
             }
@@ -254,7 +256,7 @@ public sealed class ConfiguredWorldSnapshot
 
         private PortalData Portal(Vector3 placed, Transform destination, bool interactable,
             Il2Cpp.ScriptableItem key, int level, int itemLevel, Vector2 orientation, Il2Cpp.Monster monster,
-            bool everyone, bool closed)
+            bool everyone, bool closed, bool loreTrial)
         {
             if (destination == null)
                 throw new InvalidOperationException($"Portal at {placed} has no destination. Reload World.");
@@ -270,7 +272,7 @@ public sealed class ConfiguredWorldSnapshot
                 level_required = level, item_level_required = itemLevel,
                 need_monster_dead_id = monster == null ? null : SanitizeId(monster.name),
                 need_monster_dead_spawn_id = RequiredMonster(monster, id),
-                requires_everyone_key = everyone, is_closed = closed
+                requires_everyone_key = everyone, is_closed = closed, requires_lore_trial = loreTrial
             };
         }
 
@@ -283,13 +285,13 @@ public sealed class ConfiguredWorldSnapshot
                 if (portal.destination == null) continue;
                 portals.Add(Portal(portal.transform.position, portal.destination, false, portal.key,
                     portal.levelRequired, portal.itemLevelRequired, portal.orientation, portal.needMonsterDead,
-                    portal.requiresEveryoneKey, portal.isClosed));
+                    portal.requiresEveryoneKey, portal.isClosed, portal.requiresLoreTrial));
             }
             foreach (var portal in WorldObjects<Il2Cpp.InteractablePortal>())
             {
                 if (portal.destination == null) continue;
                 portals.Add(Portal(portal.transform.position, portal.destination, true, portal.key,
-                    portal.levelRequired, portal.itemLevelRequired, portal.orientation, portal.needMonsterDead, false, false));
+                    portal.levelRequired, portal.itemLevelRequired, portal.orientation, portal.needMonsterDead, false, false, false));
             }
             Values.Add("portals", ExportJson.SortedRows(portals, row => row.id, "portals"));
         }

@@ -74,6 +74,8 @@ DERIVED_TABLES = frozenset(
         "quest_objective_brews",
         "quest_predecessors",
         "quest_class_requirements",
+        "quest_book_requirements",
+        "quest_profession_requirements",
         "quest_race_requirements",
         "quest_faction_requirements",
         "quest_reward_slots",

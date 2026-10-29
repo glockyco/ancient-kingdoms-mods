@@ -43,6 +43,13 @@ public class QuestLocation
     public Position position { get; set; }
 }
 
+public class QuestProfessionRequirement
+{
+    /// <summary>The profession id in professions.json.</summary>
+    public string profession_id { get; set; }
+    public int minimum_percent { get; set; }
+}
+
 public class QuestData
 {
     // === Base ScriptableQuest fields (always present) ===
@@ -94,6 +101,20 @@ public class QuestData
     public List<GatherItemAmount> gather_items { get; set; }
     public List<GatherItemAmount> required_items { get; set; }
     public bool remove_items_on_complete { get; set; }
+
+    // === EpicGatherQuest fields (a gather_inventory quest with additional requirements) ===
+    /// <summary>Books the player must have read before the quest completes; empty for other quests.</summary>
+    public List<string> required_book_ids { get; set; } = new();
+    /// <summary>Profession levels the player must reach before the quest completes; empty for other quests.</summary>
+    public List<QuestProfessionRequirement> profession_requirements { get; set; } = new();
+
+    // === EpicWeaponQuest fields (a gather quest that ends one of two exclusive paths) ===
+    /// <summary>
+    /// The exclusive alternative: the quest cannot be accepted or completed while it is active or
+    /// completed. Null for other quests.
+    /// </summary>
+    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
+    public string alternative_ending_quest_id { get; set; }
 
     // === LocationQuest fields (when quest_type = location) ===
     public string tracking_quest_location { get; set; }
