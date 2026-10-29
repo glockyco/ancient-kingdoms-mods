@@ -3,7 +3,6 @@
   import Seo from "$lib/components/Seo.svelte";
   import TitleScreenHero from "$lib/components/home/TitleScreenHero.svelte";
   import ClassicHome from "$lib/components/home/ClassicHome.svelte";
-  import OldValorathNotice from "$lib/components/home/OldValorathNotice.svelte";
   import EntityGlyph from "$lib/components/EntityGlyph.svelte";
   import SteamIcon from "$lib/components/SteamIcon.svelte";
   import DiscordIcon from "$lib/components/DiscordIcon.svelte";
@@ -107,8 +106,6 @@
   <TitleScreenHero live={data.live} checkedAt={data.checkedAt} />
 
   <div class="container mx-auto flex flex-col gap-12 px-5 pt-10 pb-16 sm:px-8">
-    <OldValorathNotice />
-
     <section aria-labelledby="home-items">
       {@render heading(
         "home-items",

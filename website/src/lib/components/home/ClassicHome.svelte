@@ -10,7 +10,6 @@
   import KofiIcon from "$lib/components/KofiIcon.svelte";
   import GameVersionBanner from "$lib/components/GameVersionBanner.svelte";
   import HomeSearch from "$lib/components/HomeSearch.svelte";
-  import OldValorathNotice from "$lib/components/home/OldValorathNotice.svelte";
   import { buttonVariants } from "$lib/components/ui/button";
   import { COMPENDIUM_VERSION } from "$lib/constants/version";
   import { HOME_COUNTS } from "$lib/generated/home-counts";
@@ -216,8 +215,6 @@
       <GameVersionBanner {live} {checkedAt} />
       <HomeSearch />
     </div>
-
-    <OldValorathNotice />
 
     <!-- Flagship: interactive world map -->
     <a
