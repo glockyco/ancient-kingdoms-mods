@@ -500,9 +500,12 @@ describe("indexed content", () => {
     const alternatives = [...new Set(removed)].map((id) =>
       id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     );
+    // The stored documents carry every identifier and link. The term dictionary
+    // lowercases prose, so a published quest text naming a removed weapon would
+    // match that weapon's identifier, and prose naming withheld content stays.
     const named = new RegExp(
       `(?:^|[^A-Za-z0-9_])(${alternatives.join("|")})(?=[^A-Za-z0-9_]|$)`,
-    ).exec(serialized)?.[1];
+    ).exec(JSON.stringify(docs))?.[1];
     expect(named).toBeUndefined();
   });
 });
