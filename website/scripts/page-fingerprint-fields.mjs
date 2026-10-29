@@ -647,6 +647,7 @@ export const PAGE_FINGERPRINT_FIELDS = Object.freeze({
     "cast_time",
     "channel_pulses",
     "charisma_bonus",
+    "charisma_power_bonus_multiplier",
     "charmed_damage_percent",
     "class_skill_positions",
     "cold_resist_bonus",

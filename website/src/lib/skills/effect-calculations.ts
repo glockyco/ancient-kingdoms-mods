@@ -42,8 +42,7 @@ import {
   WISDOM_HEAL_SHARE,
   attributeBuff,
   bardBonus,
-  bardPower,
-  songValue,
+  buffSongPower,
   wisdomHeal,
 } from "$lib/calculation/combat";
 import { hitThreat } from "$lib/calculation/combat-rules";
@@ -590,8 +589,8 @@ export function effectScalingCalculation(
       ? [
           {
             name: "Song power",
-            expression: "100% + 0.1% per point of Charisma above 0",
-            limit: "at most 300%",
+            expression: `100% + ${percent(0.001 * (skill.charisma_power_bonus_multiplier ?? 1), { decimals: 2, preserveNonzero: true })} per point of Charisma above 0`,
+            limit: `at most ${percent(1 + 2 * (skill.charisma_power_bonus_multiplier ?? 1), { decimals: 2 })}`,
           },
         ]
       : []),
@@ -699,11 +698,13 @@ export function effectScalingCalculation(
           `${attributeName}: ${arithmetic} = ${number(attribute)}${average ? ", rounded" : ""}`,
         );
       }
-      const power = song ? bardPower(attribute) : 1;
+      const power = song
+        ? buffSongPower(attribute, skill.charisma_power_bonus_multiplier)
+        : 1;
       if (usesSongMultiplier) {
         const bonus = bardBonus(attribute);
         working.push(
-          `Song power: 100% + ${number(Math.max(0, attribute))} × 0.1% = ${percent(1 + bonus.raw, { decimals: 2, preserveNonzero: true })}${bonus.raw !== bonus.limited ? `, limited to ${percent(power, { decimals: 2, preserveNonzero: true })}` : ""}`,
+          `Song power: 100% + ${percent(bonus.limited, { decimals: 2, preserveNonzero: true })} × ${number(skill.charisma_power_bonus_multiplier ?? 1)} = ${percent(power, { decimals: 2, preserveNonzero: true })}`,
         );
       }
       if (ward) {
@@ -741,7 +742,7 @@ export function effectScalingCalculation(
           ) {
             const raw = effectIsFraction(effect)
               ? multiplyF32(base, power)
-              : songValue(base, attribute).scaled;
+              : iround(multiplyF32(base, power));
             result =
               effect.key === "fear_resist_chance_bonus" &&
               skill.fear_resist_chance_bonus_cap > 0

@@ -4,6 +4,7 @@ import {
   attackInterval,
   avoidanceChance,
   bardPower,
+  buffSongPower,
   bardBonus,
   avoidanceCalculation,
   songCalculation,
@@ -163,6 +164,10 @@ describe("combat calculations", () => {
     expect(bardPower(1)).toBe(Math.fround(1 + Math.fround(0.001)));
     expect(bardPower(2000)).toBe(3);
     expect(bardPower(50_000)).toBe(3);
+    expect(buffSongPower(1000, 0.5)).toBe(1.5);
+    expect(buffSongPower(1000, 1)).toBe(bardPower(1000));
+    expect(buffSongPower(3000, 0.5)).toBe(2);
+    expect(buffSongPower(-100, 0.5)).toBe(1);
   });
 
   it("exposes raw values before shared healing, song, and interval bounds", () => {

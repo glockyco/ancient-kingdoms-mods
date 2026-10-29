@@ -115,7 +115,9 @@ function attributeSource(
 }
 
 /** The lead of a note that multiplies a song's value by song power. */
-const SONG_POWER_LEAD = `${percent(SONG_POWER_PER_CHARISMA, { decimals: 2, preserveNonzero: true })} stronger`;
+function songPowerLead(skill: SkillDetailView): string {
+  return `${percent(SONG_POWER_PER_CHARISMA * (skill.charisma_power_bonus_multiplier ?? 1), { decimals: 2, preserveNonzero: true })} stronger`;
+}
 
 /** Additive attribute shares are rounded by the game before being added. */
 function additiveLead(value: number, negative = false): string {
@@ -124,23 +126,24 @@ function additiveLead(value: number, negative = false): string {
     ? `${sign}${number(value)}`
     : `${sign}${percent(value, { decimals: 2, preserveNonzero: true })} of`;
 }
-// Source: server-scripts/Buff.cs:46-257; BuffSkill.cs:237-254,471-534; Wisdom.cs:116-128 — song power multiplies a song's values, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
+// Source: server-scripts/BuffSkill.cs:ScaleWithCharisma,237-254,471-534; Wisdom.cs:116-128 — song power multiplies a song's values by its share of the Charisma bonus, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
 /** How an attribute source changes one listed value, as a note lead, or null when it does not. */
 function scalingLead(
   scaling: EffectScaling,
   source: AttributeSource,
   value: LinearValue,
   durationBase: number,
+  songLead: string,
 ): string | null {
   const { mode, factor } = scaling;
   const { multiplier } = source;
   if (source.song) {
     if (mode === "dot" && factor > 0) return additiveLead(factor);
-    return SONG_POWER_LEAD;
+    return songLead;
   }
   switch (mode) {
     case "song":
-      return SONG_POWER_LEAD;
+      return songLead;
     case "flat":
       return additiveLead(factor * multiplier, value.base_value < 0);
     case "healing":
@@ -286,7 +289,7 @@ function cadenceNote(mercenary: boolean): string {
   return `${songPower} CHA, then ${melody[0]}, ${melody[1]} or ${melody[2]} more with 4, 5 or 6+ songs`;
 }
 
-// Source: server-scripts/Buff.cs:46-283; BardSongSkill.cs:28; BardCharmSongSkill.cs:GetCharmedDamageMultiplier — song power scales a song's values, but not speed, attributes or an additive Charisma damage over time.
+// Source: server-scripts/BuffSkill.cs:ScaleWithCharisma,ScaleHealingPerSecondBonus; Buff.cs:46-283; BardSongSkill.cs:28; BardCharmSongSkill.cs:GetCharmedDamageMultiplier — song power scales a song's values, but not speed, attributes or an additive Charisma damage over time.
 /**
  * Move a song's notes onto its "Bard song" fragment when every value it shows
  * carries the same song power note.
@@ -307,7 +310,9 @@ function hoistSongNote(
     (field) =>
       notes[field] === notes[first] &&
       (entries.get(field) ?? []).length > 0 &&
-      (entries.get(field) ?? []).every((note) => note.lead === SONG_POWER_LEAD),
+      (entries.get(field) ?? []).every(
+        (note) => note.lead === songPowerLead(skill),
+      ),
   );
   if (!songPower) return;
   notes.is_bard_song = notes[first];
@@ -380,7 +385,13 @@ function summaryNotes(
     for (const scaling of effectScalings(skill, debuff)) {
       const value = skill[scaling.effect.key];
       if (!value) continue;
-      const lead = scalingLead(scaling, attribute, value, skill.duration_base);
+      const lead = scalingLead(
+        scaling,
+        attribute,
+        value,
+        skill.duration_base,
+        songPowerLead(skill),
+      );
       if (!lead) continue;
       addNote(entries, notedField(scaling.effect.key), {
         owner: contextOwner(casters, source),
@@ -397,7 +408,7 @@ function summaryNotes(
   ) {
     addNote(entries, "charmed_damage_percent", {
       owner: "any",
-      lead: SONG_POWER_LEAD,
+      lead: songPowerLead(skill),
       attribute: "CHA",
     });
   }

@@ -301,6 +301,11 @@ export function bardPower(charisma: number): number {
   return addF32(1, bardBonus(charisma).limited);
 }
 
+// Source: server-scripts/BuffSkill.cs:ScaleWithCharisma — multiply only the capped Charisma bonus, preserving the base power.
+export function buffSongPower(charisma: number, multiplier = 1): number {
+  return addF32(1, multiplyF32(f32(bardPower(charisma) - 1), multiplier));
+}
+
 export function songValue(baseValue: number, charisma: number, melody = 0) {
   const power = bardPower(charisma);
   const scaled = iround(multiplyF32(baseValue, power));

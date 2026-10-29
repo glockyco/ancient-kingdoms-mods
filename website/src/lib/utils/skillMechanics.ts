@@ -28,7 +28,7 @@ function groupCasters<P extends { caster: Caster }>(
   return [...groups.values()];
 }
 
-/** Source: server-scripts/Buff.cs:46-257,275-278; BuffSkill.cs:256-277; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:33-36 — integer effects scale with Charisma and round to integers. */
+/** Source: server-scripts/BuffSkill.cs:ScaleWithCharisma — integer effects scale with the skill's share of the Charisma bonus and round to integers. */
 function hasCharismaScaledIntegerEffect(skill: SkillDetailView): boolean {
   return (
     hasNonZeroField(skill.health_max_bonus) ||
@@ -50,7 +50,7 @@ function hasCharismaScaledIntegerEffect(skill: SkillDetailView): boolean {
   );
 }
 
-/** Source: server-scripts/Buff.cs:62-261,280-283; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:38-41 — percentage fields scale with Charisma without integer rounding. */
+/** Source: server-scripts/BuffSkill.cs:ScaleWithCharisma — percentage fields scale with the skill's share of the Charisma bonus without integer rounding. */
 function hasCharismaScaledPercentageEffect(skill: SkillDetailView): boolean {
   return (
     hasNonZeroField(skill.health_max_percent_bonus) ||

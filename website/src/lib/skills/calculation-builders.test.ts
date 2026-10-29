@@ -474,6 +474,27 @@ describe("healing and effect calculations", () => {
         { charisma: 500 },
       )[0],
     ).toBe(8);
+    const discordantVerse = skill({
+      id: "discordant_verse",
+      scales_with_charisma: true,
+      charisma_power_bonus_multiplier: 0.5,
+      accuracy_bonus: { base_value: -0.03, bonus_per_level: 0 },
+    });
+    expect(
+      resultNumbers(effectScalingCalculation(discordantVerse, "cha", true), {
+        charisma: 1000,
+      }),
+    ).toEqual([4.5]);
+    expect(
+      resultNumbers(
+        effectScalingCalculation(
+          { ...discordantVerse, charisma_power_bonus_multiplier: 1 },
+          "cha",
+          true,
+        ),
+        { charisma: 1000 },
+      ),
+    ).toEqual([6]);
     expect(
       resultNumbers(
         effectScalingCalculation(

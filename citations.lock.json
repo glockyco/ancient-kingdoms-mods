@@ -232,10 +232,6 @@
     "BardMercenarySkills.cs:StartSongCast": {
       "span": 0
     },
-    "BardSongSkill.cs:26-31": {
-      "sha256": "f81ab64fc7d1fe86fa3e8ee33fa4f263dc04cb12080d13757849e62f38042a26",
-      "span": 6
-    },
     "BardSongSkill.cs:28": {
       "sha256": "1009a6e3a904a91407745e62cd643094244e0915a7b43495d0cfb9fce85e9ec5",
       "span": 1
@@ -276,10 +272,6 @@
       "sha256": "acb7efe6f6e685901be1ef33e6199cedb22b6091a989ba55eec334c5a59f79d8",
       "span": 38
     },
-    "Buff.cs:132-239": {
-      "sha256": "1be628f7ca1b9e88af0984a3a14198c5ddaf32b210122d903505efd1aefbc7d7",
-      "span": 108
-    },
     "Buff.cs:239": {
       "sha256": "19f1068bf2cf50f90ce5e3b03a3f540a7ef4cc034c679478edca94d2aab5a0d9",
       "span": 1
@@ -287,14 +279,6 @@
     "Buff.cs:253": {
       "sha256": "4d2746bd4c3c8c6308e4c3bb3ffbb3a57e590968fc7b92f989bca0ec12c6499b",
       "span": 1
-    },
-    "Buff.cs:275-278": {
-      "sha256": "ef224bf00085e0b0d5804adb70284105d49f2e19f2125ea631fe4f4d40474a29",
-      "span": 4
-    },
-    "Buff.cs:280-283": {
-      "sha256": "37971e873f721103902b75d074741e8ccba7ac4c0886b896295a53d0b5d8a25a",
-      "span": 4
     },
     "Buff.cs:361-369": {
       "sha256": "4bcda78bd7e5fdf45c77dd4beba004b49835b8c4973abd30e6f28f664683c946",
@@ -315,10 +299,6 @@
     "Buff.cs:46-59": {
       "sha256": "5e195bbf0a640b3c41d738a379c5cc56b54e6936a9ab317ad3634e597a463d71",
       "span": 14
-    },
-    "Buff.cs:62-261": {
-      "sha256": "126021010510b1b3124cd534ca42bce5e75a6faf6881505e8a084feecbfbf8e7",
-      "span": 200
     },
     "Buff.cs:68-227": {
       "sha256": "fe5ea2340d0f3dcb02aeac91d0c596c672facaf6d6293a0222c1cb8cae1162e5",
@@ -357,10 +337,6 @@
     "BuffSkill.cs:237-254": {
       "sha256": "13d379cf3086b5ef2fbe868598c93b0244cdc488f6932ef31d6bce0f422980f1",
       "span": 18
-    },
-    "BuffSkill.cs:256-277": {
-      "sha256": "49f22055782c1ed853acc2585073eaabd6e23e30ec1d925621a8b2b8e965bbe1",
-      "span": 22
     },
     "BuffSkill.cs:256-290": {
       "sha256": "d929a97037e0c66ececcfee300d8ee5e8ad1c793c6f7c8b300705b81d4f2b6bf",
@@ -416,6 +392,9 @@
       "span": 0
     },
     "BuffSkill.cs:ScaleHealingPerSecondBonus": {
+      "span": 0
+    },
+    "BuffSkill.cs:ScaleWithCharisma": {
       "span": 0
     },
     "BuffSkill.cs:ToolTip": {
@@ -5964,14 +5943,6 @@
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40": {
       "sha256": "df922b864fd95c98cc3102cc8e415f35d9788c3a278a0a043ac8605f4762e2dc",
       "span": 14
-    },
-    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:33-36": {
-      "sha256": "afe0787d0fa560859857936d2c3ede8782a7842b5f9756a3574c9f128000c24c",
-      "span": 4
-    },
-    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:38-41": {
-      "sha256": "6f8fc2e1ac8a19b65ea5f46c59f9d02f9373f9e207145bdccc264128cbda379d",
-      "span": 4
     },
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier": {
       "span": 0

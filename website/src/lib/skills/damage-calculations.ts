@@ -35,7 +35,7 @@ import type {
   SkillDetailView,
 } from "$lib/types/skills";
 import { ACTIVE_SONGS, melodyBonus } from "$lib/calculation/bard";
-import { bardBonus, bardPower, songValue } from "$lib/calculation/combat";
+import { bardBonus, buffSongPower, songValue } from "$lib/calculation/combat";
 import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 import { damageFormulaStats } from "$lib/utils/skillMechanics";
@@ -604,8 +604,8 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
       },
       {
         name: "Song power",
-        expression: "100% + 0.1% per point of Charisma above 0",
-        limit: "at most 300%",
+        expression: `100% + ${percent(0.001 * (skill.charisma_power_bonus_multiplier ?? 1), { decimals: 2, preserveNonzero: true })} per point of Charisma above 0`,
+        limit: `at most ${percent(1 + 2 * (skill.charisma_power_bonus_multiplier ?? 1), { decimals: 2 })}`,
       },
       {
         name: "Charmed monster's damage",
@@ -617,8 +617,10 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
     example(values) {
       const rank = values.rank ?? 1;
       const base = atRank(skill.charmed_damage_percent!, rank);
-      const power = bardPower(values.charisma);
-      const bonus = bardBonus(values.charisma);
+      const power = buffSongPower(
+        values.charisma,
+        skill.charisma_power_bonus_multiplier,
+      );
       const raw = multiplyF32(base, power);
       const result = clamp(raw, 0, 1);
       return {
@@ -634,7 +636,7 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
             rank,
             (value) => percent(value, { decimals: 2, preserveNonzero: true }),
           ),
-          `Song power: 100% + ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(addF32(1, bonus.raw), { decimals: 2, preserveNonzero: true })}${bonus.raw !== bonus.limited ? `, limited to ${percent(power, { decimals: 2, preserveNonzero: true })}` : ""}`,
+          `Song power: ${percent(power, { decimals: 2, preserveNonzero: true })}`,
           `Charmed monster's damage: ${percent(base, { decimals: 2, preserveNonzero: true })} × ${percent(power, { decimals: 2, preserveNonzero: true })} = ${percent(raw, { decimals: 2, preserveNonzero: true })}${raw !== result ? `, limited to ${percent(result, { decimals: 2, preserveNonzero: true })}` : ""}`,
         ],
       };

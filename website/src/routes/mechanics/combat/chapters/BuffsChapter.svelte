@@ -175,12 +175,14 @@
 
   <Topic id="songs">
     <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardMercenarySkills.cs:RefreshAura — a song buff from a Bard or Bard mercenary carries that singer's Charisma. -->
-    <!-- Source: server-scripts/Buff.cs:ScaleWithCharisma and Skills.cs:GetFinalHealOverTime — Charisma-scaled song values skip the Wisdom additions. -->
+    <!-- Source: server-scripts/BuffSkill.cs:ScaleWithCharisma and Skills.cs:GetFinalHealOverTime — songs apply their share of the capped Charisma bonus and skip Wisdom additions. -->
     <p>
       Both beneficial and harmful Bard songs grow stronger with the singer's
-      Charisma. This applies to Bard mercenaries too.
+      Charisma. This applies to Bard mercenaries too. The calculation below
+      shows normal song scaling. Discordant Verse receives half the Charisma
+      bonus.
     </p>
-    <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier; Buff.cs:ScaleWithCharisma; BuffSkill.cs:ScaleFearResistChanceBonus,ScaleHealingPerSecondBonus — song power scales whole-number and percentage effects, but not Movement Speed or primary attributes. -->
+    <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier; BuffSkill.cs:ScaleWithCharisma,ScaleFearResistChanceBonus,ScaleHealingPerSecondBonus; Buff.cs:ScaleWithCharisma — song power scales whole-number and percentage effects, but not Movement Speed or primary attributes. -->
     <Formula calculation={songCalculation()} />
     <RefTable caption="What song power changes">
       <thead>

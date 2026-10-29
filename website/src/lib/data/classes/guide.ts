@@ -168,9 +168,9 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   bard: {
     attributes: {
-      text: "Each Charisma point makes your songs and Final Cadence 0.1% stronger, up to a 200% bonus, and subtracts 0.02% from the chance that a target resists your charm. Wisdom and Intelligence do not change your songs or Final Cadence.",
+      text: "Each Charisma point makes your songs and Final Cadence 0.1% stronger, up to a 200% bonus. Discordant Verse receives half that bonus. Each point also subtracts 0.02% from the chance that a target resists your charm. Wisdom and Intelligence do not change your songs or Final Cadence.",
       source:
-        "Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40; server-scripts/BardCharmSongSkill.cs:66-71; server-scripts/BardSongSkill.cs:Apply; server-scripts/BardFinalCadenceSkill.cs:Apply — Charisma scales songs and Final Cadence and reduces charm resistance",
+        "Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40; server-scripts/BardCharmSongSkill.cs:66-71; server-scripts/BuffSkill.cs:ScaleWithCharisma; server-scripts/BardFinalCadenceSkill.cs:Apply — Charisma scales songs by their bonus multiplier, scales Final Cadence normally and reduces charm resistance",
     },
     equipment: {
       text: "Your off-hand holds your instrument. Songs need it, so you cannot use a two-handed weapon.",

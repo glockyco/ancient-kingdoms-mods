@@ -347,6 +347,9 @@ export function skillDetailFromRow(
     is_enrage: Boolean(skillRaw.is_enrage),
     is_double_exp_spell: Boolean(skillRaw.is_double_exp_spell),
     scales_with_charisma: Boolean(skillRaw.scales_with_charisma),
+    charisma_power_bonus_multiplier: Number(
+      skillRaw.charisma_power_bonus_multiplier,
+    ),
     damage_over_time_bonus_per_charisma_point: Number(
       skillRaw.damage_over_time_bonus_per_charisma_point ?? 0,
     ),

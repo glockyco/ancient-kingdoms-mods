@@ -161,15 +161,16 @@
         Every other song replaces another Bard's copy of the same song on an ally
         at each cast, including an automatic repeat. Different songs stack.
       </p>
-      <!-- Source: server-scripts/BardSongSkill.cs:26-31, Buff.cs:132-239 — Bard songs use Charisma scaling for eligible effect values. -->
+      <!-- Source: server-scripts/BuffSkill.cs:ScaleWithCharisma — songs multiply eligible values by their share of the capped Charisma bonus. -->
       <!-- Source: server-scripts/Skills.cs:GetFinalHealOverTime and BuffSkill.cs:GetDebuffPowerAttribute — songs skip the Wisdom healing bonus and use Charisma before the Intelligence branch. -->
       <p>
         <a
           href="/mechanics/character#attributes"
           class="text-blue-600 dark:text-blue-400 hover:underline">Charisma</a
         >
-        increases song power by 0.1% per point above 0, up to a 200% bonus. Wisdom
-        and Intelligence do not strengthen songs.<br />
+        normally increases song power by 0.1% per point above 0, up to a 200% bonus.
+        Discordant Verse receives half that bonus. Wisdom and Intelligence do not
+        strengthen songs.<br />
         <MechanicsLink section="combat#songs">Song Strength</MechanicsLink> shows
         which effects change and how they round.<br />
         See the <EntityLink href="/classes/bard" name="Bard class page" /> for skills
