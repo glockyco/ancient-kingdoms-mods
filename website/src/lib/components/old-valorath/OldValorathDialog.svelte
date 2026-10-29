@@ -1,18 +1,14 @@
 <script lang="ts">
-  import { Dialog as DialogPrimitive } from "bits-ui";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import entrance from "$lib/assets/home/old-valorath-entrance.webp";
+  import { oldValorathNotice } from "./notice-state.svelte";
 </script>
 
-<!-- Remove together with old_valorath in redactions.toml [zones.exclude_unreleased]
-     once the developers allow the zone to be published. -->
-<Dialog.Root>
-  <DialogPrimitive.Trigger
-    class="cursor-pointer text-sm text-muted-foreground underline underline-offset-4 decoration-muted-foreground/40 transition-colors hover:text-foreground hover:decoration-foreground"
-  >
-    Why Old Valorath is missing from the Compendium
-  </DialogPrimitive.Trigger>
-
+<!-- Remove this folder together with old_valorath in redactions.toml
+     [zones.exclude_unreleased] once the developers allow the zone to be
+     published. Rendered once in the root layout so search can open it on any
+     page. -->
+<Dialog.Root bind:open={oldValorathNotice.open}>
   <Dialog.Content
     class="bg-card gap-4 p-5 sm:max-w-lg sm:p-6"
     onOpenAutoFocus={(event) => {

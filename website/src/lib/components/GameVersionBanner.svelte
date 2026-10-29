@@ -3,7 +3,7 @@
   import { COMPENDIUM_VERSION } from "$lib/constants/version";
   import { compareVersions } from "$lib/version-compare";
   import type { GameVersionResult } from "$lib/steam-news-parser";
-  import OldValorathNotice from "$lib/components/home/OldValorathNotice.svelte";
+  import OldValorathLink from "$lib/components/old-valorath/OldValorathLink.svelte";
 
   // Fed by the home page's server load. Server-rendered into the initial
   // HTML, so there is no fetch and no flash — the live segment is part of
@@ -50,5 +50,5 @@
     <span class="hidden sm:inline" aria-hidden="true">·</span>
     <span>Checked on <time datetime={checkedAt}>{checkedAt}</time></span>
   </p>
-  <OldValorathNotice />
+  <OldValorathLink />
 </div>

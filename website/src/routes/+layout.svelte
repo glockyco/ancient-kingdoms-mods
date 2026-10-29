@@ -11,6 +11,7 @@
   import { page } from "$app/state";
   import SearchPalette from "$lib/components/search/SearchPalette.svelte";
   import { searchPalette } from "$lib/search/palette-state.svelte";
+  import OldValorathDialog from "$lib/components/old-valorath/OldValorathDialog.svelte";
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
   import { onMount } from "svelte";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
@@ -90,6 +91,7 @@
 <ModeWatcher />
 <LoadingOverlay />
 <SearchPalette />
+<OldValorathDialog />
 <a href="#main-content" class="skip-link">Skip to content</a>
 {#if !isMap}
   <SiteHeader search={!isHome} homeLayout={isHome} />

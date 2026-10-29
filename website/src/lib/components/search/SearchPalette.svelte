@@ -7,6 +7,8 @@
   import * as Drawer from "$lib/components/ui/drawer";
   import { entityRegistry, type EntityId } from "$lib/entities/registry";
   import { searchPalette } from "$lib/search/palette-state.svelte";
+  import { oldValorathNotice } from "$lib/components/old-valorath/notice-state.svelte";
+  import { asksAboutOldValorath } from "$lib/components/old-valorath/query";
   import {
     loadRecentSearches,
     rememberSearch,
@@ -18,7 +20,7 @@
     type SearchResult,
   } from "$lib/search/search";
   import Clock from "@lucide/svelte/icons/clock";
-  import { FileText, ListFilter, type IconNode } from "lucide";
+  import { CircleHelp, FileText, ListFilter, type IconNode } from "lucide";
 
   let query = $state("");
   let results = $state<SearchResult[]>([]);
@@ -90,15 +92,22 @@
     void goto(result.href);
   }
 
-  const announcement = $derived(
-    query.trim().length < 2 || loading
-      ? ""
-      : failed
-        ? "Search is unavailable"
-        : results.length === 1
-          ? "1 result"
-          : `${results.length} results`,
+  const showNotice = $derived(
+    query.trim().length >= 2 && asksAboutOldValorath(query),
   );
+
+  function openNotice() {
+    recent = rememberSearch(query);
+    searchPalette.open = false;
+    oldValorathNotice.open = true;
+  }
+
+  const announcement = $derived.by(() => {
+    if (query.trim().length < 2 || loading) return "";
+    if (failed) return "Search is unavailable";
+    const count = results.length + (showNotice ? 1 : 0);
+    return count === 1 ? "1 result" : `${count} results`;
+  });
 </script>
 
 {#snippet searchContent()}
@@ -113,6 +122,31 @@
     </div>
     <div class="min-h-0 overflow-hidden" use:scrollSelectedIntoView>
       <Command.List class="max-h-[min(300px,calc(85dvh-6rem))]">
+        {#if showNotice}
+          <Command.Item value="notice:old-valorath" onSelect={openNotice}>
+            <div class="flex w-full min-w-0 items-center gap-3">
+              <EntityIcon
+                src={null}
+                alt=""
+                fallbackIcon={CircleHelp}
+                size={28}
+              />
+              <div class="min-w-0 flex-1">
+                <div class="flex min-w-0 items-center gap-3">
+                  <span class="min-w-0 flex-1 truncate font-medium">
+                    Old Valorath
+                  </span>
+                  <span class="shrink-0 text-sm text-muted-foreground">
+                    Notice
+                  </span>
+                </div>
+                <p class="mt-0.5 text-sm text-muted-foreground">
+                  Why it is missing from the Compendium
+                </p>
+              </div>
+            </div>
+          </Command.Item>
+        {/if}
         {#if query.trim().length < 2}
           {#if recent.length > 0}
             <Command.Group heading="Recent searches">
