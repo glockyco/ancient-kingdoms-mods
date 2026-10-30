@@ -1,10 +1,11 @@
 using System;
 using System.Reflection;
+using AncientKingdomsMods.Shared;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using MelonLoader;
 
-[assembly: MelonInfo(typeof(FieldDefaultValueHookFix.FieldDefaultValueHookFix), "FieldDefaultValueHookFix", "1.0.0", "WoW_Much")]
+[assembly: MelonInfo(typeof(FieldDefaultValueHookFix.FieldDefaultValueHookFix), "FieldDefaultValueHookFix", "1.0.1", "WoW_Much")]
 [assembly: MelonGame("ancientpixels", "ancientkingdoms")]
 
 namespace FieldDefaultValueHookFix;
@@ -62,7 +63,7 @@ public class FieldDefaultValueHookFix : MelonMod
             .GetMethod(nameof(UseXrefResult), BindingFlags.Static | BindingFlags.NonPublic);
         new HarmonyLib.Harmony("ancientkingdoms.fielddefaultvaluehookfix")
             .Patch(findTargetMethod, postfix: new HarmonyMethod(postfix));
-        LoggerInstance.Msg("Class::GetDefaultFieldValue resolution redirected to xref traversal.");
+        LoggerInstance.Msg($"Class::GetDefaultFieldValue resolution redirected to xref traversal, build {ModBuild.Commit(typeof(FieldDefaultValueHookFix).Assembly)}.");
     }
 
     private static void UseXrefResult(ref IntPtr __result)

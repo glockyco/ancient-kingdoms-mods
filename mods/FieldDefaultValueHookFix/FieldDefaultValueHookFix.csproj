@@ -27,4 +27,8 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Shared\ModBuild.cs" Link="Shared\ModBuild.cs" />
+  </ItemGroup>
+
 </Project>
