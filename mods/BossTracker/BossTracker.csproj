@@ -69,4 +69,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Shared\GameText.cs" Link="Shared\GameText.cs" />
+    <Compile Include="..\Shared\ModBuild.cs" Link="Shared\ModBuild.cs" />
+    <Compile Include="..\Shared\ZoneNames.cs" Link="Shared\ZoneNames.cs" />
+  </ItemGroup>
+
 </Project>

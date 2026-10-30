@@ -1,21 +1,33 @@
+using System.Collections.Generic;
+using System.Linq;
+using AncientKingdomsMods.Shared;
+using Il2Cpp;
+using Il2CppMirror;
+using Il2CppTMPro;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Il2Cpp;
-using Il2CppMirror;
-using System.Collections.Generic;
-using System.Linq;
 
-[assembly: MelonInfo(typeof(BossTracker.BossTracker), "BossTracker", "0.1.0", "WoW_Much")]
+[assembly: MelonInfo(typeof(BossTracker.BossTracker), "BossTracker", "0.2.0", "WoW_Much")]
 [assembly: MelonGame("ancientpixels", "ancientkingdoms")]
 
 namespace BossTracker
 {
     public class BossTracker : MelonMod
     {
+        private const float TextPadding = 6f;
+        private const float HoverPanelGap = 8f;
+        private const float MonsterRefreshSeconds = 2f;
+        private const string Rule = "<color=#666666>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</color>\n";
+
+        // The default position. At this position the panel moves above the game's monster
+        // hover panel, which occupies the same corner.
+        private const float DefaultPanelX = -10f;
+        private const float DefaultPanelY = 30f;
+
         private GameObject trackerPanel;
-        private Text trackerText;
+        private TextMeshProUGUI trackerText;
         private RectTransform panelRectTransform;
         private Dictionary<uint, BossInfo> trackedBosses = new Dictionary<uint, BossInfo>();
 
@@ -25,11 +37,10 @@ namespace BossTracker
 
         // Caching
         private Il2CppSystem.Object[] cachedMonsters = null;
+        private float nextMonsterRefresh;
         private Il2Cpp.NetworkManagerMMO cachedNetworkManager = null;
         private bool reportedMissingNetworkManager = false;
         private string lastSceneName = "";
-        private Vector3 lastPlayerPosition = Vector3.zero;
-        private const float TELEPORT_DISTANCE_THRESHOLD = 50f;
 
         // Config
         private MelonPreferences_Category configCategory;
@@ -41,9 +52,11 @@ namespace BossTracker
 
         private class BossInfo
         {
-            public string name;
+            public string nameEntity;
             public int level;
+            public bool isBoss;
             public bool isElite;
+            public bool isFabled;
             public Vector3 position;
             public bool isAlive;
             public double respawnTime;
@@ -51,14 +64,14 @@ namespace BossTracker
 
         public override void OnInitializeMelon()
         {
-            LoggerInstance.Msg("BossTracker initialized!");
+            LoggerInstance.Msg($"BossTracker initialized, build {ModBuild.Commit(typeof(BossTracker).Assembly)}");
 
             // Initialize config
             configCategory = MelonPreferences.CreateCategory("BossTracker");
-            configPanelX = configCategory.CreateEntry("PanelX", -10f, "Panel X Position");
-            configPanelY = configCategory.CreateEntry("PanelY", 30f, "Panel Y Position");
+            configPanelX = configCategory.CreateEntry("PanelX", DefaultPanelX, "Panel X Position");
+            configPanelY = configCategory.CreateEntry("PanelY", DefaultPanelY, "Panel Y Position. The default places the panel above the game's monster hover panel.");
             configPanelWidth = configCategory.CreateEntry("PanelWidth", 420f, "Panel Width");
-            configPanelHeight = configCategory.CreateEntry("PanelHeight", 300f, "Panel Height");
+            configPanelHeight = configCategory.CreateEntry("PanelHeight", 300f, "Maximum Panel Height. The panel fits its list up to this height.");
             configFontSize = configCategory.CreateEntry("FontSize", 12, "Font Size");
         }
 
@@ -81,12 +94,13 @@ namespace BossTracker
             panelRectTransform.anchorMin = new Vector2(1, 0);
             panelRectTransform.anchorMax = new Vector2(1, 0);
             panelRectTransform.pivot = new Vector2(1, 0);
-            panelRectTransform.anchoredPosition = new Vector2(configPanelX.Value, configPanelY.Value);
+            panelRectTransform.anchoredPosition = InitialPosition(canvas);
             panelRectTransform.sizeDelta = new Vector2(configPanelWidth.Value, configPanelHeight.Value);
 
             // Add background
             var image = trackerPanel.AddComponent<Image>();
             image.color = new Color(0, 0, 0, 0.7f);
+            image.raycastTarget = false;
 
             // Create text
             var textObj = new GameObject("BossTrackerText");
@@ -95,14 +109,40 @@ namespace BossTracker
             var textRect = textObj.AddComponent<RectTransform>();
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
-            textRect.sizeDelta = Vector2.zero;
-            textRect.anchoredPosition = Vector2.zero;
+            textRect.offsetMin = new Vector2(TextPadding, TextPadding);
+            textRect.offsetMax = new Vector2(-TextPadding, -TextPadding);
 
-            trackerText = textObj.AddComponent<Text>();
+            // TMP rather than legacy Text, because the game's Chinese and Japanese fonts are TMP fonts.
+            trackerText = textObj.AddComponent<TextMeshProUGUI>();
+            trackerText.font = GameText.LatinFont(TMP_Settings.defaultFontAsset);
             trackerText.fontSize = configFontSize.Value;
             trackerText.color = Color.white;
-            trackerText.alignment = TextAnchor.UpperLeft;
-            trackerText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            trackerText.alignment = TextAlignmentOptions.TopLeft;
+            trackerText.enableWordWrapping = true;
+            trackerText.overflowMode = TextOverflowModes.Truncate;
+            trackerText.raycastTarget = false;
+        }
+
+        // A saved position other than the default is the player's choice. The default sits just
+        // above the game's monster hover panel (UIContextInfo), which shares this corner.
+        private Vector2 InitialPosition(GameObject canvas)
+        {
+            var saved = new Vector2(configPanelX.Value, configPanelY.Value);
+            if (!Mathf.Approximately(saved.x, DefaultPanelX) || !Mathf.Approximately(saved.y, DefaultPanelY))
+                return saved;
+
+            var hover = UIContextInfo.singleton != null && UIContextInfo.singleton.panel != null
+                ? UIContextInfo.singleton.panel.GetComponent<RectTransform>()
+                : null;
+            // The canvas scales its children by its scale factor, so canvas units are world units divided by that scale.
+            var scale = canvas.transform.lossyScale.y;
+            if (hover == null || scale <= 0f)
+                return saved;
+
+            var corners = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<Vector3>(4);
+            hover.GetWorldCorners(corners);
+            var hoverTop = corners[1].y / scale;
+            return new Vector2(saved.x, Mathf.Max(saved.y, hoverTop + HoverPanelGap));
         }
 
         public override void OnUpdate()
@@ -116,6 +156,7 @@ namespace BossTracker
                 {
                     cachedMonsters = null;
                     cachedNetworkManager = null;
+                    trackedBosses.Clear();
                 }
                 lastSceneName = currentScene;
                 return;
@@ -133,32 +174,14 @@ namespace BossTracker
                 HandlePanelDragging();
             }
 
-            // Refresh cache on scene change or teleport
+            // Zones load and monsters spawn while the player walks, so the monster list is
+            // refreshed on a timer as well as on entering the scene.
             bool sceneChanged = lastSceneName != currentScene;
-
-            bool playerTeleported = false;
-            var player = Il2Cpp.Player.localPlayer;
-            if (player != null)
-            {
-                Vector3 currentPos = player.transform.position;
-                float distanceMoved = Vector3.Distance(currentPos, lastPlayerPosition);
-
-                if (distanceMoved > TELEPORT_DISTANCE_THRESHOLD)
-                {
-                    playerTeleported = true;
-                    lastPlayerPosition = currentPos;
-                }
-            }
-
-            if (cachedMonsters == null || sceneChanged || playerTeleported)
+            if (cachedMonsters == null || sceneChanged || Time.unscaledTime >= nextMonsterRefresh)
             {
                 cachedMonsters = UnityEngine.Object.FindObjectsOfType(Il2CppInterop.Runtime.Il2CppType.Of<Il2Cpp.Monster>());
+                nextMonsterRefresh = Time.unscaledTime + MonsterRefreshSeconds;
                 lastSceneName = currentScene;
-
-                if (sceneChanged && player != null)
-                {
-                    lastPlayerPosition = player.transform.position;
-                }
             }
 
             // Cache network manager (singleton - only need to fetch once)
@@ -209,7 +232,9 @@ namespace BossTracker
 
             foreach (var obj in monsters)
             {
-                var monster = obj.Cast<Il2Cpp.Monster>();
+                var monster = obj.TryCast<Il2Cpp.Monster>();
+                if (monster == null)
+                    continue;
 
                 bool isDead = monster.health != null && monster.health.current <= 0;
                 bool isTrackable = monster.isBoss || monster.isElite || monster.isFabled;
@@ -222,34 +247,14 @@ namespace BossTracker
                         // Track dead bosses/elites
                         if (hasServerTime && monster.respawn && monster.respawnTimeEnd > currentTime)
                         {
-                            if (!trackedBosses.ContainsKey(monster.netId))
-                            {
-                                trackedBosses[monster.netId] = new BossInfo();
-                            }
-
-                            var info = trackedBosses[monster.netId];
-                            info.name = monster.name.Replace("(Clone)", "").Trim();
-                            info.level = monster.level != null ? monster.level.current : 1;
-                            info.isElite = monster.isElite && !monster.isBoss;
-                            info.position = monster.transform.position;
+                            var info = Track(monster);
                             info.isAlive = false;
                             info.respawnTime = monster.respawnTimeEnd;
                         }
                     }
                     else
                     {
-                        // Track alive bosses/elites
-                        if (!trackedBosses.ContainsKey(monster.netId))
-                        {
-                            trackedBosses[monster.netId] = new BossInfo();
-                        }
-
-                        var info = trackedBosses[monster.netId];
-                        info.name = monster.name.Replace("(Clone)", "").Trim();
-                        info.level = monster.level != null ? monster.level.current : 1;
-                        info.isElite = monster.isElite && !monster.isBoss;
-                        info.position = monster.transform.position;
-                        info.isAlive = true;
+                        Track(monster).isAlive = true;
                     }
                 }
             }
@@ -259,6 +264,23 @@ namespace BossTracker
             {
                 UpdateTrackerUI(currentTime);
             }
+        }
+
+        private BossInfo Track(Il2Cpp.Monster monster)
+        {
+            if (!trackedBosses.TryGetValue(monster.netId, out var info))
+            {
+                info = new BossInfo();
+                trackedBosses[monster.netId] = info;
+            }
+
+            info.nameEntity = monster.nameEntity;
+            info.level = monster.level != null ? monster.level.current : 1;
+            info.isBoss = monster.isBoss;
+            info.isElite = monster.isElite;
+            info.isFabled = monster.isFabled;
+            info.position = monster.transform.position;
+            return info;
         }
 
         private void HandlePanelDragging()
@@ -327,14 +349,7 @@ namespace BossTracker
 
             // Header
             var text = $"<b><size=14>BOSS/ELITE TRACKER (A:{aliveBosses.Count} | D:{deadBosses.Count})</size></b>\n";
-            text += "<color=#666666>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</color>\n";
-
-            // Player position section
-            if (hasPlayerPos)
-            {
-                text += $"<b>You:</b> <color=#AAAAAA>({playerPos.x:F0}, {playerPos.y:F0}, {playerPos.z:F0})</color>\n";
-            }
-            text += "<color=#666666>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</color>\n\n";
+            text += Rule + "\n";
 
             // Alive section
             if (aliveBosses.Count > 0)
@@ -343,18 +358,12 @@ namespace BossTracker
 
                 foreach (var boss in aliveBosses)
                 {
-                    string colorCode = boss.isElite ? "#CC66FF" : "#00FFFF";
-                    string symbol = boss.isElite ? "◆" : "★";
-                    string typeLabel = boss.isElite ? "[Elite]" : "[Boss]";
-
-                    text += $"<color={colorCode}>{symbol} <b>{typeLabel} {boss.name}</b></color> | ";
+                    text += $"<color={TierColor(boss)}>{TierSymbol(boss)} <b>{TierLabel(boss)} {GameText.EntityName(boss.nameEntity)}</b></color> | ";
                     text += $"<color=#FFD700>Lvl {boss.level}</color>";
 
                     if (hasPlayerPos)
                     {
-                        float distance = Vector3.Distance(playerPos, boss.position);
-                        string direction = GetDirectionWithDegrees(playerPos, boss.position);
-                        text += $" | {distance:F0}m {direction}";
+                        text += " | " + DistanceText(playerPos, boss.position);
                     }
 
                     text += "\n";
@@ -367,7 +376,7 @@ namespace BossTracker
             {
                 if (aliveBosses.Count > 0)
                 {
-                    text += "<color=#666666>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</color>\n";
+                    text += Rule;
                 }
 
                 text += "<color=#FF4444><b>▼ RESPAWNING (" + deadBosses.Count + ")</b></color> - By time\n\n";
@@ -380,19 +389,14 @@ namespace BossTracker
                         int minutes = (int)(timeLeft / 60);
                         int seconds = (int)(timeLeft % 60);
 
-                        string colorCode = boss.isElite ? "#CC66FF" : "#00FFFF";
-                        string symbol = "☠";
-                        string typeLabel = boss.isElite ? "[Elite]" : "[Boss]";
-
-                        text += $"<color={colorCode}>{symbol} <b>{typeLabel} {boss.name}</b></color> | ";
+                        // The game's fonts have no skull glyph, so a dead entry is marked with a dagger.
+                        text += $"<color={TierColor(boss)}>† <b>{TierLabel(boss)} {GameText.EntityName(boss.nameEntity)}</b></color> | ";
                         text += $"<color=#FFD700>Lvl {boss.level}</color> | ";
                         text += $"<color=#FF8888>{minutes:00}:{seconds:00}</color>";
 
                         if (hasPlayerPos)
                         {
-                            float distance = Vector3.Distance(playerPos, boss.position);
-                            string direction = GetDirectionWithDegrees(playerPos, boss.position);
-                            text += $" | {distance:F0}m {direction}";
+                            text += " | " + DistanceText(playerPos, boss.position);
                         }
 
                         text += "\n";
@@ -400,8 +404,25 @@ namespace BossTracker
                 }
             }
 
+            GameText.ApplyFont(trackerText);
             trackerText.text = text;
+
+            // The panel grows upward from its bottom anchor to fit the list, up to the configured height.
+            var height = Mathf.Min(configPanelHeight.Value, trackerText.preferredHeight + 2f * TextPadding);
+            panelRectTransform.sizeDelta = new Vector2(configPanelWidth.Value, height);
         }
+
+        // Fabled outranks boss, and boss outranks elite, whatever other flags a monster carries.
+        private static string TierLabel(BossInfo boss) => boss.isFabled ? "[Fabled]" : boss.isBoss ? "[Boss]" : "[Elite]";
+
+        private static string TierSymbol(BossInfo boss) => boss.isFabled ? "◇" : boss.isBoss ? "★" : "◆";
+
+        private static string TierColor(BossInfo boss) =>
+            boss.isFabled ? "#" + ColorUtility.ToHtmlStringRGB(Il2Cpp.Utils.fabledMonsterColor) : boss.isBoss ? "#00FFFF" : "#CC66FF";
+
+        // The game measures ranges in yd, one world unit each.
+        private string DistanceText(Vector3 from, Vector3 to) =>
+            $"{Vector3.Distance(from, to):F0} yd {GetDirectionWithDegrees(from, to)}";
 
         private string GetDirectionWithDegrees(Vector3 from, Vector3 to)
         {

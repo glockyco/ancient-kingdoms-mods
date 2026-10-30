@@ -1,6 +1,6 @@
 # BossTracker
 
-BossTracker is an unofficial MelonLoader mod for Ancient Kingdoms players tracking nearby bosses, elites, and fabled monsters. It lists their status, direction, distance, and respawn countdowns.
+BossTracker is an unofficial MelonLoader mod for Ancient Kingdoms players tracking nearby bosses, elites, and fabled monsters. It lists their status, direction, distance in yd, and respawn countdowns.
 
 [Download BossTracker.dll](https://ancient-kingdoms.compendiums.org/mods/BossTracker.dll)
 
@@ -10,11 +10,11 @@ Install MelonLoader as [Mods for players](../../README.md#mods-for-players) desc
 
 ## Use
 
-The panel appears in the world. Hold Right Shift and drag it with the left mouse button to move it.
+The panel appears in the world, above the game's monster info panel in the bottom-right corner. Hold Right Shift and drag it with the left mouse button to move it. Monster names follow the game's language wherever the game translates them. The panel's own labels are in English.
 
 ## Settings
 
-Dragging saves the panel position in the game's `UserData/MelonPreferences.cfg`, under `BossTracker`. You can also change its dimensions and font size there. [BossTracker.cs](BossTracker.cs) defines the settings and defaults.
+Dragging saves the panel position in the game's `UserData/MelonPreferences.cfg`, under `BossTracker`. You can also change its width, maximum height and font size there. [BossTracker.cs](BossTracker.cs) defines the settings and defaults.
 
 ## Limits
 
