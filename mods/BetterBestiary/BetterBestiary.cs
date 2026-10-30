@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using AncientKingdomsMods.Shared;
+using Il2Cpp;
 using MelonLoader;
 
-[assembly: MelonInfo(typeof(BetterBestiary.BetterBestiary), "Better Bestiary", "0.2.0", "ancient-kingdoms-mods")]
+[assembly: MelonInfo(typeof(BetterBestiary.BetterBestiary), "Better Bestiary", "0.3.0", "ancient-kingdoms-mods")]
 [assembly: MelonGame("ancientpixels", "ancientkingdoms")]
 [assembly: HarmonyDontPatchAll]
 
@@ -10,20 +13,24 @@ namespace BetterBestiary;
 public sealed class BetterBestiary : MelonMod
 {
     private static MelonLogger.Instance Logger;
-    private static bool _reportedPatchException;
+
+    // Monsters whose page failed to draw. The game draws their page for the rest of the session.
+    private static readonly HashSet<string> FailedMonsters = new(StringComparer.Ordinal);
 
     public override void OnInitializeMelon()
     {
         Logger = LoggerInstance;
         BetterBestiarySettings.Initialize();
-        LoggerInstance.Msg("Better Bestiary initialized");
+        LoggerInstance.Msg($"Better Bestiary initialized, build {ModBuild.Commit(typeof(BetterBestiary).Assembly)}");
         HarmonyInstance.PatchAll();
+        Ui.GamepadLootNavigation.Patch(HarmonyInstance);
         LoggerInstance.Msg("Better Bestiary Harmony patches registered");
     }
 
     public override void OnUpdate()
     {
         BestiaryAltClickHandler.Update();
+        Ui.GamepadLootNavigation.Update();
     }
 
     internal static void LogMessage(string message)
@@ -38,15 +45,17 @@ public sealed class BetterBestiary : MelonMod
             Logger.Warning(message);
     }
 
-    internal static bool IsPatchDisabled => _reportedPatchException;
+    /// <summary>Whether Better Bestiary draws this monster's page, rather than the game.</summary>
+    internal static bool Draws(Monster monster) =>
+        monster != null && !FailedMonsters.Contains(monster.nameEntity ?? string.Empty);
 
-    internal static void ReportPatchException(Exception ex)
+    internal static void ReportPageFailure(Monster monster, Exception ex)
     {
-        if (_reportedPatchException)
+        var name = monster != null ? monster.nameEntity ?? string.Empty : string.Empty;
+        if (!FailedMonsters.Add(name))
             return;
 
-        _reportedPatchException = true;
         if (Logger != null)
-            Logger.Error($"Better Bestiary disabled its render patch after an error: {ex}");
+            Logger.Error($"Better Bestiary could not draw the page of '{name}' and leaves it to the game for this session: {ex}");
     }
 }

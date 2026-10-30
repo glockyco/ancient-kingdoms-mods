@@ -23,6 +23,8 @@
     <Compile Include="..\..\mods\BetterBestiary\Skills\LinearValue.cs" Link="Skills\LinearValue.cs" />
     <Compile Include="..\..\mods\BetterBestiary\Skills\SkillEffectInput.cs" Link="Skills\SkillEffectInput.cs" />
     <Compile Include="..\..\mods\BetterBestiary\Skills\SkillEffectFormatter.cs" Link="Skills\SkillEffectFormatter.cs" />
+    <Compile Include="..\..\mods\BetterBestiary\Ui\LootGridLayout.cs" Link="Ui\LootGridLayout.cs" />
+    <Compile Include="..\..\mods\Shared\ZoneNames.cs" Link="Shared\ZoneNames.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
 using System.Globalization;
+using AncientKingdomsMods.Shared;
 using Il2Cpp;
 using Il2CppTMPro;
 using UnityEngine;
@@ -7,6 +8,8 @@ namespace BetterBestiary.Ui;
 
 internal static class BestiaryDetailRenderer
 {
+    private const string NoKillCount = "<color=#808080>-</color>";
+
     internal static void Reveal(UIBestiaryDetail detail)
     {
         var journal = UIJournal.singleton;
@@ -30,12 +33,12 @@ internal static class BestiaryDetailRenderer
 
         if (detail.nameBoss != null)
         {
-            detail.nameBoss.text = monster.nameEntity;
+            SetLocalizedText(detail.nameBoss, GameText.MonsterName(monster));
             detail.nameBoss.color = MonsterNameColor(monster);
         }
 
-        SetText(detail.levelBoss, "Level " + monster.level.current);
-        SetText(detail.loreBoss, monster.loreBoss);
+        SetLocalizedText(detail.levelBoss, GameText.Level(monster.level.current));
+        SetLocalizedText(detail.loreBoss, GameText.WithEntityNames(monster.loreBoss));
         SetText(detail.hpBoss, FormatHealth(monster.health.max));
         SetText(detail.armorBoss, monster.combat.defense.ToString());
         SetText(detail.magicResistanceBoss, monster.combat.magicResist.ToString());
@@ -44,8 +47,8 @@ internal static class BestiaryDetailRenderer
         SetText(detail.coldResistanceBoss, monster.combat.coldResist.ToString());
         SetText(detail.diseaseResistanceBoss, monster.combat.diseaseResist.ToString());
         SetText(detail.typeBoss, monster.typeMonster);
-        SetText(detail.classBoss, monster.classMonster);
-        SetText(detail.zoneBoss, ZoneText(monster));
+        SetLocalizedText(detail.classBoss, GameText.ClassName(monster.classMonster));
+        SetLocalizedText(detail.zoneBoss, GameText.ZoneName(monster.zoneMonster, monster.idZone));
         SetText(detail.kills, KillText(monster));
 
         BestiaryLootRenderer.Reveal(detail, monster);
@@ -62,15 +65,22 @@ internal static class BestiaryDetailRenderer
         return monster.noAggroMonster ? Utils.noAggroMonsterColor : Utils.normalMonsterColor;
     }
 
+    // Same rule as the game's page (UIBestiaryDetail.Update), with the game's group separator.
+    // Utils.nfi is an IL2CPP NumberFormatInfo, which managed formatting cannot take directly.
     private static string FormatHealth(long health)
     {
-        return health > 10000
-            ? (health / 1000).ToString("N0", CultureInfo.InvariantCulture) + "K"
-            : health.ToString("N0", CultureInfo.InvariantCulture);
+        var shown = health > 10000 ? health / 1000 : health;
+        var digits = shown.ToString("N0", CultureInfo.InvariantCulture).Replace(",", Utils.nfi.NumberGroupSeparator);
+        return health > 10000 ? digits + "K" : digits;
     }
 
+    // The game counts kills only for bosses, elites and fabled monsters (Player.TargetRpcUpdateKillsBestiary),
+    // so any other monster gets no number rather than a misleading 0.
     private static string KillText(Monster monster)
     {
+        if (!monster.isBoss && !monster.isElite && !monster.isFabled)
+            return NoKillCount;
+
         var player = Player.localPlayer;
         if (player != null && player.bossesKilled.TryGetValue(monster.nameEntity, out var kills) && kills > 0)
             return $"<color=green>{kills}</color>";
@@ -78,20 +88,13 @@ internal static class BestiaryDetailRenderer
         return "<color=red>0</color>";
     }
 
-    private static string ZoneText(Monster monster)
+    // Text that can be Chinese or Japanese needs the game's CJK font, which it applies the same way.
+    private static void SetLocalizedText(TextMeshProUGUI text, string value)
     {
-        if (!string.IsNullOrWhiteSpace(monster.zoneMonster))
-            return monster.zoneMonster;
-
-        if (ZoneInfo.zones != null &&
-            ZoneInfo.zones.ContainsKey(monster.idZone) &&
-            ZoneInfo.zones[monster.idZone] != null &&
-            !string.IsNullOrWhiteSpace(ZoneInfo.zones[monster.idZone].name))
-        {
-            return ZoneInfo.zones[monster.idZone].name;
-        }
-
-        return string.Empty;
+        if (text == null)
+            return;
+        GameText.ApplyFont(text);
+        text.text = value ?? string.Empty;
     }
 
     private static void SetText(TextMeshProUGUI text, string value)

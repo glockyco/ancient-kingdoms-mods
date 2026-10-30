@@ -1,4 +1,5 @@
 using System;
+using AncientKingdomsMods.Shared;
 using BetterBestiary.Skills;
 using Il2Cpp;
 using Il2CppTMPro;
@@ -65,7 +66,8 @@ internal static class SkillsPanelRenderer
 
             icon.sprite = skill.image;
             icon.enabled = skill.image != null;
-            name.text = skill.nameSkill;
+            GameText.ApplyFont(name);
+            name.text = GameText.SkillName(skill);
 
             var runtimeLevel = skills.skills != null && i < skills.skills.Count
                 ? skills.skills[i].level

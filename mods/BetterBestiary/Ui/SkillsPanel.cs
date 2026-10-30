@@ -1,3 +1,4 @@
+using AncientKingdomsMods.Shared;
 using Il2Cpp;
 using Il2CppTMPro;
 using UnityEngine;
@@ -25,14 +26,12 @@ internal sealed class SkillsPanel
 
     public bool IsOpen => _root != null && _root.activeSelf;
 
-    /// <summary>Returns a TMP font asset from an existing Bestiary text element so
-    /// runtime-created TMP labels actually render. Null if unavailable.</summary>
+    /// <summary>The Bestiary's Latin text font, so runtime-created TMP labels render in the
+    /// page's style. <see cref="GameText.ApplyFont"/> switches them to the game's CJK fonts.</summary>
     public static TMP_FontAsset GameFont()
     {
         var detail = UIBestiaryDetail.singleton;
-        if (detail != null && detail.loreBoss != null)
-            return detail.loreBoss.font;
-        return null;
+        return GameText.LatinFont(detail != null && detail.loreBoss != null ? detail.loreBoss.font : null);
     }
 
     public static TextMeshProUGUI MakeText(Transform parent, string text, float size, FontStyles style)
@@ -97,8 +96,10 @@ internal sealed class SkillsPanel
 
     public void SetTitle(string monsterName)
     {
-        if (_title != null)
-            _title.text = "Skills \u2014 " + monsterName;
+        if (_title == null)
+            return;
+        GameText.ApplyFont(_title);
+        _title.text = GameText.Term("Skills", "Skills") + " \u2014 " + monsterName;
     }
 
     public void SetOpen(bool open)

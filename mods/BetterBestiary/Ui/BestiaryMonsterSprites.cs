@@ -30,11 +30,6 @@ internal static class BestiaryMonsterSprites
         return BlankMonsterSprite();
     }
 
-    internal static Sprite GridSpriteFor(Monster monster, out Color imageColor)
-    {
-        return DetailSpriteFor(monster, out imageColor);
-    }
-
     private static Sprite BlankMonsterSprite()
     {
         if (_blankMonsterSprite != null)

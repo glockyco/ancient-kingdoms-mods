@@ -28,9 +28,8 @@ internal static class BestiaryPageOpener
         if (journal == null || journal.panel == null || detail == null)
             return false;
 
-        if (IsUniqueBestiaryMonster(monster))
-            EnsureBestiaryEntry(monster);
-
+        // OpenBestiary replaces the page with the player's boss or elite target, so the monster
+        // is set again afterwards. A monster outside the Bestiary list still gets its page.
         detail.monster = monster;
         journal.OpenBestiary();
         detail.monster = monster;
@@ -38,29 +37,8 @@ internal static class BestiaryPageOpener
             journal.rectTransformJournal.SetAsLastSibling();
 
         RefreshGridSelection(journal, monster);
-        Ui.BestiaryDetailRenderer.Reveal(detail);
+        Patches.UIBestiaryDetailPatch.Draw(detail);
         return true;
-    }
-
-    private static bool IsUniqueBestiaryMonster(Monster monster)
-    {
-        return monster.isBoss || monster.isElite || monster.isFabled;
-    }
-
-    private static void EnsureBestiaryEntry(Monster monster)
-    {
-        var gameManager = GameManager.singleton;
-        if (gameManager == null || gameManager.elitesBosses == null)
-            return;
-
-        foreach (var existing in gameManager.elitesBosses)
-        {
-            if (existing != null && existing.nameEntity == monster.nameEntity)
-                return;
-        }
-
-        gameManager.elitesBosses.Add(monster);
-        BetterBestiary.LogMessage($"Added '{monster.nameEntity}' to the Bestiary list for Alt+Click selection.");
     }
 
     private static void RefreshGridSelection(UIJournal journal, Monster selectedMonster)
@@ -80,7 +58,5 @@ internal static class BestiaryPageOpener
             if (slot.frameSelected != null)
                 slot.frameSelected.enabled = monster != null && monster.nameEntity == selectedMonster.nameEntity;
         }
-
-        Ui.BestiaryGridRenderer.ApplyFallbackIcons(journal);
     }
 }
