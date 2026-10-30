@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using AncientKingdomsMods.Shared;
 using BossSkillTracker.Game;
 using BossSkillTracker.Model;
 using BossSkillTracker.Ui;
 using MelonLoader;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(BossSkillTracker.BossSkillTrackerMod), "BossSkillTracker", "0.1.0", "AncientKingdomsMods")]
+[assembly: MelonInfo(typeof(BossSkillTracker.BossSkillTrackerMod), "BossSkillTracker", "0.2.0", "AncientKingdomsMods")]
 [assembly: MelonGame("ancientpixels", "ancientkingdoms")]
 
 namespace BossSkillTracker;
@@ -24,7 +25,7 @@ public sealed class BossSkillTrackerMod : MelonMod
         _config = new Config();
         _hud = new HudRoot(_config);
         _discovery = new EnemyDiscovery();
-        LoggerInstance.Msg("BossSkillTracker initialized");
+        LoggerInstance.Msg($"BossSkillTracker initialized, build {ModBuild.Commit(typeof(BossSkillTrackerMod).Assembly)}");
     }
 
     public override void OnUpdate()

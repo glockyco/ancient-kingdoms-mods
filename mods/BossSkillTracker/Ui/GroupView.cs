@@ -50,7 +50,7 @@ public sealed class GroupView
         HudFactory.Frame(_portraitFrame.transform, info.TierColor, Tuning.IconBorder);
 
         _name = HudFactory.Label("name", header.transform, Tuning.NameSize, info.TierColor, Align.Left, bold: true);
-        _name.Value = info.Name;
+        _name.LocalizedValue = info.Name;
 
         _gate = new GateStripView(Root.transform);
         HudFactory.Place(_gate.Root.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -(Tuning.HeaderHeight + Tuning.GateHeight)), new Vector2(0f, -Tuning.HeaderHeight));

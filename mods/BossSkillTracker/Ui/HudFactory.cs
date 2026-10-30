@@ -1,4 +1,5 @@
 using System;
+using AncientKingdomsMods.Shared;
 using Il2CppTMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -48,6 +49,16 @@ public sealed class Label
 
             _value = value;
             _text.text = _monospaced ? MonospaceOpen + value + MonospaceClose : value;
+        }
+    }
+
+    /// <summary>Sets game text that can be Chinese or Japanese, with the game's font for it.</summary>
+    public string LocalizedValue
+    {
+        set
+        {
+            GameText.ApplyFont(_text);
+            Value = value;
         }
     }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AncientKingdomsMods.Shared;
 using BossSkillTracker.Model;
 using Il2Cpp;
 
@@ -36,7 +37,7 @@ public static class SkillReader
             into.Add(new TrackedSkill
             {
                 Index = index,
-                Name = skill.name,
+                Name = GameText.SkillName(data),
                 Icon = skill.image,
                 TotalCooldown = skill.cooldown,
             });

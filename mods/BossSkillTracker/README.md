@@ -12,6 +12,8 @@ Install MelonLoader as [Mods for players](../../README.md#mods-for-players) desc
 
 The panel lists the monsters fighting you or your pet. Out of combat, select a boss, elite, or fabled monster to preview it. Drag a monster's header to move the panel. The compact button shrinks the rows, and the lock button stops dragging.
 
+Monster and skill names follow the game's language wherever the game translates them. The panel's own labels are in English.
+
 ## Settings
 
 Moving the panel or changing its compact and lock controls saves your choices in the game's `UserData/MelonPreferences.cfg`, under `BossSkillTracker`. [Config.cs](Config.cs) defines the settings and defaults.

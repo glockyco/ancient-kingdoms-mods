@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AncientKingdomsMods.Shared;
 using BossSkillTracker.Model;
 using Il2Cpp;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
@@ -77,7 +78,7 @@ public sealed class EnemyDiscovery
         var info = new EnemyInfo
         {
             NetId = monster.netId,
-            Name = monster.nameEntity,
+            Name = GameText.MonsterName(monster),
             Tier = tier,
             TierColor = GameAccess.TierColor(tier),
             Portrait = GameAccess.Portrait(monster),

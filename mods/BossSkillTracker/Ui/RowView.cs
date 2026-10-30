@@ -53,7 +53,7 @@ public sealed class RowView
         _totalCooldown = skill.TotalCooldown;
         _icon.sprite = skill.Icon;
         _icon.enabled = skill.Icon != null;
-        _name.Value = skill.Name;
+        _name.LocalizedValue = skill.Name;
     }
 
     public void Layout(bool compact)
