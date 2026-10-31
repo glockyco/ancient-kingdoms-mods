@@ -19,6 +19,18 @@ public sealed class FeatureRegistry
     public string SwitchedOn() =>
         string.Join(", ", _features.Where(feature => feature.Switch.Value).Select(feature => feature.Title));
 
+    /// <summary>Whether a running feature reads the respawn tracker.</summary>
+    public bool TrackerWanted
+    {
+        get
+        {
+            foreach (var feature in _features)
+                if (feature.Running && feature.UsesTracker)
+                    return true;
+            return false;
+        }
+    }
+
     /// <summary>Applies switch changes, then updates every running feature.</summary>
     public void Update()
     {

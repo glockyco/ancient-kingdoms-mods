@@ -16,13 +16,13 @@
 
 ## 3. Respawn tracking
 
-- [ ] 3.1 Build the tracked-monster catalogue from scene and prefab data, keyed by GameObject name, with placement zones from the scene hierarchy.
-- [ ] 3.2 Add the per-world store and world keys for solo worlds, joined worlds and dedicated servers.
-- [ ] 3.3 Add the host resolver: inactive-inclusive reads, dictionary fallback, hidden window and season monsters, failed rolls, Due, guards from summon placeholders, altars, dungeon renewals.
-- [ ] 3.4 Add the client resolver: deaths seen in range, kill notices from the server's info message, sightings, Not seen.
-- [ ] 3.5 Unit-test the resolver on every state, including Spirit of the Forest hidden at full health and Forsaken Skeleton's failed roll.
-- [ ] 3.6 On a host, verify every state against the game, and that a full session leaves respawn times unchanged.
-- [ ] 3.7 On a dedicated server, verify kill notices produce estimates and that the info-message hook fires under IL2CPP.
+- [x] 3.1 Build the tracked-monster catalogue from scene and prefab data, keyed by GameObject name, with placement zones from the scene hierarchy.
+- [x] 3.2 Add the per-world store and world keys for solo worlds, joined worlds and dedicated servers.
+- [x] 3.3 Add the host resolver: inactive-inclusive reads, dictionary fallback, hidden window and season monsters, failed rolls, Due, guards from summon placeholders, altars, dungeon renewals.
+- [x] 3.4 Add the client resolver: deaths seen in range, kill notices from the server's info message, sightings, Not seen.
+- [x] 3.5 Unit-test the resolver on every state, including Spirit of the Forest hidden at full health and Forsaken Skeleton's failed roll.
+- [x] 3.6 On a host, verify every state against the game, and that a full session leaves respawn times unchanged.
+- [x] 3.7 On a client, verify that a kill notice in the dedicated server's format produces an estimate and that the info-message hook fires under IL2CPP.
 
 ## 4. Surfaces
 

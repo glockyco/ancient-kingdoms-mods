@@ -41,11 +41,13 @@ Each feature implements `Enable`, `Disable` and `Update`. A registry starts feat
 
 ### One tracked-monster model
 
-`Core/Tracking` builds a catalogue of tracked monsters once per world from scene and prefab data (`Resources.FindObjectsOfTypeAll` on a client, inactive-inclusive search on a host), keyed by the GameObject name, which stays stable when the monster is hidden. A per-world store holds each monster's state, deadline, source (host, shared, seen death, kill notice, sighting) and timestamp, persisted per world key: the local world id for solo play, the host address plus the host's session id for joined worlds, and the server entry for dedicated servers. A resolver turns rules plus observations into one named state from the `respawn-tracking` spec. Surfaces only read the resolved state.
+`Core/Tracking` builds a catalogue of tracked monsters once per world from the Bestiary's list (`GameManager.elitesBosses`) and the scene: each monster's placement, or for the nine without one, the altar whose waves spawn it or the monster whose death spawns it. The catalogue is keyed by the GameObject name, which stays stable when the monster is hidden, and takes zones from the scene hierarchy. A host and a client build the same catalogue, because a client loads the same scene and prefab data. A resolver turns rules plus readings into one named state from the `respawn-tracking` spec. Surfaces only read the resolved state.
 
-On a host, the resolver reads `respawnTimeEnd`, falls back to the dictionary when `Start` has not run, and treats "hidden and DEAD with health" as the window or season state, never Up. A deadline that jumps by `respawnTime` while DEAD records a failed roll.
+On a host, the resolver reads `respawnTimeEnd`. A placement whose zone has been empty since the world started has not run `Start`, which shows as an empty `basicInfo`. For it the resolver applies the saved deadline from `BossesRespawnDictionary` and the rules `SetRespawnBosses` applies on entry: a rolling monster starts dead for one more interval, and a summoned one waits for its guards. "Hidden and DEAD with health" is the window state, never Up. A deadline that jumps by `respawnTime` while DEAD records a failed roll. A host keeps no memory, because the game holds every state.
 
-On a client, a death seen in range sets an estimate of death time plus corpse time plus respawn time. A kill notice is read by hooking the server-originated info message, not the chat window, because players can forge chat text in the local channel.
+On a client, a monster counts as spawned while Mirror has given it a net id. Mirror resets the id to 0 when the monster leaves range or hides, and leaves the object active. A death seen in range sets an estimate of death time plus corpse time plus respawn time. A corpse found without the death dates the death one corpse time earlier, the earliest possible. A kill notice is read by hooking the server-originated info message, not the chat window, because players can forge chat text in the local channel. A client keeps deaths, kill notices and sightings per world in `UserData/PocketCompendium/Worlds`, keyed by the address it joined: an EOS product user id for listed worlds and servers, an IP for LAN.
+
+Fifteen bosses are authored to be shown to every player, so a client sees them, and their deaths, anywhere in the world until their first respawn, when the game shows them by range again. While their zone is empty they stay at full health, so on host and client alike a live monster outside its window counts as up only while it fights.
 
 ### Sharing protocol
 
@@ -62,7 +64,8 @@ Settings stay in `MelonPreferences`, one category per feature under a `PocketCom
 ## Risks / Trade-offs
 
 - [The EOS online transport is untested for the custom hashes] → Test it on an online-hosted world before release. Sharing ships behind its switch, and the protocol falls back to local estimates if no hello arrives.
-- [IL2CPP inlining can bypass a Harmony prefix on the info-message handler] → Hook the `InvokeUserCode_` wrapper and verify kill notices on a dedicated server.
+- [IL2CPP inlining can bypass a Harmony prefix on the info-message handler] → Hook the `InvokeUserCode_` wrapper. A local dedicated server would list itself in the public server list, so a LAN host sends the client a kill notice in the dedicated server's format to verify the hook.
+- [After a server restart, a boss shown to every player that died before the restart reads alive to clients until someone enters its zone, because the server applies the saved deadline only then] → Accepted. A host reads the saved deadline, and sharing gives its clients the host's state.
 - [A game update can rename fields or change spawn rules] → Each read goes through `Core/Tracking`, and the catalogue logs any tracked monster it cannot resolve.
 - [One release carries every feature] → Per-feature fault isolation and switches.
 - [`Monster.idZone` is wrong for 6 tracked elites] → Use the placement zone from the scene hierarchy, as the exporter does.

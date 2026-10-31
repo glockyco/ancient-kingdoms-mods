@@ -35,6 +35,9 @@ public abstract class Feature
     /// <summary>Set after the feature threw. It stays stopped until the game restarts.</summary>
     public bool Failed { get; internal set; }
 
+    /// <summary>Whether the feature reads the respawn tracker, which runs while any such feature runs.</summary>
+    public virtual bool UsesTracker => false;
+
     internal Exception Failure { get; set; }
 
     /// <summary>Starts the feature. Views can be created lazily once the world is loaded.</summary>

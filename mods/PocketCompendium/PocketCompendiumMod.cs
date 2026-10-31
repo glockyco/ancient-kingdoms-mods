@@ -2,6 +2,7 @@ using AncientKingdomsMods.Shared;
 using MelonLoader;
 using PocketCompendium.Core;
 using PocketCompendium.Core.Features;
+using PocketCompendium.Core.Tracking;
 using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.BestiaryPages;
 using PocketCompendium.Features.BossSkills;
@@ -16,12 +17,14 @@ public sealed class PocketCompendiumMod : MelonMod
 {
     private FeatureRegistry _features;
     private SettingsWindow _settings;
+    private Tracker _tracker;
 
     public override void OnInitializeMelon()
     {
         Log.Initialize(LoggerInstance);
         Patching.Initialize(HarmonyInstance);
 
+        _tracker = new Tracker();
         _features = new FeatureRegistry();
         _features.Add(new BossSkillsFeature());
         _features.Add(new BestiaryPagesFeature());
@@ -38,14 +41,21 @@ public sealed class PocketCompendiumMod : MelonMod
 
         // The window updates first, so a click on it never reaches a panel below.
         _settings.Update();
+        // The tracker refreshes before the features that read it.
+        _tracker.Update(_features.TrackerWanted);
         _features.Update();
     }
 
-    public override void OnSceneWasUnloaded(int buildIndex, string sceneName) => _features.OnSceneUnloaded(sceneName);
+    public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
+    {
+        _tracker.EndSession();
+        _features.OnSceneUnloaded(sceneName);
+    }
 
     public override void OnDeinitializeMelon()
     {
         _features.StopAll();
+        _tracker.EndSession();
         _settings.Destroy();
         Overlay.Dispose();
         Icons.Dispose();
