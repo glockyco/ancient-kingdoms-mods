@@ -4,7 +4,7 @@
  * summaries come from `skillEffectInputs`, which reads the full skill row.
  *
  * `SKILLS_LIST_QUERY` is used by the `/skills` page loader
- * (`routes/skills/+page.server.ts`) and the BetterBestiary parity-corpus bake
+ * (`routes/skills/+page.server.ts`) and Pocket Compendium's parity-corpus bake
  * (`scripts/gen-skill-effect-parity.ts`), so the corpus covers the same skills
  * as the overview.
  */

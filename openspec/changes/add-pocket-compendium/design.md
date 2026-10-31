@@ -33,11 +33,11 @@ A runtime prototype on a LAN world, one game process hosting and one joining, re
 
 ### One project with feature folders
 
-`mods/PocketCompendium` holds `Core/` (shared services) and one folder per feature: `BossList`, `WorldMarkers`, `MapPins`, `BestiaryCountdown`, `Alerts`, `BossSkills`, `BestiaryPages`, `Sharing`. `mods/Shared` folds into `Core`. Alternative: shared source across several DLLs. Rejected because shared runtime state would be duplicated, and Il2CppInterop refuses to inject a second type with the same full name (`ClassInjector.cs:220-224`). Alternative: a core DLL with feature DLLs. Rejected because the download page has no dependency packaging and players would install several files.
+`mods/PocketCompendium` holds `Core/` (shared services) and one folder per feature: `BossList`, `WorldMarkers`, `MapPins`, `BestiaryCountdown`, `Alerts`, `BossSkills`, `BestiaryPages`, `Sharing`. The game-text helpers from `mods/Shared` move into `Core/Text`. `mods/Shared` keeps only `ModBuild.cs`, because FieldDefaultValueHookFix, a separate download, compiles it too. Alternative: shared source across several DLLs. Rejected because shared runtime state would be duplicated, and Il2CppInterop refuses to inject a second type with the same full name (`ClassInjector.cs:220-224`). Alternative: a core DLL with feature DLLs. Rejected because the download page has no dependency packaging and players would install several files.
 
 ### Features behind one contract
 
-Each feature implements `Enable`, `Disable` and `Update`. A registry starts features in a fixed order, catches exceptions per feature, disables a failing feature for the session and logs once. `Disable` removes every view, marker and Harmony patch the feature owns. Harmony patches are applied per feature with their own Harmony id, so a feature can unpatch only its own methods. The Bestiary page has one patch owner in `Core`, and the full-page and countdown features contribute to it, because two patches on one draw method would fight over order.
+Each feature implements `Enable`, `Disable` and `Update`. A registry starts features in a fixed order, catches exceptions per feature, disables a failing feature for the session and logs once. A feature caught failing inside a Harmony patch reports itself, and the registry stops it on its next update. `Disable` removes every view and marker the feature owns and restores what it changed in the game's interface. Harmony patches are applied the first time a feature is enabled and stay in place, passing straight through while the feature is off. Alternative: unpatch on disable. Rejected because removing an IL2CPP detour while the game runs is riskier than a guard that costs one flag check per call. The Bestiary page has one patch owner, and the full-page and countdown features contribute to it, because two patches on one draw method would fight over order.
 
 ### One tracked-monster model
 
@@ -53,7 +53,7 @@ Two hashes on `PlayerChat`, an RPC on clients and a Command on the host, both ch
 
 ### UI kit from BossSkillTracker
 
-`Core/Ui` is BossSkillTracker's UI kit, extended with the panel host (drag, resize, lock, persist), the settings window and Lucide-style vector icons rendered as sprites. Tooltips use the game's `UIShowToolTip`, alerts `Player.ShowImportantMessage`, map pins follow the game's map-notes container under `UIMap.localMap`.
+`Core/Ui` is BossSkillTracker's UI kit, extended with the panel host (drag, resize, lock, persist), the settings window and Lucide icons. `website/scripts/generate-mod-icons.mjs` renders the icons from the website's `lucide` package and stores each one as its gzipped 96x96 alpha channel, because every icon is white and tinted at run time. Raw RGBA made the DLL eight times larger, and decoding PNG would depend on Unity's image module. Tooltips use the game's `UIShowToolTip`, alerts `Player.ShowImportantMessage`, map pins follow the game's map-notes container under `UIMap.localMap`.
 
 ### Settings
 

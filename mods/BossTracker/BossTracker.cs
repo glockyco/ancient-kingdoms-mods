@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AncientKingdomsMods.Shared;
+using PocketCompendium.Core.Text;
 using Il2Cpp;
 using Il2CppMirror;
 using Il2CppTMPro;

@@ -2,12 +2,12 @@
 
 ## 1. Project and shared services without visible change
 
-- [ ] 1.1 Create `mods/PocketCompendium` with `Core/`, fold `mods/Shared` into `Core`, and add the project to the solution, `website/mod-downloads.json` and the build-tool's mod list.
-- [ ] 1.2 Move BossSkillTracker's UI kit (`Ui/Theme.cs`, `HudFactory.cs`, `HudRoot.cs`, `ControlCluster.cs`, `ControlSprites.cs`) into `Core/Ui`.
-- [ ] 1.3 Add the feature registry: fixed start order, `Enable`, `Disable`, `Update`, per-feature Harmony ids, per-feature exception isolation with one log line.
-- [ ] 1.4 Move BossSkillTracker into the `BossSkills` feature and BetterBestiary into the `BestiaryPages` feature, with the Bestiary patch owned by `Core` and the page drawing as a contribution. Move their tests into `tests/PocketCompendium.Tests`.
-- [ ] 1.5 Log version, build commit and active features at start.
-- [ ] 1.6 In game, confirm the skill cards and Bestiary pages look and behave as before, and that switching each off and on at run time removes and restores it.
+- [x] 1.1 Create `mods/PocketCompendium` with `Core/`, move the game-text helpers from `mods/Shared` into `Core/Text`, and add the project to the solution and `website/mod-downloads.json`.
+- [x] 1.2 Move the shared parts of BossSkillTracker's UI kit (`Theme`, `HudFactory`, `ControlSprites` as `Icons`, `PanelPlacement`, `RawImageRows`) into `Core/Ui`, and render the icons from Lucide with `website/scripts/generate-mod-icons.mjs`. `HudRoot` and `ControlCluster` stay with the skill panel until the panel host takes over their drag and lock handling.
+- [x] 1.3 Add the feature registry: fixed start order, `Enable`, `Disable`, `Update`, patches applied once and guarded by the feature's state, per-feature exception isolation with one log line.
+- [x] 1.4 Move BossSkillTracker into the `BossSkills` feature and BetterBestiary into the `BestiaryPages` feature. Move their tests into `tests/PocketCompendium.Tests`.
+- [x] 1.5 Log version, build commit and active features at start.
+- [x] 1.6 In game, confirm the skill cards and Bestiary pages look and behave as before, and that switching each off and on at run time removes and restores it.
 
 ## 2. Settings and layout
 
@@ -31,7 +31,7 @@
 - [ ] 4.3 Compact style with hover-only header and the switch back to the list.
 - [ ] 4.4 World markers on spawn points and edge arrows for monsters that are up off screen.
 - [ ] 4.5 Map pins with time tags, glow for monsters that are up, and tooltips on hover.
-- [ ] 4.6 Bestiary grid countdown and the "Respawns in" plate on the split of the page.
+- [ ] 4.6 Bestiary grid countdown and the "Respawns in" plate on the split of the page, through one owner of the Bestiary page patch that both Bestiary features contribute to.
 - [ ] 4.7 Respawn alerts for watched monsters through `Player.ShowImportantMessage`.
 - [ ] 4.8 Capture each surface in game and compare with the mood board sketches, including Chinese and Japanese names.
 

@@ -26,7 +26,7 @@ export interface SkillEffectFormatOptions {
 /**
  * Everything formatSkillEffect reads. `skillEffectInput` builds it from a
  * skill's detail view and the casters the mechanics cards use, and the
- * BetterBestiary port builds it from a live skill. An absent field means the
+ * Pocket Compendium port builds it from a live skill. An absent field means the
  * skill has no such value.
  */
 export interface Skill {

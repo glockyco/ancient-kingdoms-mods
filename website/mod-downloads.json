@@ -8,16 +8,10 @@
       "description": "Prevents a game crash caused by an incorrect Il2Cpp method match."
     },
     {
-      "id": "better-bestiary",
-      "project": "BetterBestiary",
-      "name": "Better Bestiary",
-      "description": "Reveals Bestiary details and adds direct navigation, loot tooltips, and monster skill summaries."
-    },
-    {
-      "id": "boss-skill-tracker",
-      "project": "BossSkillTracker",
-      "name": "Boss Skill Tracker",
-      "description": "Shows ability cooldowns for bosses, elites, and fabled monsters during combat."
+      "id": "pocket-compendium",
+      "project": "PocketCompendium",
+      "name": "Pocket Compendium",
+      "description": "Shows boss, elite, and fabled skill cooldowns and every monster's full Bestiary page, each feature with its own switch."
     },
     {
       "id": "boss-tracker",

@@ -1,5 +1,5 @@
 /**
- * Bakes the BetterBestiary skill-effect parity corpus.
+ * Bakes Pocket Compendium's skill-effect parity corpus.
  *
  * Reuses the building blocks of the website `/skills` overview,
  * `SKILLS_LIST_QUERY`, `skillEffectInputs` and `formatSkillEffect` without a
@@ -13,7 +13,7 @@
  * `compactInput`) and each case is written on its own line, so the committed
  * file stays small and its diff reads as one line per skill.
  *
- * Output: `tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json`
+ * Output: `tests/PocketCompendium.Tests/Fixtures/skill-effect-parity.json`
  * (a stable, sorted `SkillEffectParityCase[]`).
  *
  * Run: `pnpm --filter website gen:skill-effect-parity` (needs website/data/compendium.db).
@@ -80,7 +80,7 @@ const json = `[\n${cases.map((c) => "  " + JSON.stringify(c)).join(",\n")}\n]\n`
 const here = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(
   here,
-  "../../tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json",
+  "../../tests/PocketCompendium.Tests/Fixtures/skill-effect-parity.json",
 );
 if (process.argv.includes("--check")) {
   if (readFileSync(outPath, "utf8") !== json) {

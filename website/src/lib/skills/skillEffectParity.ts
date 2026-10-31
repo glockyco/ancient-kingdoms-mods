@@ -1,10 +1,10 @@
 import type { Skill } from "$lib/utils/formatSkillEffect";
 
 /**
- * One golden parity case for the BetterBestiary C# `formatSkillEffect` port.
+ * One golden parity case for Pocket Compendium's C# `formatSkillEffect` port.
  *
  * Produced by `scripts/gen-skill-effect-parity.ts` from the live compendium and
- * consumed by the C# parity test (`tests/BetterBestiary.Tests`). `expected` is
+ * consumed by the C# parity test (`tests/PocketCompendium.Tests`). `expected` is
  * `formatSkillEffect`'s output without a monster context.
  *
  * `input` is the formatter input compacted to only the fields that affect the
