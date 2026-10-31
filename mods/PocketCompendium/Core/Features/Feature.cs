@@ -1,5 +1,6 @@
 using System;
 using PocketCompendium.Core.Settings;
+using UnityEngine;
 
 namespace PocketCompendium.Core.Features;
 
@@ -22,6 +23,9 @@ public abstract class Feature
 
     /// <summary>One sentence on what the feature shows, for the settings window.</summary>
     public string Summary { get; }
+
+    /// <summary>The icon beside the feature's name in the settings window.</summary>
+    public abstract Sprite Icon { get; }
 
     public SettingsPage Settings { get; }
     public ToggleSetting Switch { get; }

@@ -6,8 +6,10 @@ using UnityEngine.UI;
 
 namespace PocketCompendium.Features.BossSkills.Ui;
 
+/// <summary>The settings, compact and lock controls at the top right of the skill panel.</summary>
 public sealed class ControlCluster
 {
+    public readonly RectTransform SettingsRect;
     public readonly RectTransform CompactRect;
     public readonly RectTransform LockRect;
 
@@ -24,39 +26,55 @@ public sealed class ControlCluster
         float size = Tuning.ControlIconSize;
         float gap = Tuning.ControlGap;
         float right = Tuning.Pad;
-        float yMin = -(Tuning.HeaderHeight + size) * 0.5f;
-        float yMax = -(Tuning.HeaderHeight - size) * 0.5f;
 
-        var lockRoot = HudFactory.Rect("lock", parent);
-        LockRect = HudFactory.Place(lockRoot.GetComponent<RectTransform>(), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-size - right, yMin), new Vector2(-right, yMax));
-        _lockTooltip = AddTooltip(lockRoot, string.Empty);
-        _lockOpen = ControlIcon("lockOpen", lockRoot.transform, Icons.LockOpen, Theme.Muted);
-        _lockClosed = ControlIcon("lockClosed", lockRoot.transform, Icons.Lock, Theme.Ready);
-        var compactRoot = HudFactory.Rect("compact", parent);
-        CompactRect = HudFactory.Place(compactRoot.GetComponent<RectTransform>(), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-2f * size - gap - right, yMin), new Vector2(-size - gap - right, yMax));
-        _compactTooltip = AddTooltip(compactRoot, string.Empty);
-        _compactCollapse = ControlIcon("compactCollapse", compactRoot.transform, Icons.ChevronsDownUp, Theme.Muted);
-        _compactExpand = ControlIcon("compactExpand", compactRoot.transform, Icons.ChevronsUpDown, Theme.Muted);
+        LockRect = Slot("lock", parent, 0, size, gap, right);
+        _lockTooltip = AddTooltip(LockRect.gameObject, string.Empty);
+        _lockOpen = ControlIcon("lockOpen", LockRect, Icons.LockOpen, Theme.Muted);
+        _lockClosed = ControlIcon("lockClosed", LockRect, Icons.Lock, Theme.Ready);
+
+        CompactRect = Slot("compact", parent, 1, size, gap, right);
+        _compactTooltip = AddTooltip(CompactRect.gameObject, string.Empty);
+        _compactCollapse = ControlIcon("compactCollapse", CompactRect, Icons.ChevronsDownUp, Theme.Muted);
+        _compactExpand = ControlIcon("compactExpand", CompactRect, Icons.ChevronsUpDown, Theme.Muted);
+
+        SettingsRect = Slot("settings", parent, 2, size, gap, right);
+        AddTooltip(SettingsRect.gameObject, "<b>Settings</b>\nPocket Compendium's settings, on the Boss skills page.");
+        ControlIcon("settingsIcon", SettingsRect, Icons.Sliders, Theme.Muted);
     }
 
     public void BringToFront()
     {
-        CompactRect.transform.SetAsLastSibling();
-        LockRect.transform.SetAsLastSibling();
+        SettingsRect.SetAsLastSibling();
+        CompactRect.SetAsLastSibling();
+        LockRect.SetAsLastSibling();
     }
 
-    public void SetLocked(bool locked)
+    public void SetLocked(bool locked, bool lockedByLayout)
     {
         _lockOpen.SetActive(!locked);
         _lockClosed.SetActive(locked);
-        _lockTooltip.text = locked ? "<b>Unlock panel</b>\nAllow dragging from the boss header." : "<b>Lock panel</b>\nPrevent accidental HUD dragging.";
+        _lockTooltip.text = lockedByLayout
+            ? "<b>Panels locked</b>\nEvery panel is locked. Click to open the Layout settings."
+            : locked
+                ? "<b>Unlock panel</b>\nAllow dragging from the header and resizing from the corner."
+                : "<b>Lock panel</b>\nPrevent dragging and resizing.";
     }
 
     public void SetCompact(bool compact)
     {
         _compactCollapse.SetActive(!compact);
         _compactExpand.SetActive(compact);
-        _compactTooltip.text = compact ? "<b>Expand HUD</b>\nShow full rows and skill names." : "<b>Compact HUD</b>\nShrink rows and icons.";
+        _compactTooltip.text = compact ? "<b>Full rows</b>\nShow skill names and larger icons." : "<b>Compact rows</b>\nSmaller rows and icons.";
+    }
+
+    // Slot 0 is the rightmost control, each further slot sits one control to the left.
+    private static RectTransform Slot(string name, Transform parent, int slot, float size, float gap, float right)
+    {
+        float yMin = -(Tuning.HeaderHeight + size) * 0.5f;
+        float yMax = -(Tuning.HeaderHeight - size) * 0.5f;
+        float xMax = -right - slot * (size + gap);
+        var root = HudFactory.Rect(name, parent);
+        return HudFactory.Place(root.GetComponent<RectTransform>(), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(xMax - size, yMin), new Vector2(xMax, yMax));
     }
 
     private static UIShowToolTip AddTooltip(GameObject root, string text)

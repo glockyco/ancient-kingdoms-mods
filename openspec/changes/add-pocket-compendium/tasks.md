@@ -11,8 +11,8 @@
 
 ## 2. Settings and layout
 
-- [ ] 2.1 Add typed setting definitions and generate the settings window from them, with one page per feature, the feature switch first and equal-width option pickers.
-- [ ] 2.2 Add the panel host: drag, resize, lock and persisted placement for every panel.
+- [x] 2.1 Add typed setting definitions and generate the settings window from them, with one page per feature, the feature switch first and equal-width option pickers.
+- [x] 2.2 Add the panel host: drag, resize, lock and persisted placement for every panel.
 
 ## 3. Respawn tracking
 

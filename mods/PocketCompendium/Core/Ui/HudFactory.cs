@@ -36,6 +36,12 @@ public sealed class Label
 
     public RectTransform Rect => Go.GetComponent<RectTransform>();
 
+    /// <summary>The TextMeshPro component, for settings the factory does not cover.</summary>
+    public TextMeshProUGUI Text => _text;
+
+    /// <summary>The width the current text needs, in canvas units.</summary>
+    public float PreferredWidth => _text.preferredWidth;
+
     public void SetActive(bool value)
     {
         if (Go.activeSelf != value) Go.SetActive(value);
@@ -73,6 +79,35 @@ public sealed class Label
 
 public static class HudFactory
 {
+    /// <summary>A nine-sliced image, such as a rounded panel from <see cref="Shapes.Rounded"/>.</summary>
+    public static Image Sliced(string name, Transform parent, Sprite sprite, Color color, float cornerScale = 1f)
+    {
+        var image = Box(name, parent, color);
+        image.sprite = sprite;
+        image.type = Image.Type.Sliced;
+        image.pixelsPerUnitMultiplier = cornerScale <= 0f ? 1f : 1f / cornerScale;
+        return image;
+    }
+
+    /// <summary>An image of a whole sprite tinted with <paramref name="color"/>, such as a disc or an icon.</summary>
+    public static Image Tinted(string name, Transform parent, Sprite sprite, Color color)
+    {
+        var image = Icon(name, parent, sprite);
+        image.color = color;
+        return image;
+    }
+
+    /// <summary>Places a rect <paramref name="x"/> right of and <paramref name="y"/> below its parent's top-left corner.</summary>
+    public static RectTransform TopLeft(Component component, float x, float y, float width, float height)
+    {
+        var rect = component.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = new Vector2(x, -y);
+        rect.sizeDelta = new Vector2(width, height);
+        return rect;
+    }
 
     public static GameObject Rect(string name, Transform parent)
     {

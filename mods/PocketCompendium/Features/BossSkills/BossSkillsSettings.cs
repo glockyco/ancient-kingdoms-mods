@@ -1,27 +1,30 @@
-using MelonLoader;
 using PocketCompendium.Core.Settings;
+using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.BossSkills.Model;
+using UnityEngine;
 
 namespace PocketCompendium.Features.BossSkills;
 
-/// <summary>The skill panel's placement and layout, kept on the Boss skills settings page.</summary>
+/// <summary>The skill panel's placement and row size, on the Boss skills settings page.</summary>
 public sealed class BossSkillsSettings
 {
-    private readonly SettingsPage _page;
-
-    public readonly MelonPreferences_Entry<float> PanelX;
-    public readonly MelonPreferences_Entry<float> PanelY;
-    public readonly MelonPreferences_Entry<bool> Locked;
-    public readonly MelonPreferences_Entry<bool> Compact;
-
     public BossSkillsSettings(SettingsPage page)
     {
-        _page = page;
-        PanelX = page.Stored("PanelX", Tuning.PanelDefaultX);
-        PanelY = page.Stored("PanelY", Tuning.PanelDefaultY);
-        Locked = page.Stored("Locked", false);
-        Compact = page.Stored("Compact", false);
+        Compact = page.Toggle(
+            "Compact",
+            false,
+            "Compact rows",
+            "Smaller rows and icons. The panel's compact button switches this too.");
+        Panel = new PanelHost(
+            page,
+            "Panel",
+            PanelResize.Scale,
+            new Vector2(Tuning.PanelDefaultX, Tuning.PanelDefaultY),
+            Vector2.zero,
+            Vector2.zero,
+            Vector2.zero);
     }
 
-    public void Save() => _page.Save();
+    public ToggleSetting Compact { get; }
+    public PanelHost Panel { get; }
 }

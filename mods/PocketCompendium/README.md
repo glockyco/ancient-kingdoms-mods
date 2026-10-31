@@ -12,7 +12,7 @@ Install MelonLoader as [Mods for players](../../README.md#mods-for-players) desc
 
 ### Boss skills
 
-The panel lists the monsters fighting you or your pet. Out of combat, select a boss, elite, or fabled monster to preview it. Drag a monster's header to move the panel. The compact button shrinks the rows, and the lock button stops dragging.
+The panel lists the monsters fighting you or your pet. Out of combat, select a boss, elite, or fabled monster to preview it. Drag a monster's header to move the panel, and drag its bottom-right corner to scale it. The compact button shrinks the rows, the lock button stops dragging and scaling, and the settings button opens the Boss skills settings.
 
 ### Bestiary pages
 
@@ -26,7 +26,9 @@ Monster names, skill names, zones, classes, and item tooltips follow the game's 
 
 ## Settings
 
-Pocket Compendium saves its settings in the game's `UserData/MelonPreferences.cfg`, one section per feature: `PocketCompendium_BossSkills` and `PocketCompendium_BestiaryPages`. Set `Enabled` to `false` to switch a feature off. The skill panel saves its position, compact mode, and lock there when you change them. `SkillsButton` turns off the Bestiary page's Skills button and panel.
+Press F8 to open the settings window. Each feature has a page with its switch and options, and **Reset this page** restores that page's defaults. The Layout page locks every panel, moves every panel back to its default place, and chooses the key that opens the window. The key does nothing while you type in a text field.
+
+Pocket Compendium saves its settings in the game's `UserData/MelonPreferences.cfg`, one section per page: `PocketCompendium_BossSkills`, `PocketCompendium_BestiaryPages`, and `PocketCompendium_Layout`. A panel saves its place, size, and lock in its feature's section.
 
 ## Limits
 

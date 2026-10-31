@@ -25,12 +25,10 @@ public static class Tuning
     public const float DiscoveryRadius = 50f;
     public const int OverlapBufferSize = 64;
 
-    // Canvas / panel.
-    public const int CanvasSortingOrder = 32760;
+    // Panel. The default places its top-left corner right of and above the screen centre.
     public const float PanelWidth = 300f;
-    public const float PanelDefaultX = 0f;
-    public const float PanelDefaultY = 0f;
-    public const int PanelPositionVersion = 2;
+    public const float PanelDefaultX = 200f;
+    public const float PanelDefaultY = 150f;
     public const float GroupSpacing = 8f;
 
     // Group / row layout (px).
@@ -49,7 +47,8 @@ public static class Tuning
     public const float RowStateWidth = 44f;
     public const float RowCastWidth = 60f;
     public const float GateTrackHeight = 12f;
-    public const float GateStatusWidth = 72f;
+    // Fits "OUT OF FIGHT", the widest status, at the small text size.
+    public const float GateStatusWidth = 88f;
     public const float GateReadoutWidth = 96f;
     public const float StripeHeight = 2f;
     public const float LineWidth = 1f;

@@ -2,6 +2,7 @@ using System;
 
 namespace PocketCompendium.Core.Ui;
 
+/// <summary>A panel's top-left corner in canvas units, relative to the canvas centre.</summary>
 public readonly struct PanelPoint
 {
     public readonly float X;
@@ -16,24 +17,21 @@ public readonly struct PanelPoint
 
 public static class PanelPlacement
 {
-    public static PanelPoint ClampCentered(float x, float y, float screenWidth, float screenHeight, float panelWidth, float panelHeight, float pad)
+    /// <summary>
+    /// Moves a panel back inside the canvas so its full width and at least
+    /// <paramref name="visibleHeight"/> of its top show. A panel wider than the canvas keeps its
+    /// left edge in view. Sizes are in canvas units after the panel's scale.
+    /// </summary>
+    public static PanelPoint KeepVisible(float x, float y, float canvasWidth, float canvasHeight, float width, float height, float visibleHeight, float margin)
     {
-        float halfWidth = screenWidth * 0.5f;
-        float halfHeight = screenHeight * 0.5f;
-        float halfPanelWidth = panelWidth * 0.5f;
-        float halfPanelHeight = panelHeight * 0.5f;
+        float minX = -canvasWidth * 0.5f + margin;
+        float maxX = canvasWidth * 0.5f - margin - width;
+        float maxY = canvasHeight * 0.5f - margin;
+        float minY = -canvasHeight * 0.5f + margin + Math.Min(height, visibleHeight);
 
-        float minX = -halfWidth + pad + halfPanelWidth;
-        float maxX = halfWidth - pad - halfPanelWidth;
-        float minY = -halfHeight + pad + halfPanelHeight;
-        float maxY = halfHeight - pad - halfPanelHeight;
-
-        return new PanelPoint(Clamp(x, minX, maxX), Clamp(y, minY, maxY));
+        return new PanelPoint(maxX < minX ? minX : Clamp(x, minX, maxX), Clamp(y, minY, maxY));
     }
 
-    private static float Clamp(float value, float min, float max)
-    {
-        if (min > max) return 0f;
-        return Math.Min(Math.Max(value, min), max);
-    }
+    // With min above max, max wins, so a canvas too short for the header keeps the top in view.
+    private static float Clamp(float value, float min, float max) => Math.Min(Math.Max(value, min), max);
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Il2Cpp;
 using PocketCompendium.Core;
 using PocketCompendium.Core.Features;
+using PocketCompendium.Core.Ui;
 using PocketCompendium.Core.Settings;
 using PocketCompendium.Features.BestiaryPages.Patches;
 using PocketCompendium.Features.BestiaryPages.Ui;
@@ -34,6 +35,8 @@ public sealed class BestiaryPagesFeature : Feature
     }
 
     public ToggleSetting SkillsButton { get; }
+
+    public override UnityEngine.Sprite Icon => Icons.BookOpen;
 
     /// <summary>Whether the feature runs. Its patches pass through while it does not.</summary>
     internal static bool Active => _instance != null && _instance.Running && !_instance.Failed;

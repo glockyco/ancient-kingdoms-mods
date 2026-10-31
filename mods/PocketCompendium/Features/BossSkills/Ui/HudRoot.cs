@@ -1,65 +1,53 @@
 using System.Collections.Generic;
+using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.BossSkills.Game;
 using PocketCompendium.Features.BossSkills.Model;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 namespace PocketCompendium.Features.BossSkills.Ui;
 
+/// <summary>
+/// The skill panel: one card per relevant monster, stacked under each other in a panel the
+/// player can move by any card's header, scale by its corner grip and lock.
+/// </summary>
 public sealed class HudRoot
 {
     private readonly BossSkillsSettings _config;
+    private readonly Feature _feature;
     private readonly Dictionary<uint, GroupView> _groups = new();
     private readonly List<uint> _order = new();
+    private readonly List<RectTransform> _dragHandles = new();
 
-    private GameObject _canvasGo;
-    private Canvas _canvas;
-    private RectTransform _panel;
     private ControlCluster _controls;
-    private bool _dragging;
-    private Vector2 _grab;
+    private bool _visible;
+    private bool _shownLocked;
+    private bool _shownLockedByLayout;
+    private bool _shownCompact;
 
-    public HudRoot(BossSkillsSettings config)
+    public HudRoot(BossSkillsSettings config, Feature feature)
     {
         _config = config;
+        _feature = feature;
     }
 
-    private void EnsureCanvas()
+    private PanelHost Host => _config.Panel;
+
+    private void EnsurePanel()
     {
-        if (_canvasGo != null) return;
+        if (Host.Exists) return;
 
-        _canvasGo = new GameObject("PC_SkillCanvas");
-        UnityEngine.Object.DontDestroyOnLoad(_canvasGo);
-
-        _canvas = _canvasGo.AddComponent<Canvas>();
-        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        _canvas.pixelPerfect = true;
-        _canvas.sortingOrder = Tuning.CanvasSortingOrder;
-        _canvasGo.AddComponent<GraphicRaycaster>();
-
-        var scaler = _canvasGo.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-
-        var panelGo = HudFactory.Rect("PC_SkillPanel", _canvasGo.transform);
-        _panel = panelGo.GetComponent<RectTransform>();
-        _panel.anchorMin = new Vector2(0.5f, 0.5f);
-        _panel.anchorMax = new Vector2(0.5f, 0.5f);
-        _panel.pivot = new Vector2(0.5f, 0.5f);
-        _panel.anchoredPosition = new Vector2(_config.PanelX.Value, _config.PanelY.Value);
-        _panel.sizeDelta = new Vector2(Tuning.PanelWidth, 0f);
-
-        _controls = new ControlCluster(_panel);
-        _controls.SetLocked(_config.Locked.Value);
-        _controls.SetCompact(_config.Compact.Value);
+        Host.Create();
+        Host.SetContentWidth(Tuning.PanelWidth);
+        _controls = new ControlCluster(Host.Rect);
+        ShowControlState(force: true);
         _controls.BringToFront();
+        Host.SetVisible(_visible);
     }
 
     public void Reconcile(List<EnemyInfo> infos)
     {
-        EnsureCanvas();
+        EnsurePanel();
 
         var seen = new HashSet<uint>();
         foreach (var info in infos)
@@ -71,7 +59,7 @@ public sealed class HudRoot
                 continue;
             }
 
-            var group = new GroupView(_panel.transform, info);
+            var group = new GroupView(Host.Rect, info);
             group.Layout(_config.Compact.Value);
             _groups[info.NetId] = group;
             _order.Add(info.NetId);
@@ -90,10 +78,15 @@ public sealed class HudRoot
 
     public void RenderTick(double now)
     {
-        if (_panel == null) return;
+        if (!Host.Exists) return;
 
         bool compact = _config.Compact.Value;
+        if (compact != _shownCompact)
+            foreach (uint id in _order)
+                _groups[id].Layout(compact);
+
         float y = 0f;
+        _dragHandles.Clear();
         foreach (uint id in _order)
         {
             var group = _groups[id];
@@ -107,120 +100,51 @@ public sealed class HudRoot
             rect.anchoredPosition = new Vector2(0f, -y);
             rect.sizeDelta = new Vector2(0f, height);
             y += height + Tuning.GroupSpacing;
+            _dragHandles.Add(group.HeaderRect);
         }
-        _controls.BringToFront();
 
-        _panel.sizeDelta = new Vector2(Tuning.PanelWidth, y);
-        if (_order.Count > 0) ClampPanelToScreen(persist: true);
+        ShowControlState(force: false);
+        _controls.BringToFront();
+        Host.SetHeight(Mathf.Max(0f, y - Tuning.GroupSpacing));
         HandleInput();
     }
 
     private void HandleInput()
     {
-        var mouse = Mouse.current;
-        if (mouse == null || _panel == null || _canvas == null || _canvasGo == null || !_canvasGo.activeSelf) return;
+        if (!_visible) return;
 
-        Vector2 point = mouse.position.ReadValue();
-        if (mouse.leftButton.wasPressedThisFrame)
+        if (Pointer.Clicked(_controls.SettingsRect))
+            SettingsWindow.Current?.Open(_feature);
+        else if (Pointer.Clicked(_controls.CompactRect))
+            _config.Compact.Value = !_config.Compact.Value;
+        else if (Pointer.Clicked(_controls.LockRect))
         {
-            if (Hit(_controls.CompactRect, point))
-            {
-                ToggleCompact();
-                return;
-            }
-
-            if (Hit(_controls.LockRect, point))
-            {
-                ToggleLock();
-                return;
-            }
-
-            if (!_config.Locked.Value)
-            {
-                foreach (uint id in _order)
-                {
-                    if (!Hit(_groups[id].HeaderRect, point)) continue;
-
-                    _dragging = true;
-                    _grab = point;
-                    break;
-                }
-            }
+            // Under Lock all the panel's own lock cannot unlock it, so the click leads to the switch that can.
+            if (PanelHost.LockAll()) SettingsWindow.Current?.OpenLayout();
+            else Host.Locked = !Host.Locked;
         }
 
-        if (_dragging && mouse.leftButton.isPressed)
-        {
-            float scale = _canvas.scaleFactor <= 0f ? 1f : _canvas.scaleFactor;
-            _panel.anchoredPosition += (point - _grab) / scale;
-            _grab = point;
-        }
-
-        if (_dragging && mouse.leftButton.wasReleasedThisFrame)
-        {
-            _dragging = false;
-            ClampPanelToScreen(persist: false);
-            _config.PanelX.Value = _panel.anchoredPosition.x;
-            _config.PanelY.Value = _panel.anchoredPosition.y;
-            _config.Save();
-        }
+        Host.Update(_dragHandles);
     }
 
-    private void ClampPanelToScreen(bool persist)
+    private void ShowControlState(bool force)
     {
-        if (_panel == null || _canvas == null) return;
+        bool locked = Host.EffectivelyLocked;
+        bool lockedByLayout = PanelHost.LockAll();
+        if (force || locked != _shownLocked || lockedByLayout != _shownLockedByLayout)
+            _controls.SetLocked(locked, lockedByLayout);
+        if (force || _config.Compact.Value != _shownCompact)
+            _controls.SetCompact(_config.Compact.Value);
 
-        float scale = _canvas.scaleFactor <= 0f ? 1f : _canvas.scaleFactor;
-        float screenWidth = Screen.width / scale;
-        float screenHeight = Screen.height / scale;
-        Vector2 pos = _panel.anchoredPosition;
-
-        var clamped = PanelPlacement.ClampCentered(
-            pos.x,
-            pos.y,
-            screenWidth,
-            screenHeight,
-            _panel.sizeDelta.x,
-            _panel.sizeDelta.y,
-            Tuning.Pad);
-        float x = clamped.X;
-        float y = clamped.Y;
-        if (Mathf.Approximately(pos.x, x) && Mathf.Approximately(pos.y, y)) return;
-
-        _panel.anchoredPosition = new Vector2(x, y);
-        if (!persist) return;
-
-        _config.PanelX.Value = x;
-        _config.PanelY.Value = y;
-        _config.Save();
-    }
-
-    private static bool Hit(RectTransform rect, Vector2 screenPoint)
-        => RectTransformUtility.RectangleContainsScreenPoint(rect, screenPoint, null);
-
-    private void ToggleCompact()
-    {
-        _config.Compact.Value = !_config.Compact.Value;
-        _config.Save();
-        _controls.SetCompact(_config.Compact.Value);
-
-        foreach (uint id in _order)
-            _groups[id].Layout(_config.Compact.Value);
-
-        ClampPanelToScreen(persist: true);
-    }
-
-    private void ToggleLock()
-    {
-        _config.Locked.Value = !_config.Locked.Value;
-        _config.Save();
-        _controls.SetLocked(_config.Locked.Value);
-        if (_config.Locked.Value) _dragging = false;
+        _shownLocked = locked;
+        _shownLockedByLayout = lockedByLayout;
+        _shownCompact = _config.Compact.Value;
     }
 
     public void SetVisible(bool visible)
     {
-        if (_canvasGo != null && _canvasGo.activeSelf != visible)
-            _canvasGo.SetActive(visible);
+        _visible = visible;
+        Host.SetVisible(visible);
     }
 
     public void Dispose()
@@ -230,11 +154,8 @@ public sealed class HudRoot
 
         _groups.Clear();
         _order.Clear();
-
-        if (_canvasGo != null) UnityEngine.Object.Destroy(_canvasGo);
-        _canvasGo = null;
-        _canvas = null;
-        _panel = null;
+        _dragHandles.Clear();
+        Host.Destroy();
         _controls = null;
     }
 }

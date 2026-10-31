@@ -15,6 +15,7 @@ namespace PocketCompendium;
 public sealed class PocketCompendiumMod : MelonMod
 {
     private FeatureRegistry _features;
+    private SettingsWindow _settings;
 
     public override void OnInitializeMelon()
     {
@@ -25,17 +26,30 @@ public sealed class PocketCompendiumMod : MelonMod
         _features.Add(new BossSkillsFeature());
         _features.Add(new BestiaryPagesFeature());
 
-        LoggerInstance.Msg($"Pocket Compendium {Info.Version}, build {ModBuild.Commit(typeof(PocketCompendiumMod).Assembly)}. Switched on: {_features.SwitchedOn()}");
+        var layout = new LayoutSettings();
+        _settings = new SettingsWindow(_features.Features, layout);
+
+        LoggerInstance.Msg($"Pocket Compendium {Info.Version}, build {ModBuild.Commit(typeof(PocketCompendiumMod).Assembly)}. Switched on: {_features.SwitchedOn()}. {layout.SettingsKey.Value} opens the settings.");
     }
 
-    public override void OnUpdate() => _features.Update();
+    public override void OnUpdate()
+    {
+        Overlay.Update();
+
+        // The window updates first, so a click on it never reaches a panel below.
+        _settings.Update();
+        _features.Update();
+    }
 
     public override void OnSceneWasUnloaded(int buildIndex, string sceneName) => _features.OnSceneUnloaded(sceneName);
 
     public override void OnDeinitializeMelon()
     {
         _features.StopAll();
+        _settings.Destroy();
+        Overlay.Dispose();
         Icons.Dispose();
+        Shapes.Dispose();
         Theme.Dispose();
     }
 }

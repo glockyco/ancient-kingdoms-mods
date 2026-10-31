@@ -34,9 +34,13 @@ public sealed class SettingsPage
 
     public void Note(string text) => _rows.Add(new NoteRow(text));
 
+    /// <summary>A button that runs <paramref name="run"/>, such as resetting every panel's position.</summary>
+    public void Action(string label, string button, string help, Action run) =>
+        _rows.Add(new ActionRow(label, button, help, run));
+
     public ToggleSetting Toggle(string key, bool defaultValue, string label, string help = null, bool shown = true)
     {
-        var setting = new ToggleSetting(this, _category.CreateEntry(key, defaultValue, label), label, help);
+        var setting = new ToggleSetting(this, _category.CreateEntry(key, defaultValue, label), label, help, defaultValue);
         if (shown) _rows.Add(setting);
         return setting;
     }
@@ -54,6 +58,14 @@ public sealed class SettingsPage
         _category.CreateEntry(key, defaultValue, key);
 
     public void Save() => _category.SaveToFile(false);
+
+    /// <summary>Returns every setting the window shows on this page to its default.</summary>
+    public void ResetShown()
+    {
+        foreach (var row in _rows)
+            if (row is Setting setting)
+                setting.Reset();
+    }
 
     internal void NotifyChanged()
     {
@@ -80,6 +92,22 @@ public sealed class NoteRow : SettingRow
     public string Text { get; }
 }
 
+public sealed class ActionRow : SettingRow
+{
+    public ActionRow(string label, string button, string help, Action run)
+    {
+        Label = label;
+        Button = button;
+        Help = help;
+        Run = run;
+    }
+
+    public string Label { get; }
+    public string Button { get; }
+    public string Help { get; }
+    public Action Run { get; }
+}
+
 public abstract class Setting : SettingRow
 {
     protected Setting(SettingsPage page, string label, string help)
@@ -92,16 +120,20 @@ public abstract class Setting : SettingRow
     public SettingsPage Page { get; }
     public string Label { get; }
     public string Help { get; }
+
+    public abstract void Reset();
 }
 
 public sealed class ToggleSetting : Setting
 {
     private readonly MelonPreferences_Entry<bool> _entry;
+    private readonly bool _default;
 
-    internal ToggleSetting(SettingsPage page, MelonPreferences_Entry<bool> entry, string label, string help)
+    internal ToggleSetting(SettingsPage page, MelonPreferences_Entry<bool> entry, string label, string help, bool defaultValue)
         : base(page, label, help)
     {
         _entry = entry;
+        _default = defaultValue;
     }
 
     public bool Value
@@ -114,6 +146,8 @@ public sealed class ToggleSetting : Setting
             Page.NotifyChanged();
         }
     }
+
+    public override void Reset() => Value = _default;
 }
 
 /// <summary>
@@ -161,6 +195,8 @@ public sealed class ChoiceSetting<T> : Setting, IChoiceSetting
         }
         set => Value = _options[value].Value;
     }
+
+    public override void Reset() => Value = _default;
 }
 
 /// <summary>The part of a choice the settings window needs, independent of its enum.</summary>
