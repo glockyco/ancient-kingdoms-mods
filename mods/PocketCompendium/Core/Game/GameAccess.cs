@@ -28,11 +28,13 @@ public static class GameAccess
     public static double ServerTime(NetworkManagerMMO networkManager) =>
         NetworkTime.time + networkManager.offsetNetworkTime;
 
+    // Every fabled monster also carries isBoss, so the order follows the game's nameplate colour:
+    // fabled, then elite, then boss.
     public static Tier? TierOf(Monster monster)
     {
-        if (monster.isBoss) return Tier.Boss;
         if (monster.isFabled) return Tier.Fabled;
         if (monster.isElite) return Tier.Elite;
+        if (monster.isBoss) return Tier.Boss;
         return null;
     }
 
