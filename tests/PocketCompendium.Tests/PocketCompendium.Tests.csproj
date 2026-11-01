@@ -26,6 +26,7 @@
     <Compile Include="..\..\mods\PocketCompendium\Core\Ui\RawImageRows.cs" Link="Sources\Core\RawImageRows.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\GameClock.cs" Link="Sources\Tracking\GameClock.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\KillNotice.cs" Link="Sources\Tracking\KillNotice.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\RenewalNotice.cs" Link="Sources\Tracking\RenewalNotice.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\TrackedState.cs" Link="Sources\Tracking\TrackedState.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\SpawnResolver.cs" Link="Sources\Tracking\SpawnResolver.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\SpawnRules.cs" Link="Sources\Tracking\SpawnRules.cs" />

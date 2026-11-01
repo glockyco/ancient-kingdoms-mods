@@ -7,6 +7,7 @@ using Il2CppInterop.Runtime;
 using Il2CppMirror;
 using MelonLoader.Utils;
 using PocketCompendium.Core.Game;
+using PocketCompendium.Core.Text;
 using UnityEngine;
 
 namespace PocketCompendium.Core.Tracking;
@@ -154,11 +155,30 @@ public sealed class Tracker
             _memoryChanged = true;
     }
 
+    /// <summary>Counts a renewed dungeon's remembered deaths as due, from the game's confirmation to the payer.</summary>
+    internal void OnImportantMessage(string message)
+    {
+        if (!Ready || _host) return;
+
+        var zoneName = RenewalNotice.ZoneName(message);
+        if (zoneName == null) return;
+        var zone = ZoneNames.Match(zoneName, GameText.Zones());
+        if (zone == null) return;
+
+        foreach (var monster in _monsters)
+        {
+            if (monster.Zone == zone.Value && monster.Rules.Origin == SpawnOrigin.Placed &&
+                _memory.Renewal(monster.Key, monster.Rules, Now))
+                _memoryChanged = true;
+        }
+    }
+
     private void StartSession(string world)
     {
         if (!_patched)
         {
             Patching.Apply(typeof(KillNoticePatch));
+            Patching.Apply(typeof(RenewalNoticePatch));
             _patched = true;
         }
 

@@ -59,6 +59,9 @@ public enum StateSource
 
     /// <summary>The monster seen alive.</summary>
     Sighting,
+
+    /// <summary>A remembered death whose timer the player ended by renewing its dungeon.</summary>
+    Renewal,
 }
 
 /// <summary>A tracked monster's state with the facts the surfaces show. All times are server times.</summary>

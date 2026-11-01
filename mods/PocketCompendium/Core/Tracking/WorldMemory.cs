@@ -71,6 +71,24 @@ public sealed class WorldMemory
         return true;
     }
 
+    /// <summary>
+    /// Records that the player renewed the monster's dungeon, which ends every respawn timer there
+    /// (<c>Player.UserCode_CmdResetDungeon</c>), so a remembered death counts as due from now.
+    /// Returns whether the memory changed.
+    /// </summary>
+    public bool Renewal(string key, SpawnRules rules, double now)
+    {
+        var memory = Find(key);
+        if (memory == null || !memory.KnowsDeath) return false;
+
+        double due = now - rules.KillToRespawnSeconds;
+        if (memory.DeathAt.Value <= due) return false;
+
+        memory.DeathAt = due;
+        memory.DeathSource = StateSource.Renewal;
+        return true;
+    }
+
     public string Serialize()
     {
         var text = new StringBuilder(Header).Append('\n');

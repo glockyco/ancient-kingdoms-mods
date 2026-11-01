@@ -66,6 +66,28 @@ public sealed class WorldMemoryTests
     }
 
     [Fact]
+    public void A_renewal_makes_a_remembered_death_due_at_once()
+    {
+        var world = new WorldMemory();
+        world.KillNotice(Key, Rules, 1000.0);
+
+        Assert.True(world.Renewal(Key, Rules, 1500.0));
+        var state = SpawnResolver.Client(Rules, default, world.Find(Key), 1500.0);
+        Assert.Equal(SpawnState.Due, state.State);
+        Assert.False(world.Renewal(Key, Rules, 1600.0));
+    }
+
+    [Fact]
+    public void A_renewal_leaves_a_monster_last_seen_alive_alone()
+    {
+        var world = new WorldMemory();
+        world.Observe(Key, Rules, Alive, 100.0);
+
+        Assert.False(world.Renewal(Key, Rules, 200.0));
+        Assert.False(world.Renewal("Unknown", Rules, 200.0));
+    }
+
+    [Fact]
     public void Memory_survives_a_save_and_load()
     {
         var world = new WorldMemory();

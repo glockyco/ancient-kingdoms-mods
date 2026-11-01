@@ -101,7 +101,8 @@ internal static class GameText
         return candidate == null || isCjk ? TMP_Settings.defaultFontAsset : candidate;
     }
 
-    private static List<KeyValuePair<int, string>> Zones()
+    /// <summary>The game's zone table, id and English name.</summary>
+    internal static List<KeyValuePair<int, string>> Zones()
     {
         if (_zones != null)
             return _zones;

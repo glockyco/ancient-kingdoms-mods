@@ -63,6 +63,15 @@ On a client without host sharing, a time SHALL be shown as an estimate with a le
 - **WHEN** a dedicated server announces Troll King Grimlok's death
 - **THEN** the row shows ~1h 05m and the tooltip says the time comes from the server's kill notice
 
+### Requirement: A renewed dungeon's estimates are due
+
+When the game confirms to the player that a dungeon they paid to renew has been renewed, every client estimate for a monster placed in that dungeon SHALL count as due from that moment, because the renewal ends every respawn timer there. Guards, chances and hours still apply.
+
+#### Scenario: Renewing Trolls Cave on a dedicated server
+
+- **WHEN** a player without host sharing renews Trolls Cave while Troll King Grimlok shows ~40:00
+- **THEN** Troll King Grimlok shows Due
+
 ### Requirement: Times are kept per world
 
 Tracked state SHALL be kept separately for each world: each solo world, each hosted world joined and each server. Switching worlds SHALL NOT carry times from one to another.
