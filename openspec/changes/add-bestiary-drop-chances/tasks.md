@@ -8,7 +8,7 @@
 
 ## 2. Observed in game
 
-- [ ] 2.1 In a scratch session, kill Xylevis repeatedly and check that every corpse holds an equipment piece, then kill a dungeon boss with its Fatecharm in the main inventory and check for two pieces and the used charm. Verify that the observations are recorded with the build they ran on.
+- [x] 2.1 In a scratch session, kill Xylevis repeatedly and check that every corpse holds an equipment piece, then kill a dungeon boss with its Fatecharm in the main inventory and check for two pieces and the used charm. Verify that the observations are recorded with the build they ran on. Recorded in `observations.md`: both held.
 - [ ] 2.2 Loot a drop not found yet and check that the game's record and the found mark take it up. Verify the same way.
 
 ## 3. Choices players see
