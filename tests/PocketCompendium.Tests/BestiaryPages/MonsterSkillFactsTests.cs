@@ -94,7 +94,8 @@ public class MonsterSkillFactsTests
         Assert.DoesNotContain("Magic", summary.DamageTypes.Keys);
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Summon && t.Skill.SummonMaximumReach == 15);
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Frontal && t.Skill.Reach == 5);
-        Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Area && t.Skill.Reach == 10);
+        // His fear hits everyone within 10 yd but deals no damage, so it is no area attack.
+        Assert.DoesNotContain(summary.Threats, t => t.Kind == SkillThreatKind.Area);
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Stun);
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Fear);
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Knockback);
@@ -119,7 +120,8 @@ public class MonsterSkillFactsTests
         var summary = new MonsterSkillSummary(skills);
         Assert.Single(summary.DamageTypes);
         Assert.Equal(27, summary.DamageTypes["Physical"]);
-        Assert.DoesNotContain(summary.Threats, t => t.Kind is SkillThreatKind.Heal or SkillThreatKind.Enrage);
+        // The basic attack's 0.9% stun chance is no threat, and the buff is none either.
+        Assert.Empty(summary.Threats);
     }
 
     [Fact]
@@ -138,6 +140,15 @@ public class MonsterSkillFactsTests
         Assert.Equal("grievous_wounds", debuff.Skill.Effect.id);
         Assert.False(skills.Single(s => s.Effect.id == "chains_of_valaark").UncleanseableDebuff);
         Assert.False(skills.Single(s => s.Effect.id == "blinding_gaze").UncleanseableDebuff);
+    }
+
+    [Fact]
+    public void ScaleblightsAreaDiseaseAndBuffRemovalAreThreats()
+    {
+        var summary = new MonsterSkillSummary(Skills("scaleblight"));
+        Assert.Equal(
+            "Summons you, breath in front, area attacks, buff removal, fear, knockback and stuns",
+            SkillCardText.Threats(summary));
     }
 
     [Theory]
@@ -206,6 +217,6 @@ public class MonsterSkillFactsTests
         var summary = new MonsterSkillSummary(new[] { basic });
         Assert.Single(summary.DamageTypes);
         Assert.Equal(1720, summary.DamageTypes["Physical"]);
-        Assert.DoesNotContain(summary.Threats, t => t.Kind is SkillThreatKind.Area or SkillThreatKind.Frontal);
+        Assert.Empty(summary.Threats);
     }
 }

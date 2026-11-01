@@ -18,7 +18,7 @@ internal sealed class SkillDeliveryInput
 internal enum SkillShape { None, Target, AroundCaster, FrontalSquare, GroundZones }
 internal enum SkillThreatKind
 {
-    Area, Frontal, Summon, Stun, Fear, Knockback, UncleanseableDebuff, Heal, Enrage,
+    Area, Frontal, Summon, Dispel, Stun, Fear, Knockback, UncleanseableDebuff, Heal, Enrage,
 }
 
 internal sealed class ControlEffect
@@ -145,15 +145,19 @@ internal sealed class MonsterSkillSummary
         {
             var effect = skill.Effect;
             AddDamage(damageTypes, effect.damage_type, skill.Damage ?? 0);
-            if (effect.skill_type is "target_debuff" or "area_debuff")
-                AddDamage(damageTypes, effect.damage_over_time_type, -(effect.healing_per_second_bonus?.base_value ?? 0));
+            AddDamage(damageTypes, effect.damage_over_time_type, DamagePerSecond(effect));
             AddDamage(damageTypes, effect.damage_shield_type, effect.damage_shield?.base_value ?? 0);
+
+            // The basic attack's small stun chances would put stuns on almost every monster.
+            if (skill.Delivery.skill_index == 0) continue;
             if (skill.IsSpecial)
             {
-                if (skill.Shape is SkillShape.AroundCaster or SkillShape.GroundZones)
+                if (skill.Shape is SkillShape.AroundCaster or SkillShape.GroundZones && ((skill.Damage ?? 0) > 0 || DamagePerSecond(effect) > 0))
                     threats.Add(new SkillThreat(SkillThreatKind.Area, skill));
                 if (skill.Shape == SkillShape.FrontalSquare)
                     threats.Add(new SkillThreat(SkillThreatKind.Frontal, skill));
+                if (effect.is_dispel && effect.skill_type is "target_debuff" or "area_debuff")
+                    threats.Add(new SkillThreat(SkillThreatKind.Dispel, skill));
             }
             if (skill.SummonsTarget) threats.Add(new SkillThreat(SkillThreatKind.Summon, skill));
             foreach (var control in skill.Controls) threats.Add(new SkillThreat(control.Kind, skill));
@@ -171,4 +175,8 @@ internal sealed class MonsterSkillSummary
         if (!types.TryGetValue(type, out var previous) || amount > previous)
             types[type] = amount;
     }
+
+    // A debuff's damage over time is a negative health regeneration bonus.
+    private static double DamagePerSecond(SkillEffectInput effect) =>
+        effect.skill_type is "target_debuff" or "area_debuff" ? -(effect.healing_per_second_bonus?.base_value ?? 0) : 0;
 }
