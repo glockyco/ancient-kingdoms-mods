@@ -11,6 +11,12 @@
   import { mysticSparkMana } from "$lib/calculation/character";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import { getQualityTextColorClass } from "$lib/utils/format";
+  import {
+    honorAccuracyBonus,
+    honorCriticalResistBonus,
+    sacrificeHealthBonus,
+  } from "$lib/calculation/virtues";
+  import { bonusRange, rankEffect, virtueHref } from "$lib/virtues/display";
 
   let { data } = $props();
 </script>
@@ -258,6 +264,25 @@
         >
         permanently raises attributes.
       </p>
+      <!-- Source: server-scripts/Combat.cs:ApplyVirtueDefense,accuracy,criticalResist — Humility multiplies Armor Class and every resistance, and Honor adds Accuracy and Critical Resist. -->
+      <p>
+        Two blessings change these stats on top, and the character window shows
+        the result. <a
+          href={virtueHref("humility")}
+          class="text-blue-600 dark:text-blue-400 hover:underline">Humility</a
+        >
+        changes Armor Class and every resistance by
+        {rankEffect("humility", 0, data.humilityMultipliers[0]).value} at rank 0 up
+        to {rankEffect("humility", 5, data.humilityMultipliers[5]).value} at rank
+        5.
+        <a
+          href={virtueHref("honor")}
+          class="text-blue-600 dark:text-blue-400 hover:underline">Honor</a
+        >
+        adds {bonusRange(honorAccuracyBonus)} Accuracy and {bonusRange(
+          honorCriticalResistBonus,
+        )} Critical Resist.
+      </p>
     </Card.Content>
   </Card.Root>
 
@@ -274,7 +299,13 @@
         <span class="block">Every class has Hit Points.</span>
         <span class="block"
           >Constitution, equipment, augments, passive skills, and buffs raise
-          maximum Hit Points.</span
+          maximum Hit Points. An active
+          <a
+            href={virtueHref("sacrifice")}
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Sacrifice</a
+          >
+          blessing then adds {bonusRange(sacrificeHealthBonus)}, rounded.</span
         >
         <span class="block"
           >Equipment, augments, passive skills, and healing-over-time buffs

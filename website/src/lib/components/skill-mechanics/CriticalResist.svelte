@@ -2,6 +2,8 @@
   import { statName, formatStat } from "$lib/stats";
   import { atRank } from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
+  import { honorCriticalResistBonus } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
 
   const mechanics = getMechanicsContext();
   const { skill } = $derived(mechanics);
@@ -35,6 +37,13 @@
     >
     <span class="block"
       >Gear and buffs can add more, up to a total of 100%.</span
+    >
+    <span class="block"
+      >An active <a
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        href={virtueHref("honor")}>Honor</a
+      >
+      blessing adds {bonusRange(honorCriticalResistBonus)}.</span
     >
   </p>
 </div>

@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { loadHumilityMultipliers } from "$lib/queries/virtues.server";
 
 export const prerender = true;
 
@@ -48,6 +49,7 @@ export const load: PageServerLoad = () => {
     | undefined;
   db.close();
   return {
+    humilityMultipliers: loadHumilityMultipliers(),
     skillMaster: namedMasters.find((npc) => npc.roles.is_skill_master) ?? null,
     attributeMaster:
       namedMasters.find((npc) => npc.roles.is_reset_attributes) ?? null,

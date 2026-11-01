@@ -849,6 +849,9 @@
     "Combat.cs:ApplyCriticalResistToMultiplier": {
       "span": 0
     },
+    "Combat.cs:ApplyVirtueDefense": {
+      "span": 0
+    },
     "Combat.cs:DealDamageAt": {
       "span": 0
     },
