@@ -55,7 +55,7 @@ Two hashes on `PlayerChat`, an RPC on clients and a Command on the host, both ch
 
 ### UI kit from BossSkillTracker
 
-`Core/Ui` is BossSkillTracker's UI kit, extended with the panel host (drag, resize, lock, persist), the settings window and Lucide icons. `website/scripts/generate-mod-icons.mjs` renders the icons from the website's `lucide` package and stores each one as its gzipped 96x96 alpha channel, because every icon is white and tinted at run time. Raw RGBA made the DLL eight times larger, and decoding PNG would depend on Unity's image module. Tooltips use the game's `UIShowToolTip`, alerts `Player.ShowImportantMessage`, map pins follow the game's map-notes container under `UIMap.localMap`.
+`Core/Ui` is BossSkillTracker's UI kit, extended with the panel host (drag, resize, lock, persist), the settings window and Lucide icons. `website/scripts/generate-mod-icons.mjs` renders the icons from the website's `lucide` package and stores each one as its gzipped 96x96 alpha channel, because every icon is white and tinted at run time. Raw RGBA made the DLL eight times larger, and decoding PNG would depend on Unity's image module. Tooltips use the game's `UIShowToolTip` and alerts `Player.ShowImportantMessage`. Map pins sit in their own container under `UIMap.localMap`, placed the way the game places its map notes. The container has its own canvas one sorting order above the map's, because the map's frame takes the pointer from anything drawn below it.
 
 ### Settings
 
@@ -80,4 +80,3 @@ Settings stay in `MelonPreferences`, one category per feature under a `PocketCom
 ## Open Questions
 
 - The exact compact payload format and the snapshot size limit on the EOS transport.
-- Whether the map pin layer should reuse the map-notes container or sit in its own sibling container.
