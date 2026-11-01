@@ -1136,6 +1136,14 @@ const HARDCODED_EFFECTS: Record<string, string> = {
     "+1% × rank spell power, scaled by current mana (full mana = full bonus)",
   // Divine Intervention: +10000 all resists for 3s in area is effectively invulnerability; generic formatter would show confusing +10000 values
   divine_intervention: "grants invulnerability to nearby allies, 3s",
+  // Source: server-scripts/Player.cs:VirtueHealingMultiplier,VirtueAccuracy,VirtueCriticalResist,VirtueHealthMultiplier,VirtueDefenseMultiplier,ApplyVirtueFactionGain; VirtueCombat.cs:ApplyValor — each blessing's strength follows the player's rank in its virtue.
+  blessing_of_compassion: "more healing received, by rank in Compassion",
+  blessing_of_honor: "more Accuracy & Critical Resist, by rank in Honor",
+  blessing_of_sacrifice: "more maximum Health, by rank in Sacrifice",
+  blessing_of_humility:
+    "lower AC & resistances, by rank in Humility (higher at the top rank)",
+  blessing_of_honesty: "more positive faction gains, by rank in Honesty",
+  blessing_of_valor: "more damage to elites & bosses, by rank in Valor",
 };
 
 /** A passive's required weapon category, as the reader knows the weapon. */

@@ -864,5 +864,11 @@ internal static class SkillEffectFormatter
         ["razor_of_wrath"] = "+1% × rank attack power, scaled by current rage (full rage = full bonus)",
         ["arcane_edge"] = "+1% × rank spell power, scaled by current mana (full mana = full bonus)",
         ["divine_intervention"] = "grants invulnerability to nearby allies, 3s",
+        ["blessing_of_compassion"] = "more healing received, by rank in Compassion",
+        ["blessing_of_honor"] = "more Accuracy & Critical Resist, by rank in Honor",
+        ["blessing_of_sacrifice"] = "more maximum Health, by rank in Sacrifice",
+        ["blessing_of_humility"] = "lower AC & resistances, by rank in Humility (higher at the top rank)",
+        ["blessing_of_honesty"] = "more positive faction gains, by rank in Honesty",
+        ["blessing_of_valor"] = "more damage to elites & bosses, by rank in Valor",
     };
 }

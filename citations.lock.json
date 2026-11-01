@@ -3707,6 +3707,9 @@
     "Player.cs:VirtueCriticalResist": {
       "span": 0
     },
+    "Player.cs:VirtueDefenseMultiplier": {
+      "span": 0
+    },
     "Player.cs:VirtueHealingMultiplier": {
       "span": 0
     },
