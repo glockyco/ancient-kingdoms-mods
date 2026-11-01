@@ -168,6 +168,15 @@ internal static class SkillEffectExtractor
         if (bonusSkill == null)
             return;
 
+        // Source: AreaDebuffSkill.cs and TargetDebuffSkill.cs. A dispel applies no buff, so its stat
+        // fields go unused, as build-pipeline's skill fixups also treat them.
+        if (skill.TryCast<BuffSkill>()?.isDispel != true)
+            PopulateStats(bonusSkill, input);
+        PopulateBuff(skill, input);
+    }
+
+    private static void PopulateStats(BonusSkill bonusSkill, SkillEffectInput input)
+    {
         input.health_max_bonus = new LinearValue(bonusSkill.healthMaxBonus.baseValue, bonusSkill.healthMaxBonus.bonusPerLevel);
         input.health_max_percent_bonus = new LinearValue(bonusSkill.healthMaxPercentBonus.baseValue, bonusSkill.healthMaxPercentBonus.bonusPerLevel);
         input.mana_max_bonus = new LinearValue(bonusSkill.manaMaxBonus.baseValue, bonusSkill.manaMaxBonus.bonusPerLevel);
@@ -205,7 +214,10 @@ internal static class SkillEffectExtractor
         input.wisdom_bonus = new LinearValue(bonusSkill.wisdomBonus.baseValue, bonusSkill.wisdomBonus.bonusPerLevel);
         input.constitution_bonus = new LinearValue(bonusSkill.constitutionBonus.baseValue, bonusSkill.constitutionBonus.bonusPerLevel);
         input.heal_on_hit_percent = new LinearValue(bonusSkill.healOnHitPercent.baseValue, bonusSkill.healOnHitPercent.bonusPerLevel);
+    }
 
+    private static void PopulateBuff(ScriptableSkill skill, SkillEffectInput input)
+    {
         var buffSkill = skill.TryCast<BuffSkill>();
         if (buffSkill != null)
         {
