@@ -52,4 +52,5 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
   `includeCreatures` defaults to true; false hides creatures while retaining scenery and resources.
   HUD canvases, player renderers, nameplates, and health bars are hidden in either mode.
   The game's area/daylight/weather lighting runs while each composition settles, and capture state
-  is restored even when a coroutine fails. Excluded/unreleased zones are refused.
+  is restored even when a coroutine fails. Capture refuses no zone. `compendium build` refuses a
+  manifest that holds a zone `redactions.toml` excludes.

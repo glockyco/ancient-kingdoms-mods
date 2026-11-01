@@ -57,8 +57,6 @@ namespace HotReplCommands.Dtos
         /// <summary>Keep withheld positions out of both focal files and capture manifests.</summary>
         public void ValidatePosition()
         {
-            if (zone_id == "old_valorath")
-                throw new InvalidDataException($"Excluded focal point: {zone_id}");
             if (zone_id == "temple_of_valaark")
             {
                 if (x.HasValue || y.HasValue)
