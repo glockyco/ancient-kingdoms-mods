@@ -50,6 +50,8 @@
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Skills\SkillEffectFormatter.cs" Link="Sources\BestiaryPages\SkillEffectFormatter.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Ui\LootGridLayout.cs" Link="Sources\BestiaryPages\LootGridLayout.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\DropChanceCalculator.cs" Link="Sources\BestiaryPages\DropChanceCalculator.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\MonsterDamage.cs" Link="Sources\BestiaryPages\MonsterDamage.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\MonsterSkillFacts.cs" Link="Sources\BestiaryPages\MonsterSkillFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Fixtures\skill-effect-parity.json" LogicalName="skill-effect-parity.json" />

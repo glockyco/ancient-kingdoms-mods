@@ -2,11 +2,11 @@
 
 ## Context
 
-- The panel lists `monster.skills.skillTemplates` in template order, slot 0 (the basic attack) included. Each row has a 36 px icon and fixed cells for name, summary, cooldown and cast time. The summary comes from `SkillEffectExtractor` and `SkillEffectFormatter` with `monsterContext: true`, which prints damage as a formula. The panel is a flat box 660 px wide, as tall as the Journal, with no scroll view (`SkillsPanel.cs`, `SkillsPanelRenderer.cs`).
-- The formatter is a port of the website's `formatSkillEffect`, kept equal by a parity corpus that covers output without a monster context (`website/src/lib/skills/skillEffectParity.ts`, `SkillEffectFormatterTests.cs`). The website passes the monster's damage and magic damage at its level and prints one number (`website/src/routes/monsters/[id]/+page.svelte`, `formatSkillEffect.ts`).
+- The panel lists `monster.skills.skillTemplates` in template order, slot 0 (the basic attack) included. Each row has a 36 px icon and fixed cells for name, summary, cooldown and cast time. `SkillEffectExtractor` supplies the monster's combat stats and rank-resolved input to `SkillEffectFormatter`, which prints a damage amount. The panel is a flat box 660 px wide, as tall as the Journal, with no scroll view (`SkillsPanel.cs`, `SkillsPanelRenderer.cs`).
+- The formatter is a port of the website's `formatSkillEffect`, kept equal by a parity corpus covering both formula output and every monster skill with its caster's stats (`website/src/lib/skills/skillEffectParity.ts`, `SkillEffectFormatterTests.cs`). The website passes the monster's damage and magic damage at its level and prints one number (`website/src/routes/monsters/[id]/+page.svelte`, `formatSkillEffect.ts`).
 - The in-fight skill cards leave out slot 0, passives and auras, and order the rest by cooldown, longest first (`SkillReader.cs`, `SkillOrdering.cs`).
 - Bosses have up to 6 special skills, 3.0 on average, and elites up to 4, 1.1 on average. With the basic attack, a page has at most 7 skills, passives included (`compendium.db`, `monster_skills`).
-- The game shows a cast bar for special skills whose cast takes more than 0.3 s (`UICastBarMonster.cs:27-46`). Of the attacks, only ground zones mark the ground before they hit, as far as the code shows (`AreaObjectSpawnSkill.cs:338-352`). A monster casts no special in the first 5 s of a fight (`Monster.cs:1497-1500`), and its next special is due 6 to 12 s after each special's cast (`MonsterSkills.cs:31-37`, `:162-182`). These are read from code and still have to be observed in game.
+- The game shows a cast bar for special skills whose cast takes more than 0.3 s (`.decompiled/steam-26302989-532b02784df9/Monster.cs:1085-1108`, called by `UICastBarMonster.cs:30`). Slot 0 never gets this bar. The threshold uses the unadjusted cast time, before haste and the non-spell half-cast display window. Of the attacks, only ground zones mark the ground before they hit, as far as the code shows (`AreaObjectSpawnSkill.cs:35-47`). A monster casts no special in the first 5 s of a fight (`Monster.cs:1497-1500`), and its next special is due 6 to 12 s after each special's cast (`MonsterSkills.cs:31-37`, `:162-182`). These are read from code and still have to be observed in game.
 - Players ask how much resistance a fight needs ([Steam](https://steamcommunity.com/app/2241380/discussions/1/569300839164031509/)), for cast bars on every monster ([Steam](https://steamcommunity.com/app/2241380/discussions/1/833872326144571439/)) and, on Discord, for a warning not to stand in danger. Grim Tools' cards for Grim Dawn enemy attacks, with the attack and its cadence on the left and its numbers on the right, are the reference closest to this panel.
 
 ## Goals / Non-Goals
@@ -47,10 +47,10 @@ The extractor already knows which stat a skill class adds for each damage type. 
 
 - Area attacks reach `castRange` yd around the monster.
 - Frontal attacks hit a square of `castRange` yd in front of it.
-- Ground zones give their count, size and warning time.
+- Ground zones give their random count plus the additional target zone, diameter and warning time (`AreaObjectSpawnSkill.cs:35-47,159`).
 - Projectiles home in on the target, so moving does not dodge them.
 - Target attacks give their range.
-- A special skill whose cast takes 0.3 s or less gets no cast bar.
+- A special skill whose cast takes 0.3 s or less gets no cast bar (`Monster.cs:1085-1108`). Basic attacks, passives and auras are not special skills.
 
 ### Hover details in the website's terms
 

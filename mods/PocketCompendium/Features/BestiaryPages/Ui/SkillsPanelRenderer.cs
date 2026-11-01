@@ -77,9 +77,8 @@ internal static class SkillsPanelRenderer
             string summaryText;
             try
             {
-                var effect = SkillEffectExtractor.From(skill);
-                effect.ResolveAtLevel(runtimeLevel);
-                summaryText = SkillEffectFormatter.Format(effect, monsterContext: true);
+                var facts = SkillEffectExtractor.From(skill, monster.combat.damage, monster.combat.magicDamage, runtimeLevel, i);
+                summaryText = SkillEffectFormatter.Format(facts.Effect);
             }
             catch (Exception ex)
             {

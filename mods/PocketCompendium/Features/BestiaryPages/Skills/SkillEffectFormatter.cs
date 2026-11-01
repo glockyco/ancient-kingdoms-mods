@@ -1,16 +1,15 @@
 #nullable disable
 using System.Collections.Generic;
 using System.Globalization;
+using PocketCompendium.Features.BestiaryPages.Model;
 
 namespace PocketCompendium.Features.BestiaryPages.Skills;
 
 /// <summary>
-/// C# port of the website's <c>formatSkillEffect</c>. The default call keeps
-/// website parity with the formula branch the skills list uses. The
-/// Bestiary pages' skills panel passes <c>monsterContext</c> for monster-owned
-/// skills: damage then names the monster's stats, notes about the reader's
-/// attributes are dropped, and threat, which only a player's cast can raise, is
-/// left out.
+/// C# port of the website's <c>formatSkillEffect</c>. Without monster stats,
+/// damage uses the formula branch the skills list uses. With monster stats,
+/// damage resolves to an amount, notes about the reader's attributes are dropped,
+/// and threat, which only a player's cast can raise, is left out.
 ///
 /// This is the second home of formatter logic. The TypeScript
 /// <c>website/src/lib/utils/formatSkillEffect.ts</c> stays the source of truth.
@@ -32,8 +31,9 @@ internal static class SkillEffectFormatter
 
     private static readonly Dictionary<string, string> NoNotes = new();
 
-    public static string Format(SkillEffectInput skill, bool monsterContext = false)
+    public static string Format(SkillEffectInput skill)
     {
+        var monsterContext = skill.monster != null;
         if (skill.id != null && HardcodedEffects.TryGetValue(skill.id, out var hardcoded))
             return hardcoded;
 
@@ -189,9 +189,11 @@ internal static class SkillEffectFormatter
             return;
 
         var multiplier = skill.skill_type == "frontal_projectiles" ? null : damagePercent;
-        // The panel resolves a monster's skill at its rank, where a percentage of 0 or less multiplies nothing.
-        if (monsterContext && multiplier != null && multiplier.base_value <= 0)
-            multiplier = null;
+        if (monsterContext)
+        {
+            parts.Add($"{FormatNumber(MonsterDamage.Amount(skill).Value)}{DamageTypeSuffix(skill.damage_type)} dmg");
+            return;
+        }
         var formattedType = FormatDamageType(skill.damage_type);
         var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
 
@@ -225,6 +227,12 @@ internal static class SkillEffectFormatter
             $"{Group(combined)} × {Group(FormatLinearPercent(multiplier))}{typeLabel} dmg",
             Note(notes, "damage"),
             lapses ? "multiplied only above 0%" : null));
+    }
+
+    private static string DamageTypeSuffix(string type)
+    {
+        var label = FormatDamageType(type);
+        return label.Length == 0 ? "" : " " + label;
     }
 
     private static string FormatDamageType(string type)

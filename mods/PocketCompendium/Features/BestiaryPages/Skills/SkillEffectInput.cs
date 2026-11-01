@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using PocketCompendium.Features.BestiaryPages.Model;
 
 namespace PocketCompendium.Features.BestiaryPages.Skills;
 
@@ -28,6 +29,7 @@ internal sealed class SkillEffectInput
     public string damage_over_time_type { get; set; }
     public string damage_shield_type { get; set; }
     public int? max_level { get; set; }
+    public MonsterDamageContext monster { get; set; }
 
     // Casters and delivery
     /// <summary>Only monsters and NPCs cast the skill, at their fixed rank.</summary>

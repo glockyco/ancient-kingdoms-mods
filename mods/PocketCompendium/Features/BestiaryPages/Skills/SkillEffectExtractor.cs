@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using DataExporter;
 using DataExporter.Skills;
 using Il2Cpp;
+using PocketCompendium.Features.BestiaryPages.Model;
 
 namespace PocketCompendium.Features.BestiaryPages.Skills;
 
@@ -20,7 +21,7 @@ namespace PocketCompendium.Features.BestiaryPages.Skills;
 /// </summary>
 internal static class SkillEffectExtractor
 {
-    public static SkillEffectInput From(ScriptableSkill skill)
+    public static MonsterSkillFacts From(ScriptableSkill skill, double damage, double magicDamage, int runtimeLevel, int skillIndex)
     {
         var input = new SkillEffectInput
         {
@@ -33,6 +34,7 @@ internal static class SkillEffectExtractor
                 ? null
                 : skill.requiredWeaponCategory,
             cast_range = skill.castRange.baseValue,
+            monster = new MonsterDamageContext { damage = damage, magicDamage = magicDamage },
         };
 
         PopulateDamage(skill, input);
@@ -43,7 +45,19 @@ internal static class SkillEffectExtractor
         PopulateNecromancer(skill, input);
         PopulateSummon(skill, input);
 
-        return input;
+        input.ResolveAtLevel(runtimeLevel);
+        var areaObject = skill.TryCast<AreaObjectSpawnSkill>();
+        var areaBuff = skill.TryCast<AreaBuffSkill>();
+        var areaDebuff = skill.TryCast<AreaDebuffSkill>();
+        return new MonsterSkillFacts(input, new SkillDeliveryInput
+        {
+            skill_index = skillIndex,
+            cast_time = skill.castTime.Get(runtimeLevel),
+            cooldown = skill.cooldown.Get(runtimeLevel),
+            cast_range = skill.castRange.Get(runtimeLevel),
+            is_aura = (areaBuff != null && areaBuff.isAura) || (areaDebuff != null && areaDebuff.isAura),
+            area_object_delay_damage = areaObject != null ? areaObject.delayDamage : 0,
+        });
     }
 
 

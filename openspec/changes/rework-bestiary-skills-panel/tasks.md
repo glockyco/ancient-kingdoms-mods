@@ -3,9 +3,9 @@
 ## 1. Facts and numbers
 
 - [ ] 1.1 Observe in a scratch session the behaviours the panel will state: the 5 s before a monster's first special, the gap between specials, the 0.3 s cast bar threshold, Nyxarion's pull reach and stun and his fear's duration. Verify that each observation is recorded in the change folder with the build it ran on.
-- [ ] 1.2 Give the extractor the monster's damage and magic damage and make the formatter print the damage amount in a monster context. Verify with formatter tests for a physical, a magic, a percentage and a zero-damage skill.
-- [ ] 1.3 Extend `website/scripts/gen-skill-effect-parity.ts` with a case per monster skill carrying the monster's stats, regenerate the corpus and make the C# parity test read it. Verify with `pnpm --filter website gen:skill-effect-parity` and `dotnet test tests/PocketCompendium.Tests`.
-- [ ] 1.4 Derive each skill's shape, reach, ground zones, projectile homing and cast bar from the skill data, and the summary's damage types and threats from a monster's skills. Verify with tests on Nyxarion's, Xylevis's and Valaark's skill data.
+- [x] 1.2 Give the extractor the monster's damage and magic damage and make the formatter print the damage amount in a monster context. Verify with formatter tests for a physical, a magic, a percentage and a zero-damage skill.
+- [x] 1.3 Extend `website/scripts/gen-skill-effect-parity.ts` with a case per monster skill carrying the monster's stats, regenerate the corpus and make the C# parity test read it. Verify with `pnpm --filter website gen:skill-effect-parity` and `dotnet test tests/PocketCompendium.Tests`.
+- [x] 1.4 Derive each skill's shape, reach, ground zones, projectile homing and cast bar from the skill data, and the summary's damage types and threats from a monster's skills. Verify with tests on Nyxarion's, Xylevis's and Valaark's skill data.
 
 ## 2. Choices players see
 

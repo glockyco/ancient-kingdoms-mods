@@ -1,13 +1,9 @@
 /**
  * Bakes Pocket Compendium's skill-effect parity corpus.
  *
- * Reuses the building blocks of the website `/skills` overview,
- * `SKILLS_LIST_QUERY`, `skillEffectInputs` and `formatSkillEffect` without a
- * monster context, to emit, per skill, the formatter `input` and its
- * `expected` output. The mod computes summaries at runtime via a C# port of
- * `formatSkillEffect`, and this corpus is the golden oracle its parity test
- * asserts against, so the port cannot silently diverge from the TypeScript
- * source.
+ * Reuses the website's skill inputs and formatter for formula cases and one
+ * resolved case per monster skill. Monster cases carry the caster's exported
+ * combat stats and delivery data for the pure Bestiary model tests.
  *
  * `input` is compacted to only the fields that affect the output (see
  * `compactInput`) and each case is written on its own line, so the committed
@@ -69,10 +65,70 @@ const cases: SkillEffectParityCase[] = ids.map((id, index) => ({
   expected: formatSkillEffect(inputs[index]),
 }));
 
-// Stable, sorted output so the drift guard diffs cleanly.
-cases.sort((a, b) =>
-  a.skill_id < b.skill_id ? -1 : a.skill_id > b.skill_id ? 1 : 0,
+interface MonsterSkillRow {
+  monster_id: string;
+  monster_level: number;
+  damage: number;
+  magic_damage: number;
+  skill_id: string;
+  skill_index: number;
+  runtime_level: number;
+  cast_time: string;
+  cooldown: string;
+  cast_range: string;
+  is_aura: number;
+  area_object_delay_damage: number;
+}
+
+function atRank(json: string, rank: number): number {
+  const curve = JSON.parse(json) as {
+    base_value: number;
+    bonus_per_level: number;
+  };
+  return curve.base_value + curve.bonus_per_level * (rank - 1);
+}
+
+const monsterSkills = query<MonsterSkillRow>(`SELECT
+  ms.monster_id, m.level AS monster_level, m.damage, m.magic_damage,
+  ms.skill_id, ms.skill_index, ms.runtime_level,
+  s.cast_time, s.cooldown, s.cast_range, s.is_aura, s.area_object_delay_damage
+  FROM monster_skills ms
+  JOIN monsters m ON m.id = ms.monster_id
+  JOIN skills s ON s.id = ms.skill_id`);
+const monsterInputs = skillEffectInputs(
+  monsterSkills.map((row) => ({
+    id: row.skill_id,
+    runtimeLevel: row.runtime_level,
+  })),
 );
+for (const [index, row] of monsterSkills.entries()) {
+  const input = monsterInputs[index];
+  const monster = { damage: row.damage, magicDamage: row.magic_damage };
+  cases.push({
+    skill_id: row.skill_id,
+    monster_id: row.monster_id,
+    monster_level: row.monster_level,
+    runtime_level: row.runtime_level,
+    monster,
+    delivery: {
+      skill_index: row.skill_index,
+      cast_time: atRank(row.cast_time, row.runtime_level),
+      cooldown: atRank(row.cooldown, row.runtime_level),
+      cast_range: atRank(row.cast_range, row.runtime_level),
+      is_aura: row.is_aura !== 0,
+      area_object_delay_damage: row.area_object_delay_damage,
+    },
+    input: compactInput(input),
+    expected: formatSkillEffect(input, { monster }),
+  });
+}
+
+// Stable, sorted output so the drift guard diffs cleanly.
+cases.sort((a, b) => {
+  const key = (c: SkillEffectParityCase) =>
+    `${c.skill_id}\\0${c.monster_id ?? ""}\\0${c.delivery?.skill_index ?? -1}`;
+  return key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0;
+});
 
 // One case per line: a valid JSON array whose diff reads as one line per skill.
 const json = `[\n${cases.map((c) => "  " + JSON.stringify(c)).join(",\n")}\n]\n`;
