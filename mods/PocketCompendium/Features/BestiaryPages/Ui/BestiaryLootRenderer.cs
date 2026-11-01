@@ -48,7 +48,7 @@ internal static class BestiaryLootRenderer
             if (rendered >= capacity || rendered >= slots.Count)
                 break;
             // A drop not found yet keeps its chance as the game's black silhouette.
-            RenderSlot(slots[rendered], drop.Item, hidden: !undiscovered && !drop.Found);
+            RenderSlot(slots[rendered], drop.Item, hidden: !undiscovered && !drop.Found, drop.Lines);
             DropMarks.Apply(slots[rendered], drop.Chance, drop.Fatecharm, drop.Armed, drop.Found);
             Shown.Add(slots[rendered]);
             rendered++;
@@ -86,6 +86,8 @@ internal static class BestiaryLootRenderer
         public bool Found;
         // The zone's Fatecharm is in the main inventory, so the chance includes it.
         public bool Armed;
+        // Pocket Compendium's lines under the item tooltip, or null.
+        public string Lines;
     }
 
     private static List<ShownDrop> BuildDisplayItems(Monster monster, bool chances)
@@ -109,6 +111,8 @@ internal static class BestiaryLootRenderer
         var table = DropTableReader.Read(monster);
         var fatecharm = ZoneFatecharm(monster);
         bool armed = fatecharm != null && monster.isBoss && Fatecharm.Carries(Player.localPlayer, fatecharm);
+        int levelCap = Player.localPlayer != null ? Player.localPlayer.level.max : 50;
+        double altarChance = -1;
         var visible = new List<ShownDrop>();
         for (var index = 0; index < items.Count; index++)
         {
@@ -116,7 +120,8 @@ internal static class BestiaryLootRenderer
                 continue;
 
             var shown = new ShownDrop { Item = item, Found = IsFound(monster, item.data.nameItem) };
-            // Altar variants replace the normal reward by condition and are not in the table.
+            var lines = new List<string>();
+            bool altarReward = tableItems < items.Count && items[index].quality == 1 && items[index].TryCast<EquipmentItem>() != null && index < tableItems;
             if (chances && index < tableItems)
             {
                 var id = DropTableReader.Id(items[index]);
@@ -128,13 +133,35 @@ internal static class BestiaryLootRenderer
                 {
                     shown.Fatecharm = fatecharm.image;
                     shown.Armed = armed;
+                    lines.Add(DropTooltipText.Fatecharm(chance, raised, fatecharm.LocalizedName()));
                 }
+
+                int copies = Copies(monster, items[index]);
+                if (copies > 1) lines.Add(DropTooltipText.Copies(copies));
+                if (altarReward) altarChance = chance;
+            }
+            else if (chances && altarChance >= 0)
+            {
+                // An altar variant replaces the normal reward, so it has the reward's chance.
+                shown.Chance = DropChanceText.Percent(altarChance);
             }
 
+            if (tableItems < items.Count && (altarReward || index >= tableItems))
+                lines.Add(DropTooltipText.Altar((DropTooltipText.AltarTier)System.Math.Clamp(items[index].quality - 1, 0, 3), levelCap));
+
+            shown.Lines = lines.Count > 0 ? string.Join("\n", lines) : null;
             visible.Add(shown);
         }
 
         return visible;
+    }
+
+    private static int Copies(Monster monster, ScriptableItem item)
+    {
+        int copies = 0;
+        foreach (var drop in monster.dropChances)
+            if (drop?.item != null && drop.item.name == item.name) copies++;
+        return copies;
     }
 
     // A page shows the monster's prefab, whose zone is not always set, so the zone comes from the
@@ -267,7 +294,7 @@ internal static class BestiaryLootRenderer
     private static GridLayoutGroup Grid(UIBestiaryDetail detail) =>
         detail?.loot0 != null ? detail.loot0.transform.parent.GetComponent<GridLayoutGroup>() : null;
 
-    private static void RenderSlot(UIBestiaryLoot slot, Item item, bool hidden)
+    private static void RenderSlot(UIBestiaryLoot slot, Item item, bool hidden, string lines)
     {
         if (slot == null)
             return;
@@ -289,7 +316,11 @@ internal static class BestiaryLootRenderer
             slot.tooltip.enabled = !hidden;
             // Same text as the game's page shows for a discovered drop.
             var durability = "<color=#DA4ADC>" + GameText.FullDurability() + "</color>";
-            slot.tooltip.text = hidden ? string.Empty : (item.ToolTip(false, true) ?? string.Empty).Replace(DurabilityToken, durability);
+            string text = (item.ToolTip(false, true) ?? string.Empty).Replace(DurabilityToken, durability);
+            // The game's tooltip moves its item level and price into a footer and drops empty
+            // lines around them, so a no-break space keeps one blank line above and below.
+            if (lines != null) text = text.TrimEnd() + "\n\u00A0\n<color=#F1D65A>" + Wrapping.KeepLastWordsTogether(lines) + "</color>\n\u00A0";
+            slot.tooltip.text = hidden ? string.Empty : text;
         }
     }
 
