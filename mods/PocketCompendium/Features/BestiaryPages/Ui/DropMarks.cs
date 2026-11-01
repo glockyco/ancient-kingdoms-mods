@@ -7,8 +7,9 @@ namespace PocketCompendium.Features.BestiaryPages.Ui;
 
 /// <summary>
 /// The marks on a Bestiary drop slot, as chosen on Verdant Glacius: the chance per kill along the
-/// bottom, the zone's Fatecharm in the top-left corner when it raises the chance, and a gold check
-/// in the top-right corner for a drop this character has found.
+/// bottom, the zone's Fatecharm in the top-left corner when it raises the chance, lit while the
+/// charm is in the main inventory and the chance includes it, and a gold check in the top-right
+/// corner for a drop this character has found.
 /// </summary>
 internal static class DropMarks
 {
@@ -17,7 +18,9 @@ internal static class DropMarks
     private const string Fatecharm = "PC_Fatecharm";
     private const string Found = "PC_Found";
 
-    public static void Apply(UIBestiaryLoot slot, string chance, Sprite fatecharm, bool found)
+    private static readonly Color Dimmed = new(0.55f, 0.55f, 0.55f, 0.7f);
+
+    public static void Apply(UIBestiaryLoot slot, string chance, Sprite fatecharm, bool armed, bool found)
     {
         var parent = slot.transform;
 
@@ -55,6 +58,7 @@ internal static class DropMarks
             var image = fate.GetComponent<Image>();
             image.sprite = fatecharm;
             image.enabled = true;
+            image.color = armed ? Color.white : Dimmed;
         }
 
         var check = Ensure(parent, Found, () =>
@@ -78,7 +82,7 @@ internal static class DropMarks
         }
     }
 
-    public static void Clear(UIBestiaryLoot slot) => Apply(slot, null, null, false);
+    public static void Clear(UIBestiaryLoot slot) => Apply(slot, null, null, false, false);
 
     private static GameObject Ensure(Transform parent, string name, System.Func<GameObject> create)
     {

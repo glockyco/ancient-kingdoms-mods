@@ -26,10 +26,12 @@ internal static class BestiaryLootRenderer
     internal static void Reveal(UIBestiaryDetail detail, Monster monster)
     {
         // Item tooltips depend on the monster, the language, and the player's level and class
-        // (requirement colors), so the slots are rebuilt only when one of those changes.
+        // (requirement colors), and the chances on the Fatecharms in the main inventory, so the
+        // slots are rebuilt only when one of those changes.
         var player = Player.localPlayer;
         var key = EntityNameLocalization.LocaleCode + "|" +
-                  (player != null ? player.level.current + "|" + player.className : "-");
+                  (player != null ? player.level.current + "|" + player.className : "-") + "|" +
+                  CarriedFatecharms(player);
         if (monster == _renderedMonster && key == _renderedFor)
             return;
 
@@ -44,7 +46,7 @@ internal static class BestiaryLootRenderer
             if (rendered >= capacity || rendered >= slots.Count)
                 break;
             RenderSlot(slots[rendered], drop.Item);
-            DropMarks.Apply(slots[rendered], drop.Chance, drop.Fatecharm, drop.Found);
+            DropMarks.Apply(slots[rendered], drop.Chance, drop.Fatecharm, drop.Armed, drop.Found);
             Shown.Add(slots[rendered]);
             rendered++;
         }
@@ -79,6 +81,8 @@ internal static class BestiaryLootRenderer
         public string Chance;
         public Sprite Fatecharm;
         public bool Found;
+        // The zone's Fatecharm is in the main inventory, so the chance includes it.
+        public bool Armed;
     }
 
     private static List<ShownDrop> BuildDisplayItems(Monster monster)
@@ -100,6 +104,8 @@ internal static class BestiaryLootRenderer
 
         var table = DropTableReader.Read(monster);
         var fatecharm = ZoneFatecharm(monster);
+        // Source: Monster.cs:3062-3098. A boss kill uses the zone's Fatecharm from the main inventory.
+        bool armed = fatecharm != null && monster.isBoss && Carries(Player.localPlayer, fatecharm);
         var visible = new List<ShownDrop>();
         for (var index = 0; index < items.Count; index++)
         {
@@ -113,9 +119,13 @@ internal static class BestiaryLootRenderer
                 var id = DropTableReader.Id(items[index]);
                 var needed = new HashSet<string> { id };
                 double chance = DropChanceCalculator.Calculate(table, id, monster.isBoss, false, needed);
-                shown.Chance = DropChanceText.Percent(chance);
-                if (fatecharm != null && monster.isBoss && DropChanceCalculator.Calculate(table, id, true, true, needed) > chance + 1e-9)
+                double raised = fatecharm != null && monster.isBoss ? DropChanceCalculator.Calculate(table, id, true, true, needed) : chance;
+                shown.Chance = DropChanceText.Percent(armed ? raised : chance);
+                if (raised > chance + 1e-9)
+                {
                     shown.Fatecharm = fatecharm.image;
+                    shown.Armed = armed;
+                }
             }
 
             visible.Add(shown);
@@ -132,6 +142,33 @@ internal static class BestiaryLootRenderer
         var tracked = Core.Tracking.Tracker.Current?.Find(monster.name);
         int zone = tracked != null ? tracked.Zone : monster.idZone;
         return tokens != null && tokens.TryGetValue(zone, out var token) ? token : null;
+    }
+
+    // The main inventory is the first 24 slots. A Fatecharm in the backpack is kept.
+    private const int MainInventorySlots = 24;
+
+    private static bool Carries(Player player, ScriptableItem fatecharm)
+    {
+        if (player == null || player.inventory == null) return false;
+        var slots = player.inventory.slots;
+        for (var i = 0; i < MainInventorySlots && i < slots.Count; i++)
+        {
+            var slot = slots[i];
+            if (slot.amount > 0 && slot.item.data != null && slot.item.data.nameItem == fatecharm.nameItem)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static string CarriedFatecharms(Player player)
+    {
+        var tokens = GameManager.singleton != null ? GameManager.singleton.luckTokensDict : null;
+        if (player == null || tokens == null) return string.Empty;
+        var carried = new System.Text.StringBuilder();
+        foreach (var token in tokens.Values)
+            if (token != null && Carries(player, token)) carried.Append(token.nameItem).Append(',');
+        return carried.ToString();
     }
 
     // Source: UIBestiaryDetail.cs:153. The game's record of this character's found drops.
