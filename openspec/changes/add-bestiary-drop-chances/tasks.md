@@ -4,7 +4,7 @@
 
 - [x] 1.1 Port the website's boss calculation and its independent-roll formula to pure C# with tests for a guaranteed piece, a Fatecharm, a repeated item, a random item and a quest-flagged item. Verify with `dotnet test tests/PocketCompendium.Tests`.
 - [x] 1.2 Add a script beside `gen-skill-effect-parity.ts` that writes a case for every drop of every Bestiary monster from the website's code, and a C# test that reads it. Verify with the script and `dotnet test tests/PocketCompendium.Tests`.
-- [x] 1.3 Build the inputs from the game's monster objects and compare them through HotRepl with the export for every monster with a drop table. Verify that the comparison lists no difference, or that each difference is explained in the change folder. Compared on 2026-11-01 in game 0.10.1.4: all 143 exported monsters with a drop table match in boss flag, entry order, item, probability, equipment and quest flags and random outcomes. Herald of War has an empty table in both.
+- [x] 1.3 Build the inputs from the game's monster objects and compare them through HotRepl with the export for every monster with a drop table. Verify that the comparison lists no difference, or that each difference is explained in the change folder. Compared on 2026-11-01 in game 0.10.2.0: all 143 exported monsters with a drop table match in boss flag, entry order, item, probability, equipment and quest flags and random outcomes. Herald of War has an empty table in both.
 
 ## 2. Observed in game
 
@@ -14,7 +14,7 @@
 ## 3. Choices players see
 
 - [x] 3.1 Choose the chance's look and rounding, the Fatecharm mark and the found mark through a comparison (compare-options). Decided on 2026-11-01 on Verdant Glacius: the chance with one decimal along the bottom of the slot, the zone's Fatecharm icon in the top-left corner, and a gold check in the top-right corner for found drops. The smallest slots of a 17-drop page are checked in task 4.1.
-- [ ] 3.2 Choose the tooltip lines, including whether the player's own Hunting bonus shows, and the altar variants' conditions through a comparison. Verify that the answer is recorded.
+- [ ] 3.2 Choose the tooltip lines and the altar variants' conditions through a comparison. Verify that the answer is recorded. The player's Hunting bonus needs no line: it applies only to hunt monsters (`Monster.cs:3131`), and no boss, elite or fabled monster is one.
 
 ## 4. Pages
 

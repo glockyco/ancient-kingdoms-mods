@@ -1,6 +1,6 @@
 # Observations
 
-Observed on 2026-11-01 in game 0.10.1.4, Steam build 26318331, in a single player world on the scratch database. The character stood next to each boss until it had aggro, and the boss's health was then set to zero so it died at once. The corpse's inventory was cleared before each kill, so every corpse read is that kill's own roll.
+Observed on 2026-11-01 in game 0.10.2.0, Steam build 26359493, in a single player world on the scratch database. The character stood next to each boss until it had aggro, and the boss's health was then set to zero so it died at once. The corpse's inventory was cleared before each kill, so every corpse read is that kill's own roll.
 
 ## A boss's corpse holds an equipment piece
 
