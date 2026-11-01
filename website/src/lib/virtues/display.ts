@@ -13,6 +13,8 @@ import {
 
 export interface VirtueTone {
   ring: string;
+  /** The border an unchosen tile takes on hover. */
+  hover: string;
   text: string;
   soft: string;
 }
@@ -20,31 +22,37 @@ export interface VirtueTone {
 export const VIRTUE_TONES: Record<VirtueId, VirtueTone> = {
   compassion: {
     ring: "ring-rose-500/60",
+    hover: "hover:border-rose-500/60",
     text: "text-rose-400",
     soft: "bg-rose-500/10",
   },
   honor: {
     ring: "ring-amber-500/60",
+    hover: "hover:border-amber-500/60",
     text: "text-amber-400",
     soft: "bg-amber-500/10",
   },
   sacrifice: {
     ring: "ring-red-500/60",
+    hover: "hover:border-red-500/60",
     text: "text-red-400",
     soft: "bg-red-500/10",
   },
   humility: {
     ring: "ring-sky-500/60",
+    hover: "hover:border-sky-500/60",
     text: "text-sky-400",
     soft: "bg-sky-500/10",
   },
   honesty: {
     ring: "ring-violet-500/60",
+    hover: "hover:border-violet-500/60",
     text: "text-violet-400",
     soft: "bg-violet-500/10",
   },
   valor: {
     ring: "ring-orange-500/60",
+    hover: "hover:border-orange-500/60",
     text: "text-orange-400",
     soft: "bg-orange-500/10",
   },

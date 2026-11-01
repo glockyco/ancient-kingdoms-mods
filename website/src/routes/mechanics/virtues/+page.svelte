@@ -535,10 +535,10 @@
           type="button"
           aria-pressed={selected === virtue.id}
           onclick={() => choose(virtue.id)}
-          class="flex flex-col items-center gap-2 rounded-lg border p-2.5 text-center transition-colors hover:bg-muted/50 sm:flex-row sm:items-start sm:gap-3 sm:p-3 sm:text-left {selected ===
+          class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border p-2.5 text-center transition-colors hover:bg-muted/50 sm:flex-row sm:items-start sm:gap-3 sm:p-3 sm:text-left {selected ===
           virtue.id
             ? `bg-muted/60 ring-2 ${VIRTUE_TONES[virtue.id].ring}`
-            : 'bg-card'}"
+            : `bg-card ${VIRTUE_TONES[virtue.id].hover}`}"
         >
           {@render virtueIcon(virtue.id, "size-12")}
           <span class="min-w-0">
