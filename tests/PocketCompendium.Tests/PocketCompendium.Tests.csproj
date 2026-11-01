@@ -33,6 +33,7 @@
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\StateText.cs" Link="Sources\Tracking\StateText.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BossList\Model\ListModel.cs" Link="Sources\BossList\ListModel.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\Sharing\SharingProtocol.cs" Link="Sources\Sharing\SharingProtocol.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Core\Feedback\ProblemReport.cs" Link="Sources\Core\ProblemReport.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BossSkills\Model\GateStatus.cs" Link="Sources\BossSkills\GateStatus.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BossSkills\Model\Tuning.cs" Link="Sources\BossSkills\Tuning.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BossSkills\Model\CooldownMath.cs" Link="Sources\BossSkills\CooldownMath.cs" />

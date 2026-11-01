@@ -2,7 +2,7 @@
 
 ## 1. Details and link
 
-- [ ] 1.1 Add a pure details builder and link builder in `mods/PocketCompendium/Core`, compiled into the test project, with tests for the field order, the absence of addresses, names and paths, the URL encoding, and the length cap that shortens error lines first. Verify with `dotnet test tests/PocketCompendium.Tests`.
+- [x] 1.1 Add a pure details builder and link builder in `mods/PocketCompendium/Core`, compiled into the test project, with tests for the field order, the absence of addresses, names and paths, the URL encoding, and the length cap that shortens error lines first. Verify with `dotnet test tests/PocketCompendium.Tests`.
 - [ ] 1.2 Read the setup in game: versions, the system through the Wine exports, the language, alone, hosting or joined, the loaded mods and plugins, and the switched-off and stopped features. Verify by printing the details through HotRepl in single player, on a LAN host and on its client.
 
 ## 2. Forms
