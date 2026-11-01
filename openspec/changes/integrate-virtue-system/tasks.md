@@ -49,8 +49,8 @@
 
 ## 9. Publication
 
-- [ ] 9.1 Regenerate the home counts, commit the redaction ledger, and set `COMPENDIUM_VERSION` to 0.10.2.1. Verify that `citations check`, `redactions check` and the guide coverage test pass.
-- [ ] 9.2 Run the release checks in `CONTRIBUTING.md` and look at the built site in a browser: the Virtues page, the map shrines, a Blessing page, the home banner and the changed mechanics pages. Verify that every check passes and no claim recorded in the citation reconciliation is still false.
+- [x] 9.1 Regenerate the home counts, commit the redaction ledger, and set `COMPENDIUM_VERSION` to 0.10.2.1. Verify that `citations check`, `redactions check` and the guide coverage test pass.
+- [x] 9.2 Run the release checks in `CONTRIBUTING.md` and look at the built site in a browser: the Virtues page, the map shrines, a Blessing page, the home banner and the changed mechanics pages. Verify that every check passes and no claim recorded in the citation reconciliation is still false.
 
 ## Workflow follow-up
 
