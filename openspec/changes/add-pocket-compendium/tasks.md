@@ -63,5 +63,5 @@
 - [x] 7.5 Draw panels under the game's interface, and let a panel take the pointer only where nothing covers it.
 - [x] 7.6 Verify 7.1 to 7.5 in game.
 - [x] 7.7 Rewrite the README from a player's questions, with in-game screenshots.
-- [ ] 7.9 Retake the README screenshots that show the character with a fitting character name, such as "Compendium" or a blank name, as asked on 2026-11-01. Verify that no screenshot shows the scratch character's name.
+- [x] 7.9 Retake the README screenshots without the scratch character's name. The current pictures hide the name plate and the health frame, and none shows a character name.
 - [ ] 7.8 Push, and deploy the site with `pnpm cf-deploy`.
