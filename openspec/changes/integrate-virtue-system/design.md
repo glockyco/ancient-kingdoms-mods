@@ -23,8 +23,7 @@ Another session works on Pocket Compendium in the same checkout and uses the gam
 
 **Non-Goals:**
 
-- Item pages do not state what an item is worth as a Sacrifice offering.
-- No per-dungeon escort statistics. The Compassion section states the rule that sets them.
+- No escort position on the map: the game places the stranded adventurer at a random safe point in the dungeon.
 - Lost belongings stay unpublished, as every item the game keeps out of the journal does.
 - Pocket Compendium shows no virtue information.
 
@@ -54,15 +53,23 @@ The pipeline loads `virtues`, `virtue_ranks` and `virtue_shrines`. Shrine positi
 
 ### 5. The Virtues page reads shared data and the rules module
 
-`/mechanics/virtues` has the sections `shrines`, `ranks-and-titles`, `compassion`, `honor`, `sacrifice`, `humility`, `honesty` and `valor`, and `coverage.ts` maps the eight Virtues guide articles to them. The page loads the virtues, ranks, shrines with their zones and map links, the Blessing skills and the dungeon elites and bosses with their spawn levels. The Valor list filters them with the rules module's eligibility for the remembered `level` input. The Sacrifice calculator takes gold and up to three item levels.
+`/mechanics/virtues` opens with one sentence and four facts about blessings, then the six virtues as tiles with the game's blessing icons that work as tabs, with the chosen virtue below. A virtue shows a card per shrine with a map of its surroundings and a link to the live map, a card per way to earn points with numbered steps, notes and the points, a box of rules for the whole virtue where it has them, and a row of six rank cards with title, effect and points. Valor adds its quarries as portrait cards for a level the reader enters on the page, and Compassion lists each dungeon's stranded adventurer with level and Health. The Sacrifice calculator takes gold and up to three item levels. The hash names the virtue, so `#valor` opens the Valor tab, and `#shrines` and `#ranks-and-titles` lead to the facts and the rank cards. `coverage.ts` maps the eight Virtues guide articles to these anchors.
+
+The shrine maps are 240 by 135 yd crops of the stitched world screenshot, written by the pipeline with the zone thumbnails' crop function, so they are north-up and blank redacted zones like the map tiles. Hand-laid tiles are stored flipped for the map renderer and drew upside down.
+
+### 5a. Other pages show what a virtue gives there
+
+A monster page shows "Honor" with its points among the combat stats, computed by the rules module from the spawn's level and Health with no level bonus, the label linking to the Honor section. An equipment page shows "Sacrifice Value" in points for items an offering takes. A dungeon page shows a Stranded Adventurer section with where the adventurer appears, their level and Health, and the escort rules. The level and Health follow `VirtueEscortStats.TryForDungeon`: the median level and the median Health ×1.5 of the dungeon's ordinary monsters, which the website computes from the database.
+
+The shrine marker is the temple glyph in pink, a color no marker that is on by default uses, and the group is on by default. Its popup shows the zone and the blessing's strongest effect, and "View Details" opens the virtue's tab.
 
 ### 6. Blessing skill pages render the rank table
 
 A Blessing skill page shows a "Granted by" card, like a season's Double XP buff: the shrine, the three hours online, and a table of rank, points, title and effect from the export, with a link to the virtue's section. It hides the skill rank and the link about learning ranks. `formatSkillEffect` gains one summary per Blessing in its fixed table, without numbers, because the numbers live in the rank table. The Pocket Compendium port gains the same entries, and the parity corpus is regenerated.
 
-### 7. Pages name a blessing through one helper, and calculators take one shared input
+### 7. Pages name a blessing through one helper, and calculators offer it on their own page
 
-A helper returns a virtue's name and section link, so every page names a blessing the same way. Two remembered inputs, the active blessing and its rank, default to none. The reputation calculations and the calculations of healing the reader receives apply them through the rules module. Calculators that read Armor Class, resistances, maximum Health, Accuracy or Critical Resist take no virtue input, because the character window already shows those values with the blessing. Valor is named in text only, because calculators do not model the target and Valor applies only against elites and bosses.
+A helper returns a virtue's name and section link, so every page names a blessing the same way. A calculation that a blessing changes offers that blessing and its rank as a choice under its "Use your numbers", closed until opened and kept on that page only, because inputs shared across pages were not wanted. The reputation calculations apply Honesty this way. Heal on hit and lifetap have worked examples and no calculator, so they name Compassion in a sentence. Calculators that read Armor Class, resistances, maximum Health, Accuracy or Critical Resist take no virtue input, because the character window already shows those values with the blessing. Valor is named in text only, because calculators do not model the target and Valor applies only against elites and bosses.
 
 ### 8. Behaviour is observed before the copy ships
 

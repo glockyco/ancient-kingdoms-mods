@@ -42,7 +42,7 @@ Each virtue section SHALL state the actions that earn its points, the points eac
 
 ### Requirement: The Valor section lists possible quarries
 
-The Valor section SHALL list the elites and bosses a shrine can name for a character of the reader's level, from shared data, and SHALL recompute the list when the reader changes the level.
+The Valor section SHALL list the elites and bosses a shrine can name for a character of the level the reader enters on the page, from shared data, and SHALL recompute the list when the reader changes the level.
 
 #### Scenario: A level 40 character
 
@@ -60,7 +60,7 @@ The Sacrifice section SHALL compute the points an offering gives from the gold a
 
 ### Requirement: Shrines appear on the map
 
-Each exported shrine SHALL appear on the map in a shrine marker group with its own control. Its tooltip and popup SHALL name the shrine's virtue, and the popup SHALL link to that virtue's section of the Virtues page. Map search and site search SHALL find each shrine by its name.
+Each exported shrine SHALL appear on the map in a shrine marker group with its own control, shown by default. Its tooltip and popup SHALL name the shrine, the popup SHALL state the blessing's strongest effect, and the popup's details link SHALL open that virtue's section of the Virtues page. Map search and site search SHALL find each shrine by its name.
 
 #### Scenario: A player looks for the Shrine of Valor
 
@@ -91,19 +91,38 @@ Every page that states a number or formula that an active blessing changes SHALL
 - **WHEN** a monster page states the faction standing a kill gives
 - **THEN** it names Honesty as raising positive gains
 
-### Requirement: Calculators apply an active blessing that no input already holds
+### Requirement: Calculators offer an active blessing on their own page
 
-A calculator whose result an active blessing changes SHALL offer the active blessing and its rank as inputs, defaulting to none, unless its inputs already include the blessing's effect through a value the character window shows. These inputs SHALL persist across pages like the other character inputs.
+A calculator whose result an active blessing changes SHALL offer that blessing and its rank under its "Use your numbers", defaulting to none and closed until opened, unless its inputs already include the blessing's effect through a value the character window shows. The choice SHALL apply to that page only.
 
 #### Scenario: A reputation calculation with Honesty
 
-- **WHEN** the reader sets Honesty at rank 3 as the active blessing
-- **THEN** each faction gain the calculator shows is raised and rounded as the game does
+- **WHEN** the reader chooses Honesty at rank 3 in a reputation calculation
+- **THEN** each faction gain the calculation shows is raised and rounded as the game does
 
 #### Scenario: A calculator that reads Armor Class
 
 - **WHEN** a calculator takes Armor Class as the character window shows it
 - **THEN** it offers no Humility input, because that value already includes the blessing
+
+### Requirement: Monster, equipment and dungeon pages show what a virtue gives there
+
+A monster page SHALL show the Honor points a fight against it gives without a level bonus, from its level and Health. An equipment page SHALL show the Sacrifice points the item adds to an offering when a shrine accepts it. A dungeon page SHALL show where its stranded adventurer appears, their level and Health as the game computes them for that dungeon, and the escort rules. Each SHALL link to the virtue's section.
+
+#### Scenario: Troll King Grimlok
+
+- **WHEN** a player opens Troll King Grimlok, a level 38 boss with 30,000 Health
+- **THEN** its combat stats show "Honor: 30 points"
+
+#### Scenario: A Common item
+
+- **WHEN** a player opens an equipment page of a Common item
+- **THEN** the page shows no Sacrifice value, because a shrine does not accept it
+
+#### Scenario: Trolls Cave
+
+- **WHEN** a player opens the Trolls Cave page
+- **THEN** it states that the adventurer there is level 31 with 6,030 Health
 
 ### Requirement: The Compassion Escort is not published as an NPC
 
