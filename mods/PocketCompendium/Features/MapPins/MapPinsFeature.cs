@@ -67,7 +67,8 @@ public sealed class MapPinsFeature : Feature
         {
             if (monster.Zone != player.idZone) continue;
 
-            Vector3 viewport = camera.WorldToViewportPoint(new Vector3(monster.Where.x, monster.Where.y, 0f));
+            var position = monster.Position;
+            Vector3 viewport = camera.WorldToViewportPoint(new Vector3(position.x, position.y, 0f));
             if (viewport.z < 0f || viewport.x < 0f || viewport.x > 1f || viewport.y < 0f || viewport.y > 1f) continue;
 
             if (!_pins.TryGetValue(monster.Key, out var pin))
