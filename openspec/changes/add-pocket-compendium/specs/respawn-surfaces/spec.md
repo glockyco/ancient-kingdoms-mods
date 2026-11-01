@@ -41,6 +41,15 @@ A monster that spawns by chance SHALL show its chance after the level in its lis
 - **WHEN** the player opens Forsaken Skeleton's page with 15:33 to its next roll
 - **THEN** the page shows "75% chance in 15:33"
 
+### Requirement: A day or night monster shows its hours
+
+A monster out only by day or by night SHALL show its hours after the level in its list row, in every state, written like the game's clock, such as "Lv 55 · 20:00 to 08:00".
+
+#### Scenario: Spirit of the Forest up at night
+
+- **WHEN** the list shows Spirit of the Forest, out from 20:00 to 08:00
+- **THEN** its row's second line reads "Lv 55 · 20:00 to 08:00"
+
 ### Requirement: Level colours follow the game
 
 The level SHALL use the game's colour for the monster's level minus the player's: gray below -10, green from -10 to -2, white from -1 to 1, yellow from 2 to 4, red from 5 to 10, and red with a skull before the number above 10.

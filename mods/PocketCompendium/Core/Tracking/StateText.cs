@@ -26,6 +26,9 @@ public static class StateText
         return minutes < 60 ? $"{minutes} min" : $"{minutes / 60}h {minutes % 60:00}m";
     }
 
+    /// <summary>The hours a monster is out, written like the game's clock on the minimap: "20:00 to 08:00".</summary>
+    public static string Hours(SpawnRules rules) => $"{rules.WindowStart:00}:00 to {rules.WindowEnd:00}:00";
+
     /// <summary>The compact tile's caption: "4:19", "1h05", "28m".</summary>
     public static string Short(double seconds)
     {

@@ -28,8 +28,8 @@ internal struct RowData
 
 /// <summary>
 /// One monster in the list: portrait, then name over level, then state over distance, then an
-/// arrow to the spawn point. A chance spawn's chance follows the level. The other rules, kill
-/// times and roll results stay in the tooltip.
+/// arrow to the spawn point. A chance spawn's chance and a day or night monster's hours follow
+/// the level. The other rules, kill times and roll results stay in the tooltip.
 /// </summary>
 internal sealed class RowView
 {
@@ -43,7 +43,7 @@ internal sealed class RowView
 
     private static readonly Color ArrowBackground = new(1f, 1f, 1f, 0.05f);
     private static readonly Color ArrowRing = new(1f, 1f, 1f, 0.18f);
-    private static readonly string ChanceColour = "#" + ColorUtility.ToHtmlStringRGB(Theme.Muted);
+    private static readonly string NoteColour = "#" + ColorUtility.ToHtmlStringRGB(Theme.Muted);
 
     // A label shows nothing when its line is taller than its rect, because its overflow mode
     // truncates whole lines. These fit a 14 and a 12 point line of the game's font.
@@ -67,7 +67,7 @@ internal sealed class RowView
     private readonly UIShowToolTip _tooltip;
     private string _tooltipText;
     private int _shownLevel = -1;
-    private int? _shownChance;
+    private SpawnRules _shownRules;
 
     public RowView(Transform parent)
     {
@@ -173,15 +173,19 @@ internal sealed class RowView
             levelLeft += 15f;
         }
 
-        // The text is rebuilt only when it changes, because rows update every frame.
-        int? chance = monster.Rules.Origin == SpawnOrigin.Placed ? monster.Rules.ChancePercent : null;
-        if (monster.Level != _shownLevel || chance != _shownChance)
+        // The text is rebuilt only when it changes, because rows update every frame. A monster's
+        // rules never change, so they key the notes after its level.
+        var rules = monster.Rules;
+        if (monster.Level != _shownLevel || rules != _shownRules)
         {
             _shownLevel = monster.Level;
-            _shownChance = chance;
-            _level.Value = chance is int percent
-                ? "Lv " + monster.Level + "  <color=" + ChanceColour + ">·  " + percent + "% chance</color>"
-                : "Lv " + monster.Level;
+            _shownRules = rules;
+            var text = new System.Text.StringBuilder("Lv ").Append(monster.Level);
+            if (rules.Origin == SpawnOrigin.Placed && rules.ChancePercent is int percent)
+                text.Append("  <color=").Append(NoteColour).Append(">·  ").Append(percent).Append("% chance</color>");
+            if (rules.HasWindow)
+                text.Append("  <color=").Append(NoteColour).Append(">·  ").Append(StateText.Hours(rules)).Append("</color>");
+            _level.Value = text.ToString();
         }
         _level.Color = StateLook.LevelColor(band);
         HudFactory.TopLeft(_level.Rect, levelLeft, BottomLine, textWidth - (levelLeft - TextLeft), BottomHeight);
