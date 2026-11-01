@@ -1,14 +1,13 @@
-# Spec Delta
+# bestiary-drops Specification
 
 ## Purpose
-
 Defines what a Bestiary page shows about each drop beyond the item itself, so a player can choose what to farm: the chance per kill, a Fatecharm's effect on it, and whether the player has found the drop.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Each drop shows its chance per kill
 
-While drop chances are on, each drop on a Bestiary page SHALL show its chance per kill without a Fatecharm. The chance SHALL equal the website's chance per kill for the same monster and item, which counts a boss's guaranteed equipment piece. It SHALL be marked as a chance per kill, because everyone who may loot a corpse shares one roll.
+While drop chances are on, each drop on a Bestiary page SHALL show its chance per kill. The chance SHALL equal the website's chance per kill for the same monster and item, which counts a boss's guaranteed equipment piece. It SHALL be marked as a chance per kill, because everyone who may loot a corpse shares one roll.
 
 #### Scenario: Boss equipment
 
@@ -22,7 +21,12 @@ While drop chances are on, each drop on a Bestiary page SHALL show its chance pe
 
 ### Requirement: A Fatecharm's effect shows on the drops it improves
 
-A drop whose chance per kill the zone's Fatecharm raises SHALL carry that Fatecharm's icon. Its tooltip SHALL give the chance without and with the Fatecharm, name the Fatecharm, and say that a kill uses it up.
+A drop whose chance per kill the zone's Fatecharm raises SHALL carry that Fatecharm's icon. While the Fatecharm is in the player's main inventory, the first 24 slots, the icon SHALL be lit and the slot SHALL show the raised chance. Otherwise the icon SHALL be dimmed and the slot SHALL show the chance without it. Its tooltip SHALL give both chances, name the Fatecharm, and say that a kill uses it up.
+
+#### Scenario: The charm in the main inventory
+
+- **WHEN** the Catacombs Fatecharm is in the player's main inventory and the player opens Captain Aerendyl's page
+- **THEN** his three equipment drops show their raised chances under a lit icon, and a Fatecharm in the backpack shows the chances without it under a dimmed icon
 
 #### Scenario: A dungeon boss
 
@@ -83,3 +87,21 @@ The Bestiary pages settings SHALL have one switch for pages of monsters the play
 
 - **WHEN** the player switches off undiscovered monsters and opens the page of a monster they have not discovered
 - **THEN** the page shows "???" as the game does
+
+### Requirement: Altar rewards say when they drop
+
+A Forgotten Altar elite's page SHALL show each quality of its reward, with the reward's chance per kill, and each one's tooltip SHALL say which level and veteran points of the player who starts the altar give that quality.
+
+#### Scenario: An Epic reward
+
+- **WHEN** the player hovers Vyriss the Withered's Epic Taloncrest Pendant
+- **THEN** the tooltip says it drops only when the player who starts the altar is level 50 with 0 to 99 veteran points
+
+### Requirement: A kill that uses a Fatecharm is announced before it
+
+While a living dungeon boss is the target and its zone's Fatecharm is in the player's main inventory, the game's target frame SHALL show that Fatecharm beside the boss's level, and its hover SHALL say that the kill uses it up and how to keep it. Where the Fatecharm raises none of the boss's drops, the mark SHALL show in red and its hover SHALL say so. The warning SHALL be a feature of its own with its own switch, so it works with the Boss skills panel off.
+
+#### Scenario: A boss the charm does not help
+
+- **WHEN** the player targets Archivist Phaendar with the Archives Fatecharm in the main inventory
+- **THEN** the target frame shows the charm in red, and its hover says the charm raises none of the drops
