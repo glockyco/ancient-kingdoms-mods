@@ -19,8 +19,8 @@
 
 ## 4. Rules module
 
-- [ ] 4.1 Add `website/src/lib/calculation/virtues.ts` with each virtue's per-rank effect, the combat points, Honor's points from `VirtueRules.HonorPoints` and the 0.10.2.1 fight settlement (Health against the level curve, ×2 for elites, ×3 for bosses, less for additional normal foes), Valor eligibility, the Sacrifice item value and offering formula, and the escort's level and Health from `VirtueEscortStats.TryForDungeon`, each with a `Source:` citation, and unit tests for rank 0, rank 5, the level window, an Honor fight with an add, the rounding of an offering and an escort median. Verify that the tests pass and `citations check` passes.
-- [ ] 4.2 Add a database test that compares the module's per-rank percentages and the exported Humility multipliers with the numbers in every exported effect text. Verify that it passes, and fails when one literal is changed.
+- [x] 4.1 Add `website/src/lib/calculation/virtues.ts` with each virtue's per-rank effect, the combat points, Honor's points from `VirtueRules.HonorPoints` and the 0.10.2.1 fight settlement (Health against the level curve, ×2 for elites, ×3 for bosses, less for additional normal foes), Valor eligibility, the Sacrifice item value and offering formula, and the escort's level and Health from `VirtueEscortStats.TryForDungeon`, each with a `Source:` citation, and unit tests for rank 0, rank 5, the level window, an Honor fight with an add, the rounding of an offering and an escort median. Verify that the tests pass and `citations check` passes.
+- [x] 4.2 Add a database test that compares the module's per-rank percentages and the exported Humility multipliers with the numbers in every exported effect text. Verify that it passes, and fails when one literal is changed.
 
 ## 5. Virtues page
 

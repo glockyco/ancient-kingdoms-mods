@@ -3518,6 +3518,12 @@
       "sha256": "1c4104be15264be2613972c6577c07b9ff4b659f74c1fbe9ac819e7e30287523",
       "span": 18
     },
+    "Player.cs:ApplyVirtueFactionGain": {
+      "span": 0
+    },
+    "Player.cs:AssignValorTarget": {
+      "span": 0
+    },
     "Player.cs:CanAttack": {
       "span": 0
     },
@@ -3687,6 +3693,18 @@
       "span": 0
     },
     "Player.cs:UserCode_TargetRpcUpdateKillsBestiary__String": {
+      "span": 0
+    },
+    "Player.cs:VirtueAccuracy": {
+      "span": 0
+    },
+    "Player.cs:VirtueCriticalResist": {
+      "span": 0
+    },
+    "Player.cs:VirtueHealingMultiplier": {
+      "span": 0
+    },
+    "Player.cs:VirtueHealthMultiplier": {
       "span": 0
     },
     "Player.cs:isRadiantAetherActivated": {
@@ -6146,6 +6164,15 @@
     "Utils.cs:worldBosses": {
       "span": 0
     },
+    "VirtueCombat.cs:ApplyValor": {
+      "span": 0
+    },
+    "VirtueCombat.cs:OnDeath": {
+      "span": 0
+    },
+    "VirtueCombat.cs:SettleHonorIfFinished": {
+      "span": 0
+    },
     "VirtueEncounters.cs:EscortPoints": {
       "span": 0
     },
@@ -6155,7 +6182,31 @@
     "VirtueEncounters.cs:ReturnPoints": {
       "span": 0
     },
+    "VirtueEscortStats.cs:TryForDungeon": {
+      "span": 0
+    },
+    "VirtueRules.cs:CombatPoints": {
+      "span": 0
+    },
+    "VirtueRules.cs:GoldPerPoint": {
+      "span": 0
+    },
+    "VirtueRules.cs:HonorPoints": {
+      "span": 0
+    },
     "VirtueRules.cs:HumilityMultiplier": {
+      "span": 0
+    },
+    "VirtueRules.cs:IsEligibleMonster": {
+      "span": 0
+    },
+    "VirtueRules.cs:SacrificeItemLevel": {
+      "span": 0
+    },
+    "VirtueRules.cs:SacrificeItemLevelPerPoint": {
+      "span": 0
+    },
+    "VirtueRules.cs:SacrificeOfferingPoints": {
       "span": 0
     },
     "VirtueRules.cs:Thresholds": {
