@@ -44,6 +44,6 @@
 
 ## 6. Release
 
-- [ ] 6.1 Remove `mods/BossTracker`, `mods/BossSkillTracker` and `mods/BetterBestiary` and their download entries.
-- [ ] 6.2 Write `mods/PocketCompendium/README.md` and update the download tables in `README.md` and `mods/README.md`, each warning players to remove BossTracker.dll, BossSkillTracker.dll and BetterBestiary.dll first.
-- [ ] 6.3 Run the build-tool checks and the test suites, and build the downloads with `build-tool publish-mods`. Deploying the site stays a separate step.
+- [x] 6.1 Remove `mods/BossTracker`, `mods/BossSkillTracker` and `mods/BetterBestiary` and their download entries.
+- [x] 6.2 Write `mods/PocketCompendium/README.md` and update the download tables in `README.md` and `mods/README.md`, each warning players to remove BossTracker.dll, BossSkillTracker.dll and BetterBestiary.dll first.
+- [x] 6.3 Run the build-tool checks and the test suites, and build the downloads with `build-tool publish-mods`. Deploying the site stays a separate step.

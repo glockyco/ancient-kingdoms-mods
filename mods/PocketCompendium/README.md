@@ -6,7 +6,7 @@ Pocket Compendium is an unofficial MelonLoader mod for Ancient Kingdoms players.
 
 ## Setup
 
-Install MelonLoader as [Mods for players](../../README.md#mods-for-players) describes. Remove BossSkillTracker.dll and BetterBestiary.dll from the game's `Mods` folder if they are there, because Pocket Compendium replaces them. Then put PocketCompendium.dll in the `Mods` folder.
+Install MelonLoader as [Mods for players](../../README.md#mods-for-players) describes. Remove BossTracker.dll, BossSkillTracker.dll, and BetterBestiary.dll from the game's `Mods` folder if they are there, because Pocket Compendium replaces them. Then put PocketCompendium.dll in the `Mods` folder.
 
 ## Use
 

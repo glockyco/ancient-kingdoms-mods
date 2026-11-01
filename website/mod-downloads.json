@@ -11,13 +11,7 @@
       "id": "pocket-compendium",
       "project": "PocketCompendium",
       "name": "Pocket Compendium",
-      "description": "Shows boss, elite, and fabled skill cooldowns and every monster's full Bestiary page, each feature with its own switch."
-    },
-    {
-      "id": "boss-tracker",
-      "project": "BossTracker",
-      "name": "Boss Tracker",
-      "description": "Shows nearby bosses, elites, and fabled monsters with their status, direction, distance, and respawn time."
+      "description": "Shows when every boss, elite, and fabled monster spawns, the skill cooldowns of the ones you fight, and every monster's full Bestiary page, each feature with its own switch."
     }
   ]
 }

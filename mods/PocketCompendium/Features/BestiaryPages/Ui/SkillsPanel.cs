@@ -8,9 +8,7 @@ namespace PocketCompendium.Features.BestiaryPages.Ui;
 
 /// <summary>
 /// The Skills side panel: a native uGUI window docked beside the Bestiary
-/// window. Built at runtime with the same `new GameObject` + AddComponent idiom
-/// proven in BossTracker. Layout constants are initial values tuned during the
-/// in-game pass.
+/// window, built at runtime from `new GameObject` and AddComponent.
 /// </summary>
 internal sealed class SkillsPanel
 {

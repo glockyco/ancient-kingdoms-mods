@@ -27,8 +27,7 @@ You need Ancient Kingdoms and MelonLoader. The latest official MelonLoader (0.7.
 | Mod | What it does | Download |
 | --- | --- | --- |
 | [FieldDefaultValueHookFix](mods/FieldDefaultValueHookFix/README.md) | Prevents a crash on world entry under MelonLoader. The fixed MelonLoader already includes it. | [DLL](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll) |
-| [PocketCompendium](mods/PocketCompendium/README.md) | Shows the ability cooldowns of the bosses, elites, and fabled monsters you fight, and every monster's full Bestiary page. Remove BossSkillTracker.dll and BetterBestiary.dll from `Mods` first, because it replaces them. | [DLL](https://ancient-kingdoms.compendiums.org/mods/PocketCompendium.dll) |
-| [BossTracker](mods/BossTracker/README.md) | Lists nearby bosses, elites, and fabled monsters with their status, distance, direction, and respawn time. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BossTracker.dll) |
+| [PocketCompendium](mods/PocketCompendium/README.md) | Shows when every boss, elite, and fabled monster spawns, the ability cooldowns of the ones you fight, and every monster's full Bestiary page. Remove BossTracker.dll, BossSkillTracker.dll, and BetterBestiary.dll from `Mods` first, because it replaces them. | [DLL](https://ancient-kingdoms.compendiums.org/mods/PocketCompendium.dll) |
 
 Click a mod for its controls and settings. The [mod catalogue](mods/README.md) also lists the mods behind the tooling.
 
