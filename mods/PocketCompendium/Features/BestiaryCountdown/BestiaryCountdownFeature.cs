@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Il2Cpp;
 using PocketCompendium.Core.Features;
+using PocketCompendium.Core.Settings;
 using PocketCompendium.Core.Tracking;
 using PocketCompendium.Core.Ui;
 using UnityEngine;
@@ -18,11 +19,21 @@ public sealed class BestiaryCountdownFeature : Feature
     private readonly Dictionary<int, SlotOverlay> _slots = new();
     private RespawnPlate _plate;
     private int _version = -1;
+    private bool _gridShown;
+    private bool _pageShown;
 
     public BestiaryCountdownFeature()
         : base("BestiaryCountdown", "Bestiary countdown", "Shows respawn timers for dead monsters in the Bestiary, on the grid and on their pages.")
     {
+        Grid = Settings.Toggle("Grid", true, "Sidebar", "The time on each dead monster's portrait in the list on the left.");
+        Page = Settings.Toggle("Page", true, "Page", "The time on the page of the monster you open.");
     }
+
+    /// <summary>Whether the grid of portraits beside the page counts down.</summary>
+    public ToggleSetting Grid { get; }
+
+    /// <summary>Whether the open monster's page counts down.</summary>
+    public ToggleSetting Page { get; }
 
     public override Sprite Icon => Icons.Timer;
 
@@ -51,10 +62,18 @@ public sealed class BestiaryCountdownFeature : Feature
             return;
         }
 
-        bool refresh = tracker.Version != _version;
+        // A switch turned back on redraws its countdowns at once instead of at the next tracker change.
+        bool grid = Grid.Value, page = Page.Value;
+        bool refresh = tracker.Version != _version || grid != _gridShown || page != _pageShown;
         _version = tracker.Version;
-        UpdateGrid(tracker, journal, refresh);
-        UpdatePage(tracker, detail, refresh);
+        _gridShown = grid;
+        _pageShown = page;
+
+        if (grid) UpdateGrid(tracker, journal, refresh);
+        else foreach (var slot in _slots.Values) slot.Hide();
+
+        if (page) UpdatePage(tracker, detail, refresh);
+        else _plate?.SetActive(false);
     }
 
     // The grid's slots follow the Bestiary's list one to one.
@@ -145,6 +164,11 @@ internal sealed class SlotOverlay
 
         _sweep.Set(StateText.Remaining(state, monster.Rules, now));
         _time.Value = StateText.Caption(state, now);
+    }
+
+    public void Hide()
+    {
+        if (_root.gameObject.activeSelf) _root.gameObject.SetActive(false);
     }
 
     public void Destroy()
