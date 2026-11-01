@@ -147,9 +147,6 @@ internal sealed class MonsterSkillSummary
             AddDamage(damageTypes, effect.damage_type, skill.Damage ?? 0);
             AddDamage(damageTypes, effect.damage_over_time_type, DamagePerSecond(effect));
             AddDamage(damageTypes, effect.damage_shield_type, effect.damage_shield?.base_value ?? 0);
-
-            // The basic attack's small stun chances would put stuns on almost every monster.
-            if (skill.Delivery.skill_index == 0) continue;
             if (skill.IsSpecial)
             {
                 if (skill.Shape is SkillShape.AroundCaster or SkillShape.GroundZones && ((skill.Damage ?? 0) > 0 || DamagePerSecond(effect) > 0))

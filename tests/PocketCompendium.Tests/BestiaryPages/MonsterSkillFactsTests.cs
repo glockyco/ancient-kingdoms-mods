@@ -120,8 +120,8 @@ public class MonsterSkillFactsTests
         var summary = new MonsterSkillSummary(skills);
         Assert.Single(summary.DamageTypes);
         Assert.Equal(27, summary.DamageTypes["Physical"]);
-        // The basic attack's 0.9% stun chance is no threat, and the buff is none either.
-        Assert.Empty(summary.Threats);
+        // The basic attack's 0.9% stun chance is a threat, and the buff is none.
+        Assert.Equal(SkillThreatKind.Stun, Assert.Single(summary.Threats).Kind);
     }
 
     [Fact]
@@ -217,6 +217,6 @@ public class MonsterSkillFactsTests
         var summary = new MonsterSkillSummary(new[] { basic });
         Assert.Single(summary.DamageTypes);
         Assert.Equal(1720, summary.DamageTypes["Physical"]);
-        Assert.Empty(summary.Threats);
+        Assert.Equal(SkillThreatKind.Stun, Assert.Single(summary.Threats).Kind);
     }
 }
