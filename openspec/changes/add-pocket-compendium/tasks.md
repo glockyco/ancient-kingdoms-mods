@@ -34,7 +34,7 @@
 - [x] 4.6 Bestiary grid countdown and the "Respawns in" plate on the split of the page. The countdown draws its own objects from its update, so the page keeps one patch, the full pages'.
 - [x] 4.7 Respawn alerts for watched monsters through `Player.ShowImportantMessage`.
 - [x] 4.8 Capture each surface in game and compare with the mood board sketches, including Chinese and Japanese names.
-- [ ] 4.9 Give the Bestiary countdown one switch for the grid beside the page and one for the page, as asked on 2026-11-01, with their wording chosen through a comparison. Verify in game that each switch removes only its own countdown and brings it back at once.
+- [x] 4.9 Give the Bestiary countdown one switch for the grid beside the page and one for the page, as asked on 2026-11-01, with their wording chosen through a comparison. Verify in game that each switch removes only its own countdown and brings it back at once.
 
 ## 5. Sharing
 

@@ -24,7 +24,7 @@ public sealed class BestiaryPagesFeature : Feature
     private bool _patched;
 
     public BestiaryPagesFeature()
-        : base("BestiaryPages", "Bestiary pages", "Shows the full Bestiary page of every monster, including its lore, stats, drops and skills.")
+        : base("BestiaryPages", "Bestiary pages", "Shows every monster's full Bestiary page, with its lore, stats, drops and skills.")
     {
         SkillsButton = Settings.Toggle(
             "SkillsButton",

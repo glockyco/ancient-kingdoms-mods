@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using MelonLoader.Utils;
 using PocketCompendium.Core.Features;
-using PocketCompendium.Core.Text;
 using PocketCompendium.Core.Ui;
 using UnityEngine;
 using UnityEngine.UI;
@@ -50,20 +49,20 @@ public sealed class AboutPage : ISettingsContent
         float top = y;
         var version = HudFactory.Label("version", parent, 12.5f, Theme.Muted, Align.Left);
         HudFactory.TopLeft(version.Rect, x, y, width, 18f);
-        version.Value = $"{ModText.Name} {_version}, build {_build}, by WoW_Much";
+        version.Value = $"Version {_version}, build {_build}, by WoW_Much";
         y += 20f;
-        y += Wrapped("fanMade", parent, "A fan-made mod. Please report its problems to us, not to the game's developers.", x, y, width, 12.5f, Theme.Muted).Rect.sizeDelta.y + 12f;
+        y += Wrapped("fanMade", parent, "A fan-made mod. Please report its problems here, not to the game's developers.", x, y, width, 12.5f, Theme.Muted).Rect.sizeDelta.y + 12f;
 
         var divider = HudFactory.Box("divider", parent, Theme.Line);
         HudFactory.TopLeft(divider, x, y, width, 1f);
         y += 16f;
 
         y = Section(parent, "Links", x, y, width);
-        _links.Add(new LinkRow(parent, Icons.Globe, "Compendium", "ancient-kingdoms.compendiums.org", ModLinks.Site, x, y, width));
+        _links.Add(new LinkRow(parent, Icons.Globe, "Website", "ancient-kingdoms.compendiums.org", ModLinks.Site, x, y, width));
         y += RowHeight + 2f;
         _links.Add(new LinkRow(parent, Icons.Code, "Source", "github.com/glockyco/ancient-kingdoms-mods", ModLinks.Source, x, y, width));
         y += RowHeight + 2f;
-        _links.Add(new LinkRow(parent, Icons.MessageCircle, "Discord", "#compendium on the game's server", ModLinks.Discord, x, y, width));
+        _links.Add(new LinkRow(parent, Icons.MessageCircle, "Community", "Ancient Kingdoms Discord", ModLinks.Discord, x, y, width));
         y += RowHeight + 2f;
         _links.Add(new LinkRow(parent, Icons.Coffee, "Support", "ko-fi.com/wowmuch", ModLinks.KoFi, x, y, width));
         y += RowHeight + 14f;

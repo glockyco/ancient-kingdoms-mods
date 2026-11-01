@@ -23,10 +23,10 @@ public sealed class BestiaryCountdownFeature : Feature
     private bool _pageShown;
 
     public BestiaryCountdownFeature()
-        : base("BestiaryCountdown", "Bestiary countdown", "Shows respawn timers for dead monsters in the Bestiary, on the grid and on their pages.")
+        : base("BestiaryCountdown", "Bestiary countdown", "Shows respawn timers for dead monsters in the Bestiary.")
     {
-        Grid = Settings.Toggle("Grid", true, "Sidebar", "The time on each dead monster's portrait in the list on the left.");
-        Page = Settings.Toggle("Page", true, "Page", "The time on the page of the monster you open.");
+        Grid = Settings.Toggle("Grid", true, "Sidebar", "On the portraits in the list beside the page.");
+        Page = Settings.Toggle("Page", true, "Page", "On the page of the monster you open.");
     }
 
     /// <summary>Whether the grid of portraits beside the page counts down.</summary>

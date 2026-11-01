@@ -12,7 +12,7 @@
 
 ## 3. About page
 
-- [ ] 3.1 Choose the page's wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded.
+- [ ] 3.1 Choose the page's wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded. Decided on 2026-11-01: the version and fan-made lines, the link names, the stopped-feature note and the Bestiary summaries. Still open: the texts around the report button, which should be option C made less vague, and the Boss list page, where both Zones choices keep an explanation without a short last line, Sort by gets one, and the Rows heading fits the page's structure.
 - [x] 3.2 Add a settings page kind that draws its own content, add Lucide's `info` icon to `website/scripts/generate-mod-icons.mjs`, and build the page as rows like the other pages, as decided on 2026-11-01: version, build and author, the fan-made line, a Links section with one row per address, and a Feedback section with the two buttons, with "Reset this page" hidden. Verify in game at the Mac's full screen of 1800 px, the widest at hand, and in a 1280 px window.
 - [x] 3.3 Keep the page's addresses in one class with a test that compares those the website also links with `website/src/lib/constants/links.ts` and `website/src/lib/seo/site.ts`. Verify with `dotnet test tests/PocketCompendium.Tests`.
 - [ ] 3.4 Apply the chosen wording of the other pages' summaries and help texts. Verify in game that no text ends with a single word on its last line.
@@ -21,7 +21,7 @@
 
 - [x] 4.1 Implement the report action: clipboard, `Application.OpenURL`, the result text and the button that opens the log's folder. Verify under CrossOver that the clipboard holds the details, that a local HTTP listener given as the link receives the request, and that the folder opens.
 - [x] 4.2 Implement the idea action and the links. Verify under CrossOver that each one opens the browser.
-- [ ] 4.3 Choose the stopped-feature message through a comparison, then show it once per feature and session from the registry's failure path. Verify by forcing a failure in a scratch session and reading the message band and the log.
+- [x] 4.3 Choose the stopped-feature message through a comparison, then show it once per feature and session from the registry's failure path. Verify by forcing a failure in a scratch session and reading the message band and the log. The current message was kept on 2026-11-01.
 - [x] 4.4 Log alone, hosting or joined on each world entry. Verify in `MelonLoader/Latest.log` for single player, a LAN host and its client.
 
 ## 5. Documentation and records
