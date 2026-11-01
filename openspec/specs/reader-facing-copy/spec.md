@@ -182,3 +182,22 @@ Copy SHALL state a rule that wastes a player's resource or time beside the place
 - **WHEN** a page lists the seasonal treats
 - **THEN** it says that eating a second treat ends the first
 - **AND** it says that treats stack with ordinary food and drink
+
+### Requirement: Secondary connections do not displace the page's purpose
+
+A page SHALL lead with its main subject. Achievement links SHALL remain integrated sidenotes, and invasion information on entity pages SHALL follow the entity's primary content, because neither is the main reason to open that page.
+
+#### Scenario: A monster has achievement and invasion connections
+
+- **WHEN** a monster page links to an achievement and an invasion
+- **THEN** the monster's primary information appears first
+- **AND** those connections do not become the opening or dominant section
+
+### Requirement: Locations use map links rather than coordinate labels
+
+Player-facing location displays SHALL offer map links instead of raw coordinates where a published map location exists, because the game does not show coordinates and players cannot use them as familiar landmarks. This does not prohibit positions in URL identifiers.
+
+#### Scenario: A page names a mapped location
+
+- **WHEN** a location has published map geometry
+- **THEN** the page links to that location on the map rather than displaying its coordinates

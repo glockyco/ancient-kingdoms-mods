@@ -58,6 +58,8 @@ character after it, because the target is then player data. Quit, relaunch, and 
 
 ## Capture zone shots
 
+Choose character-dense areas for zone shots. Prefer bosses or higher-level areas only when they are reasonably busy, because a lone boss does not represent the zone well.
+
 `compendium build` needs a shot of every published zone, framed by
 `build-pipeline/zone_shot_focal_points.json`. Capture them in a scratch session. With the mods
 deployed and the game closed:
