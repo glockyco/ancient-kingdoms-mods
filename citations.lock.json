@@ -3739,6 +3739,9 @@
       "sha256": "819bc2588bcae03000adcce1d30e93d9a5f66f447ce38584606f1eaff348637b",
       "span": 20
     },
+    "PlayerBank.cs:UserCode_CmdAutoStack__Int32": {
+      "span": 0
+    },
     "PlayerChat.cs:24-90": {
       "sha256": "d42b94768fe961a39e2132e59da035ff23074b8509acfaa4c87d8118380d1362",
       "span": 67
@@ -4051,10 +4054,16 @@
       "sha256": "ce7b174c4b36d1a2ea92a6a000e9ebea04a7229fdf12c0814e5af3b22b8df59e",
       "span": 59
     },
+    "PlayerInventory.cs:CanStoreItem": {
+      "span": 0
+    },
     "PlayerInventory.cs:DecreaseDurabilityPickaxe": {
       "span": 0
     },
     "PlayerInventory.cs:EnumeratePreferredSlotsOrdered": {
+      "span": 0
+    },
+    "PlayerInventory.cs:MoveAsMuchAsPossibleToBank": {
       "span": 0
     },
     "PlayerInventory.cs:OnDragAndClear_InventorySlot": {

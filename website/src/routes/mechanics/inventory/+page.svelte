@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { virtueHref } from "$lib/virtues/display";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
@@ -328,6 +329,16 @@
           remainder.</span
         >
         <span class="block">Other items stay in your inventory.</span>
+      </p>
+      <!-- Source: server-scripts/PlayerInventory.cs:CanStoreItem,MoveAsMuchAsPossibleToBank; PlayerBank.cs:UserCode_CmdAutoStack__Int32 — lost belongings cannot be stored, and Auto Stack skips them. -->
+      <p class="text-sm text-muted-foreground">
+        Lost belongings from an
+        <a
+          href={virtueHref("honesty")}
+          class="text-blue-600 dark:text-blue-400 hover:underline">Honesty</a
+        >
+        search cannot go into the bank or a house chest, and Auto Stack leaves them
+        in your bags.
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
