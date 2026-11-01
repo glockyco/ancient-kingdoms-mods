@@ -763,7 +763,7 @@
 
   <section id="auto-consume" class="space-y-4 rounded-lg border p-5">
     <h2 class="text-xl font-semibold">Auto-Consume</h2>
-    <!-- Source: server-scripts/Pet.cs:292-306,2190-2280; UIEquipmentMercenary.cs:200-321; UIMercenaries.cs:786-793 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat. -->
+    <!-- Source: server-scripts/Pet.cs:NeedsOutOfCombatHealing,292-306,2190-2280; UIEquipmentMercenary.cs:200-321; UIMercenaries.cs:786-793 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat; out of combat, an injured mercenary with an active damage-over-time effect still uses its healing potion and bandages. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Each mercenary has food, utility potion, healing potion, and resource
@@ -775,7 +775,11 @@
       <span class="block"
         >The Auto-Consume toggle is saved separately for each mercenary.</span
       >
-      <span class="block">Supplies are used only while you are in combat.</span>
+      <span class="block">Supplies are used while you are in combat.</span>
+      <span class="block"
+        >Out of combat, a mercenary hurt by a damage-over-time effect still uses
+        its healing potion and bandages.</span
+      >
     </p>
     <!-- Source: server-scripts/Pet.cs:UpdateServer — integer Random.Range checks food and utility potions every 5–9 seconds, Health and resource potions every 1–2 seconds, with 15-second reuse and 90% efficiency gates. -->
     <div class="overflow-x-auto">
@@ -799,7 +803,8 @@
               >Utility potion</th
             ><td class="py-2"
               ><span class="block"
-                >When no buff from that potion category is active.</span
+                >When neither the potion's buff nor another buff of its category
+                is active. Bandages go in this slot.</span
               ></td
             ></tr
           >

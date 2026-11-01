@@ -2857,6 +2857,9 @@
     "Pet.cs:HasFrontalAttackSkill": {
       "span": 0
     },
+    "Pet.cs:NeedsOutOfCombatHealing": {
+      "span": 0
+    },
     "Pet.cs:OnAggro": {
       "span": 0
     },
