@@ -109,6 +109,29 @@ On the local map, each tracked monster SHALL show as a portrait pin. A pin SHALL
 - **WHEN** Forsaken Skeleton is up 15 yd west of its spawn point and the player opens the local map
 - **THEN** its pin glows 15 yd west of the spawn point, where the skeleton is
 
+### Requirement: Hover text states the spawn rule
+
+A monster's hover text SHALL state its spawn rule in one paragraph, with a placeholder spawn's source state in the same sentence, such as "Spawns the next time Large Shade Beast dies.". Below it, the hover text SHALL add only state lines that say more than the row, and SHALL NOT repeat Up, In combat or Altar.
+
+#### Scenario: A monster that is up
+
+- **WHEN** the player hovers Urzak the Untamed's row while it is up
+- **THEN** the hover text gives its rule and hours and no "Up now." line
+
+#### Scenario: A source the mod cannot see
+
+- **WHEN** a client without sharing hovers Keeper Remnant's row and Large Shade Beast is out of sight
+- **THEN** the hover text says "Spawns when Large Shade Beast dies." and nothing about Large Shade Beast's state
+
+### Requirement: Day or night monsters say when they come and leave
+
+A day or night monster's hover text SHALL give its hours as "Only at night, from 20:00 until it leaves at 08:00.". While it waits for its hours, the hover text SHALL say "Next spawn in" and the Bestiary plate "Respawns in" with the wait.
+
+#### Scenario: Waiting for the night
+
+- **WHEN** the player opens Spirit of the Forest's page at 19:52
+- **THEN** the plate shows "Respawns in 8 min" and its row's hover text says "Next spawn in 8 min."
+
 ### Requirement: The Bestiary counts down
 
 In the Bestiary grid, a dead monster's portrait SHALL be dimmed, with a dark sweep over the share of its time still to run and its remaining time in bold on top. On its page, a plate on the split between the facts and the lore SHALL say "Respawns in" with the time and a bar that fills, without covering the lore or the facts. The grid's countdowns and the page's plate SHALL each have their own switch, both on at first start.

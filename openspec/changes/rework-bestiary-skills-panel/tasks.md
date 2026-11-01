@@ -13,7 +13,7 @@
 - [x] 2.2 Choose the summary's content and form and the card's structure through a comparison on Nyxarion, a boss with six specials and an elite without specials. Verify that the answer is recorded. Decided on 2026-11-01 (`.local/changes/rework-bestiary-skills-panel/review/round-2/`): a two-line summary of damage types and "Watch for" without cast bars, cards with the cooldown and cast on top and one sentence below, and "No special skills." for a monster without specials.
 - [x] 2.3 Choose Summon Player's word and how much the hover text holds. Decided on 2026-11-01: "summons", the game's word, and the full mechanics in the website's terms.
 - [x] 2.4 Write "summons" for Summon Player on the website and in the mod together, since the parity corpus ties them: the skill summary (`formatSkillEffect.ts:1082`, `SkillEffectFormatter.cs`) and the monster page's type cell, which said "Teleports target to this monster". Verify with the parity test and on a monster page in a browser.
-- [ ] 2.5 Choose the remaining labels on the chosen layout through a comparison: the summary's heading and "Watch for", the card's timing line, and whether a card still marks a special without a cast bar now that the summary leaves it out. Verify that the answer is recorded.
+- [x] 2.5 Choose the remaining labels on the chosen layout through a comparison. Decided on 2026-11-01 (`.local/changes/add-pocket-compendium/review/round-6/`): the heading "AT A GLANCE", the threats line "Threats", the timing in the game's own form "1s cast    10s cooldown", and no mark for a special without a cast bar.
 
 ## 3. Panel
 

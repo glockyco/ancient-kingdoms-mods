@@ -37,12 +37,12 @@ The panel SHALL begin with two lines. The first SHALL name the damage types the 
 
 ### Requirement: One card per special skill
 
-Each special skill SHALL have a card with its icon and its name, its cooldown and cast time on the same line, and one sentence below that gives its shape and reach in yd, its damage at the monster's level by type, and its effects with chance and duration. The card SHALL also say whether a cast bar announces it. The basic attack and each passive or aura SHALL take one line each.
+Each special skill SHALL have a card with its icon and its name, its cast time and cooldown on the same line in the game's own form, such as "1s cast    10s cooldown", and one sentence below that gives its shape and reach in yd, its damage at the monster's level by type, and its effects with chance and duration. The basic attack and each passive or aura SHALL take one line each.
 
 #### Scenario: A frontal attack
 
 - **WHEN** the panel shows Nyxarion's Dragon Ice Breath
-- **THEN** the card's top line gives a 10 s cooldown and a 1 s cast, and its sentence says it hits everyone in a 5 yd square in front for 4,650 cold damage with a 75% chance to stun for 1.5 s
+- **THEN** the card's top line reads "1s cast    10s cooldown", and its sentence says it hits everyone in a 5 yd square in front for 4,650 cold damage with a 75% chance to stun for 1.5 s
 
 #### Scenario: A monster without special skills
 

@@ -81,7 +81,12 @@ internal static class MonsterTooltip
                 Text.Append('.');
                 return;
             case SpawnOrigin.Placeholder:
-                Text.Append("Spawns when ").Append(GameText.EntityName(monster.Guards[0].name)).Append(" dies.");
+                // The source's state reads as part of the rule, so no "it" can point at the wrong monster.
+                string source = GameText.EntityName(monster.Guards[0].name);
+                bool waiting = monster.State.State == SpawnState.Guards;
+                if (waiting && monster.State.GuardsLeft > 0) Text.Append("Spawns the next time ").Append(source).Append(" dies.");
+                else if (waiting && monster.State.GuardsLeft == 0) Text.Append("Spawns once ").Append(source).Append(" has respawned and dies again.");
+                else Text.Append("Spawns when ").Append(source).Append(" dies.");
                 return;
         }
 
@@ -89,7 +94,9 @@ internal static class MonsterTooltip
         if (rules.ChancePercent is int chance) Text.Append(" Each spawn has a <b>").Append(chance).Append("% chance</b>.");
         if (rules.Summoned) Text.Append(" It spawns only while all ").Append(monster.Guards.Length).Append(" of its guards are dead at the same time.");
         if (rules.HasWindow)
-            Text.Append(rules.NightWindow ? " Only at night, " : " Only by day, ").Append(StateText.Hours(rules)).Append('.');
+            Text.Append(rules.NightWindow ? " Only at night, from " : " Only by day, from ")
+                .Append(rules.WindowStart.ToString("00")).Append(":00 until it leaves at ")
+                .Append(rules.WindowEnd.ToString("00")).Append(":00.");
     }
 
     private static void AppendState(TrackedMonster monster, double now, string zone)
@@ -98,15 +105,12 @@ internal static class MonsterTooltip
         var rules = monster.Rules;
         string about = state.Estimate ? "about " : "";
         string where = string.IsNullOrEmpty(zone) ? "the zone" : zone;
+        // Only lines that say more than the row: the row already shows Up, In combat and Altar.
+        if (state.State is SpawnState.Up or SpawnState.InCombat or SpawnState.Altar) return;
+        if (state.State == SpawnState.Guards && rules.Origin == SpawnOrigin.Placeholder) return;
         Text.Append('\n');
         switch (state.State)
         {
-            case SpawnState.Up:
-                Text.Append("Up now.");
-                break;
-            case SpawnState.InCombat:
-                Text.Append("Up, and in a fight.");
-                break;
             case SpawnState.Respawns:
             case SpawnState.Estimated:
                 Text.Append("Next spawn in ").Append(about).Append("<b>").Append(StateText.Countdown(state.At.Value - now)).Append("</b>.");
@@ -129,16 +133,12 @@ internal static class MonsterTooltip
                 break;
             case SpawnState.Window:
                 Text.Append(state.At.HasValue
-                    ? "Its window opens in " + about + "<b>" + StateText.Minutes(state.At.Value - now) + "</b>."
-                    : "Its window never opens.");
+                    ? "Next spawn in " + about + "<b>" + StateText.Minutes(state.At.Value - now) + "</b>."
+                    : "It never spawns.");
                 break;
             case SpawnState.Guards:
-                if (rules.Origin == SpawnOrigin.Placeholder) Text.Append(state.GuardsLeft > 0 ? "It is alive, so the next death spawns it." : "It is dead, so this waits for its respawn.");
-                else if (state.GuardsLeft >= 0) Text.Append("<b>").Append(state.GuardsLeft).Append(" of ").Append(state.GuardsTotal).Append("</b> guards are alive.");
+                if (state.GuardsLeft >= 0) Text.Append("<b>").Append(state.GuardsLeft).Append(" of ").Append(state.GuardsTotal).Append("</b> guards are alive.");
                 else Text.Append("Its guards are out of sight.");
-                break;
-            case SpawnState.Altar:
-                Text.Append("No event is running.");
                 break;
             case SpawnState.Seen:
                 Text.Append("Seen up ").Append(StateText.Ago(now - state.ObservedAt.Value)).Append('.');

@@ -250,7 +250,6 @@ internal sealed class RespawnPlate
         string lead = state.State switch
         {
             SpawnState.Chance => monster.Rules.ChancePercent.Value + "% chance in",
-            SpawnState.Window => "Window opens in",
             _ => "Respawns in",
         };
         string time = state.State == SpawnState.Window

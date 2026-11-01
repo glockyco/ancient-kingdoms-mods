@@ -1016,17 +1016,20 @@
           <div class="space-y-2">
             {#each data.spawns.summon as summon (summon.zone_id)}
               <div class="bg-muted/30 rounded-md border p-3">
+                <!-- Source: server-scripts/SummonMonster.cs:Update; one living guard holds the monster back, as observed in openspec/changes/add-pocket-compendium/observations.md. Every guard name in the data takes a plural "s". -->
                 <span>
-                  This monster cannot respawn while {summon.kill_count > 1
-                    ? `${formatNumber(summon.kill_count)} copies of `
+                  This monster spawns only while {summon.kill_count > 1
+                    ? `all ${formatNumber(summon.kill_count)} `
                     : ""}</span
                 >
                 <a
                   href="/monsters/{summon.kill_monster_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >{summon.kill_monster_name}</a
+                  >{summon.kill_monster_name}{summon.kill_count > 1
+                    ? "s"
+                    : ""}</a
                 >
-                <span>{summon.kill_count > 1 ? " are" : " is"} alive in </span>
+                <span> guarding it in </span>
                 <a
                   href="/zones/{summon.zone_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -1035,7 +1038,11 @@
                 </a>{#if distinctSubzoneName(summon.zone_name, summon.sub_zone_name)}<span
                     class="text-muted-foreground"
                     >&nbsp;({summon.sub_zone_name})</span
-                  >{/if}
+                  >{/if}<span
+                  >{summon.kill_count > 1
+                    ? " are dead at the same time."
+                    : " is dead."}</span
+                >
               </div>
             {/each}
           </div>
@@ -1046,7 +1053,6 @@
           <div class="space-y-2">
             {#each data.summons as summon (summon.summoned_monster_id + summon.zone_id)}
               <div class="bg-muted/30 rounded-md border p-3">
-                <span>This monster prevents </span>
                 <a
                   href="/{summon.summoned_entity_type === 'Npc'
                     ? 'npcs'
@@ -1056,9 +1062,9 @@
                   {summon.summoned_monster_name}
                 </a>
                 <span>
-                  from respawning while {summon.kill_count > 1
-                    ? `${formatNumber(summon.kill_count)} copies of this monster are`
-                    : "this monster is"} alive in
+                  spawns only while {summon.kill_count > 1
+                    ? `all ${formatNumber(summon.kill_count)} ${data.monster.name}s guarding it in`
+                    : `${data.monster.name} guarding it in`}
                 </span>
                 <a
                   href="/zones/{summon.zone_id}"
@@ -1068,7 +1074,11 @@
                 </a>{#if distinctSubzoneName(summon.zone_name, summon.sub_zone_name)}<span
                     class="text-muted-foreground"
                     >&nbsp;({summon.sub_zone_name})</span
-                  >{/if}
+                  >{/if}<span
+                  >{summon.kill_count > 1
+                    ? " are dead at the same time."
+                    : " is dead."}</span
+                >
               </div>
             {/each}
           </div>
