@@ -9521,6 +9521,50 @@
         "loot_pool_entries:[\"entry\",\"[\\\"pool\\\",\\\"monster\\\",[\\\"template\\\",\\\"avatar_of_earth\\\"]]\",4]"
       ]
     },
+    "items:lost_belongings": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_brass_key": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_coin_purse": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_engraved_goblet": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_hand_lantern": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_keepsake_necklace": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_pocket_compass": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_sealed_letter": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_travel_journal": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_wedding_ring": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:lost_wooden_flute": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
     "items:manacles_of_the_fallen": {
       "mechanism": "cascade",
       "pass": 5,
@@ -23673,6 +23717,14 @@
         "monsters:plague_rat"
       ]
     },
+    "skills:profane_unraveling": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:corrupted_valaark"
+      ]
+    },
     "skills:reapers_of_hatred": {
       "mechanism": "cascade",
       "pass": 3,
@@ -23930,7 +23982,7 @@
     }
   },
   "snapshot": {
-    "game_version": "0.10.1.3",
+    "game_version": "0.10.2.0",
     "keys": "placement"
   },
   "suppressed_positions": {
