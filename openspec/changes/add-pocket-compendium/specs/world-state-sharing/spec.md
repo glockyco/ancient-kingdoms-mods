@@ -51,9 +51,14 @@ Pocket Compendium SHALL NOT send boss state through chat in any channel.
 
 ### Requirement: Shared state is per world
 
-Shared state SHALL be kept for the world it came from and SHALL NOT change the client's own solo world.
+Shared state SHALL apply only while the client is in the world it came from, and SHALL NOT change the client's own solo world.
 
 #### Scenario: Returning to a solo world
 
 - **WHEN** a client leaves a shared world and loads their solo world
 - **THEN** their solo world's boss deadlines are unchanged
+
+#### Scenario: Joining a server that does not share
+
+- **WHEN** a client leaves a shared world and joins a server without sharing
+- **THEN** the client shows its own estimates for that server

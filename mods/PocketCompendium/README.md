@@ -16,7 +16,7 @@ The list shows the bosses, elites, and fabled monsters of your zone, then the on
 
 Click a row to watch the monster, and shift-click it to open its Bestiary page. Watched monsters carry a gold corner and stay listed in every zone. The style button switches to compact tiles, which show the header while you point at them. The settings page filters by tier, level, zone, and discovery. The filters never hide a watched monster, and the monsters they hide collapse into one line per zone.
 
-In a world you host, every time is exact. On someone else's server, the mod estimates from deaths you see, corpses you find, and a dedicated server's kill notices, and marks those times with `~`. It remembers them per server.
+Every time is exact in a world you host, and in a world whose host shares its times through Pocket Compendium. On other servers, the mod estimates from deaths you see, corpses you find, and a dedicated server's kill notices, and marks those times with `~`. It remembers them per server.
 
 ### World markers
 
@@ -32,7 +32,7 @@ In the Bestiary, a dead monster's grid portrait darkens under a sweep with its t
 
 ### Alerts
 
-When a monster you watch spawns, the game's own message band and a golden chat line announce it. On someone else's server, the alert comes when you see the monster up.
+When a monster you watch spawns, the game's own message band and a golden chat line announce it. On a server that does not share its times, the alert comes when you see the monster up.
 
 ### Boss skills
 
@@ -43,6 +43,10 @@ The panel lists the monsters fighting you or your pet. Out of combat, select a b
 Every monster's Bestiary page shows its stats, lore, every drop, and a skill summary, before you meet or kill it. Hover a drop to see the item's stats, whether or not it has dropped for you. On a Bestiary page, click **Skills** to open the monster's skills. Hold Alt and left-click any monster in the world to open its page. Clicks on the interface are ignored.
 
 With a gamepad, move right past the last column of the monster grid to reach the drops, down from the drops to the **Skills** button, and left to return to the grid. The focused drop shows its tooltip.
+
+### Sharing
+
+When you host a world, Pocket Compendium sends its exact times to each joining player who runs it too. Their list, markers, pins, Bestiary countdown, and alerts then match yours in every zone. Players without the mod notice nothing, and nothing goes through chat.
 
 ### Language
 
@@ -58,7 +62,7 @@ Pocket Compendium saves its settings in the game's `UserData/MelonPreferences.cf
 
 The skill panel finds monsters near you, not every monster in the zone. In a world you host, the next-special timer is exact. On someone else's server, the game does not send that deadline, so the mod estimates it from the casts it sees.
 
-On someone else's server, the list knows what you see and what a dedicated server announces. A player-hosted world announces nothing, and no server announces elites. After a server restarts, a boss the game shows to every player can read Up until someone enters its zone.
+On a server that does not share its times, the list knows what you see and what a dedicated server announces. A player-hosted world announces nothing, and no server announces elites. After a server restarts, a boss the game shows to every player can read Up until someone enters its zone.
 
 If a monster's Bestiary page fails to draw, the game shows its own page for that monster until you restart. If a feature fails, it stops until you restart, and the other features keep running. Both write the error to `MelonLoader/Latest.log`.
 

@@ -10,6 +10,7 @@ using PocketCompendium.Features.BestiaryPages;
 using PocketCompendium.Features.BossList;
 using PocketCompendium.Features.MapPins;
 using PocketCompendium.Features.BossSkills;
+using PocketCompendium.Features.Sharing;
 using PocketCompendium.Features.WorldMarkers;
 
 [assembly: MelonInfo(typeof(PocketCompendium.PocketCompendiumMod), "Pocket Compendium", "1.0.0", "WoW_Much")]
@@ -39,6 +40,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _features.Add(new AlertsFeature());
         _features.Add(new BossSkillsFeature());
         _features.Add(new BestiaryPagesFeature());
+        _features.Add(new SharingFeature());
 
         var layout = new LayoutSettings();
         _settings = new SettingsWindow(_features.Features, layout);

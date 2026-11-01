@@ -51,7 +51,7 @@ Fifteen bosses are authored to be shown to every player, so a client sees them, 
 
 ### Sharing protocol
 
-Two hashes on `PlayerChat`, an RPC on clients and a Command on the host, both checked with `RemoteProcedureCalls.GetDelegate` before registering and kept in static fields. The host sends `hello { protocol, session }` to each joining player. A modded client replies `subscribe { protocol }`. The host answers with a snapshot of every tracked monster's state and server-clock deadline, then deltas. Payloads are compact strings with a protocol version. Alternative: a new Mirror message id. Rejected because it disconnects players without the mod. Alternative: chat. Rejected by decision, because everyone in the channel would see it.
+Two hashes on `PlayerChat`, an RPC on clients and a Command on the host, both checked with `RemoteProcedureCalls.GetDelegate` before registering and kept in static fields. The host sends `hello { protocol }` to each joining player. A modded client replies `subscribe { protocol }`. The host answers with a snapshot of every tracked monster's state and server-clock deadline, then deltas. Payloads are tab-separated text with the protocol version, at most 64 monsters per message, so each message stays under 4 KB. A client shows the host's states in place of its own estimates until it disconnects, and keeps its own memory current meanwhile. Alternative: a new Mirror message id. Rejected because it disconnects players without the mod. Alternative: chat. Rejected by decision, because everyone in the channel would see it.
 
 ### UI kit from BossSkillTracker
 
@@ -76,7 +76,3 @@ Settings stay in `MelonPreferences`, one category per feature under a `PocketCom
 1. Release Pocket Compendium with the download tables listing it and FieldDefaultValueHookFix only. The three old entries are removed.
 2. Each download location warns players to remove the old DLLs.
 3. Rollback: the old DLLs stay buildable from their last commit. A player can remove Pocket Compendium and reinstall them. Their old settings categories stay in `MelonPreferences.cfg`, untouched.
-
-## Open Questions
-
-- The exact compact payload format and the snapshot size limit on the EOS transport.

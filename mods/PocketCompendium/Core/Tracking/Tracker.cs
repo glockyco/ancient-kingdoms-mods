@@ -31,6 +31,7 @@ public sealed class Tracker
 
     private readonly List<TrackedMonster> _monsters = new();
     private readonly Dictionary<string, TrackedMonster> _byKey = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, TrackedState> _shared = new(StringComparer.Ordinal);
 
     private string _world;
     private bool _host;
@@ -52,8 +53,8 @@ public sealed class Tracker
     /// <summary>Whether the tracker has a world and a trusted clock.</summary>
     public bool Ready { get; private set; }
 
-    /// <summary>Whether the states are exact, because this process hosts the world.</summary>
-    public bool Exact => _host;
+    /// <summary>Whether the states are exact, because this process hosts the world or its host shares.</summary>
+    public bool Exact => _host || _shared.Count > 0;
 
     /// <summary>The server time of the last refresh.</summary>
     public double Now { get; private set; }
@@ -122,6 +123,16 @@ public sealed class Tracker
         }
     }
 
+    /// <summary>Takes states a host shared. They replace this client's own estimates until the world changes.</summary>
+    internal void ApplyShared(Dictionary<string, TrackedState> states)
+    {
+        if (_world == null || _host) return;
+        foreach (var state in states) _shared[state.Key] = state.Value;
+        _nextRefresh = 0f;
+    }
+
+    internal void ClearShared() => _shared.Clear();
+
     private void Forget()
     {
         _monsters.Clear();
@@ -129,6 +140,7 @@ public sealed class Tracker
         _memory = null;
         _memoryChanged = false;
         _world = null;
+        _shared.Clear();
         Ready = false;
     }
 
@@ -239,6 +251,8 @@ public sealed class Tracker
         monster.LastDeadline = reading.Deadline;
     }
 
+    // A host that shares knows every state exactly, so its states replace the client's own.
+    // The client keeps observing, so its memory is current when it plays without sharing again.
     private TrackedState ResolveClient(TrackedMonster monster, double now)
     {
         var reading = new ClientReading();
@@ -246,7 +260,9 @@ public sealed class Tracker
         if (placed == null)
         {
             ReadLive(monster.Live, out reading.Spawned, out reading.Alive, out reading.Engaged);
-            return SpawnResolver.Client(monster.Rules, reading, null, now);
+            return _shared.TryGetValue(monster.Key, out var sharedSpawn)
+                ? sharedSpawn
+                : SpawnResolver.Client(monster.Rules, reading, null, now);
         }
 
         // Mirror gives a scene object its net id when the server spawns it for this client, and
@@ -260,7 +276,9 @@ public sealed class Tracker
         }
 
         if (_memory.Observe(monster.Key, monster.Rules, reading, now)) _memoryChanged = true;
-        return SpawnResolver.Client(monster.Rules, reading, _memory.Find(monster.Key), now);
+        return _shared.TryGetValue(monster.Key, out var shared)
+            ? shared
+            : SpawnResolver.Client(monster.Rules, reading, _memory.Find(monster.Key), now);
     }
 
     private static void ReadLive(Monster live, out bool present, out bool alive, out bool engaged)
