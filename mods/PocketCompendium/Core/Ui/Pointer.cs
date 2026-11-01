@@ -31,7 +31,19 @@ public static class Pointer
     public static bool Released => Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame;
 
     /// <summary>Wheel movement this frame, in notches, positive away from the player.</summary>
-    public static float Scroll => Mouse.current != null ? Mouse.current.scroll.ReadValue().y / 120f : 0f;
+    /// <remarks>
+    /// The game keeps the Input System's default, which reports a notch as 1 on every platform. The
+    /// other setting passes the platform's own range, 120 a notch on Windows.
+    /// </remarks>
+    public static float Scroll
+    {
+        get
+        {
+            if (Mouse.current == null) return 0f;
+            float y = Mouse.current.scroll.ReadValue().y;
+            return InputSystem.settings.scrollDeltaBehavior == InputSettings.ScrollDeltaBehavior.UniformAcrossAllPlatforms ? y : y / 120f;
+        }
+    }
 
     public static bool Shift =>
         Keyboard.current != null && (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
