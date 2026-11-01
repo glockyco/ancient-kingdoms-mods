@@ -18,7 +18,7 @@
 
 ## 4. Pages
 
-- [ ] 4.1 Show the chances, the Fatecharm icons and the tooltip lines as chosen, with one slot per item while chances show. Verify in game on Xylevis, Stalag Terror, an elite, Avatar of Fire, an altar elite and with the game in Japanese.
+- [x] 4.1 Show the chances, the Fatecharm icons and the tooltip lines as chosen, with one slot per item while chances show. Verify in game on Xylevis, Stalag Terror, an elite, Avatar of Fire, an altar elite and with the game in Japanese. Verified on 2026-11-01 in game 0.10.2.1 on Xylevis, Stalag Terror, Frostmaul, Avatar of Fire's Flame Token, Vyriss the Withered's altar rewards, Captain Kragek's 17 drops in the smallest slots, and Captain Aerendyl's tooltip in Japanese, where the charm's name follows the game's language.
 - [x] 4.2 Mark found drops. Verify in game on a monster with found and not found drops. Verified on 2026-11-01 on Xylevis with one found drop of four.
 - [x] 4.3 Add the drop chances switch, on at first start. Verify in game that switching it off restores the game's order with every entry and keeps the found marks. Verified on 2026-11-01 in game 0.10.2.1 on Xylevis: no chances or Fatecharm icons, every entry, the found check kept.
 - [x] 4.4 Add the switches for undiscovered monsters and drops, on at first start, beside the Skills panel switch, as decided on 2026-11-01. Choose whether a hidden drop's chance shows through a comparison. Verify in game with both switches off on an undiscovered monster and on one with found and not found drops. Chosen on 2026-11-01 (`.local/changes/add-bestiary-drop-chances/review/round-4/README.md`): the names "Undiscovered monsters" and "Undiscovered drops" with a 165 px name column, explanations that say what the game shows instead, and a hidden drop keeps its chance and Fatecharm icon. Verified on 2026-11-01 in game 0.10.2.1: Frostfang shows the game's ??? page without the Skills button, Xylevis's three drops not found are black silhouettes without tooltips that keep their chances, and Captain Aerendyl's keep their Fatecharm icons.
@@ -28,5 +28,5 @@
 
 ## 5. Documentation and records
 
-- [ ] 5.1 Update the README's Bestiary section, worded through a comparison. Verify with `pnpm check:docs`.
-- [ ] 5.2 Record each comparison's answer as a case in the vault's Ancient Kingdoms Compendium note. Verify that the note holds the cases.
+- [x] 5.1 Update the README's Bestiary section, worded through a comparison. Verify with `pnpm check:docs`. Became a rework of the whole README after "Those seem like rather excessive descriptions. Nobody in their right mind would ever read them." (2026-11-01, `.local/changes/add-bestiary-drop-chances/review/round-8/`, option A): one line and a picture per feature. `pnpm check:docs` reports no problem.
+- [x] 5.2 Record each comparison's answer as a case in the vault's Ancient Kingdoms Compendium note. Verify that the note holds the cases. Recorded on 2026-11-01: the Fatecharm chance and warning, the switches and their wording, and the tooltip lines.
