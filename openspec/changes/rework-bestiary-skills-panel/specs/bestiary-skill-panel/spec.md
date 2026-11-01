@@ -27,7 +27,7 @@ The Skills panel SHALL sit beside the Bestiary page at the page's height, framed
 
 ### Requirement: A summary comes first
 
-The panel SHALL begin with two lines. The first SHALL name the damage types the monster deals, each with the largest amount the monster deals of it. The second SHALL name the attacks and effects a player prepares for: area and frontal attacks, summons, stuns, fears and knockbacks, debuffs no cleanse removes, heals and enrages. Reach and numbers SHALL stay on the cards, and the summary SHALL NOT mention cast bars.
+The panel SHALL begin with two lines. The first SHALL name the damage types the monster deals, each with the largest amount the monster deals of it. The second SHALL name the attacks and effects a player prepares for: summons, frontal attacks, area attacks that deal damage, buff removal, fears, knockbacks and stuns, also a basic attack's, debuffs no cleanse removes, heals and enrages. Reach and numbers SHALL stay on the cards, and the summary SHALL NOT mention cast bars.
 
 #### Scenario: Nyxarion's summary
 
@@ -37,7 +37,7 @@ The panel SHALL begin with two lines. The first SHALL name the damage types the 
 
 ### Requirement: One card per special skill
 
-Each special skill SHALL have a card with its icon and its name, its cast time and cooldown on the same line in the game's own form, such as "1s cast    10s cooldown", and one sentence below that gives its shape and reach in yd, its damage at the monster's level by type, and its effects with chance and duration. The basic attack and each passive or aura SHALL take one line each.
+Each special skill SHALL have a card with its icon and its name, its cast time and cooldown on the same line in the game's own form, such as "1s cast    10s cooldown", and one sentence below that starts with its verb, such as "Deals" or "Lowers", and gives its shape and reach in yd, its damage at the monster's level by type, and its effects with chance and duration. The basic attack and each passive or aura SHALL take one line each, worded the same way.
 
 #### Scenario: A frontal attack
 
