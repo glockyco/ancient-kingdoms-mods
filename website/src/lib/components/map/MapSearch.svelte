@@ -86,6 +86,7 @@
     treasure: "Dig sites",
     altar: "Altars",
     house: "Houses",
+    shrine: "Shrines",
     trap: "Traps",
     crafting: "Crafting Stations",
     portal: "Portals",

@@ -320,6 +320,22 @@ const builders: Record<SearchableEntityId, Builder> = {
   profession: tableBuilder("professions", ["description"]),
   trap: tableBuilder("traps", ["description"]),
   house: tableBuilder("houses", ["description"]),
+  // Each virtue has two shrines of one name, so the zone tells them apart.
+  virtue_shrine: (db) =>
+    rowsToText(
+      db
+        .prepare(
+          `
+    SELECT s.id, s.name, 'shrine virtue blessing ' || v.name AS keywords,
+      ${LOCATION_SQL} AS detail
+    FROM virtue_shrines s JOIN virtues v ON v.id = s.virtue_id
+    JOIN zones z ON z.id = s.zone_id
+    LEFT JOIN zone_triggers t ON t.id = s.sub_zone_id
+    ORDER BY s.id
+  `,
+        )
+        .all() as RawRow[],
+    ),
   crafting_station: tableBuilder("crafting_stations"),
   alchemy_table: tableBuilder("alchemy_tables"),
   scribing_table: tableBuilder("scribing_tables"),

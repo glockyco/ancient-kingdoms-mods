@@ -19,6 +19,7 @@ import type {
   GatheringMapEntity,
   CraftingMapEntity,
   HouseMapEntity,
+  ShrineMapEntity,
   ZoneBoundary,
   ParentZoneBoundary,
   LevelRanges,
@@ -36,6 +37,8 @@ import {
   projectMethodSeasons,
   projectProviderMethods,
 } from "$lib/acquisition/projections";
+import type { VirtueId } from "$lib/calculation/virtues";
+import { blessingSummary } from "$lib/virtues/display";
 
 /**
  * Compute level ranges from loaded entity data
@@ -72,6 +75,7 @@ export async function loadAllMapEntitiesServer(): Promise<MapEntityData> {
     const gathering = loadGatheringSpawnsServer(db);
     const crafting = loadCraftingStationsServer(db);
     const houses = loadHousesServer(db);
+    const shrines = loadShrinesServer(db);
     const subZones = loadZoneTriggersServer(db);
     const parentZones = loadZoneBoundsServer(db);
     const execute: AcquisitionQuery = async (sql, params) =>
@@ -135,6 +139,7 @@ export async function loadAllMapEntitiesServer(): Promise<MapEntityData> {
       gathering,
       crafting,
       houses,
+      shrines,
       subZones,
       parentZones,
       levelRanges,
@@ -1313,6 +1318,54 @@ function loadHousesServer(db: Database.Database): HouseMapEntity[] {
     factionRequired: row.faction_required,
     subZoneId: row.sub_zone_id,
     subZoneName: row.sub_zone_name,
+  }));
+}
+
+/**
+ * Shrines whose position is published. Their popup states the blessing's range.
+ */
+function loadShrinesServer(db: Database.Database): ShrineMapEntity[] {
+  const multipliers = (
+    db
+      .prepare(
+        "SELECT humility_multiplier FROM virtue_rank_rules ORDER BY rank",
+      )
+      .all() as { humility_multiplier: number }[]
+  ).map((row) => row.humility_multiplier);
+  const rows = db
+    .prepare(
+      `
+    SELECT s.id, s.name, s.virtue_id, s.zone_id,
+      COALESCE(z.name, 'Unknown') AS zone_name, s.position_x, s.position_y
+    FROM virtue_shrines s
+    LEFT JOIN zones z ON z.id = s.zone_id
+    WHERE s.position_x IS NOT NULL AND s.position_y IS NOT NULL
+    ORDER BY s.id
+  `,
+    )
+    .all() as {
+    id: string;
+    name: string;
+    virtue_id: VirtueId;
+    zone_id: string;
+    zone_name: string;
+    position_x: number;
+    position_y: number;
+  }[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    type: "shrine",
+    name: row.name,
+    position: [row.position_x, -row.position_y],
+    zoneId: row.zone_id,
+    zoneName: row.zone_name,
+    virtueId: row.virtue_id,
+    blessingSummary: blessingSummary(
+      row.virtue_id,
+      multipliers.length - 1,
+      multipliers,
+    ),
   }));
 }
 

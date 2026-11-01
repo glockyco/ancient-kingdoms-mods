@@ -9,6 +9,7 @@ import {
   Flame,
   Hammer,
   Home,
+  Landmark,
   Leaf,
   MapPin,
   Pickaxe,
@@ -90,6 +91,7 @@ const ICONS: Record<EntityId, IconNode> = {
   portal: CircleDot,
   treasure: Pickaxe,
   house: Home,
+  virtue_shrine: Landmark,
   crafting_station: Hammer,
   alchemy_table: FlaskConical,
   scribing_table: BookOpen,
@@ -103,8 +105,12 @@ function hrefFor(entry: ManifestEntry, id: string): string {
   if (entry.id === "guide_topic") {
     return guideCoverage[id]?.href ?? entry.overviewHref;
   }
-  if (!entry.detailPrefix || entry.detailPrefix === "/map") {
+  if (!entry.detailPrefix) {
     return entry.overviewHref;
+  }
+  // A map-only family has no page: its link opens the map with the entity selected.
+  if (entry.detailPrefix === "/map") {
+    return `/map?${new URLSearchParams({ entity: id, etype: entry.id })}`;
   }
   return `${entry.detailPrefix}/${encodeURIComponent(id)}`;
 }

@@ -34,6 +34,7 @@
     type GatheringMapEntity,
     type CraftingMapEntity,
     type HouseMapEntity,
+    type ShrineMapEntity,
   } from "$lib/types/map";
   import {
     loadMonsterPopupDetails,
@@ -53,6 +54,7 @@
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
   import { markerRegistry, resolveMarker } from "$lib/map/marker-registry";
   import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
+  import { virtueHref } from "$lib/virtues/display";
   interface Props {
     entity: AnyMapEntity;
     onClose: () => void;
@@ -353,6 +355,8 @@
         return `/professions/treasure_hunter`;
       case "house":
         return `/mechanics/inventory#house-chests`;
+      case "shrine":
+        return virtueHref(entity.virtueId);
       default:
         return null;
     }
@@ -512,6 +516,14 @@
         <span>{formatNumber(house.factionRequired)}</span>
       </div>
     {/if}
+  {/if}
+
+  {#if entity.type === "shrine"}
+    {@const shrine = entity as ShrineMapEntity}
+    <div class="flex justify-between gap-4">
+      <span class="text-muted-foreground">Blessing</span>
+      <span class="text-right text-pretty">{shrine.blessingSummary}</span>
+    </div>
   {/if}
 
   <!-- Monster Section -->

@@ -260,6 +260,19 @@
     "sitemap": false
   },
   {
+    "id": "virtue_shrine",
+    "label": "Shrine",
+    "pluralLabel": "Shrines",
+    "order": 205,
+    "overviewHref": "/map",
+    "detailPrefix": "/map",
+    "table": "virtue_shrines",
+    "searchable": true,
+    "imageDomain": null,
+    "imageKind": null,
+    "sitemap": false
+  },
+  {
     "id": "crafting_station",
     "label": "Crafting Station",
     "pluralLabel": "Crafting Stations",

@@ -3,6 +3,7 @@
  */
 import type { TrapType } from "$lib/constants/traps";
 import type { Season } from "$lib/data/seasonal-events";
+import type { VirtueId } from "$lib/calculation/virtues";
 
 export type EntityType =
   | "monster"
@@ -24,7 +25,8 @@ export type EntityType =
   | "alchemy_table"
   | "crafting_station"
   | "scribing_table"
-  | "house";
+  | "house"
+  | "shrine";
 
 /**
  * Base interface for all map entities
@@ -193,6 +195,16 @@ export interface HouseMapEntity extends MapEntity {
 }
 
 /**
+ * A virtue's shrine, where players receive its blessing
+ */
+export interface ShrineMapEntity extends MapEntity {
+  type: "shrine";
+  virtueId: VirtueId;
+  /** The blessing's range, such as "Up to +5% damage to elites and bosses". */
+  blessingSummary: string;
+}
+
+/**
  * Treasure dig location entity data
  */
 export interface TreasureMapEntity extends MapEntity {
@@ -289,7 +301,8 @@ export type AnyMapEntity =
   | TrapMapEntity
   | GatheringMapEntity
   | CraftingMapEntity
-  | HouseMapEntity;
+  | HouseMapEntity
+  | ShrineMapEntity;
 
 /**
  * Layer visibility toggle state
@@ -335,6 +348,7 @@ export interface LayerVisibility {
   altars: boolean;
   traps: boolean;
   houses: boolean;
+  shrines: boolean;
   alchemyTables: boolean;
   forges: boolean;
   cookingOvens: boolean;
@@ -409,6 +423,7 @@ export interface MapEntityData {
   gathering: GatheringMapEntity[];
   crafting: CraftingMapEntity[];
   houses: HouseMapEntity[];
+  shrines: ShrineMapEntity[];
   subZones: ZoneBoundary[];
   parentZones: ParentZoneBoundary[];
   levelRanges: LevelRanges;
@@ -441,6 +456,7 @@ export interface FilteredMapData {
   cookingOvens: CraftingMapEntity[];
   scribingTables: CraftingMapEntity[];
   houses: HouseMapEntity[];
+  shrines: ShrineMapEntity[];
   portalsWithDestinations: PortalMapEntity[];
   teleportersWithDestinations: NpcMapEntity[];
   subZones: ZoneBoundary[];

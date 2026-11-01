@@ -84,6 +84,7 @@ describe("marker registry", () => {
       "altars",
       "traps",
       "houses",
+      "shrines",
       "gatheringPlants",
       "gatheringMinerals",
       "gatheringSparks",

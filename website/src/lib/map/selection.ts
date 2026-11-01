@@ -76,6 +76,7 @@ export interface EntityIndex {
   altars: Map<string, AnyMapEntity[]>;
   traps: Map<string, AnyMapEntity[]>;
   houses: Map<string, AnyMapEntity[]>;
+  shrines: Map<string, AnyMapEntity[]>;
   gathering: Map<string, AnyMapEntity[]>;
   crafting: Map<string, AnyMapEntity[]>;
   /** Gathering resources indexed by concrete resource/spawn id for item-source highlights */
@@ -122,6 +123,7 @@ type SelectionIndexKey =
   | "altars"
   | "traps"
   | "houses"
+  | "shrines"
   | "gathering"
   | "crafting";
 
@@ -135,6 +137,7 @@ const ENTITY_INDEX_KEY_BY_ENTITY: Partial<Record<EntityId, SelectionIndexKey>> =
     altar: "altars",
     trap: "traps",
     house: "houses",
+    virtue_shrine: "shrines",
     gathering_resource: "gathering",
     crafting_station: "crafting",
     alchemy_table: "crafting",
@@ -253,6 +256,7 @@ export function createEntityIndex(data: MapEntityData): EntityIndex {
     gatheringById: indexEntities(data.gathering),
     crafting: indexEntities(data.crafting),
     houses: indexEntities(data.houses),
+    shrines: indexEntities(data.shrines),
   };
 }
 

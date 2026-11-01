@@ -9,6 +9,7 @@ import {
   FlaskConical,
   Hammer,
   Home,
+  Landmark,
   Leaf,
   Package,
   Pickaxe,
@@ -31,6 +32,7 @@ import {
   type CraftingMapEntity,
   type GatheringMapEntity,
   type HouseMapEntity,
+  type ShrineMapEntity,
   type FilteredMapData,
   type MonsterMapEntity,
   type NpcMapEntity,
@@ -402,7 +404,8 @@ type AnyMarkerDef =
   | MarkerDef<TrapMapEntity>
   | MarkerDef<GatheringMapEntity>
   | MarkerDef<CraftingMapEntity>
-  | MarkerDef<HouseMapEntity>;
+  | MarkerDef<HouseMapEntity>
+  | MarkerDef<ShrineMapEntity>;
 
 export const markerRegistry = {
   creatures: monsterMarker(
@@ -658,6 +661,29 @@ export const markerRegistry = {
       sidebarSection: "interactables",
     },
     match: (row) => row.type === "house",
+  }),
+  // Pink is a color no marker that is on by default uses.
+  shrines: simpleMarker<ShrineMapEntity>({
+    id: "shrines",
+    entity: "virtue_shrine",
+    source: "interactables",
+    label: "Shrine",
+    pluralLabel: "Shrines",
+    color: [236, 72, 153],
+    icon: Landmark,
+    iconType: "shrine",
+    iconSize: { base: 26, min: 24, max: 56 },
+    fallbackRadius: 7,
+    borderClass: "border-l-pink-500",
+    defaultVisible: true,
+    z: 1750,
+    layer: {
+      id: "shrines",
+      visibilityKey: "shrines",
+      filter: "zone",
+      sidebarSection: "interactables",
+    },
+    match: (row) => row.type === "shrine",
   }),
   gatheringPlants: simpleMarker<GatheringMapEntity>({
     id: "gatheringPlants",

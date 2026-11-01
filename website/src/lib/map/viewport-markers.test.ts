@@ -35,6 +35,7 @@ function data(overrides: Partial<MapEntityData> = {}): MapEntityData {
     gathering: [],
     crafting: [],
     houses: [],
+    shrines: [],
     subZones: [],
     parentZones: [],
     levelRanges: {

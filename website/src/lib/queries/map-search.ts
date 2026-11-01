@@ -27,6 +27,7 @@ export type MapSearchCategory =
   | "treasure"
   | "altar"
   | "house"
+  | "shrine"
   | "trap"
   | "crafting"
   | "portal"
@@ -37,6 +38,7 @@ export type MapSearchCategory =
 export const SEARCH_CATEGORY_ORDER: MapSearchCategory[] = [
   "zone",
   "altar",
+  "shrine",
   "monster",
   "npc",
   "resource",
@@ -101,6 +103,7 @@ const ENTITY_CATEGORY: Partial<Record<SearchKind, MapEntityCategory>> = {
   alchemy_table: "crafting",
   scribing_table: "crafting",
   house: "house",
+  virtue_shrine: "shrine",
   trap: "trap",
   portal: "portal",
   item: "item",
@@ -189,6 +192,15 @@ const GEOMETRY_QUERY: Partial<Record<SearchKind, string>> = {
       NULL roles, NULL renewal_dungeon_name, NULL quality, h.name display_name
     FROM houses h LEFT JOIN zones z ON z.id = h.zone_id
     WHERE h.id IN (/*IDS*/)
+  `,
+  virtue_shrine: `
+    SELECT s.id, s.position_x min_x, s.position_x max_x,
+      s.position_y min_y, s.position_y max_y, s.zone_id, z.name zone_name,
+      NULL level, 1 spawn_count, v.name subcategory, NULL keywords,
+      NULL roles, NULL renewal_dungeon_name, NULL quality, s.name display_name
+    FROM virtue_shrines s JOIN virtues v ON v.id = s.virtue_id
+    LEFT JOIN zones z ON z.id = s.zone_id
+    WHERE s.id IN (/*IDS*/)
   `,
   crafting_station: `
     SELECT c.id, c.position_x min_x, c.position_x max_x,

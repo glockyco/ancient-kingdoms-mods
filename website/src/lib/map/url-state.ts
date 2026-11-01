@@ -243,6 +243,7 @@ export function urlStateToLayerVisibility(
     altars: urlLayers.includes("altars"),
     traps: urlLayers.includes("traps"),
     houses: urlLayers.includes("houses"),
+    shrines: urlLayers.includes("shrines"),
     alchemyTables: urlLayers.includes("alchemyTables"),
     forges: urlLayers.includes("forges"),
     cookingOvens: urlLayers.includes("cookingOvens"),

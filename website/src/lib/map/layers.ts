@@ -17,6 +17,7 @@ import {
   type AltarMapEntity,
   type TrapMapEntity,
   type HouseMapEntity,
+  type ShrineMapEntity,
 } from "$lib/types/map";
 import type { ZoneFocusedData } from "./zone-filter";
 import { isAnyNpcTypeVisible } from "./visibility";
@@ -96,6 +97,7 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     ...data.gathering,
     ...data.crafting,
     ...data.houses,
+    ...data.shrines,
   ];
   const grouped = Object.fromEntries(
     Object.values(markerRegistry).map((marker) => [
@@ -145,6 +147,7 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     cookingOvens: markerRows<CraftingMapEntity>("cookingOvens"),
     scribingTables: markerRows<CraftingMapEntity>("scribingTables"),
     houses: markerRows<HouseMapEntity>("houses"),
+    shrines: markerRows<ShrineMapEntity>("shrines"),
     portalsWithDestinations: renderablePortals.filter(
       (portal) => portal.destination !== null && !portal.isClosed,
     ),

@@ -430,6 +430,23 @@ function resolveHouseSelection(
 }
 
 /**
+ * Resolve shrine selection.
+ */
+function resolveShrineSelection(
+  shrineId: string,
+  entityData: MapEntityData,
+): ResolvedSelection {
+  const shrine = entityData.shrines.find((s) => s.id === shrineId);
+  if (!shrine) {
+    return { popup: null, highlight: null };
+  }
+  return {
+    popup: { type: "entity", entity: shrine },
+    highlight: { entityId: shrineId, entityType: "virtue_shrine" },
+  };
+}
+
+/**
  * Resolve treasure dig location selection.
  */
 function resolveTreasureSelection(
@@ -532,6 +549,7 @@ const PHYSICAL_SELECTION_BY_ENTITY: Partial<
   chest: resolveChestSelection,
   treasure: resolveTreasureSelection,
   house: resolveHouseSelection,
+  virtue_shrine: resolveShrineSelection,
   gathering_resource: resolveGatheringSelection,
   crafting_station: resolveCraftingSelection,
   alchemy_table: resolveCraftingSelection,

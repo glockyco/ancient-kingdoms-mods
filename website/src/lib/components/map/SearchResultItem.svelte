@@ -52,6 +52,7 @@
     treasure: "treasure",
     altar: "altar",
     house: "house",
+    shrine: "virtue_shrine",
     trap: "trap",
     crafting: "crafting_station",
     portal: "portal",

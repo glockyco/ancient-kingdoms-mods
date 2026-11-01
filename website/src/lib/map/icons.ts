@@ -25,6 +25,7 @@ import {
   Home,
   Fish,
   TriangleAlert,
+  Landmark,
   type IconNode,
 } from "lucide";
 import { markerRegistry, type MarkerId } from "./marker-registry";
@@ -67,6 +68,7 @@ const ENTITY_ICONS: Record<
   treasure: { icon: Shovel, markerId: "treasure" },
   scribing_table: { icon: Scroll, markerId: "scribingTables" },
   house: { icon: Home, markerId: "houses" },
+  shrine: { icon: Landmark, markerId: "shrines" },
 };
 
 export type EntityIconType = keyof typeof ENTITY_ICONS;

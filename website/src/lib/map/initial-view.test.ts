@@ -57,6 +57,7 @@ function mapData(gathering: GatheringMapEntity[]): MapEntityData {
     gathering,
     crafting: [],
     houses: [],
+    shrines: [],
     subZones: [],
     parentZones: [],
     levelRanges: {
