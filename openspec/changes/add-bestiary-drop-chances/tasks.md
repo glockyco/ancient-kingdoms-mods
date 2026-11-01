@@ -13,7 +13,7 @@
 
 ## 3. Choices players see
 
-- [ ] 3.1 Choose the chance's look and rounding, the Fatecharm mark and the found mark through a comparison (compare-options), with screenshots of Xylevis, a dungeon boss and a page with 17 drops. Verify that the answer is recorded.
+- [x] 3.1 Choose the chance's look and rounding, the Fatecharm mark and the found mark through a comparison (compare-options). Decided on 2026-11-01 on Verdant Glacius: the chance with one decimal along the bottom of the slot, the zone's Fatecharm icon in the top-left corner, and a gold check in the top-right corner for found drops. The smallest slots of a 17-drop page are checked in task 4.1.
 - [ ] 3.2 Choose the tooltip lines, including whether the player's own Hunting bonus shows, and the altar variants' conditions through a comparison. Verify that the answer is recorded.
 
 ## 4. Pages

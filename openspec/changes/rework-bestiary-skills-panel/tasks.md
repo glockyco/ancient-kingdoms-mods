@@ -9,7 +9,7 @@
 
 ## 2. Choices players see
 
-- [ ] 2.1 Choose the layout through a comparison (compare-options) with real screenshots at 1280 and 1920 px. Verify that the answer is recorded.
+- [x] 2.1 Choose the layout through a comparison (compare-options) with real screenshots. Decided on 2026-11-01: a window in the frame of the game's Quest Log beside the Journal, a summary of damage types and threats first, one card per special skill in the in-fight order, then the basic attack, over a table without a summary.
 - [ ] 2.2 Choose the summary's content and form and the card's structure through a comparison on Nyxarion, a boss with six specials and an elite without specials. Verify that the answer is recorded.
 - [ ] 2.3 Choose the labels and the hover text through a comparison, in the website's terms. Verify that the answer is recorded.
 
