@@ -1,3 +1,7 @@
+import {
+  applyCompassion,
+  compassionHealingBonus,
+} from "$lib/calculation/virtues";
 import type { Calculation, CalculationInput } from "$lib/types/calculation";
 import { STATS } from "$lib/generated/stat-vocabulary";
 import type { StatId } from "$lib/generated/stat-vocabulary";
@@ -249,6 +253,26 @@ export function wisdomHeal(baseHeal: number, wisdom: number, ranger = false) {
   const bonus = iround(multiplyF32(baseHeal, share));
   return { rawShare, share, bonus, total: baseHeal + bonus };
 }
+/** The healed character's Compassion blessing, as a choice under "Use your numbers". */
+const COMPASSION_INPUT: CalculationInput = {
+  key: "compassionRank",
+  label: "Compassion blessing",
+  choices: [
+    { value: -1, label: "None" },
+    ...[0, 1, 2, 3, 4, 5].map((rank) => ({
+      value: rank,
+      label: `Rank ${rank}`,
+    })),
+  ],
+  value: -1,
+  min: -1,
+  max: 5,
+  step: 1,
+};
+const compassionRank = (value: number | undefined) =>
+  value === undefined || value < 0 ? null : value;
+const COMPASSION_STEP_EXPRESSION = `Healing × (100% + ${Math.round(compassionHealingBonus(1) * 100)}% per Compassion rank, ${Math.round(compassionHealingBonus(0) * 100)}% at rank 0) when the healed character has the blessing`;
+
 export function healingCalculation(ranger = false): Calculation {
   return {
     steps: [
@@ -263,23 +287,37 @@ export function healingCalculation(ranger = false): Calculation {
         rounding: "nearest",
       },
       { name: "Healing", expression: "Listed healing + extra healing" },
+      {
+        name: "Healing received",
+        expression: `${COMPASSION_STEP_EXPRESSION}, after any critical heal`,
+        rounding: "nearest",
+      },
     ],
     inputs: [
       listedValue("Healing in the skill tooltip, without its (+bonus)"),
       WISDOM,
+      COMPASSION_INPUT,
     ],
-    example: ({ baseValue, wisdom }) => {
+    example: ({ baseValue, wisdom, compassionRank: compassionValue }) => {
       const result = wisdomHeal(baseValue, wisdom, ranger);
+      const rank = compassionRank(compassionValue);
+      const received = applyCompassion(result.total, rank);
       return {
         given: [
           `${number(baseValue)} listed healing`,
           `${formatStat("wisdom", wisdom)} ${statName("wisdom")}`,
+          ...(rank === null ? [] : [`Compassion blessing at rank ${rank}`]),
         ],
-        result: `Heals ${number(result.total)} Hit Points before a critical heal`,
+        result: `Heals ${number(received)} Hit Points before a critical heal`,
         working: [
           `${statName("wisdom")} bonus: ${formatStat("wisdom", wisdom)}${ranger ? " × 3" : ""} × 0.4% = ${percent(result.rawShare, { decimals: 2, preserveNonzero: true })}${result.rawShare !== result.share ? `, limited to ${percent(result.share, { decimals: 2, preserveNonzero: true })}` : ""}`,
           `Extra healing: ${number(baseValue)} × ${percent(result.share, { decimals: 2, preserveNonzero: true })} = ${number(result.bonus)}, rounded`,
           `Healing: ${number(baseValue)} + ${number(result.bonus)} = ${number(result.total)}`,
+          ...(rank === null
+            ? []
+            : [
+                `Healing received: ${number(result.total)} × ${percent(1 + compassionHealingBonus(rank), { decimals: 1 })} = ${number(received)}, rounded`,
+              ]),
         ],
       };
     },
@@ -652,6 +690,14 @@ export function lifetapCalculation(): Calculation {
           "Lifetap percentage × damage remaining after Ward and Mana Shield × healing multiplier",
         rounding: "down",
       },
+      {
+        name: "Healing received",
+        expression: COMPASSION_STEP_EXPRESSION.replace(
+          "Healing ×",
+          "Lifetap healing ×",
+        ),
+        rounding: "nearest",
+      },
     ],
     inputs: [
       situational(
@@ -665,19 +711,33 @@ export function lifetapCalculation(): Calculation {
         "Lich Shroud's lifetap healing bonus (0% without it)",
         0.25,
       ),
+      COMPASSION_INPUT,
     ],
-    example: ({ remainingDamage, lifetap, lifetapBonus }) => {
+    example: ({
+      remainingDamage,
+      lifetap,
+      lifetapBonus,
+      compassionRank: compassionValue,
+    }) => {
       const result = lifetapHeal(remainingDamage, lifetap, lifetapBonus);
+      const rank = compassionRank(compassionValue);
+      const received = applyCompassion(result, rank);
       return {
         given: [
           `${number(remainingDamage)} remaining damage`,
           `${percent(lifetap, { decimals: 2, preserveNonzero: true })} lifetap`,
           `${percent(lifetapBonus, { decimals: 2, preserveNonzero: true })} healing bonus`,
+          ...(rank === null ? [] : [`Compassion blessing at rank ${rank}`]),
         ],
-        result: `Heals ${number(result)} Hit Points, up to your maximum Hit Points`,
+        result: `Heals ${number(received)} Hit Points, up to your maximum Hit Points`,
         working: [
           `Healing multiplier: 100% + ${percent(lifetapBonus, { decimals: 2, preserveNonzero: true })} = ${percent(addF32(1, lifetapBonus), { decimals: 2, preserveNonzero: true })}`,
           `Lifetap healing: ${percent(lifetap, { decimals: 2, preserveNonzero: true })} × ${number(remainingDamage)} × ${percent(addF32(1, lifetapBonus), { decimals: 2, preserveNonzero: true })} = ${number(result)}, rounded down`,
+          ...(rank === null
+            ? []
+            : [
+                `Healing received: ${number(result)} × ${percent(1 + compassionHealingBonus(rank), { decimals: 1 })} = ${number(received)}, rounded`,
+              ]),
         ],
       };
     },

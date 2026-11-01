@@ -237,3 +237,10 @@ export function escortStats(
     health: Math.max(1, iround(multiplyF32(median(health), 1.5))),
   };
 }
+
+// Source: server-scripts/VirtueCombat.cs:ReceivedHealing; Player.cs:VirtueHealingMultiplier — the holder's healing × (1 + 2% per Compassion rank, 1% at rank 0), rounded.
+export function applyCompassion(amount: number, rank: number | null): number {
+  if (rank === null || amount <= 0) return amount;
+  const multiplier = f32(1 + multiplyF32(0.02, rankWeight(rank)));
+  return iround(multiplyF32(amount, multiplier));
+}
