@@ -11,6 +11,7 @@ using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.Alerts;
 using PocketCompendium.Features.BestiaryCountdown;
 using PocketCompendium.Features.BestiaryPages;
+using PocketCompendium.Features.Fatecharms;
 using PocketCompendium.Features.BossList;
 using PocketCompendium.Features.MapPins;
 using PocketCompendium.Features.BossSkills;
@@ -47,6 +48,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _features.Add(new AlertsFeature());
         _features.Add(new BossSkillsFeature());
         _features.Add(new BestiaryPagesFeature());
+        _features.Add(new FatecharmsFeature());
         _features.Add(new SharingFeature());
         _features.StoppedAfterError += _stoppedNotices.Enqueue;
 

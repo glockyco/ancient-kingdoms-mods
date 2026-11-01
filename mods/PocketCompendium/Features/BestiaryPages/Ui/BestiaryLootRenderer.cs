@@ -33,7 +33,7 @@ internal static class BestiaryLootRenderer
         bool undiscovered = BestiaryPagesFeature.ShowUndiscoveredDrops;
         var key = EntityNameLocalization.LocaleCode + "|" +
                   (player != null ? player.level.current + "|" + player.className : "-") + "|" +
-                  CarriedFatecharms(player) + "|" + chances + "|" + undiscovered;
+                  Fatecharm.Carried(player) + "|" + chances + "|" + undiscovered;
         if (monster == _renderedMonster && key == _renderedFor)
             return;
 
@@ -108,8 +108,7 @@ internal static class BestiaryLootRenderer
 
         var table = DropTableReader.Read(monster);
         var fatecharm = ZoneFatecharm(monster);
-        // Source: Monster.cs:3062-3098. A boss kill uses the zone's Fatecharm from the main inventory.
-        bool armed = fatecharm != null && monster.isBoss && Carries(Player.localPlayer, fatecharm);
+        bool armed = fatecharm != null && monster.isBoss && Fatecharm.Carries(Player.localPlayer, fatecharm);
         var visible = new List<ShownDrop>();
         for (var index = 0; index < items.Count; index++)
         {
@@ -138,41 +137,12 @@ internal static class BestiaryLootRenderer
         return visible;
     }
 
-    // Source: GameManager.cs:668-685. Each dungeon zone has its own Fatecharm. A page shows the
-    // monster's prefab, whose zone is not always set, so the zone comes from the placed monster.
+    // A page shows the monster's prefab, whose zone is not always set, so the zone comes from the
+    // placed monster.
     private static ScriptableItem ZoneFatecharm(Monster monster)
     {
-        var tokens = GameManager.singleton != null ? GameManager.singleton.luckTokensDict : null;
         var tracked = Core.Tracking.Tracker.Current?.Find(monster.name);
-        int zone = tracked != null ? tracked.Zone : monster.idZone;
-        return tokens != null && tokens.TryGetValue(zone, out var token) ? token : null;
-    }
-
-    // The main inventory is the first 24 slots. A Fatecharm in the backpack is kept.
-    private const int MainInventorySlots = 24;
-
-    private static bool Carries(Player player, ScriptableItem fatecharm)
-    {
-        if (player == null || player.inventory == null) return false;
-        var slots = player.inventory.slots;
-        for (var i = 0; i < MainInventorySlots && i < slots.Count; i++)
-        {
-            var slot = slots[i];
-            if (slot.amount > 0 && slot.item.data != null && slot.item.data.nameItem == fatecharm.nameItem)
-                return true;
-        }
-
-        return false;
-    }
-
-    private static string CarriedFatecharms(Player player)
-    {
-        var tokens = GameManager.singleton != null ? GameManager.singleton.luckTokensDict : null;
-        if (player == null || tokens == null) return string.Empty;
-        var carried = new System.Text.StringBuilder();
-        foreach (var token in tokens.Values)
-            if (token != null && Carries(player, token)) carried.Append(token.nameItem).Append(',');
-        return carried.ToString();
+        return Fatecharm.ForZone(tracked != null ? tracked.Zone : monster.idZone);
     }
 
     // Source: UIBestiaryDetail.cs:153. The game's record of this character's found drops.

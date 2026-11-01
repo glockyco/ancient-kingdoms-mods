@@ -23,6 +23,7 @@ const STROKE_WIDTH = 2.2;
 const ICONS = [
   ["bell", "bell"],
   ["check", "check"],
+  ["clover", "clover"],
   ["book-open", "book-open"],
   ["code", "code"],
   ["coffee", "coffee"],
