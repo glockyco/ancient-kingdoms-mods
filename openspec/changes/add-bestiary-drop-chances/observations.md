@@ -9,3 +9,7 @@ Xylevis, killed 8 times with aggro: every corpse held at least one equipment pie
 ## A Fatecharm gives two pieces and is used up
 
 Captain Aerendyl in the Forgotten Catacombs, killed 3 times with one Catacombs Fatecharm in the main inventory: each corpse held two equipment pieces, such as Captain's Band and Iron Buckler, and each kill used up the charm. Killed once more without a charm, the corpse held one piece.
+
+## Opening a corpse records its drops as found
+
+Xylevis, a drop not found yet: taking Amulet of the False King from a corpse with the game's take command left the record unchanged. Opening the next corpse added its Raw Silk Headband to the record at once, as `Monster.CmdLootMonster` does for every item a boss or elite corpse holds (`Monster.cs:4645-4662`). The page then showed the gold check on Raw Silk Headband only.

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using PocketCompendium.Core.Text;
 using Il2Cpp;
+using PocketCompendium.Features.BestiaryPages.Game;
+using PocketCompendium.Features.BestiaryPages.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,17 +33,18 @@ internal static class BestiaryLootRenderer
         if (monster == _renderedMonster && key == _renderedFor)
             return;
 
-        var items = BuildDisplayItems(monster);
-        var slots = SlotsFor(detail, items.Count);
-        var capacity = ApplyLayout(detail, items.Count);
+        var drops = BuildDisplayItems(monster);
+        var slots = SlotsFor(detail, drops.Count);
+        var capacity = ApplyLayout(detail, drops.Count);
 
         Shown.Clear();
         var rendered = 0;
-        foreach (var item in items)
+        foreach (var drop in drops)
         {
             if (rendered >= capacity || rendered >= slots.Count)
                 break;
-            RenderSlot(slots[rendered], item);
+            RenderSlot(slots[rendered], drop.Item);
+            DropMarks.Apply(slots[rendered], drop.Chance, drop.Fatecharm, drop.Found);
             Shown.Add(slots[rendered]);
             rendered++;
         }
@@ -59,34 +62,83 @@ internal static class BestiaryLootRenderer
         foreach (var slot in ExtraSlots)
             SetSlotActive(slot, false);
         if (detail != null)
+        {
+            // The game's own page shows no chances, so the marks go with the layout.
+            foreach (var slot in BestiaryLootSlots.From(detail))
+                if (slot != null) DropMarks.Clear(slot);
             ApplyCell(detail, LootGridLayout.VanillaCell, VanillaColumns(detail));
+        }
         Shown.Clear();
         _renderedMonster = null;
         _renderedFor = null;
     }
 
-    private static List<Item> BuildDisplayItems(Monster monster)
+    private struct ShownDrop
     {
+        public Item Item;
+        public string Chance;
+        public Sprite Fatecharm;
+        public bool Found;
+    }
+
+    private static List<ShownDrop> BuildDisplayItems(Monster monster)
+    {
+        // One slot per item: a chance of at least one copy belongs to the item, not to an entry.
         var items = new List<ScriptableItem>();
+        var seen = new HashSet<string>();
         if (monster.dropChances != null && monster.dropChances.Count > 0)
         {
             foreach (var drop in monster.dropChances)
             {
-                if (drop?.item != null)
+                if (drop?.item != null && seen.Add(drop.item.name))
                     items.Add(drop.item);
             }
         }
 
+        int tableItems = items.Count;
         AddForgottenAltarVariants(monster, items);
 
-        var visible = new List<Item>();
-        foreach (var scriptableItem in items)
+        var table = DropTableReader.Read(monster);
+        var fatecharm = ZoneFatecharm(monster);
+        var visible = new List<ShownDrop>();
+        for (var index = 0; index < items.Count; index++)
         {
-            if (TryBuildVisibleItem(scriptableItem, out var item))
-                visible.Add(item);
+            if (!TryBuildVisibleItem(items[index], out var item))
+                continue;
+
+            var shown = new ShownDrop { Item = item, Found = IsFound(monster, item.data.nameItem) };
+            // Altar variants replace the normal reward by condition and are not in the table.
+            if (index < tableItems)
+            {
+                var id = DropTableReader.Id(items[index]);
+                var needed = new HashSet<string> { id };
+                double chance = DropChanceCalculator.Calculate(table, id, monster.isBoss, false, needed);
+                shown.Chance = DropChanceText.Percent(chance);
+                if (fatecharm != null && monster.isBoss && DropChanceCalculator.Calculate(table, id, true, true, needed) > chance + 1e-9)
+                    shown.Fatecharm = fatecharm.image;
+            }
+
+            visible.Add(shown);
         }
 
         return visible;
+    }
+
+    // Source: GameManager.cs:668-685. Each dungeon zone has its own Fatecharm. A page shows the
+    // monster's prefab, whose zone is not always set, so the zone comes from the placed monster.
+    private static ScriptableItem ZoneFatecharm(Monster monster)
+    {
+        var tokens = GameManager.singleton != null ? GameManager.singleton.luckTokensDict : null;
+        var tracked = Core.Tracking.Tracker.Current?.Find(monster.name);
+        int zone = tracked != null ? tracked.Zone : monster.idZone;
+        return tokens != null && tokens.TryGetValue(zone, out var token) ? token : null;
+    }
+
+    // Source: UIBestiaryDetail.cs:153. The game's record of this character's found drops.
+    private static bool IsFound(Monster monster, string itemName)
+    {
+        var record = UIJournal.singleton != null ? UIJournal.singleton.listBossesLootDiscovered : null;
+        return record != null && record.ContainsKey(monster.nameEntity) && record[monster.nameEntity].Contains(itemName);
     }
 
     // Same variants as UIBestiaryDetail.Show adds for Forgotten Altar elites.

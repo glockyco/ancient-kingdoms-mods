@@ -20,6 +20,7 @@ public static class Icons
 
     public static Sprite Arrow => Get("arrow");
     public static Sprite Bell => Get("bell");
+    public static Sprite Check => Get("check");
     public static Sprite BookOpen => Get("book-open");
     public static Sprite ChevronsDownUp => Get("chevrons-down-up");
     public static Sprite ChevronsUpDown => Get("chevrons-up-down");

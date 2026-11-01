@@ -53,6 +53,7 @@
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Skills\SkillEffectFormatter.cs" Link="Sources\BestiaryPages\SkillEffectFormatter.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Ui\LootGridLayout.cs" Link="Sources\BestiaryPages\LootGridLayout.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\DropChanceCalculator.cs" Link="Sources\BestiaryPages\DropChanceCalculator.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\DropChanceText.cs" Link="Sources\BestiaryPages\DropChanceText.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\MonsterDamage.cs" Link="Sources\BestiaryPages\MonsterDamage.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\MonsterSkillFacts.cs" Link="Sources\BestiaryPages\MonsterSkillFacts.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\SkillText.cs" Link="Sources\BestiaryPages\SkillText.cs" />

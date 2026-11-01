@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Il2Cpp;
 using PocketCompendium.Features.BestiaryPages.Model;
 
@@ -11,8 +10,6 @@ namespace PocketCompendium.Features.BestiaryPages.Game;
 /// </summary>
 internal static class DropTableReader
 {
-    private static readonly Regex Unsafe = new("[^a-z0-9_\\-]", RegexOptions.Compiled);
-
     public static List<DropEntry> Read(Monster monster)
     {
         var entries = new List<DropEntry>();
@@ -42,9 +39,8 @@ internal static class DropTableReader
         return entries;
     }
 
-    // Same identifiers as the website's export (GameIds.Sanitize).
-    public static string Id(ScriptableItem item) =>
-        Unsafe.Replace(item.name.ToLowerInvariant().Replace(" ", "_"), string.Empty);
+    // The website's export names items the same way.
+    public static string Id(ScriptableItem item) => DataExporter.GameIds.Sanitize(item.name);
 
     // Source: Monster.cs:4321-4328, CountsAsGuaranteedBossEquipment.
     private static bool CountsAsEquipment(ScriptableItem item) =>
