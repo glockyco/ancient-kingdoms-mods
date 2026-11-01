@@ -40,7 +40,7 @@ When drawing one monster's page fails, Pocket Compendium SHALL show the game's o
 
 ### Requirement: Trackers use game names and terms
 
-The boss list and the skill tracker SHALL show monster names, and the skill tracker skill names, in the game's translation for the selected language, rendered with the game's fonts for Chinese and Japanese. Fabled monsters SHALL show their base name in the fabled tier colour, without a "Fabled" tag. Distances SHALL be given in yd, and coordinates SHALL NOT be shown.
+The boss list and the skill tracker SHALL show monster names, and the skill tracker skill names, in the game's translation for the selected language, rendered with the game's fonts for Chinese and Japanese. Fabled monsters SHALL show their base name in the fabled tier colour, without a "Fabled" tag. Distances SHALL be given in yd, and coordinates SHALL NOT be shown. Times of day SHALL be written like the game's clock, such as 20:00.
 
 #### Scenario: Japanese tracker list
 
@@ -51,6 +51,11 @@ The boss list and the skill tracker SHALL show monster names, and the skill trac
 
 - **WHEN** Fabled Irvine Bloodworth is listed
 - **THEN** the row reads Irvine Bloodworth in the fabled colour, with no "Fabled" text
+
+#### Scenario: Night window
+
+- **WHEN** a player hovers Spirit of the Forest's row
+- **THEN** the tooltip says it spawns only at night, 20:00 to 08:00
 
 ### Requirement: Logs identify the build
 

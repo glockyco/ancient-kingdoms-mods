@@ -87,9 +87,11 @@ internal static class MonsterTooltip
         Text.Append("Respawns ").Append(StateText.Minutes(rules.KillToRespawnSeconds)).Append(" after each kill.");
         if (rules.Rolls) Text.Append(" Each spawn has a <b>").Append(Mathf.RoundToInt(rules.Chance * 100f)).Append("% chance</b>.");
         if (rules.Summoned) Text.Append(" It spawns only after all ").Append(monster.Guards.Length).Append(" of its guards are dead at the same time.");
+        // Written like the game's clock on the minimap.
         if (rules.HasWindow)
             Text.Append(rules.NightWindow ? " Only at night, " : " Only by day, ")
-                .Append("game hours ").Append(rules.WindowStart).Append(" to ").Append(rules.WindowEnd).Append('.');
+                .Append(rules.WindowStart.ToString("00")).Append(":00 to ")
+                .Append(rules.WindowEnd.ToString("00")).Append(":00.");
     }
 
     private static void AppendState(TrackedMonster monster, double now, string zone)
