@@ -250,7 +250,7 @@
       <p>
         Equipment, augments, passive skills, and buffs can also change your
         attributes.
-        <!-- Source: server-scripts/Player.cs:13482-13517 — reading attribute books permanently raises their listed attributes. -->
+        <!-- Source: server-scripts/Player.cs:13491-13526 — reading attribute books permanently raises their listed attributes. -->
         Reading certain
         <a
           href="/professions/lore_keeping"
@@ -481,7 +481,7 @@
             >Veteran point counting and reset losses</a
           > explains how the game miscounts ranks that cost 2 veteran points.
         </p>
-        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16322-16325 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
+        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16332-16335 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
           On some saved characters, the first specialization switch resets
           assigned attributes for free.
@@ -516,7 +516,7 @@
           resets your assigned attribute points for the same price, but not while
           a debuff is on you.
         </p>
-        <!-- Source: server-scripts/Player.cs:12108-12114,12140-12174 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
+        <!-- Source: server-scripts/Player.cs:12116-12122,12148-12182 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
         <!-- Source: server-scripts/PlayerSkills.cs:1880-1973 — each reset returns points only for its own skill pool. -->
         <p>
           <span class="block"

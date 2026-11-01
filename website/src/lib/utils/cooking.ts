@@ -40,7 +40,7 @@ export function isCookable(quality: number, cookingPercent: number): boolean {
 // Below the craftable threshold it is 0% — you cannot make it yet. Once
 // craftable, food results roll the chance, but non-food results (e.g.
 // Dragonbait Stew, item_type "general") always succeed.
-// Source: server-scripts/Player.cs:14909-14965 — only FoodItem results roll GetSuccessProbCooking. Other results go through the guaranteed-craft branch.
+// Source: server-scripts/Player.cs:14919-14975 — only FoodItem results roll GetSuccessProbCooking. Other results go through the guaranteed-craft branch.
 export function cookingSuccessPercent(
   quality: number,
   cookingPercent: number,
@@ -52,7 +52,7 @@ export function cookingSuccessPercent(
     : 100;
 }
 
-// Source: server-scripts/Player.cs:14921-14924 — a high enough Cooking skill turns
+// Source: server-scripts/Player.cs:14931-14934 — a high enough Cooking skill turns
 // low-tier recipes into "simple tasks" that grant no skill gain (strict >).
 export function isCookingEffortless(
   quality: number,
@@ -61,13 +61,13 @@ export function isCookingEffortless(
   return isEffortlessAtTier(mechanics.effortless, quality, cookingPercent);
 }
 
-// Source: server-scripts/Player.cs:14926-14928 — skill gain chance is
+// Source: server-scripts/Player.cs:14936-14938 — skill gain chance is
 // Lerp(0.95, 0.35, cookingLevel²).
 export function cookingSkillGainChancePercent(cookingPercent: number): number {
   return skillGainChance(mechanics.skillGain, cookingPercent) * 100;
 }
 
-// Source: server-scripts/Player.cs:14909-14936 — num3 = Random.Range(1, 4) / (successProbCooking * 3000).
+// Source: server-scripts/Player.cs:14919-14946 — num3 = Random.Range(1, 4) / (successProbCooking * 3000).
 // Only successful food crafts can grant skill, while below the cap and not
 // "effortless". Returns percentage-point bounds, or null when none applies.
 export function cookingSkillGainRange(
@@ -75,7 +75,7 @@ export function cookingSkillGainRange(
   cookingPercent: number,
   isFoodItem: boolean,
 ): { min: number; max: number } | null {
-  // Source: server-scripts/Player.cs:14920 — Cooking cannot increase at the cap.
+  // Source: server-scripts/Player.cs:14930 — Cooking cannot increase at the cap.
   if (cookingPercent >= mechanics.capPercent) return null;
   if (!isFoodItem) return null;
   if (!isCookable(quality, cookingPercent)) return null;

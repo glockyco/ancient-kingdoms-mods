@@ -7,8 +7,8 @@ Source references:
 - Source: server-scripts/Monster.cs:CalculateRewardExp — CalculateRewardExp (monster EXP)
 - Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — zone discovery EXP
 - Source: server-scripts/GatherItem.cs:630-639 — gathering EXP by tier
-- Source: server-scripts/Player.cs:14893-14899 — crafting EXP by item quality
-- Source: server-scripts/Player.cs:13075-13082 — alchemy EXP by recipe tier
+- Source: server-scripts/Player.cs:14903-14909 — crafting EXP by item quality
+- Source: server-scripts/Player.cs:13084-13091 — alchemy EXP by recipe tier
 """
 
 import sqlite3

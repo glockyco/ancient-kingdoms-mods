@@ -861,7 +861,7 @@ export function assembleAcquisitionModel(
                 }),
               );
         }
-        // Source: server-scripts/Player.cs:14570-14611; server-scripts/TableUI.cs:71-98.
+        // Source: server-scripts/Player.cs:14580-14621; server-scripts/TableUI.cs:71-98.
         // Scribing uses Alchemy success but does not require learning the recipe.
         if (method.rule_id === "alchemy")
           parts.push(

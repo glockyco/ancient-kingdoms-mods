@@ -187,7 +187,7 @@
         <div>
           <div>Craft scrolls.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:14594-14614,14653-14658; server-scripts/Utils.cs:GetSuccessProbAlchemy; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
+            <!-- Source: server-scripts/Player.cs:14604-14624,14663-14668; server-scripts/Utils.cs:GetSuccessProbAlchemy; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
             All current scroll recipes have 100% crafting success chance. Crafting
             grants
             <MechanicsLink section="experience#scribing-xp"
@@ -288,7 +288,7 @@
             Gain amount per increase
           </div>
           <div class="text-sm leading-6">
-            <!-- Source: server-scripts/Player.cs:14617; server-scripts/ScrollItem.cs:110 — crafting and use stop granting Scroll Mastery at the cap. -->
+            <!-- Source: server-scripts/Player.cs:14627; server-scripts/ScrollItem.cs:110 — crafting and use stop granting Scroll Mastery at the cap. -->
             {#if skillLevel >= 100}
               <div>No further skill gain</div>
             {:else}

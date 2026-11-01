@@ -1406,7 +1406,7 @@
               </p>
             {/if}
             {#if skill.is_invisibility}
-              <!-- Source: server-scripts/Entity.cs:368-384 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
+              <!-- Source: server-scripts/Entity.cs:387-403 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
               <!-- Source: server-scripts/Skills.cs:1020, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
               <p class="text-purple-600 dark:text-purple-400">
                 <span class="block"

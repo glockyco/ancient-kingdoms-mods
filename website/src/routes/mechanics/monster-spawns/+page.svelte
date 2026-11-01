@@ -204,7 +204,7 @@
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <p>
         <!-- Source: server-scripts/ZoneInfo.cs:185-201 — zones with no online player inside are deactivated. -->
-        <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD; Player.cs:12342,14379; NetworkManagerMMO.cs:DoServerDisconnect — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection and on disconnect. -->
+        <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD; Player.cs:12351,14389; NetworkManagerMMO.cs:DoServerDisconnect — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection and on disconnect. -->
         The zone switches off about 5 seconds after the last player leaves, or at
         once when the last player logs out.
       </p>
@@ -226,7 +226,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:960-967 and Entity.cs:225-233 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
+          <!-- Source: server-scripts/Monster.cs:960-967 and Entity.cs:244-252 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
           Respawn timers keep running while the zone is empty. Monsters whose timers
           have ended return when someone enters.
         </li>
@@ -648,27 +648,27 @@
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Player.cs:15624-15636 — the renewal zeroes every respawn-enabled monster deadline in the dungeon and persists cleared boss and elite deadlines. -->
+          <!-- Source: server-scripts/Player.cs:15634-15646 — the renewal zeroes every respawn-enabled monster deadline in the dungeon and persists cleared boss and elite deadlines. -->
           Renewal ends the wait for dead regular monsters, elites, and bosses that
           can respawn in the dungeon.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:15625-15637 — the renewal only changes respawn deadlines, leaving living monsters untouched. -->
+          <!-- Source: server-scripts/Player.cs:15635-15647 — the renewal only changes respawn deadlines, leaving living monsters untouched. -->
           Living monsters are unaffected, including bosses and rares.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:15609-15622 — renewal checks every online player in the dungeon and refuses while any is inside, regardless of party; it also refuses insufficient gold. -->
+          <!-- Source: server-scripts/Player.cs:15619-15632 — renewal checks every online player in the dungeon and refuses while any is inside, regardless of party; it also refuses insufficient gold. -->
           Every player must leave before renewal, including anyone outside your party.
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:15624-15637; Portal.cs:54-84 — renewal changes monster deadlines only, while portal keys, level and item-level requirements remain checked on entry. -->
+      <!-- Source: server-scripts/Player.cs:15634-15647; Portal.cs:54-84 — renewal changes monster deadlines only, while portal keys, level and item-level requirements remain checked on entry. -->
       <p class="text-sm text-muted-foreground">
         Renewal does not remove a portal's key, level, or item-level
         requirements. See <MechanicsLink section="world#portals"
           >Portals and Entry Requirements</MechanicsLink
         >.
       </p>
-      <!-- Source: server-scripts/Player.cs:15625-15637; Monster.cs:2240-2260 — a zeroed respawn deadline does not bypass summon, chance, seasonal, or time-window spawn checks. -->
+      <!-- Source: server-scripts/Player.cs:15635-15647; Monster.cs:2240-2260 — a zeroed respawn deadline does not bypass summon, chance, seasonal, or time-window spawn checks. -->
       <p class="text-sm text-muted-foreground">
         After renewal, summoned monsters need their guards dead together and
         rare monsters must pass their spawn roll. Monsters with limited spawn
@@ -677,7 +677,7 @@
       </p>
 
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:15625-15637 and Monster.cs:2242-2247 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
+        <!-- Source: server-scripts/Player.cs:15635-15647 and Monster.cs:2242-2247 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
         <span class="block"
           >Buy renewal once, then enter the dungeon to trigger one rare-spawn
           roll.</span

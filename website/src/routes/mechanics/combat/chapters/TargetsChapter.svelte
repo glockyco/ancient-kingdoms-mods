@@ -6,7 +6,7 @@
 
 <Chapter id="targeting">
   <Topic id="targets">
-    <!-- Source: server-scripts/Player.cs:4815-4825; PlayerSkills.cs:861-898 — players attack living monsters or NPCs, exclude charmed monsters, and choose the closest attackable monster within 10 units when a targeted attack lacks a valid target. -->
+    <!-- Source: server-scripts/Player.cs:4823-4833; PlayerSkills.cs:861-898 — players attack living monsters or NPCs, exclude charmed monsters, and choose the closest attackable monster within 10 units when a targeted attack lacks a valid target. -->
     <p>
       Players can attack living monsters and NPCs. Other players and
       <a href="/mechanics/bard#charm">Bard-charmed</a> monsters are protected from

@@ -438,7 +438,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:14520-14524 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:14530-14534 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Click an animal within 3 yd to pet it. The same animal can grant
         reputation only once every 30 seconds.
@@ -514,7 +514,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:14520-14524, Monster.cs:3253-3265, Npc.cs:1646-1656, PlayerQuests.cs:449-452, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:14530-14534, Monster.cs:3253-3265, Npc.cs:1646-1656, PlayerQuests.cs:449-452, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         Your reputation can keep rising above Exalted or falling below Hated.
