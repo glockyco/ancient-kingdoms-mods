@@ -36,6 +36,9 @@ public static class Shapes
     /// <summary>A triangle pointing up, for edge arrows and the resize grip.</summary>
     public static Sprite Triangle => Get("PC_Triangle", () => Make("PC_Triangle", 64, 64, TriangleCoverage, Vector4.zero));
 
+    /// <summary>A soft round glow, full in the middle third and fading to nothing at the edge, for pins that are up.</summary>
+    public static Sprite Glow => Get("PC_Glow", () => Make("PC_Glow", RoundSize, RoundSize, GlowCoverage, Vector4.zero));
+
     private static Vector4 RoundedBorder => new(RoundedRadius + 1f, RoundedRadius + 1f, RoundedRadius + 1f, RoundedRadius + 1f);
 
     // Signed distance to the rounded box: negative inside, zero on the edge.
@@ -60,6 +63,13 @@ public static class Shapes
 
     private static float Outline(float distance, float width) =>
         Mathf.Clamp01(0.5f - distance) * Mathf.Clamp01(distance + width + 0.5f);
+
+    private static float GlowCoverage(int x, int y)
+    {
+        float fromCentre = (DiscDistance(x, y) + RoundSize / 2f) / (RoundSize / 2f);
+        float fade = Mathf.Clamp01((1f - fromCentre) / (2f / 3f));
+        return fade * fade;
+    }
 
     private static float TriangleCoverage(int x, int y)
     {

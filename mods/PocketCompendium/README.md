@@ -18,6 +18,14 @@ Click a row to watch the monster, and shift-click it to open its Bestiary page. 
 
 In a world you host, every time is exact. On someone else's server, the mod estimates from deaths you see, corpses you find, and a dedicated server's kill notices, and marks those times with `~`. It remembers them per server.
 
+### World markers
+
+A dead monster of your zone shows on its spawn point or altar: its portrait in a ring that fills until it spawns, with its name and time below. A monster that is up out of sight shows at the screen's edge, with a pointer towards it and its distance. The World markers page switches the edge arrows off.
+
+### Alerts
+
+When a monster you watch spawns, the game's own message band and a golden chat line announce it. On someone else's server, the alert comes when you see the monster up.
+
 ### Boss skills
 
 The panel lists the monsters fighting you or your pet. Out of combat, select a boss, elite, or fabled monster to preview it. Drag a monster's header to move the panel, and drag its bottom-right corner to scale it. The compact button shrinks the rows, the lock button stops dragging and scaling, and the settings button opens the Boss skills settings.

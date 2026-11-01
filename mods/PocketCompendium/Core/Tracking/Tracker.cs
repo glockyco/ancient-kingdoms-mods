@@ -61,6 +61,9 @@ public sealed class Tracker
     /// <summary>Increments after every refresh, so a surface can skip unchanged frames.</summary>
     public int Version { get; private set; }
 
+    /// <summary>Increments with every new world, so a surface can drop what it kept from the last one.</summary>
+    public int Session { get; private set; }
+
     /// <summary>Set after tracking threw. It stays off until the game restarts, and other features keep running.</summary>
     public bool Failed { get; private set; }
 
@@ -148,6 +151,7 @@ public sealed class Tracker
         }
 
         _world = world;
+        Session++;
         _host = world == HostWorld;
         _memory = _host ? null : Load(world);
         _memoryChanged = false;

@@ -29,10 +29,10 @@
 - [x] 4.1 Boss list: zone groups, short rows, level colours and skull, ellipsized names, direction arrows to spawn points and altars, cooldown sweep, tooltips, click to watch, shift-click to open the Bestiary.
 - [x] 4.2 Filters for tier, level, zone and discovery, with the collapsed "more" line and watched monsters always shown.
 - [x] 4.3 Compact style with hover-only header and the switch back to the list.
-- [ ] 4.4 World markers on spawn points and edge arrows for monsters that are up off screen.
+- [x] 4.4 World markers on spawn points and edge arrows for monsters that are up off screen.
 - [ ] 4.5 Map pins with time tags, glow for monsters that are up, and tooltips on hover.
 - [ ] 4.6 Bestiary grid countdown and the "Respawns in" plate on the split of the page, through one owner of the Bestiary page patch that both Bestiary features contribute to.
-- [ ] 4.7 Respawn alerts for watched monsters through `Player.ShowImportantMessage`.
+- [x] 4.7 Respawn alerts for watched monsters through `Player.ShowImportantMessage`.
 - [ ] 4.8 Capture each surface in game and compare with the mood board sketches, including Chinese and Japanese names.
 
 ## 5. Sharing
