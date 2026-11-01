@@ -88,9 +88,10 @@ namespace MapTeleporter
                 LoggerInstance.Msg($"Distance from player: {Vector2.Distance(new Vector2(player.transform.position.x, player.transform.position.y), worldPos):F2} units");
             }
 
-            // Execute teleport
+            // Execute teleport. Without a world portal the server treats the trip as a plain warp.
+            // Source: server-scripts/VirtueEncounters.cs:IsWorldPortalTrip — a missing portal identity is not a portal trip.
             Vector2 orientation = new Vector2(0, 1);
-            player.CmdPortalDestination(player.idZone, worldPos, orientation);
+            player.CmdPortalDestination(player.idZone, worldPos, orientation, null);
         }
 
         /// <summary>

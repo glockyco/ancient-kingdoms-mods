@@ -5866,6 +5866,9 @@
     "Utils.cs:worldBosses": {
       "span": 0
     },
+    "VirtueEncounters.cs:IsWorldPortalTrip": {
+      "span": 0
+    },
     "WallTrap.cs:24-31": {
       "sha256": "33efcb89833e7eee3fccaad700040272f16dcbd5f700eff9909993ff7d4639cb",
       "span": 8
