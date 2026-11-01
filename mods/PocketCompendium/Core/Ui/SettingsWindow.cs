@@ -8,7 +8,8 @@ namespace PocketCompendium.Core.Ui;
 
 /// <summary>
 /// Pocket Compendium's settings window: one page per feature, each starting with that feature's
-/// switch, and a Layout page. Pages are built from the settings each feature declares.
+/// switch, a Layout page, and pages that draw their own content, such as About. Feature and
+/// Layout pages are built from the settings each declares.
 /// </summary>
 public sealed class SettingsWindow
 {
@@ -57,13 +58,15 @@ public sealed class SettingsWindow
     private bool _dragging;
     private Vector2 _grab;
 
-    public SettingsWindow(IReadOnlyList<Feature> features, LayoutSettings layout)
+    public SettingsWindow(IReadOnlyList<Feature> features, LayoutSettings layout, params ISettingsContent[] contentPages)
     {
         _features = features;
         _layout = layout;
         foreach (var feature in features)
-            _pages.Add(new Page(feature.Title, feature.Icon, feature.Settings, feature));
-        _pages.Add(new Page(layout.Page.Title, Icons.Move, layout.Page, null));
+            _pages.Add(new Page(feature.Title, feature.Icon, feature.Settings, feature, null));
+        _pages.Add(new Page(layout.Page.Title, Icons.Move, layout.Page, null, null));
+        foreach (var content in contentPages)
+            _pages.Add(new Page(content.Title, content.Icon, null, null, content));
         Current = this;
     }
 
@@ -211,11 +214,14 @@ public sealed class SettingsWindow
         _selected = index;
         for (int item = 0; item < _nav.Count; item++)
             _nav[item].SetSelected(item == index);
+        // Content pages hold no settings to reset.
+        _reset.Rect.gameObject.SetActive(_pages[index].Settings != null);
         BuildRows(_pages[index]);
     }
 
     private void ClearRows()
     {
+        foreach (var page in _pages) page.Content?.Clear();
         _toggles.Clear();
         _choices.Clear();
         _actions.Clear();
@@ -253,6 +259,15 @@ public sealed class SettingsWindow
             _failedNote.Value = "Stopped after an error. Restart the game to use it again. MelonLoader/Latest.log has the details.";
             y += page.Feature.Failed ? 20f : 0f;
             _failedNote.SetActive(page.Feature.Failed);
+        }
+
+        // A content page draws everything below its title itself.
+        if (page.Content != null)
+        {
+            _contentHeight = y + page.Content.Build(_content, Pad, y, width) + 16f;
+            _content.sizeDelta = new Vector2(_content.sizeDelta.x, _contentHeight);
+            _content.anchoredPosition = Vector2.zero;
+            return;
         }
 
         y += 10f;
@@ -418,7 +433,7 @@ public sealed class SettingsWindow
             return;
         }
 
-        if (_reset.Update()) _pages[_selected].Settings.ResetShown();
+        if (_pages[_selected].Settings != null && _reset.Update()) _pages[_selected].Settings.ResetShown();
 
         for (int index = 0; index < _nav.Count; index++)
         {
@@ -434,6 +449,8 @@ public sealed class SettingsWindow
         bool insideViewport = Pointer.Over(_viewport);
         if (insideViewport)
         {
+            _pages[_selected].Content?.HandleInput();
+
             foreach (var toggle in _toggles)
                 if (Pointer.Clicked(toggle.View.Rect))
                     toggle.Setting.Value = !toggle.Setting.Value;
@@ -501,18 +518,20 @@ public sealed class SettingsWindow
 
     private sealed class Page
     {
-        public Page(string title, Sprite icon, SettingsPage settings, Feature feature)
+        public Page(string title, Sprite icon, SettingsPage settings, Feature feature, ISettingsContent content)
         {
             Title = title;
             Icon = icon;
             Settings = settings;
             Feature = feature;
+            Content = content;
         }
 
         public string Title { get; }
         public Sprite Icon { get; }
         public SettingsPage Settings { get; }
         public Feature Feature { get; }
+        public ISettingsContent Content { get; }
     }
 
     private sealed class NavItem

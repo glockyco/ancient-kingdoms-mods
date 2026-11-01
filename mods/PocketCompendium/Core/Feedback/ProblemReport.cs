@@ -6,9 +6,10 @@ using System.Text.RegularExpressions;
 
 namespace PocketCompendium.Core.Feedback;
 
-/// <summary>Where the player plays, as the details name it.</summary>
+/// <summary>Where the player plays, as the details and the log name it.</summary>
 public enum PlaySetting
 {
+    NotInWorld,
     Alone,
     Hosting,
     Joined,
@@ -63,6 +64,14 @@ public static class ProblemReport
     /// <summary>The error with every file path cut to its file name.</summary>
     public static string Impersonal(string error) => Directories.Replace(error ?? string.Empty, string.Empty);
 
+    public static string SettingText(PlaySetting setting) => setting switch
+    {
+        PlaySetting.Alone => "alone",
+        PlaySetting.Hosting => "hosting a world",
+        PlaySetting.Joined => "in a world someone else hosts",
+        _ => "not in a world",
+    };
+
     private static string LinkFor(string details) =>
         FormUrl + "?template=" + Uri.EscapeDataString(FormFile) + "&" + DetailsField + "=" + Uri.EscapeDataString(details);
 
@@ -74,12 +83,7 @@ public static class ProblemReport
         text.Append("MelonLoader: ").Append(facts.MelonLoaderVersion).Append('\n');
         text.Append("System: ").Append(facts.System).Append('\n');
         text.Append("Language: ").Append(facts.Language).Append('\n');
-        text.Append("Playing: ").Append(facts.Setting switch
-        {
-            PlaySetting.Hosting => "hosting a world",
-            PlaySetting.Joined => "in a world someone else hosts",
-            _ => "alone",
-        }).Append('\n');
+        text.Append("Playing: ").Append(SettingText(facts.Setting)).Append('\n');
 
         text.Append("Other mods: ");
         if (facts.OtherMods.Count == 0) text.Append("none");
@@ -91,8 +95,8 @@ public static class ProblemReport
 
         text.Append('\n');
         text.Append("Switched off: ").Append(facts.SwitchedOff.Count == 0 ? "none" : string.Join(", ", facts.SwitchedOff)).Append('\n');
-        text.Append("Stopped after an error: ");
-        if (facts.Stopped.Count == 0) text.Append("none");
+        text.Append("Stopped after an error:");
+        if (facts.Stopped.Count == 0) text.Append(" none");
         foreach (var (feature, error) in facts.Stopped)
             text.Append('\n').Append("- ").Append(feature).Append(": ").Append(Shorten(FirstLine(Impersonal(error)), errorLimit));
         return text.ToString();

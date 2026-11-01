@@ -16,6 +16,9 @@ public sealed class FeatureRegistry
 
     public void Add(Feature feature) => _features.Add(feature);
 
+    /// <summary>Raised once when a feature stops after an error.</summary>
+    public event Action<Feature> StoppedAfterError;
+
     public string SwitchedOn() =>
         string.Join(", ", _features.Where(feature => feature.Switch.Value).Select(feature => feature.Title));
 
@@ -80,7 +83,7 @@ public sealed class FeatureRegistry
                 Stop(feature, reportFailure: false);
     }
 
-    private static void Start(Feature feature)
+    private void Start(Feature feature)
     {
         try
         {
@@ -95,10 +98,13 @@ public sealed class FeatureRegistry
         }
     }
 
-    private static void Stop(Feature feature, bool reportFailure)
+    private void Stop(Feature feature, bool reportFailure)
     {
         if (reportFailure)
+        {
             Log.Error($"{feature.Title} stopped after an error and stays off until the game restarts. Every other feature keeps running: {feature.Failure}");
+            StoppedAfterError?.Invoke(feature);
+        }
 
         try
         {

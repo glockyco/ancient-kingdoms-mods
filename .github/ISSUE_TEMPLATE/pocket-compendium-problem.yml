@@ -1,0 +1,33 @@
+name: Pocket Compendium problem
+description: Something in the Pocket Compendium mod does not work as it should.
+title: "Pocket Compendium: "
+labels: ["bug", "mods"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One problem per report, please. Without a GitHub account, post the details from the game in the #📖-compendium channel on the [game's Discord](https://discord.gg/8MkSWjXwab) instead.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What went wrong
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to see it
+      description: The steps that make it happen, if you know them.
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: The game fills this in when you use "Report a problem" on the About page of Pocket Compendium's settings. Opened from elsewhere, copy the first lines of `MelonLoader/Latest.log`, which name the versions.
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Log and screenshot
+      description: Drag `MelonLoader/Latest.log` from the game's folder and a screenshot into this field. The log can contain your Windows user name.

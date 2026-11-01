@@ -67,7 +67,7 @@ A report is public, so the details leave out server addresses, character names a
 
 ### What follows the report action
 
-After a click the page says that the browser has the form and the clipboard has the details, names `MelonLoader/Latest.log`, and offers a button that opens the log's folder. Whether that button uses `explorer.exe /select` or a `file:` URL is settled by trying both under CrossOver, keeping the one that opens the host's file manager or at least a folder view.
+After a click the page says that the browser has the form and the clipboard has the details, names `MelonLoader/Latest.log`, and offers a button that opens the log's folder. Under Wine the button hands the folder's `file:` URL to `winebrowser`, which passes it to the host system: CrossOver on macOS then opens the folder in Finder, from where the player can drag the log into the browser. Opening the same URL through the shell, as `Application.OpenURL` does, shows the folder in Wine's own file manager instead, which cannot hand files to the host's browser. On Windows the button opens the folder with `Application.OpenURL`.
 
 ### The compendium channel for players without a GitHub account
 

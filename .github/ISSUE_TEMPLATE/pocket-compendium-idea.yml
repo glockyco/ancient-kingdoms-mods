@@ -1,0 +1,39 @@
+name: Pocket Compendium idea
+description: Suggest something the Pocket Compendium mod could do for you.
+title: "Pocket Compendium idea: "
+labels: ["enhancement", "mods"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One idea per report, please. Start with the situation in the game, even if you already have a solution in mind.
+  - type: textarea
+    id: goal
+    attributes:
+      label: What do you want to do in the game?
+    validations:
+      required: true
+  - type: textarea
+    id: obstacle
+    attributes:
+      label: What gets in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How Pocket Compendium could help, if you have something in mind.
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does this come up?
+      options:
+        - Every time I play
+        - Now and then
+        - Rarely
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag images into this field.
