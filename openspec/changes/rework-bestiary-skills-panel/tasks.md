@@ -11,11 +11,11 @@
 
 - [x] 2.1 Choose the layout through a comparison (compare-options) with real screenshots. Decided on 2026-11-01: a window in the frame of the game's Quest Log beside the Journal, a summary of damage types and threats first, one card per special skill in the in-fight order, then the basic attack, over a table without a summary.
 - [ ] 2.2 Choose the summary's content and form and the card's structure through a comparison on Nyxarion, a boss with six specials and an elite without specials. Verify that the answer is recorded.
-- [ ] 2.3 Choose the labels and the hover text through a comparison, in the website's terms. Verify that the answer is recorded.
+- [ ] 2.3 Choose the labels and the hover text through a comparison, in the website's terms and the game's own words where the two differ. Summon Player is one: the panel draft and the website's summary say "pulls" (`formatSkillEffect.ts:1082`), the monster page says "Teleports target to this monster" and the game says "You have been summoned!" (`SummonSkillMonsters.cs:47-48`). In MMO usage "pull" means drawing a monster into a fight. Apply the chosen word to the website and the mod together, since the parity corpus ties them. Verify that the answer is recorded.
 
 ## 3. Panel
 
-- [ ] 3.1 Build the window from the Journal's frame sprites, docked beside the page at its height, with a scroll view. Verify in game on a 1920 and a 1280 px window.
+- [ ] 3.1 Build the window from the Journal's frame sprites, docked beside the page at its height, with a scroll view, movable by dragging its frame and remembering its place. Verify in game on a 1920 and a 1280 px window, and that a dragged window keeps its place after closing the Journal and after a restart.
 - [ ] 3.2 Build the summary, the cards, the one-line basic attack and passives, and the hover details as chosen. Verify in game for Nyxarion, Xylevis, Valaark, an elite without specials and with the game in Japanese.
 - [ ] 3.3 Open the panel with the page, remember a close in the Bestiary pages settings and keep the Skills button as a toggle. Verify in game across two pages and a restart.
 - [ ] 3.4 Order special skills with the in-fight cards' ordering. Verify in a fight with Nyxarion that both show his specials in the same order.

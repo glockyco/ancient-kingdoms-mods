@@ -29,6 +29,8 @@
 
 The panel keeps its place beside the Journal, at the Journal's height, and takes the frame of the game's own windows. The mod reads the frame's sprites from the Journal at run time, so the frame follows the game's art. Content that does not fit scrolls.
 
+The player can drag the window by its frame like the game's own windows, and it remembers where it was put. It uses the game's `UIWindow`, which the Quest Log frame already carries and which stores the position in PlayerPrefs under the window's hierarchy path, so the window gets a fixed name before that path is read. As a child of the Journal it moves along when the Journal moves.
+
 Alternatives: a tab inside the Bestiary page, which has no free space for seven cards, and the current flat box, which looks foreign to the game. The layout comparison settles the width with a narrower and a wider variant, on screenshots at 1280 and 1920 px.
 
 ### Open with the page
