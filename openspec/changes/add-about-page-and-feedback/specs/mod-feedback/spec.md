@@ -74,12 +74,12 @@ The idea action SHALL open the repository's ideas form in the browser. The ideas
 
 ### Requirement: The README names where to report
 
-The README's limits SHALL link the problem form and name the compendium channel on the game's Discord for players without a GitHub account.
+The README SHALL have its own section on problems and ideas that names the About page's report and idea actions, links the issue forms on GitHub, and names the compendium channel on the game's Discord for players without a GitHub account.
 
 #### Scenario: Reading the README
 
-- **WHEN** a player reads the README's limits
-- **THEN** they find the link to the problem form and the compendium channel on the game's Discord
+- **WHEN** a player looks in the README for where to report a problem
+- **THEN** they find a section that names the About page's actions, links the forms and names the compendium channel on the game's Discord
 
 ### Requirement: A stopped feature makes itself known
 

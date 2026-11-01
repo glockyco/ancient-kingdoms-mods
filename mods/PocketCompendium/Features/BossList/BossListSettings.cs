@@ -11,9 +11,12 @@ public sealed class BossListSettings
 {
     public BossListSettings(SettingsPage page)
     {
+        page.Section("Look");
         Style = page.Choice("Style", ListStyle.List, "Style",
             "Compact shows only portraits and times. Its header appears when you hover over it.",
             (ListStyle.List, "List"), (ListStyle.Compact, "Compact"));
+        Direction = page.Toggle("Direction", true, "Direction",
+            "Shows the distance and direction to the spawn point or altar of monsters in your zone.");
 
         page.Section("Show");
         Tiers = page.Chips("Tiers", null,
@@ -26,18 +29,17 @@ public sealed class BossListSettings
         CustomLevels = page.Range("Custom", 1, 60, 1, 100, "Custom levels", "The level range shown when Levels is set to Custom.",
             () => Levels.Value == LevelFilter.Custom);
         Zones = page.Choice("Zones", ZoneFilter.ThisZone, "Zones",
-            "This zone shows only your current zone. Watched monsters are always shown.",
+            "This zone shows the zone you're in. All zones shows every zone.",
             (ZoneFilter.ThisZone, "This zone"), (ZoneFilter.AllZones, "All zones"));
         Undiscovered = page.Choice("Undiscovered", UndiscoveredFilter.Silhouette, "Undiscovered",
             "How to show monsters you haven't met yet.",
             (UndiscoveredFilter.Silhouette, "Silhouette"), (UndiscoveredFilter.Show, "Show"), (UndiscoveredFilter.Hide, "Hide"));
         page.Note("Watched monsters are always shown, whatever these filters say. Click a row in the list to watch a monster.");
 
-        page.Section("Rows");
-        Sort = page.Choice("Sort", SortOrder.State, "Sort by", null,
+        page.Section("Order");
+        Sort = page.Choice("Sort", SortOrder.State, "Sort by",
+            "State lists monsters that are up first, then the soonest to spawn. Distance lists the nearest first, Level the lowest.",
             (SortOrder.State, "State"), (SortOrder.Distance, "Distance"), (SortOrder.Level, "Level"));
-        Direction = page.Toggle("Direction", true, "Direction",
-            "Shows the distance and direction to the spawn point or altar of monsters in your zone.");
 
         Panel = new PanelHost(page, "Panel", PanelResize.Size,
             new Vector2(-810f, 235f), new Vector2(304f, 520f), new Vector2(240f, 120f), new Vector2(520f, 1000f));

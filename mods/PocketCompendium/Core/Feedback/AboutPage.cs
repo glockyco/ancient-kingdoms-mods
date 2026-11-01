@@ -74,8 +74,8 @@ public sealed class AboutPage : ISettingsContent
         HudFactory.TopLeft(_idea.Rect, x + 182f, y, 160f, 32f);
         y += 42f;
 
-        _help = Wrapped("help", parent, "Both open a form on GitHub. A problem report also copies details about your setup.", x, y, width, 12f, Theme.Dim);
-        _reported = Wrapped("reported", parent, "Your browser shows the problem form with the details filled in, and your clipboard holds them too. Please attach MelonLoader/Latest.log from the game's folder.", x, y, width, 12f, Theme.Muted);
+        _help = Wrapped("help", parent, "Each button opens a form on GitHub. No GitHub account? Post your problem or idea in the compendium channel on the game's Discord.", x, y, width, 12f, Theme.Dim);
+        _reported = Wrapped("reported", parent, "The form now holds your setup's details, and so does your clipboard. Please attach MelonLoader/Latest.log to the form.", x, y, width, 12f, Theme.Muted);
         float reportedHeight = _reported.Rect.sizeDelta.y + 8f;
         _logFolder = new ButtonView(parent, "Open the log folder", ButtonStyle.Secondary, 160f, 28f);
         HudFactory.TopLeft(_logFolder.Rect, x, y + reportedHeight, 160f, 28f);

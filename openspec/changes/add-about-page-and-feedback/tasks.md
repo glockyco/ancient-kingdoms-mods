@@ -12,7 +12,7 @@
 
 ## 3. About page
 
-- [ ] 3.1 Choose the page's wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded. Decided on 2026-11-01: the version and fan-made lines, the link names, the stopped-feature note and the Bestiary summaries. Still open: the texts around the report button, which should be option C made less vague, and the Boss list page, where both Zones choices keep an explanation without a short last line, Sort by gets one, and the Rows heading fits the page's structure.
+- [ ] 3.1 Choose the page's wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded. Decided on 2026-11-01: the version and fan-made lines, the link names, the report button's texts, the stopped-feature note, the Bestiary summaries and the Boss list page with Look, Show and Order headings. Still open: whether the stopped-feature note keeps "Restart the game to use it again", since a restarted feature can fail again.
 - [x] 3.2 Add a settings page kind that draws its own content, add Lucide's `info` icon to `website/scripts/generate-mod-icons.mjs`, and build the page as rows like the other pages, as decided on 2026-11-01: version, build and author, the fan-made line, a Links section with one row per address, and a Feedback section with the two buttons, with "Reset this page" hidden. Verify in game at the Mac's full screen of 1800 px, the widest at hand, and in a 1280 px window.
 - [x] 3.3 Keep the page's addresses in one class with a test that compares those the website also links with `website/src/lib/constants/links.ts` and `website/src/lib/seo/site.ts`. Verify with `dotnet test tests/PocketCompendium.Tests`.
 - [ ] 3.4 Apply the chosen wording of the other pages' summaries and help texts. Verify in game that no text ends with a single word on its last line.
@@ -26,7 +26,7 @@
 
 ## 5. Documentation and records
 
-- [ ] 5.1 Link the problem form and name the compendium channel on the game's Discord in the README's limits, worded through a comparison. Verify with `pnpm check:docs`.
+- [x] 5.1 Link the forms and name the compendium channel on the game's Discord in the README, worded through a comparison. Chosen on 2026-11-01: a section of its own, "Problems and ideas". Verify with `pnpm check:docs`.
 - [ ] 5.2 Record each comparison's answer as a case in the vault's Ancient Kingdoms Compendium note. Verify that the note holds the cases.
 
 ## Workflow follow-up

@@ -81,7 +81,11 @@ Monster, skill, zone, and item names follow the game's language setting. Everyth
 
 - On someone else's server, a boss can show as Up after a server restart until someone enters its zone. The server only applies its respawn timer at that point.
 - The boss skills panel only shows monsters near you. On someone else's server, the time until the next special attack is an estimate based on the casts you see.
-- If a feature stops working, the other features keep running. Restart the game to turn it back on. The error is written to `MelonLoader/Latest.log`. Please [open an issue](https://github.com/glockyco/ancient-kingdoms-mods/issues) and attach that file.
+- If a feature stops working, the other features keep running.
+
+## Problems and ideas
+
+Use **Report a problem** or **Suggest an idea** on the About page of the settings (F8). Both open a [form on GitHub](https://github.com/glockyco/ancient-kingdoms-mods/issues/new/choose). Without a GitHub account, post in the compendium channel on the [game's Discord](https://discord.gg/8MkSWjXwab).
 
 ## Development
 
