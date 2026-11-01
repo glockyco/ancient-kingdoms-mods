@@ -14,6 +14,7 @@ internal sealed class TileView
     public const float Size = 44f;
 
     private static readonly Color UnknownCaption = new(0.725f, 0.761f, 0.800f, 1f);
+    private static readonly Color CaptionShade = new(0f, 0f, 0f, 0.85f);
 
     private readonly PortraitView _portrait;
     private readonly Image _icon;
@@ -29,6 +30,11 @@ internal sealed class TileView
         var hit = Rect.GetComponent<Image>();
         hit.raycastTarget = true;
         _tooltip = Rect.gameObject.AddComponent<UIShowToolTip>();
+
+        // A shade under the caption keeps a gold "Up" readable on light portraits.
+        var shade = HudFactory.Box("shade", Rect, CaptionShade);
+        shade.sprite = Shapes.Shade;
+        HudFactory.Place(shade.rectTransform, Vector2.zero, new Vector2(1f, 0.6f), new Vector2(2f, 2f), new Vector2(-2f, 0f));
 
         _hover = HudFactory.Box("hover", Rect, new Color(1f, 1f, 1f, 0.12f));
         HudFactory.Stretch(_hover, new Vector2(2f, 2f), new Vector2(-2f, -2f));

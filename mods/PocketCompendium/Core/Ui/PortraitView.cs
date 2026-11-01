@@ -11,13 +11,15 @@ namespace PocketCompendium.Core.Ui;
 public sealed class PortraitView
 {
     private static readonly Color Down = new(0.42f, 0.42f, 0.45f, 1f);
-    private static readonly Color SweepColor = new(0f, 0f, 0f, 0.62f);
+
+    /// <summary>The share of the wait still to run. Dark enough to read on dark portraits too.</summary>
+    internal static readonly Color SweepColor = new(0f, 0f, 0f, 0.75f);
     private static readonly Color SilhouetteBackground = new(0.16f, 0.18f, 0.22f, 1f);
 
     private readonly Image _frame;
     private readonly Image _background;
     private readonly Image _portrait;
-    private readonly Image _sweep;
+    private readonly SweepView _sweep;
     private readonly RectTransform _corner;
 
     public PortraitView(Transform parent, float size, float border)
@@ -31,12 +33,7 @@ public sealed class PortraitView
         _portrait = HudFactory.Icon("image", Rect, null);
         HudFactory.Stretch(_portrait, new Vector2(border, border), new Vector2(-border, -border));
 
-        _sweep = HudFactory.Box("sweep", Rect, SweepColor);
-        _sweep.type = Image.Type.Filled;
-        _sweep.fillMethod = Image.FillMethod.Radial360;
-        _sweep.fillOrigin = (int)Image.Origin360.Top;
-        _sweep.fillClockwise = true;
-        HudFactory.Stretch(_sweep, new Vector2(border, border), new Vector2(-border, -border));
+        _sweep = new SweepView(Rect, border, SweepColor);
 
         // A gold diamond with a dark edge over the top-right corner, like the compact tiles' mark.
         // Its center sits half its reach inside the corner, so in a grid of tiles it stops short
@@ -66,9 +63,7 @@ public sealed class PortraitView
         _background.color = silhouette ? SilhouetteBackground : Theme.IconBg;
         _portrait.color = silhouette ? Color.black : down ? Down : Color.white;
 
-        float fill = silhouette ? 0f : remaining;
-        _sweep.enabled = fill > 0f;
-        _sweep.fillAmount = fill;
+        _sweep.Set(silhouette ? 0f : remaining);
 
         if (_corner.gameObject.activeSelf != watched) _corner.gameObject.SetActive(watched);
     }

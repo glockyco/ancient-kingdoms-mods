@@ -99,11 +99,19 @@ public sealed class BestiaryCountdownFeature : Feature
     }
 }
 
-/// <summary>A dead monster's sweep and time over its portrait in the Bestiary grid.</summary>
+/// <summary>
+/// A dead monster's countdown over its portrait in the Bestiary grid. A light dim marks it as dead,
+/// a dark sweep covers the share of the time still to run, so the portrait brightens as the spawn
+/// nears, and the time sits in bold on a shade at the bottom, so it reads on any portrait.
+/// </summary>
 internal sealed class SlotOverlay
 {
+    // Light enough that the sweep's edge shows on dark portraits too.
+    private static readonly Color Dim = new(0f, 0f, 0f, 0.3f);
+    private static readonly Color TimeShade = new(0f, 0f, 0f, 0.85f);
+
     private readonly RectTransform _root;
-    private readonly Image _sweep;
+    private readonly SweepView _sweep;
     private readonly Label _time;
 
     public SlotOverlay(RectTransform portrait)
@@ -111,16 +119,18 @@ internal sealed class SlotOverlay
         _root = HudFactory.Rect("PC_Countdown", portrait).GetComponent<RectTransform>();
         HudFactory.Stretch(_root, Vector2.zero, Vector2.zero);
 
-        _sweep = HudFactory.Box("sweep", _root, new Color(0f, 0f, 0f, 0.62f));
-        HudFactory.Stretch(_sweep, Vector2.zero, Vector2.zero);
-        _sweep.type = Image.Type.Filled;
-        _sweep.fillMethod = Image.FillMethod.Radial360;
-        _sweep.fillOrigin = (int)Image.Origin360.Top;
-        _sweep.fillClockwise = true;
+        var dim = HudFactory.Box("dim", _root, Dim);
+        HudFactory.Stretch(dim, Vector2.zero, Vector2.zero);
 
-        _time = HudFactory.Label("time", _root, 13f, Color.white, Align.Center, bold: true, monospaced: true);
+        _sweep = new SweepView(_root, 0f, PortraitView.SweepColor);
+
+        var shade = HudFactory.Box("shade", _root, TimeShade);
+        shade.sprite = Shapes.Shade;
+        HudFactory.Place(shade.rectTransform, Vector2.zero, new Vector2(1f, 0.55f), Vector2.zero, Vector2.zero);
+
+        _time = HudFactory.Label("time", _root, 14f, Color.white, Align.Center, bold: true, monospaced: true);
         _time.Text.extraPadding = true;
-        _time.Text.outlineWidth = 0.3f;
+        _time.Text.outlineWidth = 0.28f;
         _time.Text.outlineColor = new Color32(0, 0, 0, 255);
         HudFactory.Place(_time.Rect, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(-4f, -1f), new Vector2(4f, 19f));
         _root.gameObject.SetActive(false);
@@ -133,7 +143,7 @@ internal sealed class SlotOverlay
         if (_root.gameObject.activeSelf != counting) _root.gameObject.SetActive(counting);
         if (!counting) return;
 
-        _sweep.fillAmount = StateText.Remaining(state, monster.Rules, now);
+        _sweep.Set(StateText.Remaining(state, monster.Rules, now));
         _time.Value = StateText.Caption(state, now);
     }
 

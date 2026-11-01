@@ -78,7 +78,7 @@ On the local map, each tracked monster SHALL show as a portrait pin. Dead monste
 
 ### Requirement: The Bestiary counts down
 
-In the Bestiary grid, a dead monster's portrait SHALL show a darkening sweep and its remaining time. On its page, a plate on the split between the facts and the lore SHALL say "Respawns in" with the time and a bar that fills, without covering the lore or the facts.
+In the Bestiary grid, a dead monster's portrait SHALL be dimmed, with a dark sweep over the share of its time still to run and its remaining time in bold on top. On its page, a plate on the split between the facts and the lore SHALL say "Respawns in" with the time and a bar that fills, without covering the lore or the facts.
 
 #### Scenario: Opening a dead boss's page
 

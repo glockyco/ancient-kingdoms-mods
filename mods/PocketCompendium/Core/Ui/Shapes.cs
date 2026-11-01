@@ -39,6 +39,12 @@ public static class Shapes
     /// <summary>A soft round glow, full in the middle third and fading to nothing at the edge, for pins that are up.</summary>
     public static Sprite Glow => Get("PC_Glow", () => Make("PC_Glow", RoundSize, RoundSize, GlowCoverage, Vector4.zero));
 
+    /// <summary>
+    /// Opaque over its bottom 45%, then fading to nothing at the top, to keep text readable over a
+    /// portrait. The text sits on the opaque band.
+    /// </summary>
+    public static Sprite Shade => Get("PC_Shade", () => Make("PC_Shade", 1, 64, (_, y) => y < 29 ? 1f : Mathf.SmoothStep(1f, 0f, (y - 29) / 34f), Vector4.zero));
+
     private static Vector4 RoundedBorder => new(RoundedRadius + 1f, RoundedRadius + 1f, RoundedRadius + 1f, RoundedRadius + 1f);
 
     // Signed distance to the rounded box: negative inside, zero on the edge.
