@@ -57,6 +57,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _settings = new SettingsWindow(_features.Features, _layout, new AboutPage(Info.Version, build, _features.Features));
 
         LoggerInstance.Msg($"Pocket Compendium {Info.Version}, build {build}. Switched on: {_features.SwitchedOn()}. {_layout.SettingsKey.Value} opens the settings.");
+        UpdateCheck.Start();
     }
 
     public override void OnUpdate()
@@ -73,6 +74,7 @@ public sealed class PocketCompendiumMod : MelonMod
         {
             LogWorldEntry();
             ShowStoppedNotices();
+            UpdateCheck.Update(GameAccess.LocalPlayer);
         }
     }
 
