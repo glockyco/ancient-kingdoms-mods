@@ -62,7 +62,7 @@ public enum StateSource
 }
 
 /// <summary>A tracked monster's state with the facts the surfaces show. All times are server times.</summary>
-public readonly struct Resolution
+public readonly struct TrackedState
 {
     public SpawnState State { get; init; }
 

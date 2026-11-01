@@ -50,7 +50,7 @@ public sealed class TrackedMonster
     /// <summary>The item that starts the altar event, for altar spawns.</summary>
     public ScriptableItem AltarItem { get; }
 
-    public Resolution State { get; internal set; }
+    public TrackedState State { get; internal set; }
 
     /// <summary>Summon placeholders, or the monster whose death spawns this one. Empty for none.</summary>
     internal Monster[] Guards { get; }

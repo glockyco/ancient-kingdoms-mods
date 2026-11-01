@@ -25,10 +25,13 @@
     <Compile Include="..\..\mods\PocketCompendium\Core\Ui\RawImageRows.cs" Link="Sources\Core\RawImageRows.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\GameClock.cs" Link="Sources\Tracking\GameClock.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\KillNotice.cs" Link="Sources\Tracking\KillNotice.cs" />
-    <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\Resolution.cs" Link="Sources\Tracking\Resolution.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\TrackedState.cs" Link="Sources\Tracking\TrackedState.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\SpawnResolver.cs" Link="Sources\Tracking\SpawnResolver.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\SpawnRules.cs" Link="Sources\Tracking\SpawnRules.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\WorldMemory.cs" Link="Sources\Tracking\WorldMemory.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\LevelBand.cs" Link="Sources\Tracking\LevelBand.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\StateText.cs" Link="Sources\Tracking\StateText.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Features\BossList\Model\ListModel.cs" Link="Sources\BossList\ListModel.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BossSkills\Model\GateStatus.cs" Link="Sources\BossSkills\GateStatus.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BossSkills\Model\Tuning.cs" Link="Sources\BossSkills\Tuning.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BossSkills\Model\CooldownMath.cs" Link="Sources\BossSkills\CooldownMath.cs" />

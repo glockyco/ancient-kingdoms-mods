@@ -22,7 +22,8 @@ public sealed class Label
 
     /// <summary>
     /// Glyph advances differ per digit in this font, so a countdown rendered as ordinary text
-    /// shifts on every change. TMP monospaces the enclosed run, which fixes the columns.
+    /// shifts on every change. TMP monospaces each run of digits, which fixes the columns while
+    /// letters and separators keep their own widths.
     /// </summary>
     private const string MonospaceOpen = "<mspace=0.55em>";
     private const string MonospaceClose = "</mspace>";
@@ -54,8 +55,28 @@ public sealed class Label
             if (_value == value) return;
 
             _value = value;
-            _text.text = _monospaced ? MonospaceOpen + value + MonospaceClose : value;
+            _text.text = _monospaced ? MonospaceDigits(value) : value;
         }
+    }
+
+    private static string MonospaceDigits(string value)
+    {
+        var text = new System.Text.StringBuilder(value.Length + 24);
+        bool inRun = false;
+        foreach (char c in value)
+        {
+            bool digit = c is >= '0' and <= '9';
+            if (digit != inRun)
+            {
+                text.Append(digit ? MonospaceOpen : MonospaceClose);
+                inRun = digit;
+            }
+
+            text.Append(c);
+        }
+
+        if (inRun) text.Append(MonospaceClose);
+        return text.ToString();
     }
 
     /// <summary>Sets game text that can be Chinese or Japanese, with the game's font for it.</summary>

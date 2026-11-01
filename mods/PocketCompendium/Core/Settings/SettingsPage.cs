@@ -53,6 +53,30 @@ public sealed class SettingsPage
         return setting;
     }
 
+    /// <summary>Switches shown side by side as chips. Each saves under its own key.</summary>
+    public ChipsSetting Chips(string label, string help, params (string Key, bool Default, string Label, Func<UnityEngine.Color> Dot)[] chips)
+    {
+        var list = new Chip[chips.Length];
+        for (int index = 0; index < chips.Length; index++)
+        {
+            var chip = chips[index];
+            list[index] = new Chip(Toggle(chip.Key, chip.Default, chip.Label, shown: false), chip.Label, chip.Dot);
+        }
+
+        var setting = new ChipsSetting(this, label, help, list);
+        _rows.Add(setting);
+        return setting;
+    }
+
+    /// <summary>A range of whole numbers, saved as <paramref name="key"/>From and <paramref name="key"/>To.</summary>
+    public RangeSetting Range(string key, int defaultFrom, int defaultTo, int min, int max, string label, string help, Func<bool> enabled)
+    {
+        var setting = new RangeSetting(this, _category.CreateEntry(key + "From", defaultFrom, label), _category.CreateEntry(key + "To", defaultTo, label),
+            label, help, defaultFrom, defaultTo, min, max, enabled);
+        _rows.Add(setting);
+        return setting;
+    }
+
     /// <summary>A value the window does not show, such as a panel's position.</summary>
     public MelonPreferences_Entry<T> Stored<T>(string key, T defaultValue) =>
         _category.CreateEntry(key, defaultValue, key);
@@ -207,4 +231,88 @@ public interface IChoiceSetting
     int OptionCount { get; }
     string OptionLabel(int index);
     int SelectedIndex { get; set; }
+}
+
+/// <summary>One option of a <see cref="ChipsSetting"/>: a switch shown as a chip with a coloured dot.</summary>
+public readonly struct Chip
+{
+    public Chip(ToggleSetting setting, string label, Func<UnityEngine.Color> dot)
+    {
+        Setting = setting;
+        Label = label;
+        Dot = dot;
+    }
+
+    public ToggleSetting Setting { get; }
+    public string Label { get; }
+
+    /// <summary>The dot's colour, read when the window draws, so it can come from the game.</summary>
+    public Func<UnityEngine.Color> Dot { get; }
+}
+
+/// <summary>Switches shown side by side as chips, such as the tiers a list shows.</summary>
+public sealed class ChipsSetting : Setting
+{
+    internal ChipsSetting(SettingsPage page, string label, string help, Chip[] chips)
+        : base(page, label, help) => Chips = chips;
+
+    public IReadOnlyList<Chip> Chips { get; }
+
+    public override void Reset()
+    {
+        foreach (var chip in Chips) chip.Setting.Reset();
+    }
+}
+
+/// <summary>A range of whole numbers between two bounds, shown as two steppers.</summary>
+public sealed class RangeSetting : Setting
+{
+    private readonly MelonPreferences_Entry<int> _from;
+    private readonly MelonPreferences_Entry<int> _to;
+    private readonly int _defaultFrom;
+    private readonly int _defaultTo;
+
+    internal RangeSetting(SettingsPage page, MelonPreferences_Entry<int> from, MelonPreferences_Entry<int> to, string label, string help,
+        int defaultFrom, int defaultTo, int min, int max, Func<bool> enabled)
+        : base(page, label, help)
+    {
+        _from = from;
+        _to = to;
+        _defaultFrom = defaultFrom;
+        _defaultTo = defaultTo;
+        Min = min;
+        Max = max;
+        Enabled = enabled;
+    }
+
+    public int Min { get; }
+    public int Max { get; }
+
+    /// <summary>Whether the range applies now. The window dims it otherwise.</summary>
+    public Func<bool> Enabled { get; }
+
+    public int From
+    {
+        get => Math.Clamp(_from.Value, Min, Max);
+        set => Set(_from, Math.Clamp(value, Min, To));
+    }
+
+    public int To
+    {
+        get => Math.Clamp(_to.Value, Min, Max);
+        set => Set(_to, Math.Clamp(value, From, Max));
+    }
+
+    public override void Reset()
+    {
+        Set(_from, _defaultFrom);
+        Set(_to, _defaultTo);
+    }
+
+    private void Set(MelonPreferences_Entry<int> entry, int value)
+    {
+        if (entry.Value == value) return;
+        entry.Value = value;
+        Page.NotifyChanged();
+    }
 }

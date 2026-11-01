@@ -182,7 +182,7 @@ public sealed class Tracker
         Version++;
     }
 
-    private static Resolution ResolveHost(TrackedMonster monster, double now)
+    private static TrackedState ResolveHost(TrackedMonster monster, double now)
     {
         var reading = new HostReading();
         CountGuards(monster.Guards, out reading.GuardsAlive, out reading.GuardsTotal);
@@ -235,7 +235,7 @@ public sealed class Tracker
         monster.LastDeadline = reading.Deadline;
     }
 
-    private Resolution ResolveClient(TrackedMonster monster, double now)
+    private TrackedState ResolveClient(TrackedMonster monster, double now)
     {
         var reading = new ClientReading();
         var placed = monster.Placed;

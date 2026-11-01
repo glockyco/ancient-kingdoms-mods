@@ -44,7 +44,7 @@ public struct ClientReading
 /// </summary>
 public static class SpawnResolver
 {
-    public static Resolution Host(SpawnRules rules, in HostReading reading, double now)
+    public static TrackedState Host(SpawnRules rules, in HostReading reading, double now)
     {
         if (rules.Origin != SpawnOrigin.Placed)
             return reading.Present && reading.Alive
@@ -61,7 +61,7 @@ public static class SpawnResolver
             new Guards(reading.SummonReady, reading.GuardsAlive, reading.GuardsTotal));
     }
 
-    public static Resolution Client(SpawnRules rules, in ClientReading reading, MonsterMemory memory, double now)
+    public static TrackedState Client(SpawnRules rules, in ClientReading reading, MonsterMemory memory, double now)
     {
         if (reading.Spawned && reading.Alive && CountsAsUp(rules, reading.Engaged, now))
             return Live(reading.Engaged, StateSource.Sighting, now);
@@ -77,9 +77,9 @@ public static class SpawnResolver
                 memory.DeathAt, lastRollFailed: false, Guards.Unknown);
 
         if (memory?.SeenUpAt != null)
-            return new Resolution { State = SpawnState.Seen, Source = StateSource.Sighting, ObservedAt = memory.SeenUpAt, GuardsLeft = -1 };
+            return new TrackedState { State = SpawnState.Seen, Source = StateSource.Sighting, ObservedAt = memory.SeenUpAt, GuardsLeft = -1 };
 
-        return new Resolution { State = SpawnState.NotSeen, GuardsLeft = -1 };
+        return new TrackedState { State = SpawnState.NotSeen, GuardsLeft = -1 };
     }
 
     /// <summary>
@@ -92,23 +92,23 @@ public static class SpawnResolver
 
     // Start runs when someone first enters the zone. SetRespawnBosses then applies the saved
     // deadline, starts a rolling monster dead for one more interval, and hides summoned ones.
-    private static Resolution Unstarted(SpawnRules rules, in HostReading reading, double now)
+    private static TrackedState Unstarted(SpawnRules rules, in HostReading reading, double now)
     {
         if (reading.Deadline > now || rules.Summoned)
             return Dead(rules, reading.Deadline, now, estimate: false, StateSource.Host, observedAt: null, lastRollFailed: false,
                 new Guards(ready: false, reading.GuardsAlive, reading.GuardsTotal));
 
         if (rules.Rolls)
-            return new Resolution { State = SpawnState.Due, Source = StateSource.Host, WaitsForEntry = true };
+            return new TrackedState { State = SpawnState.Due, Source = StateSource.Host, WaitsForEntry = true };
 
         if (rules.HasWindow && !GameClock.InWindow(now, rules.WindowStart, rules.WindowEnd))
             return Window(rules, now, estimate: false, StateSource.Host, observedAt: null);
 
-        return new Resolution { State = SpawnState.Up, Source = StateSource.Host };
+        return new TrackedState { State = SpawnState.Up, Source = StateSource.Host };
     }
 
     // Follows Monster.UpdateServer_DEAD: the deadline, then the window, then summon readiness.
-    private static Resolution Dead(SpawnRules rules, double deadline, double now, bool estimate, StateSource source,
+    private static TrackedState Dead(SpawnRules rules, double deadline, double now, bool estimate, StateSource source,
         double? observedAt, bool lastRollFailed, Guards guards)
     {
         double from = Math.Max(now, deadline);
@@ -119,7 +119,7 @@ public static class SpawnResolver
         }
 
         if (deadline > now)
-            return new Resolution
+            return new TrackedState
             {
                 State = rules.Rolls ? SpawnState.Chance : estimate ? SpawnState.Estimated : SpawnState.Respawns,
                 At = deadline,
@@ -132,7 +132,7 @@ public static class SpawnResolver
             };
 
         if (rules.Summoned && guards.Known && !guards.Ready)
-            return new Resolution
+            return new TrackedState
             {
                 State = SpawnState.Guards,
                 Source = source,
@@ -141,7 +141,7 @@ public static class SpawnResolver
                 GuardsTotal = guards.Total,
             };
 
-        return new Resolution
+        return new TrackedState
         {
             State = SpawnState.Due,
             Estimate = estimate,
@@ -153,7 +153,7 @@ public static class SpawnResolver
         };
     }
 
-    private static Resolution Window(SpawnRules rules, double from, bool estimate, StateSource source, double? observedAt) =>
+    private static TrackedState Window(SpawnRules rules, double from, bool estimate, StateSource source, double? observedAt) =>
         new()
         {
             State = SpawnState.Window,
@@ -164,12 +164,12 @@ public static class SpawnResolver
             GuardsLeft = -1,
         };
 
-    private static Resolution NotPlaced(SpawnRules rules, int guardsAlive, int guardsTotal, StateSource source) =>
+    private static TrackedState NotPlaced(SpawnRules rules, int guardsAlive, int guardsTotal, StateSource source) =>
         rules.Origin == SpawnOrigin.Altar
-            ? new Resolution { State = SpawnState.Altar, Source = source, GuardsLeft = -1 }
-            : new Resolution { State = SpawnState.Guards, Source = source, GuardsLeft = guardsAlive, GuardsTotal = guardsTotal };
+            ? new TrackedState { State = SpawnState.Altar, Source = source, GuardsLeft = -1 }
+            : new TrackedState { State = SpawnState.Guards, Source = source, GuardsLeft = guardsAlive, GuardsTotal = guardsTotal };
 
-    private static Resolution Live(bool engaged, StateSource source, double now) =>
+    private static TrackedState Live(bool engaged, StateSource source, double now) =>
         new()
         {
             State = engaged ? SpawnState.InCombat : SpawnState.Up,

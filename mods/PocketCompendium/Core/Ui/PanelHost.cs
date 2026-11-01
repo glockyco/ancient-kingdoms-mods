@@ -116,7 +116,7 @@ public sealed class PanelHost
     {
         if (_root != null) return;
 
-        _root = HudFactory.Rect("PC_" + Name, Overlay.Panels);
+        _root = HudFactory.Rect("PC_" + _page.Id + Name, Overlay.Panels);
         Rect = _root.GetComponent<RectTransform>();
         Rect.anchorMin = new Vector2(0.5f, 0.5f);
         Rect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -151,6 +151,16 @@ public sealed class PanelHost
         Rect.sizeDelta = new Vector2(width, height);
     }
 
+    /// <summary>
+    /// Sets a <see cref="PanelResize.Size"/> panel's size when its content needs less than
+    /// <see cref="Width"/>, such as a short row of tiles. The grip then sits at the content's corner.
+    /// </summary>
+    public void SetFittedSize(float width, float height)
+    {
+        if (Rect == null) return;
+        Rect.sizeDelta = new Vector2(Mathf.Min(width, Width), height);
+    }
+
     /// <summary>Sets the width of a <see cref="PanelResize.Scale"/> panel, whose content decides it.</summary>
     public void SetContentWidth(float width)
     {
@@ -168,7 +178,12 @@ public sealed class PanelHost
 
         bool locked = EffectivelyLocked;
         bool showGrip = !locked && (_mode == Mode.Resizing || Pointer.Over(Rect));
-        if (_grip.gameObject.activeSelf != showGrip) _grip.gameObject.SetActive(showGrip);
+        if (_grip.gameObject.activeSelf != showGrip)
+        {
+            _grip.gameObject.SetActive(showGrip);
+            // The owner adds its content after the grip, so the grip comes back on top when shown.
+            if (showGrip) _grip.transform.SetAsLastSibling();
+        }
 
         if (_mode == Mode.Idle && !locked && Pointer.Pressed)
             StartGesture(dragHandles);

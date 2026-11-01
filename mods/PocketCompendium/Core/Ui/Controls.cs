@@ -233,3 +233,138 @@ public sealed class IconButton
         return Pointer.Clicked(Rect);
     }
 }
+
+/// <summary>A switch shown as a chip: a pill with a coloured dot and a label.</summary>
+public sealed class ChipView
+{
+    public const float Height = 24f;
+    private const float DotSize = 9f;
+
+    private static readonly Color FillOn = new(1f, 1f, 1f, 0.07f);
+    private static readonly Color OutlineOn = new(1f, 1f, 1f, 0.24f);
+    private static readonly Color OutlineOff = new(1f, 1f, 1f, 0.10f);
+
+    private readonly Image _fill;
+    private readonly Image _outline;
+    private readonly Image _dot;
+    private readonly Label _label;
+    private Color _dotColor;
+    private bool? _shown;
+
+    public ChipView(Transform parent, string text)
+    {
+        _fill = HudFactory.Sliced("chip", parent, Shapes.Rounded, Color.clear, cornerScale: 1.6f);
+        _fill.raycastTarget = true;
+        Rect = _fill.rectTransform;
+        _outline = HudFactory.Sliced("outline", Rect, Shapes.RoundedOutline, OutlineOff, cornerScale: 1.6f);
+        HudFactory.Stretch(_outline, Vector2.zero, Vector2.zero);
+
+        _dot = HudFactory.Tinted("dot", Rect, Shapes.Disc, Color.white);
+        HudFactory.TopLeft(_dot, 9f, (Height - DotSize) / 2f, DotSize, DotSize);
+
+        _label = HudFactory.Label("label", Rect, 12.5f, Theme.Text, Align.Left);
+        _label.Value = text;
+        float labelWidth = Mathf.Ceil(_label.PreferredWidth) + 2f;
+        HudFactory.TopLeft(_label.Rect, 9f + DotSize + 6f, 0f, labelWidth, Height);
+        Width = 9f + DotSize + 6f + labelWidth + 10f;
+        Rect.sizeDelta = new Vector2(Width, Height);
+    }
+
+    public RectTransform Rect { get; }
+    public float Width { get; }
+
+    public void Set(bool on, Color dot)
+    {
+        if (_shown == on && _dotColor == dot) return;
+        _shown = on;
+        _dotColor = dot;
+        _fill.color = on ? FillOn : Color.clear;
+        _outline.color = on ? OutlineOn : OutlineOff;
+        _label.Color = on ? Theme.Text : Theme.Dim;
+        dot.a = on ? 1f : 0.3f;
+        _dot.color = dot;
+    }
+}
+
+/// <summary>A whole number between a button that lowers it and one that raises it.</summary>
+public sealed class StepperView
+{
+    public const float Height = 26f;
+    private const float ButtonSize = 26f;
+    private const float ValueWidth = 38f;
+    public const float Width = ButtonSize * 2f + ValueWidth;
+
+    private readonly StepButton _down;
+    private readonly StepButton _up;
+    private readonly Label _value;
+    private int? _shown;
+    private bool _shownEnabled = true;
+
+    public StepperView(Transform parent)
+    {
+        Rect = HudFactory.Rect("stepper", parent).GetComponent<RectTransform>();
+        Rect.sizeDelta = new Vector2(Width, Height);
+        _down = new StepButton(Rect, 0f, plus: false);
+        _value = HudFactory.Label("value", Rect, 13.5f, Theme.Text, Align.Center, monospaced: true);
+        HudFactory.TopLeft(_value.Rect, ButtonSize, 0f, ValueWidth, Height);
+        _up = new StepButton(Rect, ButtonSize + ValueWidth, plus: true);
+    }
+
+    public RectTransform Rect { get; }
+
+    public void Set(int value, bool enabled)
+    {
+        if (_shown == value && _shownEnabled == enabled) return;
+        _shown = value;
+        _shownEnabled = enabled;
+        _value.Value = value.ToString();
+        _value.Color = enabled ? Theme.Text : Theme.Dim;
+    }
+
+    /// <summary>Updates the hover look and reports a click: -1 to lower, 1 to raise, 0 for none.</summary>
+    public int Update()
+    {
+        if (_down.Update()) return -1;
+        return _up.Update() ? 1 : 0;
+    }
+
+    // Minus and plus are drawn as bars, because not every game font has the minus sign.
+    private sealed class StepButton
+    {
+        private static readonly Color Fill = new(1f, 1f, 1f, 0.03f);
+        private static readonly Color FillHover = new(1f, 1f, 1f, 0.09f);
+        private static readonly Color Outline = new(1f, 1f, 1f, 0.16f);
+
+        private readonly Image _fill;
+        private readonly Image[] _bars;
+
+        public StepButton(RectTransform parent, float x, bool plus)
+        {
+            _fill = HudFactory.Sliced("step", parent, Shapes.Rounded, Fill, cornerScale: 0.6f);
+            _fill.raycastTarget = true;
+            HudFactory.TopLeft(_fill, x, 0f, ButtonSize, Height);
+            var outline = HudFactory.Sliced("outline", _fill.rectTransform, Shapes.RoundedOutline, Outline, cornerScale: 0.6f);
+            HudFactory.Stretch(outline, Vector2.zero, Vector2.zero);
+
+            var across = HudFactory.Box("across", _fill.rectTransform, Theme.Muted);
+            HudFactory.TopLeft(across, (ButtonSize - 10f) / 2f, (Height - 2f) / 2f, 10f, 2f);
+            if (!plus)
+            {
+                _bars = new[] { across };
+                return;
+            }
+
+            var down = HudFactory.Box("down", _fill.rectTransform, Theme.Muted);
+            HudFactory.TopLeft(down, (ButtonSize - 2f) / 2f, (Height - 10f) / 2f, 2f, 10f);
+            _bars = new[] { across, down };
+        }
+
+        public bool Update()
+        {
+            bool hovered = Pointer.Over(_fill.rectTransform);
+            _fill.color = hovered ? FillHover : Fill;
+            foreach (var bar in _bars) bar.color = hovered ? Theme.Text : Theme.Muted;
+            return Pointer.Clicked(_fill.rectTransform);
+        }
+    }
+}

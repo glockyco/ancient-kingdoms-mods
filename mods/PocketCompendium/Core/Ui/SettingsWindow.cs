@@ -37,6 +37,8 @@ public sealed class SettingsWindow
     private readonly List<ToggleRow> _toggles = new();
     private readonly List<ChoiceRow> _choices = new();
     private readonly List<ActionRowView> _actions = new();
+    private readonly List<ChipsRow> _chips = new();
+    private readonly List<RangeRow> _ranges = new();
 
     private GameObject _root;
     private RectTransform _window;
@@ -217,6 +219,8 @@ public sealed class SettingsWindow
         _toggles.Clear();
         _choices.Clear();
         _actions.Clear();
+        _chips.Clear();
+        _ranges.Clear();
         _headerSwitch = null;
         _failedNote = null;
         _rowsGroup = null;
@@ -308,6 +312,35 @@ public sealed class SettingsWindow
                     rowY += ControlHeight + HelpBelow(rowsRect, action.Help, rowY + ControlHeight, width) + 8f;
                     previousWasSetting = true;
                     break;
+                case ChipsSetting chips:
+                    rowY = AddSeparator(rowsRect, rowY, width, previousWasSetting);
+                    RowLabel(rowsRect, chips.Label, rowY, width);
+                    float chipX = Pad + LabelWidth;
+                    var views = new ChipView[chips.Chips.Count];
+                    for (int index = 0; index < views.Length; index++)
+                    {
+                        views[index] = new ChipView(rowsRect, chips.Chips[index].Label);
+                        HudFactory.TopLeft(views[index].Rect, chipX, rowY + (ControlHeight - ChipView.Height) / 2f, views[index].Width, ChipView.Height);
+                        chipX += views[index].Width + 6f;
+                    }
+                    _chips.Add(new ChipsRow(chips, views));
+                    rowY += ControlHeight + HelpBelow(rowsRect, chips.Help, rowY + ControlHeight, width) + 8f;
+                    previousWasSetting = true;
+                    break;
+                case RangeSetting range:
+                    rowY = AddSeparator(rowsRect, rowY, width, previousWasSetting);
+                    RowLabel(rowsRect, range.Label, rowY, width);
+                    var from = new StepperView(rowsRect);
+                    HudFactory.TopLeft(from.Rect, Pad + LabelWidth, rowY, StepperView.Width, StepperView.Height);
+                    var to = HudFactory.Label("to", rowsRect, 12.5f, Theme.Muted, Align.Center);
+                    HudFactory.TopLeft(to.Rect, Pad + LabelWidth + StepperView.Width, rowY, 30f, ControlHeight);
+                    to.Value = "to";
+                    var upper = new StepperView(rowsRect);
+                    HudFactory.TopLeft(upper.Rect, Pad + LabelWidth + StepperView.Width + 30f, rowY, StepperView.Width, StepperView.Height);
+                    _ranges.Add(new RangeRow(range, from, upper, to));
+                    rowY += ControlHeight + HelpBelow(rowsRect, range.Help, rowY + ControlHeight, width) + 8f;
+                    previousWasSetting = true;
+                    break;
             }
         }
 
@@ -362,6 +395,16 @@ public sealed class SettingsWindow
 
         foreach (var toggle in _toggles) toggle.View.Set(toggle.Setting.Value);
         foreach (var choice in _choices) choice.View.Set(choice.Setting.SelectedIndex);
+        foreach (var chips in _chips)
+            for (int index = 0; index < chips.Views.Length; index++)
+                chips.Views[index].Set(chips.Setting.Chips[index].Setting.Value, chips.Setting.Chips[index].Dot());
+        foreach (var range in _ranges)
+        {
+            bool enabled = range.Setting.Enabled();
+            range.From.Set(range.Setting.From, enabled);
+            range.To.Set(range.Setting.To, enabled);
+            range.Joiner.Color = enabled ? Theme.Muted : Theme.Dim;
+        }
         for (int index = 0; index < _nav.Count; index++)
             _nav[index].Refresh(index == _selected);
     }
@@ -407,6 +450,17 @@ public sealed class SettingsWindow
             foreach (var action in _actions)
                 if (action.Button.Update())
                     action.Row.Run();
+
+            foreach (var chips in _chips)
+                for (int index = 0; index < chips.Views.Length; index++)
+                    if (Pointer.Clicked(chips.Views[index].Rect))
+                        chips.Setting.Chips[index].Setting.Value = !chips.Setting.Chips[index].Setting.Value;
+
+            foreach (var range in _ranges)
+            {
+                range.Setting.From += range.From.Update();
+                range.Setting.To += range.To.Update();
+            }
 
             Scroll();
         }
@@ -537,5 +591,33 @@ public sealed class SettingsWindow
 
         public ActionRow Row { get; }
         public ButtonView Button { get; }
+    }
+
+    private sealed class ChipsRow
+    {
+        public ChipsRow(ChipsSetting setting, ChipView[] views)
+        {
+            Setting = setting;
+            Views = views;
+        }
+
+        public ChipsSetting Setting { get; }
+        public ChipView[] Views { get; }
+    }
+
+    private sealed class RangeRow
+    {
+        public RangeRow(RangeSetting setting, StepperView from, StepperView to, Label joiner)
+        {
+            Setting = setting;
+            From = from;
+            To = to;
+            Joiner = joiner;
+        }
+
+        public RangeSetting Setting { get; }
+        public StepperView From { get; }
+        public StepperView To { get; }
+        public Label Joiner { get; }
     }
 }

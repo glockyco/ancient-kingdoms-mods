@@ -5,6 +5,7 @@ using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Tracking;
 using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.BestiaryPages;
+using PocketCompendium.Features.BossList;
 using PocketCompendium.Features.BossSkills;
 
 [assembly: MelonInfo(typeof(PocketCompendium.PocketCompendiumMod), "Pocket Compendium", "1.0.0", "WoW_Much")]
@@ -25,7 +26,9 @@ public sealed class PocketCompendiumMod : MelonMod
         Patching.Initialize(HarmonyInstance);
 
         _tracker = new Tracker();
+        _ = new Watchlist();
         _features = new FeatureRegistry();
+        _features.Add(new BossListFeature());
         _features.Add(new BossSkillsFeature());
         _features.Add(new BestiaryPagesFeature());
 
