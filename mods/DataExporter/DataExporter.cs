@@ -131,6 +131,8 @@ namespace DataExporter
                 new("alchemyTables", new[] { "alchemy_tables.json" }, () => new AlchemyTableExporter(LoggerInstance, path, snapshot).Export()),
                 new("scribingTables", new[] { "scribing_tables.json" }, () => new ScribingTableExporter(LoggerInstance, path, snapshot).Export()),
                 new("traps", new[] { "traps.json" }, () => new TrapExporter(LoggerInstance, path).Export()),
+                new("virtues", new[] { "virtues.json" }, () => new VirtueExporter(LoggerInstance, path).Export()),
+                new("virtueShrines", new[] { "virtue_shrines.json" }, () => new VirtueShrineExporter(LoggerInstance, path, snapshot).Export()),
                 new("gameConfig", new[] { "game_config.json" }, () => new GameConfigExporter(LoggerInstance, path, snapshot).Export()),
                 new("classes", new[] { "classes_combat.json" }, () => new ClassExporter(LoggerInstance, path, visuals).Export()),
                 new("equipmentSlots", new[] { "equipment_slots.json" }, () => new EquipmentSlotExporter(LoggerInstance, path).Export()),

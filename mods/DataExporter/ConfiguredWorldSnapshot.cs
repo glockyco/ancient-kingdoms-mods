@@ -49,6 +49,7 @@ public sealed class ConfiguredWorldSnapshot
             CaptureSummonTriggers();
             CaptureStations();
             CapturePortals();
+            CaptureVirtueShrines();
             CaptureCatalog();
             // World objects enumerate in an order a new game build can change, so every captured list is sorted.
             Values.Add("crafting_recipes", ExportJson.SortedRows(_crafting.Values, row => row.definition_key, "crafting_recipes"));
@@ -294,6 +295,23 @@ public sealed class ConfiguredWorldSnapshot
                     portal.levelRequired, portal.itemLevelRequired, portal.orientation, portal.needMonsterDead, false, false, false));
             }
             Values.Add("portals", ExportJson.SortedRows(portals, row => row.id, "portals"));
+        }
+
+        private void CaptureVirtueShrines()
+        {
+            var names = VirtueExporter.VirtueNames();
+            var ids = new PlacementIds();
+            var shrines = new List<VirtueShrineData>();
+            foreach (var shrine in WorldObjects<Il2Cpp.VirtueShrine>())
+            {
+                var placed = shrine.transform.position;
+                var zone = GetZoneInfoFromPosition(placed);
+                shrines.Add(VirtueRows.Shrine(shrine.virtue.ToString(), names, VirtueExporter.English, ids,
+                    zone.ZoneId, zone.SubZoneId, Point(placed)));
+            }
+            if (shrines.Count == 0)
+                throw new InvalidOperationException("World capture contains no virtue shrines. Reload World.");
+            Values.Add("virtue_shrines", ExportJson.SortedRows(shrines, row => row.id, "virtue_shrines"));
         }
 
         private void CaptureNpcs()

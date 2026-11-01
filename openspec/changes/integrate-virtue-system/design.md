@@ -4,10 +4,10 @@ See proposal.md for why. The requirements are in `specs/virtue-system/spec.md` a
 
 The game holds the virtue rules in four forms, and each needs a different route into the compendium:
 
-- Data the export can read: the rank thresholds (`VirtueRules.Thresholds`), the Humility multipliers (`VirtueRules.HumilityMultiplier`), the six Blessing skill assets with their `virtue` field and three-hour `buffTime`, the escort and return points and the cooldowns (`VirtueEncounters.EscortPoints`, `ReturnPoints`, `EscortCooldownSeconds`, `LostItemCooldownSeconds`), and the shrines in the World scene.
+- Data the export can read: the rank thresholds (`VirtueRules.Thresholds`), the Humility multipliers (`VirtueRules.HumilityMultiplier`), the six Blessing skill assets with their `virtue` field and three-hour `buffTime`, the escort and return points (`VirtueEncounters.EscortPoints`, `ReturnPoints`), and the shrines in the World scene.
 - Text tables: `VirtueText` holds names, titles, the effect text of each rank, the shrine name and the rank 0 label in four languages. `VirtueText.Get` follows the client's locale.
 - Functions over a character or an offering: `VirtueRules.CombatPoints`, `IsEligibleMonster`, `SacrificeOfferingPoints` and `Player.AssignValorTarget`.
-- Literals inside methods: the Compassion, Honor, Sacrifice, Valor and Honesty multipliers, the 5, 2, 150 and 75 points of Honor, Humility and Valor, the 15-second and 40 and 60 yd conditions.
+- Literals inside methods: the Compassion, Honor, Sacrifice, Valor and Honesty multipliers, the 5, 2, 150 and 75 points of Honor, Humility and Valor, the 15-second and 40 and 60 yd conditions, and the cooldowns. The game applies `Mathf.Max(1800f, EscortCooldownSeconds)` and `Mathf.Max(10800f, LostItemCooldownSeconds)`, so the configured fields (1,800 and 3,600 s) do not give the cooldowns players meet.
 
 The export already captures authored placements once at World load in `ConfiguredWorldSnapshot`, and thin exporters such as `CraftingStationExporter` write them. Map-only entity families such as houses have a manifest entry, a table, a marker group and search documents, but no detail page. Character inputs that pages share are remembered under one key, such as `level`.
 
@@ -32,7 +32,7 @@ Another session works on Pocket Compendium in the same checkout and uses the gam
 
 ### 1. A virtue exporter reads the game's tables, not the client's rendering
 
-A new `VirtueExporter` writes `virtues.json`: per virtue its kind, English name, Blessing skill id and per rank its title and effect text. It also writes the shared rank thresholds, the Humility multipliers by rank, and the escort and return points and cooldowns. Text comes from the English column of `VirtueText`'s table, so the client language cannot change it. Titles come from `VirtueRules.TitleEnglish`, which the game uses for English titles. A virtue without a Blessing skill or text fails the export.
+A new `VirtueExporter` writes `virtues.json`: per virtue its kind, English name, the game's one-line summary, Blessing skill id and per rank its points, title and effect text. It also writes the shared rank thresholds, the rank 0 label, the Humility multipliers by rank, and the escort and return points. Text comes from the English column of `VirtueText`'s table, so the client language cannot change it. Titles come from `VirtueRules.TitleEnglish`, which the game uses for English titles. A virtue without a Blessing skill or text fails the export, and so does a virtue that two Blessing skills grant.
 
 Alternatives: a curated JSON file restates game values and drifts silently. Calling `VirtueText.Get` ties the values to the client locale. If the table is not reachable through the interop assembly, the exporter calls `Get` and the export's existing locale check guards the session, which the exporter documents.
 
@@ -80,5 +80,5 @@ A scratch session through HotRepl checks each shrine against the export, activat
 
 1. Export with the new exporters and build the database.
 2. Land the page, map, skill page and modifier changes with their tests.
-3. Commit the redaction ledger, regenerate the home counts and set `COMPENDIUM_VERSION` to 0.10.2.0.
+3. Commit the redaction ledger, regenerate the home counts and set `COMPENDIUM_VERSION` to 0.10.2.1.
 4. Run the release checks and look at the site in a browser before a deploy, which waits for an explicit request.

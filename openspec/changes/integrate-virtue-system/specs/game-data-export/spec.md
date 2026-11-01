@@ -23,7 +23,7 @@ The export SHALL record each virtue's name, rank point thresholds, rank titles, 
 
 The export SHALL record each shrine in the world with its virtue, zone and authored position, under a placement identifier with the prefix `shrine_{virtue}_{zone}`. Prefabs and other objects outside the world scene SHALL NOT be exported.
 
-#### Scenario: Six shrines in the world
+#### Scenario: Two shrines for each virtue
 
-- **WHEN** the world holds one shrine for each virtue
-- **THEN** the export writes six shrine placements, each naming its virtue
+- **WHEN** the world holds two shrines of each virtue, each in a different zone
+- **THEN** the export writes twelve shrine placements, each naming its virtue and zone under its own identifier

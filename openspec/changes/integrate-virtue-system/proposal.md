@@ -1,6 +1,6 @@
 ## Why
 
-Game 0.10.2.0 added the Virtue System: six shrines, ranks and titles, blessings that change healing, defenses, Health, Accuracy, Critical Resist, damage against elites and bosses and faction gains, and new ways to earn each virtue. The compendium covers none of it, so the eight new Adventurer's Guide articles map to no section, about twenty pages state formulas that omit an active blessing, and the new data would publish an escort with values no player meets and six Blessing pages without an effect. 0.10.2.0 is published only once this change lands.
+Game 0.10.2.0 added the Virtue System: twelve shrines, two for each virtue, ranks and titles, blessings that change healing, defenses, Health, Accuracy, Critical Resist, damage against elites and bosses and faction gains, and new ways to earn each virtue. Hotfix 0.10.2.1 reworked how Honor earns points. The compendium covers none of it, so the eight new Adventurer's Guide articles map to no section, about twenty pages state formulas that omit an active blessing, and the new data would publish an escort with values no player meets and six Blessing pages without an effect. 0.10.2.1 is published only once this change lands.
 
 ## What Changes
 
@@ -10,7 +10,7 @@ Game 0.10.2.0 added the Virtue System: six shrines, ranks and titles, blessings 
 - Shrines appear on the map as their own marker group with a popup that links to their virtue, and in map and site search.
 - Each Blessing skill page states that a shrine grants it, how long it lasts and each rank's title and effect, and does not present its ranks as learned.
 - Every page whose stated numbers an active blessing changes names that blessing and links to the Virtues page: damage, healing and lifetap, Critical Resist, maximum Health and the defenses on the character page, faction gains and their calculators, and storage rules for lost belongings.
-- The 0.10.2.0 data, redaction ledger and version are published after these land.
+- The 0.10.2.1 data, redaction ledger and version are published after these land.
 
 ## Capabilities
 
@@ -28,4 +28,4 @@ Game 0.10.2.0 added the Virtue System: six shrines, ranks and titles, blessings 
 - Pipeline: `build-pipeline/schema.sql`, models, loaders, the redaction configuration and ledger, map and search denormalization, tests.
 - Website: a `/mechanics/virtues` route, the mechanics index, the map marker registry, popups and search, the skill page, the guide coverage map, the combat, character, reputation, inventory and summons pages, skill mechanics components, the reputation calculations, the shared rules module, generated home counts.
 - Pocket Compendium: the skill-effect formatter port and its parity corpus gain the Blessing summaries.
-- Publication: `COMPENDIUM_VERSION` moves to 0.10.2.0 after the change.
+- Publication: `COMPENDIUM_VERSION` moves to 0.10.2.1 after the change.

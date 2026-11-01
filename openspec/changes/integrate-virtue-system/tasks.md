@@ -2,14 +2,14 @@
 
 ## 1. Runtime facts
 
-- [ ] 1.1 In a scratch session through HotRepl, on a free port when another instance runs, list every `VirtueShrine` in the World scene with its virtue and position, and check that `VirtueText`'s table, `VirtueRules.Thresholds`, `TitleEnglish`, `HumilityMultiplier` and the `VirtueEncounters` point and cooldown fields are readable from the interop assembly. Verify that `observations.md` in this change records the shrines and which reads work.
+- [x] 1.1 List every `VirtueShrine` in the World scene with its virtue and position, and check that `VirtueText`'s table, `VirtueRules.Thresholds`, `TitleEnglish`, `HumilityMultiplier` and the `VirtueEncounters` point fields are readable from the interop assembly. Verify that `observations.md` in this change records the shrines and which reads work.
 - [ ] 1.2 In the same kind of session, activate each blessing on a scratch character and record what the character window shows before and after (Armor Class and resists for Humility, maximum Health for Sacrifice, Accuracy for Honor), the remaining time, a renewal, the Sacrifice refusal below rank 5 and the Honesty refusal with pending returns. Verify that `observations.md` records each value next to the code that produces it.
 
 ## 2. Export
 
-- [ ] 2.1 Add the virtue models and `VirtueExporter`, register `virtues.json` in `CreateCatalog`, and cover the model contract in `tests/DataExporter.Tests`. Verify with a real export that the session manifest lists `virtues.json` with six virtues, six ranks each, and English titles and effect texts.
-- [ ] 2.2 Capture shrines in `ConfiguredWorldSnapshot`, add `VirtueShrineExporter` for `virtue_shrines.json`, register it, and test the placement identifier. Verify that the export lists every shrine from task 1.1 with its virtue and zone.
-- [ ] 2.3 Document the two outputs where the exporter's outputs are documented. Verify that `pnpm check:docs` passes.
+- [x] 2.1 Add the virtue models and `VirtueExporter`, register `virtues.json` in `CreateCatalog`, and cover the model contract in `tests/DataExporter.Tests`. Verify with a real export that the session manifest lists `virtues.json` with six virtues, six ranks each, and English titles and effect texts.
+- [x] 2.2 Capture shrines in `ConfiguredWorldSnapshot`, add `VirtueShrineExporter` for `virtue_shrines.json`, register it, and test the placement identifier. Verify that the export lists every shrine from task 1.1 with its virtue and zone.
+- [x] 2.3 Declare the two outputs in their `CreateCatalog` descriptors, which is where the export's outputs are listed. Verify that a run refuses promotion without them.
 
 ## 3. Pipeline
 
@@ -18,7 +18,7 @@
 
 ## 4. Rules module
 
-- [ ] 4.1 Add `website/src/lib/calculation/virtues.ts` with each virtue's per-rank effect, the combat points, Valor eligibility and the Sacrifice formula, each with a `Source:` citation, and unit tests for rank 0, rank 5, the level window and the rounding of an offering. Verify that the tests pass and `citations check` passes.
+- [ ] 4.1 Add `website/src/lib/calculation/virtues.ts` with each virtue's per-rank effect, the combat points, Honor's points from `VirtueRules.HonorPoints` and the 0.10.2.1 fight settlement (Health against the level curve, ×2 for elites, ×3 for bosses, less for additional normal foes), Valor eligibility and the Sacrifice formula, each with a `Source:` citation, and unit tests for rank 0, rank 5, the level window, an Honor fight with an add and the rounding of an offering. Verify that the tests pass and `citations check` passes.
 - [ ] 4.2 Add a database test that compares the module's per-rank percentages and the exported Humility multipliers with the numbers in every exported effect text. Verify that it passes, and fails when one literal is changed.
 
 ## 5. Virtues page
@@ -47,7 +47,7 @@
 
 ## 9. Publication
 
-- [ ] 9.1 Regenerate the home counts, commit the redaction ledger, and set `COMPENDIUM_VERSION` to 0.10.2.0. Verify that `citations check`, `redactions check` and the guide coverage test pass.
+- [ ] 9.1 Regenerate the home counts, commit the redaction ledger, and set `COMPENDIUM_VERSION` to 0.10.2.1. Verify that `citations check`, `redactions check` and the guide coverage test pass.
 - [ ] 9.2 Run the release checks in `CONTRIBUTING.md` and look at the built site in a browser: the Virtues page, the map shrines, a Blessing page, the home banner and the changed mechanics pages. Verify that every check passes and no claim recorded in the citation reconciliation is still false.
 
 ## Workflow follow-up
