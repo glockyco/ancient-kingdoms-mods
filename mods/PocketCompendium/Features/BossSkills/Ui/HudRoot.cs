@@ -112,6 +112,7 @@ public sealed class HudRoot
     private void HandleInput()
     {
         if (!_visible) return;
+        Host.UpdateGrip();
 
         if (Pointer.Clicked(_controls.SettingsRect))
             SettingsWindow.Current?.Open(_feature);

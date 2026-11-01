@@ -241,6 +241,7 @@ internal sealed class BossListPanel
     {
         changed = false;
         if (!Host.Exists) return;
+        Host.UpdateGrip();
 
         bool overPanel = Pointer.Over(Host.Rect) || Pointer.Over(_header);
         if (_compact) SetHeaderShown(overPanel || Host.Moving);

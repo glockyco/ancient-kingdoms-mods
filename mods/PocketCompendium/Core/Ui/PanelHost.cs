@@ -169,10 +169,11 @@ public sealed class PanelHost
     }
 
     /// <summary>
-    /// Moves or resizes the panel from the pointer. Call after handling the panel's own buttons, so
-    /// a press they claimed does not start a drag.
+    /// Shows the grip while the pointer is over the panel and starts a resize when it is pressed.
+    /// Call before the owner handles its own clicks, because the grip sits over the content's
+    /// bottom-right corner and a row there would otherwise take the press.
     /// </summary>
-    public void Update(IReadOnlyList<RectTransform> dragHandles)
+    public void UpdateGrip()
     {
         if (_root == null || !_root.activeInHierarchy) return;
 
@@ -185,8 +186,26 @@ public sealed class PanelHost
             if (showGrip) _grip.transform.SetAsLastSibling();
         }
 
-        if (_mode == Mode.Idle && !locked && Pointer.Pressed)
-            StartGesture(dragHandles);
+        if (_mode == Mode.Idle && showGrip && Pointer.Pressed && Pointer.Over(_grip.rectTransform))
+        {
+            Pointer.Claim();
+            _mode = Mode.Resizing;
+            _grab = Pointer.Position;
+            _startSize = new Vector2(Width, MaxHeight);
+            _startScale = Rect.localScale.x;
+        }
+    }
+
+    /// <summary>
+    /// Moves or resizes the panel from the pointer. Call after handling the panel's own buttons, so
+    /// a press they claimed does not start a drag.
+    /// </summary>
+    public void Update(IReadOnlyList<RectTransform> dragHandles)
+    {
+        if (_root == null || !_root.activeInHierarchy) return;
+
+        if (_mode == Mode.Idle && !EffectivelyLocked && Pointer.Pressed)
+            StartDrag(dragHandles);
 
         if (_mode == Mode.Dragging && Pointer.Held)
         {
@@ -209,18 +228,8 @@ public sealed class PanelHost
         if (_mode == Mode.Idle) KeepOnScreen();
     }
 
-    private void StartGesture(IReadOnlyList<RectTransform> dragHandles)
+    private void StartDrag(IReadOnlyList<RectTransform> dragHandles)
     {
-        if (Pointer.Over(_grip.rectTransform))
-        {
-            Pointer.Claim();
-            _mode = Mode.Resizing;
-            _grab = Pointer.Position;
-            _startSize = new Vector2(Width, MaxHeight);
-            _startScale = Rect.localScale.x;
-            return;
-        }
-
         foreach (var handle in dragHandles)
         {
             if (!Pointer.Over(handle)) continue;
