@@ -4,7 +4,7 @@ Pocket Compendium is a MelonLoader mod for Ancient Kingdoms. It shows when bosse
 
 The mod only displays information. It doesn't change combat, loot, or spawns.
 
-![The boss list in Crescent Coast, a respawn timer on Xylevis's spawn point, and an arrow to Ancient Cyclops off screen.](../../assets/pocket-compendium-world.webp)
+![The boss list in Twilight Forest, a respawn timer on Gukavep's spawn point, and arrows to four monsters off screen.](../../assets/pocket-compendium-world.webp)
 
 [Download PocketCompendium.dll](https://ancient-kingdoms.compendiums.org/mods/PocketCompendium.dll)
 
@@ -25,25 +25,21 @@ The mod only displays information. It doesn't change combat, loot, or spawns.
 
 ### Boss list
 
-Lists the bosses, elites, and fabled monsters in your zone and when they spawn. A time that starts with `~` is an estimate.
+Lists the bosses, elites, and fabled monsters in your zone and when they spawn. Times are exact in a world you host, and in a friend's world when you both use the mod. Elsewhere they are estimates and start with `~`.
+
+![The boss list in Twilight Forest with Seer Kzhal's spawn rules in a tooltip.](../../assets/pocket-compendium-list.webp)
 
 ### Map pins and world markers
 
 Marks respawn timers on the map and on spawn points, and points to monsters off screen.
 
-![The map of Crescent Coast with a pin for each monster.](../../assets/pocket-compendium-map.webp)
-
-### Alerts
-
-Tells you on screen and in chat when a monster you watch spawns.
-
-![The message "Xylevis has spawned in Crescent Coast".](../../assets/pocket-compendium-alert.webp)
+![The map of Twilight Forest with a pin for each monster and Nivalis's spawn rules in a tooltip.](../../assets/pocket-compendium-map.webp)
 
 ### Bestiary
 
 Shows every monster's page, with drop chances, skills and respawn timers.
 
-![Nyxarion's Bestiary page with drop chances, and his skills beside it.](../../assets/pocket-compendium-bestiary.webp)
+![Troll King Grimlok's Bestiary page with drop chances raised by the Troll Fatecharm, a drop's tooltip, and his skills beside it.](../../assets/pocket-compendium-bestiary.webp)
 
 ### Boss skills
 
@@ -56,10 +52,6 @@ Shows the skill cooldowns of the monsters you're fighting.
 Warns you when killing your target would use your Fatecharm.
 
 ![The Catacombs Fatecharm beside Captain Aerendyl's level, with its tooltip.](../../assets/pocket-compendium-fatecharm.webp)
-
-### Sharing
-
-Shares exact times with other players in your world who use the mod.
 
 ## Problems and ideas
 
