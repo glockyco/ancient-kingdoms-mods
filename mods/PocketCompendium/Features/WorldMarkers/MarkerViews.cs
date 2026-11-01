@@ -6,30 +6,80 @@ using UnityEngine.UI;
 namespace PocketCompendium.Features.WorldMarkers;
 
 /// <summary>
-/// Text readable over any ground without a box: a thick black outline around a widened face,
-/// over a soft dark halo. Orange names on sand need all three.
+/// Text readable over any ground without a box: eight dark copies one pixel around the face, the
+/// hard outline pixel-art games give their text. A font outline cannot do it, because the
+/// fonts' distance fields reach less than a pixel at these sizes.
 /// </summary>
-internal static class Outlined
+internal sealed class Stroked
 {
+    private const float Offset = 1.2f;
     private static readonly int FaceDilate = Shader.PropertyToID("_FaceDilate");
-
-    public static Label Create(string name, Transform parent, float size, Color color, Align align)
+    private static readonly Color StrokeColor = new(0.02f, 0.02f, 0.02f, 0.95f);
+    private static readonly Vector2[] Directions =
     {
-        var label = HudFactory.Label(name, parent, size, color, align, bold: true, monospaced: true);
-        label.Text.extraPadding = true;
-        label.Text.outlineWidth = 0.32f;
-        label.Text.outlineColor = new Color32(0, 0, 0, 255);
-        label.Text.fontMaterial.SetFloat(FaceDilate, 0.36f);
-        return label;
+        new(1f, 0f), new(-1f, 0f), new(0f, 1f), new(0f, -1f),
+        new(1f, 1f), new(-1f, 1f), new(1f, -1f), new(-1f, -1f),
+    };
+
+    private readonly Label _face;
+    private readonly Label[] _strokes = new Label[8];
+
+    public Stroked(string name, Transform parent, float size, Color color, Align align)
+    {
+        Rect = HudFactory.Rect(name, parent).GetComponent<RectTransform>();
+        // The strokes come first, so the face draws over them.
+        for (int index = 0; index < _strokes.Length; index++)
+        {
+            _strokes[index] = Make("stroke", size, StrokeColor, align);
+            HudFactory.Stretch(_strokes[index].Rect, Directions[index] * Offset, Directions[index] * Offset);
+        }
+
+        _face = Make("face", size, color, align);
+        HudFactory.Stretch(_face.Rect, Vector2.zero, Vector2.zero);
     }
 
-    /// <summary>A soft dark ellipse behind text. Add it before the labels so it draws under them.</summary>
-    public static RectTransform Halo(Transform parent, float width, float height)
+    public RectTransform Rect { get; }
+
+    public string Value
     {
-        var halo = HudFactory.Tinted("halo", parent, Shapes.Glow, new Color(0f, 0f, 0f, 0.7f));
-        halo.preserveAspect = false;
-        halo.rectTransform.sizeDelta = new Vector2(width, height);
-        return halo.rectTransform;
+        set
+        {
+            _face.Value = value;
+            foreach (var stroke in _strokes) stroke.Value = value;
+        }
+    }
+
+    /// <summary>Sets game text that can be Chinese or Japanese, with the game's font for it.</summary>
+    public string LocalizedValue
+    {
+        set
+        {
+            _face.LocalizedValue = value;
+            foreach (var stroke in _strokes) stroke.LocalizedValue = value;
+        }
+    }
+
+    public Color Color
+    {
+        set => _face.Color = value;
+    }
+
+    public TextAlignmentOptions Alignment
+    {
+        get => _face.Text.alignment;
+        set
+        {
+            _face.Text.alignment = value;
+            foreach (var stroke in _strokes) stroke.Text.alignment = value;
+        }
+    }
+
+    private Label Make(string name, float size, Color color, Align align)
+    {
+        var label = HudFactory.Label(name, Rect, size, color, align, bold: true, monospaced: true);
+        label.Text.extraPadding = true;
+        label.Text.fontMaterial.SetFloat(FaceDilate, 0.15f);
+        return label;
     }
 }
 
@@ -48,8 +98,8 @@ internal sealed class SpawnMarkerView
     private const float LineHeight = 24f;
 
     private readonly RoundPortraitView _portrait;
-    private readonly Label _name;
-    private readonly Label _time;
+    private readonly Stroked _name;
+    private readonly Stroked _time;
 
     public SpawnMarkerView(Transform parent)
     {
@@ -58,11 +108,10 @@ internal sealed class SpawnMarkerView
         _portrait = new RoundPortraitView(Rect, PortraitSize, 2f, RingWidth);
 
         float below = -PortraitSize / 2f - RingWidth - 1f;
-        Outlined.Halo(Rect, 230f, 84f).anchoredPosition = new Vector2(0f, below - LineHeight + 2f);
-        _name = Outlined.Create("name", Rect, 15f, Color.white, Align.Center);
+        _name = new Stroked("name", Rect, 15f, Color.white, Align.Center);
         HudFactory.Place(_name.Rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
             new Vector2(-LabelWidth / 2f, below - LineHeight), new Vector2(LabelWidth / 2f, below));
-        _time = Outlined.Create("time", Rect, 16f, Color.white, Align.Center);
+        _time = new Stroked("time", Rect, 16f, Color.white, Align.Center);
         HudFactory.Place(_time.Rect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
             new Vector2(-LabelWidth / 2f, below - 2f * LineHeight + 4f), new Vector2(LabelWidth / 2f, below - LineHeight + 4f));
     }
@@ -99,9 +148,8 @@ internal sealed class EdgeArrowView
     private readonly RoundPortraitView _portrait;
     private readonly RectTransform _pointer;
     private readonly RectTransform _labels;
-    private readonly RectTransform _halo;
-    private readonly Label _name;
-    private readonly Label _state;
+    private readonly Stroked _name;
+    private readonly Stroked _state;
 
     public EdgeArrowView(Transform parent)
     {
@@ -117,12 +165,12 @@ internal sealed class EdgeArrowView
         shadow.effectColor = new Color(0f, 0f, 0f, 0.9f);
         shadow.effectDistance = new Vector2(1f, -1f);
 
-        _halo = Outlined.Halo(Rect, 200f, 70f);
+        // The labels are drawn after the pointer.
         _labels = HudFactory.Rect("labels", Rect).GetComponent<RectTransform>();
         _labels.sizeDelta = new Vector2(LabelWidth, 44f);
-        _name = Outlined.Create("name", _labels, 15f, Color.white, Align.Left);
+        _name = new Stroked("name", _labels, 15f, Color.white, Align.Left);
         HudFactory.Place(_name.Rect, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0f, -2f), new Vector2(0f, 22f));
-        _state = Outlined.Create("state", _labels, 15f, Theme.Ready, Align.Left);
+        _state = new Stroked("state", _labels, 15f, Theme.Ready, Align.Left);
         HudFactory.Place(_state.Rect, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0f, -22f), new Vector2(0f, 2f));
     }
 
@@ -142,16 +190,14 @@ internal sealed class EdgeArrowView
         _pointer.localRotation = Quaternion.Euler(0f, 0f, angle - 90f);
 
         var align = labelsRight ? TextAlignmentOptions.Left : TextAlignmentOptions.Right;
-        if (_name.Text.alignment != align)
+        if (_name.Alignment != align)
         {
-            _name.Text.alignment = align;
-            _state.Text.alignment = align;
+            _name.Alignment = align;
+            _state.Alignment = align;
         }
 
-        // The text hugs the portrait, so its halo sits on the near part of the label column.
         float side = labelsRight ? 1f : -1f;
         _labels.anchoredPosition = new Vector2(side * (PortraitSize / 2f + LabelGap + LabelWidth / 2f), 0f);
-        _halo.anchoredPosition = new Vector2(side * (PortraitSize / 2f + LabelGap + 80f), 0f);
     }
 
     public void Show(Sprite portrait, Color tier, Color nameColor, string name, string state, bool silhouette)
