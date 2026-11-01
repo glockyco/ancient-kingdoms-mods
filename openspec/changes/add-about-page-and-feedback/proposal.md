@@ -6,7 +6,7 @@ Players will report Pocket Compendium problems and suggest ideas as GitHub issue
 
 ## What Changes
 
-- A new last page in the settings window, About, for Pocket Compendium itself. It shows the version and build, links the Ancient Kingdoms Compendium website, the source on GitHub, the game's Discord and Ko-fi, and holds the actions that report a problem and suggest an idea. Its icon and its further content are chosen through comparisons.
+- A new last page in the settings window, About, for Pocket Compendium itself. It shows the version, build and author, says that the mod is fan-made, links the Ancient Kingdoms Compendium website, the source on GitHub, the game's Discord and Ko-fi, and holds the actions that report a problem and suggest an idea. Its entry carries an information icon.
 - Two issue forms in `.github/ISSUE_TEMPLATE/`, one for problems and one for ideas.
 - The report action copies the details to the clipboard, opens the problem form with the details filled in, and then shows where the log file is with a button that opens its folder. The idea action opens the ideas form.
 - The details name Pocket Compendium's version and build, the game and MelonLoader versions, the system, the game language, whether the player plays alone, hosts or joined a world, the other loaded mods, the features switched off and the features stopped by an error. They contain no server address, character name or file path, because the issue is public.

@@ -12,8 +12,8 @@
 
 ## 3. About page
 
-- [ ] 3.1 Choose the page's icon, whether it names the author and says the mod is fan-made, and its wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded.
-- [ ] 3.2 Add a settings page kind that draws its own content, and build the page as chosen, with "Reset this page" hidden. Verify in game on a 1920 and a 1280 px window.
+- [ ] 3.1 Choose the page's wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded.
+- [ ] 3.2 Add a settings page kind that draws its own content, add Lucide's `info` icon to `website/scripts/generate-mod-icons.mjs`, and build the page as chosen, with "Reset this page" hidden. Verify in game on a 1920 and a 1280 px window.
 - [ ] 3.3 Keep the page's addresses in one class with a test that compares those the website also links with `website/src/lib/constants/links.ts` and `website/src/lib/seo/site.ts`. Verify with `dotnet test tests/PocketCompendium.Tests`.
 - [ ] 3.4 Apply the chosen wording of the other pages' summaries and help texts. Verify in game that no text ends with a single word on its last line.
 

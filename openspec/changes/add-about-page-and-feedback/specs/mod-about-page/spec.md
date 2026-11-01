@@ -8,12 +8,12 @@ Defines the settings page about Pocket Compendium itself, so a player can see wh
 
 ### Requirement: The settings window ends with an About page
 
-The settings window SHALL end its page list with a page named About, about Pocket Compendium itself. The page SHALL show the mod's version and build commit. It SHALL have no feature switch, and the window SHALL hide "Reset this page" while it is shown.
+The settings window SHALL end its page list with a page named About, marked with an information icon, about Pocket Compendium itself. The page SHALL show the mod's version, build commit and author, and SHALL say that Pocket Compendium is a fan-made mod whose problems belong with its project, not with the game's developers. It SHALL have no feature switch, and the window SHALL hide "Reset this page" while it is shown.
 
 #### Scenario: Opening the page
 
 - **WHEN** the player opens the settings window and selects the last page
-- **THEN** the page shows Pocket Compendium's version and build commit
+- **THEN** the page shows Pocket Compendium's version, build commit and author, and says that the mod is fan-made
 - **AND** the footer shows "Done" without "Reset this page"
 
 ### Requirement: The page links the project

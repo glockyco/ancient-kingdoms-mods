@@ -33,7 +33,7 @@
 
 The window gets a page kind that draws its own content instead of saved setting rows, and the About page is its first use. It comes last, after Layout, because it holds no settings, and the footer hides "Reset this page" while it shows.
 
-It shows the name with the version and build, links the compendium website, the mod's folder on GitHub, whose README is the mod's page, the game's Discord and Ko-fi, and holds the report and idea actions. Its icon, and whether it names the author and says that the mod is fan-made, are chosen through comparisons with screenshots of the real window.
+It shows the name with the version, build and author, says that Pocket Compendium is fan-made and that its problems come to us, not to the game's developers, links the compendium website, the mod's folder on GitHub, whose README is the mod's page, the game's Discord and Ko-fi, and holds the report and idea actions. The fan-made line is the page's own addition, because the developers ask players in support replies whether a mod is in play. Its entry carries Lucide's `info` icon, a circled i, which `website/scripts/generate-mod-icons.mjs` renders with the mod's other icons.
 
 Alternatives: the actions in the footer beside "Reset this page", where they crowd every page and read as page actions, and an icon in the title bar, which players do not find.
 
