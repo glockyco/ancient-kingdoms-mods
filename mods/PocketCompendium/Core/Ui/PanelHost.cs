@@ -112,6 +112,9 @@ public sealed class PanelHost
 
     public bool Moving => _mode != Mode.Idle;
 
+    /// <summary>Whether the grip also sets <see cref="MaxHeight"/>. Off for content that always shows in full.</summary>
+    public bool ResizesHeight { get; set; } = true;
+
     public void Create()
     {
         if (_root != null) return;
@@ -249,7 +252,7 @@ public sealed class PanelHost
             // The owner lays out to the new size, so the panel never shows a size its content
             // does not fill.
             _width.Value = Mathf.Clamp(_startSize.x + delta.x, _minSize.x, _maxSize.x);
-            _height.Value = Mathf.Clamp(_startSize.y - delta.y, _minSize.y, _maxSize.y);
+            if (ResizesHeight) _height.Value = Mathf.Clamp(_startSize.y - delta.y, _minSize.y, _maxSize.y);
             return;
         }
 

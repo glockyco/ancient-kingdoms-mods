@@ -379,7 +379,9 @@ internal sealed class BossListPanel
             footerHeight = Mathf.Ceil(_footer.Text.GetPreferredValues(_footer.Text.text, width - 20f, 0f).y) + 14f;
         }
 
-        float available = Mathf.Max(TileView.Size, Host.MaxHeight - top - footerHeight);
+        // Compact shows every tile, in as many lines as the width leaves, so only the list scrolls.
+        float available = _compact ? _contentHeight : Mathf.Max(TileView.Size, Host.MaxHeight - top - footerHeight);
+        Host.ResizesHeight = !_compact;
         _viewportHeight = Mathf.Min(_contentHeight, available);
         _scroll = Mathf.Clamp(_scroll, 0f, Mathf.Max(0f, _contentHeight - _viewportHeight));
 
