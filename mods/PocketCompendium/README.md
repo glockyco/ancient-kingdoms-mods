@@ -26,6 +26,10 @@ A dead monster of your zone shows on its spawn point or altar: its portrait in a
 
 On the game's local map, each boss, elite, and fabled monster of your zone shows as a portrait pin. A dead one carries a small time tag, and one that is up glows. Hover a pin for its rules and next spawn. Click it to watch the monster, and shift-click it to open its Bestiary page. Pocket Compendium's panels hide while the map is open.
 
+### Bestiary countdown
+
+In the Bestiary, a dead monster's grid portrait darkens under a sweep with its time, and its page shows **Respawns in** with the time and a filling bar, between the facts and the lore. A monster that spawns by chance shows its next roll, and a window boss the time until its window opens.
+
 ### Alerts
 
 When a monster you watch spawns, the game's own message band and a golden chat line announce it. On someone else's server, the alert comes when you see the monster up.

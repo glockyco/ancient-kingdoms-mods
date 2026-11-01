@@ -5,6 +5,7 @@ using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Tracking;
 using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.Alerts;
+using PocketCompendium.Features.BestiaryCountdown;
 using PocketCompendium.Features.BestiaryPages;
 using PocketCompendium.Features.BossList;
 using PocketCompendium.Features.MapPins;
@@ -34,6 +35,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _features.Add(new BossListFeature());
         _features.Add(new WorldMarkersFeature());
         _features.Add(new MapPinsFeature());
+        _features.Add(new BestiaryCountdownFeature());
         _features.Add(new AlertsFeature());
         _features.Add(new BossSkillsFeature());
         _features.Add(new BestiaryPagesFeature());
