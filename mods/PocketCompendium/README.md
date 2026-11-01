@@ -1,74 +1,89 @@
 # Pocket Compendium
 
-Pocket Compendium is an unofficial MelonLoader mod for Ancient Kingdoms players. It shows when every boss, elite, and fabled monster spawns, the skill cooldowns of the ones you fight, and every monster's full Bestiary page. Each feature can be switched off on its own.
+Pocket Compendium is an unofficial MelonLoader mod for Ancient Kingdoms. It tells you when every boss, elite, and fabled monster spawns and where, announces the ones you watch, and shows every monster's full Bestiary page before you meet it. It only shows information. Nothing it does changes a fight, a drop, or a spawn.
+
+![The boss list in Crescent Coast with Ancient Cyclops up, Xylevis respawning in 23:33, a chance spawn and an altar boss, and two watched monsters from Twilight Forest. Xylevis's spawn point counts down in the world, and an arrow at the screen's edge points to Ancient Cyclops, 215 yd away.](../../assets/pocket-compendium-world.webp)
 
 [Download PocketCompendium.dll](https://ancient-kingdoms.compendiums.org/mods/PocketCompendium.dll)
 
-## Setup
+## Install
 
-Install MelonLoader as [Mods for players](../../README.md#mods-for-players) describes. Remove BossTracker.dll, BossSkillTracker.dll, and BetterBestiary.dll from the game's `Mods` folder if they are there, because Pocket Compendium replaces them. Then put PocketCompendium.dll in the `Mods` folder.
+1. Install MelonLoader as [Mods for players](../../README.md#mods-for-players) describes.
+2. If the game's `Mods` folder holds BossTracker.dll, BossSkillTracker.dll, or BetterBestiary.dll, remove them. Pocket Compendium replaces all three.
+3. Put PocketCompendium.dll in the `Mods` folder and start the game.
 
-## Use
+The boss list appears on the left when you enter a world. Press F8 for the settings, where each feature has its own switch.
 
-### Boss list
+## Boss list
 
-The list shows the bosses, elites, and fabled monsters of your zone, then the ones you watch from other zones, grouped by zone. Each row shows the monster's level in the game's level colours, its state, and in your zone the distance with an arrow to its spawn point or altar. A state is Up, the time to the next spawn, a dice for a spawn that can fail, an hourglass when a spawn is due, a moon or sun for a time-of-day window, a shield for guards that must die first, the altar's item for altar monsters, or an eye for monsters seen or not seen on someone else's server. Hover a row for the rule behind its state.
+The list shows the bosses, elites, and fabled monsters of your zone, then the ones you watch from other zones. Hover a row for its spawn rule, when it was killed, and where it spawns.
 
-Click a row to watch the monster, and shift-click it to open its Bestiary page. Watched monsters carry a gold corner and stay listed in every zone. The style button switches to compact tiles, which show the header while you point at them. The settings page filters by tier, level, zone, and discovery. The filters never hide a watched monster, and the monsters they hide collapse into one line per zone.
+| In a row | Meaning |
+| --- | --- |
+| Up | It is alive. |
+| Swords and In combat | It is alive and fighting. |
+| A time | It respawns in that time. |
+| A dice and a time | It may spawn then. The tooltip gives the chance. |
+| An hourglass and Due | Its time has passed. It spawns, or rolls, when someone is in its zone. |
+| A moon or a sun | It spawns only at night or only by day. The time says when its window opens. |
+| A shield and a number | It spawns after other monsters die. The number says how many are left. |
+| An item and Altar | An altar event spawns it, started with that item. |
+| An eye | You saw it up on this server, and no time is known. A crossed-out eye means you never saw it here. |
+| `~` before a time | The time is an estimate. |
+| ??? and a silhouette | You have not met it yet. |
+| A skull before the level | It is more than 10 levels above you. |
 
-Every time is exact in a world you host, and in a world whose host shares its times through Pocket Compendium. On other servers, the mod estimates from deaths you see, corpses you find, and a dedicated server's kill notices, and marks those times with `~`. It remembers them per server.
+Click a row to watch the monster. A watched monster stays in the list in every zone, carries a gold corner, and raises an alert when it spawns. Shift-click a row to open its Bestiary page. The grid button in the header switches to compact tiles.
 
-### World markers
+![The same monsters as compact tiles, each with its time or state on its portrait.](../../assets/pocket-compendium-tiles.webp)
 
-A dead monster of your zone shows on its spawn point or altar: its portrait in a ring that fills until it spawns, with its name and time below. A monster that is up out of sight shows at the screen's edge, with a pointer towards it and its distance. The World markers page switches the edge arrows off.
+### Exact and estimated times
 
-### Map pins
+In a world you host, every time is exact. In a friend's world, you get the host's exact times when you both run Pocket Compendium. Elsewhere, the mod knows only what you see: deaths you witness, corpses you find, and a dedicated server's kill notices for bosses. Those times start with `~`, and the mod remembers them for each server.
 
-On the game's local map, each boss, elite, and fabled monster of your zone shows as a portrait pin. A dead one carries a small time tag, and one that is up glows. Hover a pin for its rules and next spawn. Click it to watch the monster, and shift-click it to open its Bestiary page. Pocket Compendium's panels and world markers hide while the map is open.
+## World markers and map pins
 
-### Bestiary countdown
+A dead monster of your zone shows on its spawn point with its time. An arrow at the screen's edge points to each one that is up out of view. On the local map, each monster of your zone is a pin. Hover a pin for its rules, and click it to watch the monster.
 
-In the Bestiary, a dead monster's grid portrait darkens under a sweep with its time, and its page shows **Respawns in** with the time and a filling bar, between the facts and the lore. A monster that spawns by chance shows its next roll, and a window boss the time until its window opens.
+![The local map of Crescent Coast with a pin for each tracked monster. Xylevis's tooltip says he respawns 35 min after each kill and spawns next in 21:03.](../../assets/pocket-compendium-map.webp)
 
-### Alerts
+## Alerts
 
-When a monster you watch spawns, the game's own message band and a golden chat line announce it. On a server that does not share its times, the alert comes when you see the monster up.
+When a watched monster spawns, the game's message band and a chat line say so, such as "Xylevis has spawned in Crescent Coast." Where times are estimates, the alert comes when you see the monster up.
 
-### Boss skills
+## Bestiary
 
-The panel lists the monsters fighting you or your pet. Out of combat, select a boss, elite, or fabled monster to preview it. Drag a monster's header to move the panel, and drag its bottom-right corner to scale it. The compact button shrinks the rows, the lock button stops dragging and scaling, and the settings button opens the Boss skills settings.
+Every monster's page shows its stats, lore, drops, and skills before you meet it. Hover a drop for the item's full tooltip, and click **Skills** for the monster's skills. A dead monster counts down on its portrait and on its page. Hold Alt and click a monster in the world to open its page.
 
-### Bestiary pages
+![Xylevis's Bestiary page with his stats, lore, and four drops. The page says Respawns in 14:41, and his portrait in the grid counts down.](../../assets/pocket-compendium-bestiary.webp)
 
-Every monster's Bestiary page shows its stats, lore, every drop, and a skill summary, before you meet or kill it. Hover a drop to see the item's stats, whether or not it has dropped for you. On a Bestiary page, click **Skills** to open the monster's skills. Hold Alt and left-click any monster in the world to open its page. Clicks on the interface are ignored.
+With a gamepad, move right past the monster grid to reach the drops, down to **Skills**, and left to go back.
 
-With a gamepad, move right past the last column of the monster grid to reach the drops, down from the drops to the **Skills** button, and left to return to the grid. The focused drop shows its tooltip.
+## Boss skills
 
-### Sharing
-
-When you host a world, Pocket Compendium sends its exact times to each joining player who runs it too. Their list, markers, pins, Bestiary countdown, and alerts then match yours in every zone. Players without the mod notice nothing, and nothing goes through chat.
-
-### Language
-
-Monster names, skill names, zones, classes, and item tooltips follow the game's language wherever the game translates them. Skill summaries and the mod's own labels are in English.
+In a fight, a panel lists each skill of the bosses, elites, and fabled monsters fighting you or your pet, with its cooldown and when the next special can come. Out of combat, select such a monster to preview it. Drag the panel's header to move it, and its corner to resize it.
 
 ## Settings
 
-Press F8 to open the settings window. Each feature has a page with its switch and options, and **Reset this page** restores that page's defaults. The Layout page locks every panel, moves every panel back to its default place, and chooses the key that opens the window. The key does nothing while you type in a text field.
+![The settings window on its Boss list page, with a page for each feature.](../../assets/pocket-compendium-settings.webp)
 
-Pocket Compendium saves its settings in the game's `UserData/MelonPreferences.cfg`, one section per page, such as `PocketCompendium_BossList` and `PocketCompendium_Layout`. A panel saves its place, size, and lock in its feature's section, and `PocketCompendium_Watchlist` holds the watched monsters. On someone else's server, the mod keeps its estimates in `UserData/PocketCompendium/Worlds`.
+Each feature has a page with its switch and options, and **Reset this page** restores its defaults. The Layout page locks or resets every panel and changes the key that opens the window.
+
+Pocket Compendium saves its settings in `UserData/MelonPreferences.cfg`, in sections that start with `PocketCompendium_`. It keeps its estimates for other servers in `UserData/PocketCompendium/Worlds`.
+
+## Language
+
+Monster, skill, zone, and item names follow the game's language. The mod's own labels and the skill summaries are in English.
 
 ## Limits
 
-The skill panel finds monsters near you, not every monster in the zone. In a world you host, the next-special timer is exact. On someone else's server, the game does not send that deadline, so the mod estimates it from the casts it sees.
-
-On a server that does not share its times, the list knows what you see and what a dedicated server announces. A player-hosted world announces nothing, and no server announces elites. After a server restarts, a boss the game shows to every player can read Up until someone enters its zone.
-
-If a monster's Bestiary page fails to draw, the game shows its own page for that monster until you restart. If a feature fails, it stops until you restart, and the other features keep running. Both write the error to `MelonLoader/Latest.log`.
+- On someone else's server, a boss can show Up after a restart until someone enters its zone, because the server applies its timer only then.
+- The boss skills panel lists only monsters near you. On someone else's server, its next-special timer is an estimate from the casts you see.
+- If a feature fails, it stops until you restart the game, and the others keep running. The error is in `MelonLoader/Latest.log`. Please [open an issue](https://github.com/glockyco/ancient-kingdoms-mods/issues) and attach that file.
 
 ## Development
 
-[CONTRIBUTING.md](../../CONTRIBUTING.md) covers build requirements, deployment, and checks.
+[CONTRIBUTING.md](../../CONTRIBUTING.md) covers building, deploying, and checks.
 
 ## License
 

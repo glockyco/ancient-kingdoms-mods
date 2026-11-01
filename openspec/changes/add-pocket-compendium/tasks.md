@@ -47,3 +47,14 @@
 - [x] 6.1 Remove `mods/BossTracker`, `mods/BossSkillTracker` and `mods/BetterBestiary` and their download entries.
 - [x] 6.2 Write `mods/PocketCompendium/README.md` and update the download tables in `README.md` and `mods/README.md`, each warning players to remove BossTracker.dll, BossSkillTracker.dll and BetterBestiary.dll first.
 - [x] 6.3 Run the build-tool checks and the test suites, and build the downloads with `build-tool publish-mods`. Deploying the site stays a separate step.
+
+## 7. Review follow-ups
+
+- [x] 7.1 Show the level beside the skull in list rows.
+- [x] 7.2 Write time-of-day windows like the game's clock, such as 20:00 to 08:00.
+- [x] 7.3 Center labels on the font's line metrics, so an icon beside a label lines up whatever letters the label holds.
+- [x] 7.4 Make Bestiary grid countdowns readable on any portrait, with a sweep that shows, and shade compact tile captions the same way.
+- [x] 7.5 Draw panels under the game's interface, and let a panel take the pointer only where nothing covers it.
+- [x] 7.6 Verify 7.1 to 7.5 in game.
+- [x] 7.7 Rewrite the README from a player's questions, with in-game screenshots.
+- [ ] 7.8 Push, and deploy the site with `pnpm cf-deploy`.
