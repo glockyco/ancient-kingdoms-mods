@@ -46,7 +46,7 @@ By default, a monster the player has not discovered in the Bestiary SHALL show a
 
 #### Scenario: Undiscovered boss
 
-- **WHEN** the player has never met Fabled Bane Killoran and the default applies
+- **WHEN** the player has not discovered Fabled Bane Killoran and the default applies
 - **THEN** its row shows a silhouette and no name
 
 ### Requirement: Panels are placed by the player
