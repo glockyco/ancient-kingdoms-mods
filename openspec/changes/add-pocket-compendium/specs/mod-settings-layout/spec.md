@@ -49,6 +49,15 @@ Every panel SHALL be movable, resizable and lockable. A locked panel SHALL ignor
 - **WHEN** the player locks the boss list and then drags it
 - **THEN** the panel stays where it is
 
+### Requirement: The game's interface covers the panels
+
+Panels SHALL draw under the game's interface, including its HUD, windows, menus and tooltips. A panel SHALL take the pointer only where no game interface covers it.
+
+#### Scenario: Journal over the boss list
+
+- **WHEN** the player opens the Journal over the boss list and clicks inside the Journal
+- **THEN** the Journal covers the list, and the click does not reach the list
+
 ### Requirement: Option pickers are even
 
 In the settings window, every option of a picker SHALL have the same width, and the picker SHALL fill its column.

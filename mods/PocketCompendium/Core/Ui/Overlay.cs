@@ -4,9 +4,10 @@ using UnityEngine.UI;
 namespace PocketCompendium.Core.Ui;
 
 /// <summary>
-/// The screen-space canvases Pocket Compendium draws on, created on first use. Markers sit below
-/// the game's interface so its windows cover them, panels and the settings window sit above it.
-/// Every layer scales with the screen against a 1920x1080 reference, like the game's own HUD.
+/// The screen-space canvases Pocket Compendium draws on, created on first use. Markers and panels
+/// sit below the game's interface, so its HUD, windows, menus and tooltips cover them. The
+/// settings window sits above it. Every layer scales with the screen against a 1920x1080
+/// reference, like the game's own HUD.
 /// </summary>
 public static class Overlay
 {
@@ -16,7 +17,7 @@ public static class Overlay
     // The game's interface canvases use sorting orders 0 and 1. Overlay canvases draw after every
     // camera, so a negative order still draws over the world, under the game's interface.
     private const int MarkerOrder = -10;
-    private const int PanelOrder = 32700;
+    private const int PanelOrder = -1;
     private const int TooltipOrder = 32730;
     private const int WindowOrder = 32760;
 
@@ -35,9 +36,9 @@ public static class Overlay
     public static RectTransform Windows => (_windows ??= new Layer("PC_Windows", WindowOrder, raycasts: true)).Root;
 
     /// <summary>
-    /// Lifts the game's tooltip above the panels, because the game shows a panel's tooltips beside
-    /// the hovered control, often over the panel itself. Hides the panels and markers while the
-    /// game's map is open, because the map covers the whole play area.
+    /// Lifts the game's tooltip above the map pins, whose canvas sits one order above the map's.
+    /// Hides the panels and markers while the game's map is open, because the map covers the
+    /// whole play area.
     /// </summary>
     public static void Update()
     {
