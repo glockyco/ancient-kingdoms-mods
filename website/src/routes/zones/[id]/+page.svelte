@@ -577,7 +577,9 @@
       {/if}
     </div>
 
-    <div class="mt-2 flex gap-4 text-sm text-muted-foreground">
+    <div
+      class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground"
+    >
       {#if data.zone.level_min !== null || data.zone.level_max !== null}
         <span>
           Level: {#if data.zone.level_min === data.zone.level_max}
