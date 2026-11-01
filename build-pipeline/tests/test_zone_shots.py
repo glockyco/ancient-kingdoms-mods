@@ -3,10 +3,12 @@ import struct
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from PIL import Image
 
 from compendium.db import create_database
+from compendium.redactions.config import load_redactions
 from compendium.zone_shots import publish_zone_shots
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
@@ -31,6 +33,20 @@ class ZoneShotTests(unittest.TestCase):
         self.conn.execute(
             "INSERT INTO zones (id, zone_id, name) VALUES ('old_valorath', 3, 'Old Valorath')"
         )
+        # The tests define their own unreleased zone rather than reading the
+        # repository's configuration, which changes as zones are released.
+        config = self.root / "redactions.toml"
+        config.write_text(
+            '[zones.suppress_positions]\nzone_ids = ["temple_of_valaark"]\n'
+            '[zones.exclude_unreleased]\nzone_ids = ["old_valorath"]\n',
+            encoding="utf-8",
+        )
+        redactions = patch(
+            "compendium.zone_shots.load_redactions",
+            lambda: load_redactions(config),
+        )
+        redactions.start()
+        self.addCleanup(redactions.stop)
         self.focal = [{"zone_id": "forest", "x": 50, "y": 50, "comment": "Clearing"}]
         self.frame_scale = 1
         self.manifest = [

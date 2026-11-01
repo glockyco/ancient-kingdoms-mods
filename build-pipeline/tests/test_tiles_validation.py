@@ -151,7 +151,9 @@ class TileValidationTests(unittest.TestCase):
                 )
             )
 
-            zones = load_excluded_zones(export_dir)
+            zones = load_excluded_zones(
+                export_dir, {"temple_of_valaark", "old_valorath"}
+            )
 
             self.assertEqual(2, len(zones))
             self.assertEqual((0, 0, 10, 10), self._bounds(zones[0]))

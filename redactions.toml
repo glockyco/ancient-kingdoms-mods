@@ -37,17 +37,13 @@ zone_ids = ["temple_of_valaark"]
 # Zones that have not shipped. Everything related to the zone is removed: its
 # rows, every row referencing it, and every entity left with no other source.
 [zones.exclude_unreleased]
-zone_ids = ["old_valorath"]
+zone_ids = []
 
 # Entities named for removal. Each one is removed together with everything left
 # with no other source, and each removal is recorded in redactions.lock.json.
 #
 # Name an entity here when nothing in the data distinguishes it from content
 # that is deliberately published, so no rule over the references can select it.
-#
-# old_valorath_token: no source, no usage, no zone reference. Many items have
-# neither source nor usage, several of them published on purpose, so no
-# derivable rule can select it.
 #
 # relics_of_the_ancient_faith and the_lost_warden: quests that must not appear
 # in any listing or relationship. Naming a quest also removes what only that
@@ -56,27 +52,9 @@ zone_ids = ["old_valorath"]
 # Temple of Valaark is published without a stated requirement. That is intended:
 # no player can obtain a key whose only source is hidden.
 #
-# zharvok and the_royal_key_of_valorath: Old Valorath content placed in released
-# territory. The NPC stands in The Molten Summit and gives the quest, so the
-# unreleased-zone rule cannot reach either of them: nothing in their rows says
-# Old Valorath. Both are named because the pairing can change. A later patch may
-# move the quest to another giver or give this one a second quest, and naming
-# only one would publish the other.
-#
-# valorath_royal_key: the reward of the_royal_key_of_valorath, and that quest is
-# its only source. The cascade cannot take it the way it takes
-# key_to_the_north_wing. That key stays reachable through the portal it opens,
-# because the portal stands in Temple of Valaark, a published zone. This portal
-# stands inside Old Valorath, so the unreleased-zone rule removes it first. The
-# key then reaches no zone at all, and the closure keeps an item that no zone
-# reaches. Without this entry the compendium publishes a key that no player can
-# obtain, for a door it does not show.
-#
-# valaarks_corrupted_seal: the Corrupted Valaark's drop, and that Old Valorath
-# boss was its only source. The boss's drop table no longer names it, so it has
-# no source, and the closure keeps an item that no zone reaches. Nothing in its
-# rows places it in Old Valorath. Only the developer's free-text comment names
-# the boss.
+# valaarks_corrupted_seal: the Corrupted Valaark used to drop it, and its drop
+# table no longer names it. Nothing else gives or uses it, so no player can
+# obtain it, and the closure would publish an item no zone reaches.
 #
 # new_skill_placeholder: a passive every class learns by default into skill
 # slot 18, with no effect and an empty tooltip. The skill window shows slots 0
@@ -89,62 +67,11 @@ zone_ids = ["old_valorath"]
 # VirtueEscortStats.cs), so the prefab's own name, level and Health are values
 # no player meets. Its row looks like any other NPC published without a
 # placement.
-#
-# The class epic chains run through released zones and end in Old Valorath.
-# Each chain is named from its first step that needs Old Valorath content: a
-# kill of one of its monsters or one of its drops. Every later step is named
-# too, with both Awakening quests of a class that offers two. A step that needs
-# a removed monster or item keeps the step and withholds the objective, and a
-# step after a removed predecessor keeps the step and withholds the
-# predecessor, so no rule over the references removes them. The earlier steps
-# of each chain stay published.
-#
-# The ten epic weapons are crafted at released crafting stations. Each recipe
-# needs its Awakening quest and an unpowered weapon that only that quest gives.
-# Both are requirements, which the redaction withholds rather than following,
-# so the stations keep the weapons reachable unless they are named.
 [entities.exclude]
 ids = [
-    "old_valorath_token",
     "relics_of_the_ancient_faith",
     "the_lost_warden",
-    "zharvok",
-    "the_royal_key_of_valorath",
-    "valorath_royal_key",
     "new_skill_placeholder",
     "compassion_escort",
     "valaarks_corrupted_seal",
-    # Class epic chains from their first Old Valorath step.
-    "11_a_road_for_the_living",
-    "12_arrow_or_threshold",
-    "12_bound_to_ruin",
-    "12_the_empires_last_defenders",
-    "13_at_the_deathcallers_door",
-    "13_break_the_imperial_line",
-    "13_requiem_for_the_lost",
-    "13_silence_the_deathcaller",
-    "13_the_last_oracles_design",
-    "13_the_road_beneath_the_empire",
-    "13_the_unbroken_gate",
-    "14_awakening_dawn_of_the_entombed",
-    "14_awakening_eclipse_of_valorath",
-    "14_awakening_gravetide_cleaver",
-    "14_awakening_imperial_executioner",
-    "14_awakening_oath_of_the_fallen_empire",
-    "14_awakening_requiem_of_valorath",
-    "14_awakening_root_of_the_hollow_grove",
-    "14_awakening_scepter_of_the_last_oracle",
-    "14_awakening_soulpiercer",
-    "14_awakening_widowfang",
-    # Epic weapons.
-    "dawn_of_the_entombed",
-    "eclipse_of_valorath",
-    "gravetide_cleaver",
-    "imperial_executioner",
-    "oath_of_the_fallen_empire",
-    "requiem_of_valorath",
-    "root_of_the_hollow_grove",
-    "scepter_of_the_last_oracle",
-    "soulpiercer",
-    "widowfang",
 ]
