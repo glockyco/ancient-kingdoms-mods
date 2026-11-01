@@ -146,18 +146,29 @@ internal static class SkillsContent
         if (summary.DamageTypes.Count == 0) return y;
 
         Text(parent, "Damage", 15f, Muted, Pad, y, LabelColumn, 24f, wrap: false);
-        float x = Pad + LabelColumn;
+        float left = Pad + LabelColumn;
+        float right = Pad + Inner;
+        float x = left;
         foreach (var damage in summary.DamageTypes)
         {
-            if (ResistIcons.TryGetValue(damage.Key, out var icon))
+            var value = Text(parent, damage.Key + " " + SkillText.Number(damage.Value), 15.5f, White, x, y, 200f, 24f, wrap: false);
+            bool hasIcon = ResistIcons.TryGetValue(damage.Key, out var icon);
+            float width = (hasIcon ? 26f : 0f) + Mathf.Ceil(value.PreferredWidth);
+            // Three large damage types run past the window, so an entry that would starts a line.
+            if (x > left && x + width > right)
+            {
+                x = left;
+                y += 28f;
+            }
+
+            if (hasIcon)
             {
                 var image = HudFactory.Icon("icon", parent, Sprite(icon));
                 HudFactory.TopLeft(image, x, y + 1f, 22f, 22f);
-                x += 26f;
             }
 
-            var value = Text(parent, damage.Key + " " + SkillText.Number(damage.Value), 15.5f, White, x, y, 200f, 24f, wrap: false);
-            x += Mathf.Ceil(value.PreferredWidth) + 18f;
+            HudFactory.TopLeft(value.Rect, x + (hasIcon ? 26f : 0f), y, 200f, 24f);
+            x += width + 18f;
         }
 
         return y + 28f;
