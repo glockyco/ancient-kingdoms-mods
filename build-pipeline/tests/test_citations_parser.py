@@ -59,6 +59,19 @@ class ParserTests(unittest.TestCase):
             [("BackpackItem.cs", "7"), ("BackpackItem.cs", "9")],
         )
 
+    def test_comma_locator_mixes_lines_and_members(self):
+        self.assertEqual(
+            parse_block(
+                "Source: server-scripts/Pet.cs:OnAggro,292-306,NextBuffSkill,2190"
+            ),
+            [
+                ("Pet.cs", "OnAggro"),
+                ("Pet.cs", "292-306"),
+                ("Pet.cs", "NextBuffSkill"),
+                ("Pet.cs", "2190"),
+            ],
+        )
+
     def test_multiline_continuations_and_prose_stop(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "example.ts"

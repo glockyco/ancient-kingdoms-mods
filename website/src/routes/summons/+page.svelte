@@ -308,7 +308,7 @@
         >
           <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — combat pet skills use total veteran points divided by 10 and cap at each skill's maxLevel. -->
           <li>Skills gain a rank every 10 veteran points.</li>
-          <!-- Source: server-scripts/Pet.cs:OnAggro,UserCode_CmdSetAggresiveStance__Boolean; server-scripts/GameManager.cs:OnMercenaryAttackKeyPressed — combat pets accept companion commands and stances. -->
+          <!-- Source: server-scripts/Pet.cs:OnAggro,UserCode_CmdSetAggresiveStance__Boolean__NetworkConnectionToClient; server-scripts/GameManager.cs:OnMercenaryAttackKeyPressed — combat pets accept companion commands and stances. -->
           <li>
             Companions follow the mercenary <a
               href="/mercenaries#commands"

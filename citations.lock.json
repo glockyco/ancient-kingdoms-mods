@@ -31,6 +31,9 @@
     "AreaBuffSkill.cs:Apply": {
       "span": 0
     },
+    "AreaBuffSkill.cs:CheckDistance": {
+      "span": 0
+    },
     "AreaBuffSkill.cs:GetLeadershipAttributeBonus": {
       "span": 0
     },
@@ -107,6 +110,9 @@
       "span": 24
     },
     "AreaHealSkill.cs:Apply": {
+      "span": 0
+    },
+    "AreaHealSkill.cs:CheckDistance": {
       "span": 0
     },
     "AreaObjectSpawnSkill.cs:AreaObjectSpawner": {
@@ -198,16 +204,31 @@
       "sha256": "785d9a6889aa46438f6d718599a7b363f26fe9fbfa5f48d4dc820e4e90c9383f",
       "span": 4
     },
+    "BardFinalCadenceSkill.cs:AddFollower": {
+      "span": 0
+    },
+    "BardFinalCadenceSkill.cs:AddHealingAggro": {
+      "span": 0
+    },
+    "BardFinalCadenceSkill.cs:AddPlayerAndFollowers": {
+      "span": 0
+    },
     "BardFinalCadenceSkill.cs:Apply": {
       "span": 0
     },
     "BardFinalCadenceSkill.cs:FindEnemies": {
       "span": 0
     },
+    "BardFinalCadenceSkill.cs:FormatScaledValue": {
+      "span": 0
+    },
     "BardFinalCadenceSkill.cs:HasRequiredSongsActive": {
       "span": 0
     },
     "BardFinalCadenceSkill.cs:HealNearbyAllies": {
+      "span": 0
+    },
+    "BardFinalCadenceSkill.cs:ToolTip": {
       "span": 0
     },
     "BardMercenarySkills.cs:69-78": {
@@ -221,6 +242,9 @@
       "span": 0
     },
     "BardMercenarySkills.cs:MaximumCombatSongs": {
+      "span": 0
+    },
+    "BardMercenarySkills.cs:NextAttackSkill": {
       "span": 0
     },
     "BardMercenarySkills.cs:OnStartServer": {
@@ -243,7 +267,13 @@
     "BardSongSkill.cs:Apply": {
       "span": 0
     },
+    "BardSongSkill.cs:GetStackingStrength": {
+      "span": 0
+    },
     "BardSongSkill.cs:TryApplyAuraBuff": {
+      "span": 0
+    },
+    "BardVirtuositySkill.cs:GetAdditionalDamagePercentBonus": {
       "span": 0
     },
     "BardVirtuositySkill.cs:IsDamageBonusActive": {
@@ -263,6 +293,9 @@
       "span": 0
     },
     "Bookcase.cs:IsInRange": {
+      "span": 0
+    },
+    "Bookcase.cs:OnInteractServer": {
       "span": 0
     },
     "Buff.cs": {
@@ -323,6 +356,15 @@
     "Buff.cs:healthMaxBonus": {
       "span": 0
     },
+    "Buff.cs:magicDamageBonus": {
+      "span": 0
+    },
+    "Buff.cs:magicResistBonus": {
+      "span": 0
+    },
+    "Buff.cs:speedBonus": {
+      "span": 0
+    },
     "BuffSkill.cs": {
       "span": 0
     },
@@ -379,7 +421,13 @@
     "BuffSkill.cs:GetCasterCriticalChance": {
       "span": 0
     },
+    "BuffSkill.cs:GetCharisma": {
+      "span": 0
+    },
     "BuffSkill.cs:GetCleanseCountersRemoved": {
+      "span": 0
+    },
+    "BuffSkill.cs:GetDamageOverTimeAttributeBonus": {
       "span": 0
     },
     "BuffSkill.cs:GetDebuffPowerAttribute": {
@@ -804,10 +852,28 @@
     "Combat.cs:DealDamageAt": {
       "span": 0
     },
+    "Combat.cs:GenerateRageOnHit": {
+      "span": 0
+    },
+    "Combat.cs:GetProbResistCold": {
+      "span": 0
+    },
+    "Combat.cs:GetProbResistDisease": {
+      "span": 0
+    },
+    "Combat.cs:GetProbResistFire": {
+      "span": 0
+    },
     "Combat.cs:GetProbResistMagic": {
       "span": 0
     },
+    "Combat.cs:GetProbResistMeleeDamage": {
+      "span": 0
+    },
     "Combat.cs:GetProbResistMeleeDebuff": {
+      "span": 0
+    },
+    "Combat.cs:GetProbResistPoison": {
       "span": 0
     },
     "Combat.cs:accuracy": {
@@ -1140,6 +1206,9 @@
     "Dexterity.cs:GetCriticalResistBonus": {
       "span": 0
     },
+    "Dexterity.cs:GetPoisonDamageBonusPerPoint": {
+      "span": 0
+    },
     "Dexterity.cs:GetRangedAttackBonusPerPoint": {
       "span": 0
     },
@@ -1208,6 +1277,9 @@
       "span": 0
     },
     "EpicWeaponQuest.cs:CanChoose": {
+      "span": 0
+    },
+    "EpicWeaponQuest.cs:IsFulfilled": {
       "span": 0
     },
     "EquipItemQuest.cs:9-19": {
@@ -1370,6 +1442,9 @@
     "Experience.cs:Death": {
       "span": 0
     },
+    "Experience.cs:RefreshNecromancerPet": {
+      "span": 0
+    },
     "Experience.cs:ShowVeteranLevelUp": {
       "span": 0
     },
@@ -1399,6 +1474,9 @@
     "FoodItem.cs:21-36": {
       "sha256": "4ecda03b5f26d3791cac4a1023a0c43896c3d327e008180a3c4d031ba4ac4da5",
       "span": 16
+    },
+    "FoodItem.cs:ToolTip": {
+      "span": 0
     },
     "FoodItem.cs:Use": {
       "span": 0
@@ -1467,6 +1545,9 @@
     "FrontalProjectilesSkill.cs:Apply": {
       "span": 0
     },
+    "GameManager.cs:AttackDelayMercs": {
+      "span": 0
+    },
     "GameManager.cs:ExtraSkillbarKeyPressed": {
       "span": 0
     },
@@ -1483,6 +1564,9 @@
       "span": 0
     },
     "GameManager.cs:OnMercenaryHoldPositionKeyPressed": {
+      "span": 0
+    },
+    "GameManager.cs:OnMercenaryStanceKeyPressed": {
       "span": 0
     },
     "GameManager.cs:SkillbarKeyPressed": {
@@ -2218,6 +2302,12 @@
     "Monster.cs:EventTimeSpawn": {
       "span": 0
     },
+    "Monster.cs:GetMaxAggroTarget": {
+      "span": 0
+    },
+    "Monster.cs:IsHourBetween": {
+      "span": 0
+    },
     "Monster.cs:OnAggro": {
       "span": 0
     },
@@ -2228,6 +2318,12 @@
       "span": 0
     },
     "Monster.cs:OnEnable": {
+      "span": 0
+    },
+    "Monster.cs:RemoveRoot": {
+      "span": 0
+    },
+    "Monster.cs:RestoreValaarkInvincibility": {
       "span": 0
     },
     "Monster.cs:SetRespawnBosses": {
@@ -2242,7 +2338,13 @@
     "Monster.cs:UpdateServer_DEAD": {
       "span": 0
     },
+    "Monster.cs:UpdateServer_FEAR": {
+      "span": 0
+    },
     "Monster.cs:UpdateServer_IDLE": {
+      "span": 0
+    },
+    "Monster.cs:UpdateServer_MOVING": {
       "span": 0
     },
     "Monster.cs:UpdateServer_STUNNED": {
@@ -2348,16 +2450,31 @@
     "NecromancerMercenaryPet.cs:GetDamageBonus": {
       "span": 0
     },
+    "NecromancerMercenaryPet.cs:GetMagicDamageBonus": {
+      "span": 0
+    },
+    "NecromancerMercenaryPet.cs:GetVeteranResistanceBonus": {
+      "span": 0
+    },
     "NecromancerMercenaryPet.cs:RefreshFromSummoner": {
       "span": 0
     },
     "NecromancerMercenarySkills.cs:UpdateCast": {
       "span": 0
     },
+    "NecromancerMercenarySummons.cs:HasLivingSummoner": {
+      "span": 0
+    },
     "NecromancerMercenarySummons.cs:LateUpdate": {
       "span": 0
     },
     "NecromancerMercenarySummons.cs:NeedsCompanion": {
+      "span": 0
+    },
+    "NecromancerMercenarySummons.cs:SummonCompanion": {
+      "span": 0
+    },
+    "NecromancerPetBuffSkill.cs:CheckDistance": {
       "span": 0
     },
     "NecromancerPetBuffSkill.cs:HasLivingCombatPet": {
@@ -2370,6 +2487,15 @@
     "NecromancerPetStats.cs:50": {
       "sha256": "78bd678c3b6aa628d0a9c9861c35e3dd5722c3a4458d3c5a032b9461e8dc075d",
       "span": 1
+    },
+    "NecromancerPetStats.cs:GetDamageBonus": {
+      "span": 0
+    },
+    "NecromancerPetStats.cs:GetHealthBonus": {
+      "span": 0
+    },
+    "NecromancerPetStats.cs:GetMagicDamageBonus": {
+      "span": 0
     },
     "NecromancerPetStats.cs:GetVeteranBonus": {
       "span": 0
@@ -2502,6 +2628,9 @@
     "Npc.cs:CalculateRewardExp": {
       "span": 0
     },
+    "Npc.cs:CanAttack": {
+      "span": 0
+    },
     "Npc.cs:InteractNpc": {
       "span": 0
     },
@@ -2569,7 +2698,19 @@
       "sha256": "349f5ee9dfb980f7d68de7303233a3fd2956724a65167d35f51ea7a4cc5cce01",
       "span": 26
     },
+    "PartySystem.cs:AddToParty": {
+      "span": 0
+    },
+    "PartySystem.cs:DismissParty": {
+      "span": 0
+    },
     "PartySystem.cs:FormParty": {
+      "span": 0
+    },
+    "PartySystem.cs:KickFromParty": {
+      "span": 0
+    },
+    "PartySystem.cs:LeaveParty": {
       "span": 0
     },
     "PassiveSkill.cs": {
@@ -2710,6 +2851,12 @@
     "Pet.cs:ComeHereNow": {
       "span": 0
     },
+    "Pet.cs:GetPreferredRangedAreaClearance": {
+      "span": 0
+    },
+    "Pet.cs:HasFrontalAttackSkill": {
+      "span": 0
+    },
     "Pet.cs:OnAggro": {
       "span": 0
     },
@@ -2731,10 +2878,16 @@
     "Pet.cs:UpdateServer_CASTING": {
       "span": 0
     },
+    "Pet.cs:UpdateServer_DEAD": {
+      "span": 0
+    },
     "Pet.cs:UpdateServer_IDLE": {
       "span": 0
     },
     "Pet.cs:UserCode_CmdAttackTarget__NetworkIdentity__NetworkConnectionToClient": {
+      "span": 0
+    },
+    "Pet.cs:UserCode_CmdSetAggresiveStance__Boolean__NetworkConnectionToClient": {
       "span": 0
     },
     "PetFriendly.cs:379-386": {
@@ -3361,6 +3514,9 @@
     "Player.cs:CanAttack": {
       "span": 0
     },
+    "Player.cs:ChangeAttributeSpec": {
+      "span": 0
+    },
     "Player.cs:CmdBuyMercenary": {
       "span": 0
     },
@@ -3418,6 +3574,9 @@
     "Player.cs:ProcessMercenariesOnPlayerRespawn": {
       "span": 0
     },
+    "Player.cs:ReloadSummonedMercenaries": {
+      "span": 0
+    },
     "Player.cs:RemoveRoot": {
       "span": 0
     },
@@ -3428,6 +3587,9 @@
       "span": 0
     },
     "Player.cs:TargetRpcHouse": {
+      "span": 0
+    },
+    "Player.cs:TryConsumeRadiantAether": {
       "span": 0
     },
     "Player.cs:TryFollowSelectedPlayer": {
@@ -3448,6 +3610,9 @@
     "Player.cs:UpdateServer_DEAD": {
       "span": 0
     },
+    "Player.cs:UserCode_CmdApplyBarberAppearance__String__String__String__String__String": {
+      "span": 0
+    },
     "Player.cs:UserCode_CmdBindPlayer": {
       "span": 0
     },
@@ -3466,6 +3631,9 @@
     "Player.cs:UserCode_CmdFishing__NetworkIdentity": {
       "span": 0
     },
+    "Player.cs:UserCode_CmdGetExpFromRemains": {
+      "span": 0
+    },
     "Player.cs:UserCode_CmdGetExperienceNewZone__Int64": {
       "span": 0
     },
@@ -3481,6 +3649,9 @@
     "Player.cs:UserCode_CmdResetDungeon__Int32__Int64": {
       "span": 0
     },
+    "Player.cs:UserCode_CmdResurrectMerc__String__Int64": {
+      "span": 0
+    },
     "Player.cs:UserCode_CmdResurrect__Int32__Single__Single__NetworkIdentity": {
       "span": 0
     },
@@ -3494,6 +3665,9 @@
       "span": 0
     },
     "Player.cs:UserCode_CmdSpawnStruc__Int32__String__Vector3__Quaternion__Boolean": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdStartBarber__NetworkIdentity": {
       "span": 0
     },
     "Player.cs:UserCode_TargetCompletedQuest__Int32__Int64": {
@@ -3925,6 +4099,9 @@
       "sha256": "cf369839b1a351c02f20883b9607ac91dd4402bbaa8b205d4e70676cd0b76fcc",
       "span": 32
     },
+    "PlayerNpcTrading.cs:CalculateRepairAllPrice": {
+      "span": 0
+    },
     "PlayerNpcTrading.cs:CalculateRepairItemPrice": {
       "span": 0
     },
@@ -3935,6 +4112,9 @@
       "span": 0
     },
     "PlayerNpcTrading.cs:UserCode_CmdBuyItem__Int32__Int32__Int64": {
+      "span": 0
+    },
+    "PlayerNpcTrading.cs:UserCode_CmdRepairAll__UInt32__Int64": {
       "span": 0
     },
     "PlayerNpcTrading.cs:UserCode_CmdRepairItem__Int32__Int64__Boolean": {
@@ -4042,7 +4222,16 @@
     "PlayerQuests.cs:OnTriggerEnter2D": {
       "span": 0
     },
+    "PlayerQuests.cs:UserCode_CmdAccept__NetworkIdentity__Int32": {
+      "span": 0
+    },
     "PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32": {
+      "span": 0
+    },
+    "PlayerSkillbar.cs:Load": {
+      "span": 0
+    },
+    "PlayerSkillbar.cs:OnDragAndDrop_SkillbarSlot_SkillbarSlot": {
       "span": 0
     },
     "PlayerSkillbar.cs:SaveMacro": {
@@ -4273,10 +4462,16 @@
     "PlayerSkills.cs:CmdUpgrade": {
       "span": 0
     },
+    "PlayerSkills.cs:CmdUpgradeVeteran": {
+      "span": 0
+    },
     "PlayerSkills.cs:CmdUse": {
       "span": 0
     },
     "PlayerSkills.cs:CompleteBardSongCast": {
+      "span": 0
+    },
+    "PlayerSkills.cs:FinishCast": {
       "span": 0
     },
     "PlayerSkills.cs:GetBardSongDurationMultiplier": {
@@ -4292,6 +4487,12 @@
       "span": 0
     },
     "PlayerSkills.cs:RefreshBardSongAura": {
+      "span": 0
+    },
+    "PlayerSkills.cs:RemoveActiveBardSong": {
+      "span": 0
+    },
+    "PlayerSkills.cs:ResetVeteranSkillPoints": {
       "span": 0
     },
     "PlayerSkills.cs:StartCast": {
@@ -4404,6 +4605,9 @@
     "RegionalEventActivities.cs:60-82": {
       "sha256": "fb0534fc00bf4ab6359fa961909301c22125ffddb1a8a775ea9d0f7893d2b788",
       "span": 23
+    },
+    "RegionalEventActivities.cs:AddAvailableKinds": {
+      "span": 0
     },
     "RegionalEventActivities.cs:Discover": {
       "span": 0
@@ -4534,6 +4738,9 @@
     "RegionalEvents.cs:559": {
       "sha256": "1fa9250f7f75ec07bbaaa105f9c46be465ef55322d0cf0000ae20f82d0ee3166",
       "span": 1
+    },
+    "RegionalEvents.cs:AddHunter": {
+      "span": 0
     },
     "RegionalEvents.cs:CombatRegion": {
       "span": 0
@@ -4746,6 +4953,9 @@
     "SkillbarMacro.cs:Validate": {
       "span": 0
     },
+    "SkillbarMacroCommand.cs:Split": {
+      "span": 0
+    },
     "SkillbarMacroCommand.cs:TryParse": {
       "span": 0
     },
@@ -4756,6 +4966,9 @@
       "span": 0
     },
     "SkillbarMacroSequence.cs:Start": {
+      "span": 0
+    },
+    "SkillbarMacroSequence.cs:Stop": {
       "span": 0
     },
     "SkillbarMacroSequence.cs:Tick": {
@@ -4875,6 +5088,9 @@
     "Skills.cs:FinishCastMeleeAttackMonster": {
       "span": 0
     },
+    "Skills.cs:GetBuffHealthRecoveryBonus": {
+      "span": 0
+    },
     "Skills.cs:GetCriticalChanceBonus": {
       "span": 0
     },
@@ -4989,6 +5205,9 @@
     "SummonSkill.cs:Apply": {
       "span": 0
     },
+    "SummonSkill.cs:MatchesPet": {
+      "span": 0
+    },
     "SummonSkill.cs:UsesPetAttackCommand": {
       "span": 0
     },
@@ -5040,6 +5259,9 @@
       "span": 6
     },
     "TargetBuffSkill.cs:Apply": {
+      "span": 0
+    },
+    "TargetBuffSkill.cs:CheckDistance": {
       "span": 0
     },
     "TargetBuffSkill.cs:CorrectedTarget": {
@@ -5181,6 +5403,9 @@
       "span": 13
     },
     "TargetHealSkill.cs:Apply": {
+      "span": 0
+    },
+    "TargetHealSkill.cs:CheckDistance": {
       "span": 0
     },
     "TargetHealSkill.cs:CorrectedTarget": {
@@ -5558,6 +5783,9 @@
     "UILoot.cs:PrepareCorpseClick": {
       "span": 0
     },
+    "UILoot.cs:UpdateAutoLoot": {
+      "span": 0
+    },
     "UIMacroCommandInput.cs:OnUpdateSelected": {
       "span": 0
     },
@@ -5633,7 +5861,19 @@
     "UIMercenaries.cs:CanUseRecruiter": {
       "span": 0
     },
+    "UIMercenaries.cs:OnDeleteClicked": {
+      "span": 0
+    },
+    "UIMercenaries.cs:OnRecallClicked": {
+      "span": 0
+    },
+    "UIMercenaries.cs:OnRenameClicked": {
+      "span": 0
+    },
     "UIMercenaries.cs:OnResurrectClicked": {
+      "span": 0
+    },
+    "UIMercenaries.cs:ResurrectAll": {
       "span": 0
     },
     "UINpcQuests.cs:214-217": {
@@ -5687,6 +5927,9 @@
     "UINpcTrading.cs:CalculatePurchaseItemPrice": {
       "span": 0
     },
+    "UINpcTrading.cs:CalculateSellItemPrice": {
+      "span": 0
+    },
     "UINpcTrading.cs:Update": {
       "span": 0
     },
@@ -5718,6 +5961,9 @@
     "UISettings.cs:ProtectFriendlyNpcs": {
       "span": 0
     },
+    "UISkillbar.cs:ApplySkillbarSlotDragState": {
+      "span": 0
+    },
     "UISkillbar.cs:Awake": {
       "span": 0
     },
@@ -5727,10 +5973,19 @@
     "UISkillbar.cs:ExecuteMacroCommand": {
       "span": 0
     },
+    "UISkillbar.cs:FindMacroItem": {
+      "span": 0
+    },
     "UISkillbar.cs:FindMacroSkill": {
       "span": 0
     },
     "UISkillbar.cs:HandleSlotClick": {
+      "span": 0
+    },
+    "UISkillbar.cs:MacroNameArgument": {
+      "span": 0
+    },
+    "UISkillbar.cs:OpenMacroMenu": {
       "span": 0
     },
     "UISkillbar.cs:TickMacro": {
@@ -5739,16 +5994,34 @@
     "UISkillbar.cs:TryRunMacro": {
       "span": 0
     },
+    "UISkillbar.cs:UseEntry": {
+      "span": 0
+    },
+    "UISkillbarMacros.cs:AcceptCompletion": {
+      "span": 0
+    },
     "UISkillbarMacros.cs:Build": {
       "span": 0
     },
     "UISkillbarMacros.cs:BuildIconSelector": {
       "span": 0
     },
+    "UISkillbarMacros.cs:Delete": {
+      "span": 0
+    },
+    "UISkillbarMacros.cs:MoveCompletion": {
+      "span": 0
+    },
     "UISkillbarMacros.cs:Open": {
       "span": 0
     },
+    "UISkillbarMacros.cs:OpenEditor": {
+      "span": 0
+    },
     "UISkillbarMacros.cs:RefreshCompletions": {
+      "span": 0
+    },
+    "UISkillbarMacros.cs:Save": {
       "span": 0
     },
     "UISkillbarSlot.cs:OnPointerClick": {
@@ -5955,6 +6228,9 @@
       "span": 0
     },
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetDiscountPurchaseBonus": {
+      "span": 0
+    },
+    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetIncreaseSellBonus": {
       "span": 0
     },
     "uMMORPG.Scripts.ScriptableItems/MergeItem.cs:15-48": {

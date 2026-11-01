@@ -1073,7 +1073,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Monster.cs — minimap marks never show in Temple of Valaark.
   veteran_awareness:
     "reveals nearby monsters on minimap (not in Temple of Valaark)",
-  // Source: server-scripts/Combat.cs:DealDamageAt,IsParry — during the cast, your target's single-target physical hits are blocked and 50% of the damage, rounded and clamped to 1-5,000, is dealt back.
+  // Source: server-scripts/Combat.cs:DealDamageAt,isParry — during the cast, your target's single-target physical hits are blocked and 50% of the damage, rounded and clamped to 1-5,000, is dealt back.
   parry: `while casting, blocks your target's physical melee hits & counters 50% (max ${formatNumber(5000)})`,
   // Source: server-scripts/SummonSkill.cs:Apply — on summon, the pet takes rank × 10% of your attributes and adds rank × 10% of your AC and resists.
   symbiosis:

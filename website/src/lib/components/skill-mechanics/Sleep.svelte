@@ -1,4 +1,4 @@
-<!-- Source: server-scripts/Skills.cs:BreakMezz,GetHealthRecoveryPerSecond; Combat.cs:DealDamageAt — positive direct damage and ordinary DoT ticks wake targets, but Reaper Form's drain does not. -->
+<!-- Source: server-scripts/Skills.cs:BreakMezz,GetBuffHealthRecoveryBonus; Combat.cs:DealDamageAt — positive direct damage and ordinary DoT ticks wake targets, but Reaper Form's drain does not. -->
 <!-- Source: server-scripts/Monster.cs:UpdateServer_IDLE,UpdateServer_CASTING; Npc.cs:UpdateServer_IDLE; Pet.cs:UpdateServer_IDLE — sleep stops action/casts and uses a Magic Resist break roll every 6 seconds. -->
 <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; Pet.cs:UserCode_CmdAttackTarget__NetworkIdentity__NetworkConnectionToClient — applying a damage-over-time debuff or ordering a pet to attack also wakes sleeping monsters/NPCs. -->
 <div class="space-y-1">

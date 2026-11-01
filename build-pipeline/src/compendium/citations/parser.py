@@ -11,13 +11,12 @@ CITATION_EXTENSIONS = frozenset({".ts", ".js", ".svelte", ".py", ".sql", ".cs"})
 _MAX_CONTINUATIONS = 2
 
 _SOURCE_RE = re.compile(r"[Ss]ources?:\s*server-scripts")
+# One locator: a line, a line range, or a member name.
+_LOCATOR = r"(?:[0-9]+(?:-[0-9]+)?|[A-Za-z_][A-Za-z0-9_]*)"
 _FILE_RE = re.compile(
     r"(?:server-scripts(?:-[0-9][0-9.]*)?/)?"
     r"((?:[A-Za-z0-9_.]+/)*[A-Z][A-Za-z0-9_]*\.cs)"
-    r"(?::("
-    r"[0-9]+(?:-[0-9]+)?(?:,[0-9]+(?:-[0-9]+)?)*"
-    r"|[A-Za-z_][A-Za-z0-9_]*"
-    r"))?"
+    rf"(?::({_LOCATOR}(?:,{_LOCATOR})*))?"
 )
 _RANGE_RE = re.compile(r"(?<![\w:.\-])(\d{2,5}(?:-\d{2,5})?)(?![\w.\-])")
 _PAREN_RE = re.compile(r"\([^()]*\)")
