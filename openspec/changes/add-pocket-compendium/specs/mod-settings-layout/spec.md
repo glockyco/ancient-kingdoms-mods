@@ -31,6 +31,15 @@ The boss list page SHALL filter by tier (bosses, elites, fabled), by level (all,
 - **WHEN** a level 14 player filters to "Near my level" in Crescent Coast
 - **THEN** monsters more than 10 levels away collapse into one line counting them, and watched monsters still show
 
+### Requirement: The skill panel shows the chosen tiers
+
+The boss skills page SHALL choose which tiers the skill panel shows, bosses, elites and fabled monsters, all on at first start. A monster whose only skill is its basic attack SHALL NOT appear, because it has nothing to count down, and the page SHALL say so.
+
+#### Scenario: Elites switched off
+
+- **WHEN** the player switches elites off and fights an elite with special skills
+- **THEN** the skill panel does not show it
+
 ### Requirement: Undiscovered monsters follow the Bestiary
 
 By default, a monster the player has not discovered in the Bestiary SHALL show as a silhouette without its name. A setting SHALL show or hide undiscovered monsters instead.

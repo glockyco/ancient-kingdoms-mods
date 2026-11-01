@@ -11,6 +11,9 @@ namespace PocketCompendium.Features.BossSkills.Game;
 public sealed class EnemyDiscovery
 {
     private readonly Il2CppReferenceArray<Collider2D> _buffer = new(Tuning.OverlapBufferSize);
+    private readonly BossSkillsSettings _settings;
+
+    public EnemyDiscovery(BossSkillsSettings settings) => _settings = settings;
 
     /// <summary>
     /// Fills <paramref name="into"/> with relevant enemies. In combat this runs one bounded spatial
@@ -40,7 +43,7 @@ public sealed class EnemyDiscovery
             if (monster == null) continue;
 
             var tier = GameAccess.TierOf(monster);
-            if (tier == null) continue;
+            if (tier == null || !_settings.Shows(tier.Value)) continue;
 
             bool alive = monster.health != null && monster.health.current > 0;
             bool engaged = monster.aggroList != null && (monster.aggroList.ContainsKey(myNet) || (petNet != 0u && monster.aggroList.ContainsKey(petNet)));
@@ -57,14 +60,14 @@ public sealed class EnemyDiscovery
         return any;
     }
 
-    private static bool DiscoverTargetPreview(Player localPlayer, List<EnemyInfo> into)
+    private bool DiscoverTargetPreview(Player localPlayer, List<EnemyInfo> into)
     {
         var target = localPlayer.Networktarget;
         var monster = target != null ? target.TryCast<Monster>() : null;
         if (monster == null) return false;
 
         var tier = GameAccess.TierOf(monster);
-        if (tier == null) return false;
+        if (tier == null || !_settings.Shows(tier.Value)) return false;
 
         bool alive = monster.health != null && monster.health.current > 0;
         if (!RelevanceFilter.ShouldPreviewTarget(monster.isBoss, monster.isElite, monster.isFabled, alive, SkillReader.HasTrackable(monster) ? 1 : 0))

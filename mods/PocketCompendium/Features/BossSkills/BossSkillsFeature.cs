@@ -31,7 +31,7 @@ public sealed class BossSkillsFeature : Feature
     protected internal override void Enable()
     {
         _hud = new HudRoot(_settings, this);
-        _discovery = new EnemyDiscovery();
+        _discovery = new EnemyDiscovery(_settings);
         _scanTimer = 0f;
     }
 
