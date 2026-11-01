@@ -39,8 +39,8 @@
 
 ## 8. Virtues on other pages
 
-- [ ] 8.1 Add the shared helper that names a virtue and links its section. Verify with a unit test.
-- [ ] 8.2 Show Honor points among a monster's combat stats, the Sacrifice value on equipment pages that an offering takes, and the Stranded Adventurer section on dungeon pages, each linking to its virtue. Verify in a browser on Troll King Grimlok, a Common and an Uncommon item, and Trolls Cave.
+- [x] 8.1 Add the shared helper that names a virtue and links its section. Verify in a browser that the map popup, the monster, item and dungeon pages link the virtue's tab.
+- [x] 8.2 Show Honor points among a monster's combat stats, the Sacrifice value on equipment pages that an offering takes, and the Stranded Adventurer section on dungeon pages, each linking to its virtue. Verify in a browser on Troll King Grimlok, a Common and an Uncommon item, and Trolls Cave.
 - [ ] 8.3 Name Valor in the combat damage order and for damage shields, parry and damage over time, and Compassion for heal on hit, lifetap and other healing a player receives, after checking each statement against the code. Verify the combat page and the affected skill pages in a browser and that `citations check` passes.
 - [ ] 8.4 Name Sacrifice for maximum Health, Humility for Armor Class and resistances, and Honor for Accuracy and Critical Resist on the character page and the stat components. Verify in a browser.
 - [ ] 8.5 Correct the reputation page's statement that a gain is added unchanged, name Honesty on the reputation page, the monster, NPC and quest gains and petting, and offer Honesty and its rank under each reputation calculation's "Use your numbers". Verify with calculation tests at Honesty rank 0 and 5, including the game's rounding, and in a browser.

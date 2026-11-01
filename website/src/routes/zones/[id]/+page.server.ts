@@ -1,3 +1,4 @@
+import { loadDungeonEscorts } from "$lib/queries/virtues.server";
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
@@ -495,6 +496,7 @@ export const load: PageServerLoad = async ({
 
   return {
     zone,
+    escort: zone.is_dungeon ? (loadDungeonEscorts(zone.id)[0] ?? null) : null,
     description,
     monsters,
     npcs,

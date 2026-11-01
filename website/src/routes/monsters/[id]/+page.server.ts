@@ -326,6 +326,12 @@ export const load: PageServerLoad = async ({
     flee_on_low_hp: Boolean(monsterRaw.flee_on_low_hp),
     no_aggro_monster: Boolean(monsterRaw.no_aggro_monster),
     has_aura: Boolean(monsterRaw.has_aura),
+    // Source: server-scripts/VirtueRules.cs:IsEligibleMonster — dummies and Forgotten Altar event monsters never count.
+    // Source: server-scripts/VirtueCombat.cs:MonsterHit — a fair fight starts with the monster's hit, which a passive monster never makes.
+    honor_eligible:
+      !monsterRaw.is_dummy &&
+      !monsterRaw.is_forgotten_altar_event &&
+      !monsterRaw.no_aggro_monster,
     aggro_messages: aggroMessages,
     aggro_message_probability:
       (monsterRaw.aggro_message_probability as number) || 0,

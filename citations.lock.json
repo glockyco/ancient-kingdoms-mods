@@ -6218,6 +6218,12 @@
     "VirtueEncounters.cs:TryClaimEscort": {
       "span": 0
     },
+    "VirtueEncounters.cs:TryEscortPosition": {
+      "span": 0
+    },
+    "VirtueEncounters.cs:TrySpawnEscort": {
+      "span": 0
+    },
     "VirtueEscort.cs:OnInteractServer": {
       "span": 0
     },

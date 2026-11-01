@@ -189,6 +189,8 @@ export interface ZoneDetailData {
   eventRegion: ZoneEventRegion | null;
   /** The region whose Prosperity applies to kills here, for a dungeon. */
   prosperityRegion: { id: string; name: string } | null;
+  /** The stranded adventurer of a dungeon, from its ordinary monsters. */
+  escort: { level: number; health: number } | null;
 }
 
 export interface ZoneEventRegion {

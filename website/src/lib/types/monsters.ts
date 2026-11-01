@@ -263,6 +263,8 @@ export interface MonsterInfo {
   flee_on_low_hp: boolean;
   no_aggro_monster: boolean;
   has_aura: boolean;
+  /** Whether a fair fight against it can earn Honor. */
+  honor_eligible: boolean;
 
   // Messages
   aggro_messages: string[];

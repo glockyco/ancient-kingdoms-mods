@@ -8,6 +8,8 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import { effectiveBlockChance, statAtLevel } from "$lib/utils/monster-stats";
+  import { honorPointsAtLevel } from "$lib/calculation/virtues";
+  import { virtueHref } from "$lib/virtues/display";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityCombatSummary from "$lib/components/EntityCombatSummary.svelte";
   import { distinctSubzoneName } from "$lib/utils/format";
@@ -1331,6 +1333,27 @@
               {data.monster.chase_limit_scope === "nowhere"
                 ? "None"
                 : `${formatNumber(data.monster.follow_distance, { decimals: 3 })} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
+            </div>
+          </div>
+        {/if}
+        {#if data.monster.honor_eligible}
+          <div>
+            <div class="text-sm text-muted-foreground">
+              <a
+                href={virtueHref("honor")}
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Honor</a
+              >
+            </div>
+            <div class="font-medium">
+              {formatNumber(
+                honorPointsAtLevel({
+                  level: combatDisplayLevel,
+                  health: displayHealth,
+                  isBoss: data.monster.is_boss,
+                  isElite: data.monster.is_elite,
+                }),
+              )} points
             </div>
           </div>
         {/if}

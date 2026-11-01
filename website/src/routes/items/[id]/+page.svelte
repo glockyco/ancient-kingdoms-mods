@@ -18,6 +18,11 @@
   import ItemTooltip from "$lib/components/ItemTooltip.svelte";
   import DropChance from "$lib/components/DropChance.svelte";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import {
+    sacrificeItemLevel,
+    sacrificeItemPoints,
+  } from "$lib/calculation/virtues";
+  import { virtueHref } from "$lib/virtues/display";
   import FishIcon from "@lucide/svelte/icons/fish";
   import { ITEM_STAT_FIELDS } from "$lib/constants/items";
   import {
@@ -1569,6 +1574,21 @@
                 <dd>
                   <a href="/items/primal_essence" class={styles.link}
                     >{formatNumber(data.item.primal_essence_value)} Primal Essence</a
+                  >
+                </dd>
+              </div>
+            {/if}
+            {#if sacrificeItemLevel(data.item) > 0}
+              {@const points = sacrificeItemPoints(
+                sacrificeItemLevel(data.item),
+              )}
+              <!-- What the item adds to an offering at a Shrine of Sacrifice. -->
+              <div class={styles.fact}>
+                <dt class={styles.label}>Sacrifice Value</dt>
+                <dd>
+                  <a href={virtueHref("sacrifice")} class={styles.link}
+                    >{formatNumber(points, { decimals: 2 })}
+                    {points === 1 ? "point" : "points"}</a
                   >
                 </dd>
               </div>
