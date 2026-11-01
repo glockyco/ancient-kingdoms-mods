@@ -15,6 +15,7 @@ public sealed class BossListFeature : Feature
     private int _shownVersion = -1;
     private int _shownWatchlist = -1;
     private float _shownWidth;
+    private float _shownHeight;
     private bool _settingsChanged;
 
     public BossListFeature()
@@ -60,12 +61,14 @@ public sealed class BossListFeature : Feature
         _panel.UpdateInput(watchlist, out bool changed);
 
         float width = _settings.Panel.Width;
-        if (changed || _settingsChanged || tracker.Version != _shownVersion || watchlist.Version != _shownWatchlist || width != _shownWidth)
+        float height = _settings.Panel.MaxHeight;
+        if (changed || _settingsChanged || tracker.Version != _shownVersion || watchlist.Version != _shownWatchlist || width != _shownWidth || height != _shownHeight)
         {
             _panel.Rebuild(tracker, watchlist);
             _shownVersion = tracker.Version;
             _shownWatchlist = watchlist.Version;
             _shownWidth = width;
+            _shownHeight = height;
             _settingsChanged = false;
         }
     }

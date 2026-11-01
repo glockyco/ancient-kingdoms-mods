@@ -191,7 +191,9 @@ public sealed class PanelHost
             Pointer.Claim();
             _mode = Mode.Resizing;
             _grab = Pointer.Position;
-            _startSize = new Vector2(Width, MaxHeight);
+            // A Size panel can show less than its stored size, such as a short list or a few
+            // tiles, so the drag starts from what the player sees and the edge follows the pointer.
+            _startSize = Resize == PanelResize.Size ? Rect.sizeDelta : new Vector2(Width, MaxHeight);
             _startScale = Rect.localScale.x;
         }
     }
@@ -244,9 +246,10 @@ public sealed class PanelHost
     {
         if (Resize == PanelResize.Size)
         {
+            // The owner lays out to the new size, so the panel never shows a size its content
+            // does not fill.
             _width.Value = Mathf.Clamp(_startSize.x + delta.x, _minSize.x, _maxSize.x);
             _height.Value = Mathf.Clamp(_startSize.y - delta.y, _minSize.y, _maxSize.y);
-            Rect.sizeDelta = new Vector2(Width, Rect.sizeDelta.y);
             return;
         }
 
