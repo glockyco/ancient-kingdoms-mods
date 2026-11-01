@@ -42,12 +42,17 @@ By default, a monster the player has not discovered in the Bestiary SHALL show a
 
 ### Requirement: Panels are placed by the player
 
-Every panel SHALL be movable, resizable and lockable. A locked panel SHALL ignore drags. Positions, sizes and locks SHALL persist across sessions.
+Every panel SHALL be movable, resizable and lockable. A locked panel SHALL ignore drags. Positions, sizes and locks SHALL persist across sessions. In the list style, the boss list's grip SHALL set its width and its maximum height. In the compact style, the grip SHALL set only the width, and with it the tiles per line, and the panel SHALL show every line of tiles.
 
 #### Scenario: Locking the boss list
 
 - **WHEN** the player locks the boss list and then drags it
 - **THEN** the panel stays where it is
+
+#### Scenario: Resizing compact tiles
+
+- **WHEN** the player drags the compact boss list's grip to make room for one more tile per line
+- **THEN** each line holds one more tile and the panel grows or shrinks to show every line
 
 ### Requirement: The game's interface covers the panels
 
