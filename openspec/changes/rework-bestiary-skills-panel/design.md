@@ -39,7 +39,7 @@ The panel opens with every page until the player closes it, and that choice pers
 
 ### Summary, then special skills, then the rest
 
-The questions a player brings to the Bestiary decide the order: which resistance to bring, then what each attack does, then the details. The summary lists each damage type with the largest amount of it, then the threats: area and frontal reach, attacks without a cast bar, pulls, stuns, fears, knockbacks, debuffs no cleanse removes, heals below 75% health and enrage below 10%. Special skills follow as cards in the in-fight cards' order, then one line for the basic attack and one for each passive or aura.
+The questions a player brings to the Bestiary decide the order: which resistance to bring, then what each attack does, then the details. The summary has two lines. The first lists each damage type with the largest amount of it. The second, "Watch for", names the threats without numbers: area and frontal attacks, summons, stuns, fears, knockbacks, debuffs no cleanse removes, heals below 75% health and enrage below 10%. It leaves out cast bars, which the review of 2026-11-01 found useless there. Special skills follow as cards in the in-fight cards' order. A card has the icon, the name, the cooldown and cast time on its top line, then one sentence that says who gets hit and how. One line for the basic attack and one for each passive or aura close the panel. A monster without special skills says "No special skills." above its basic attack.
 
 ### Damage at the monster's level
 
@@ -56,11 +56,11 @@ The extractor already knows which stat a skill class adds for each damage type. 
 
 ### Hover details in the website's terms
 
-The card's tooltip carries the full mechanics: the resist roll and its stat, Armor Class for melee debuffs, cleanse rules with Cleanse Resist, durations and limits. It uses the terms of the website's skill mechanics cards (`website/src/lib/components/skill-mechanics/`), so a player meets one vocabulary on both.
+The card's tooltip carries the full mechanics: the reach, the damage with the resist that lowers or avoids it, each effect's rules such as a fear blocking a stun, Armor Class for melee debuffs, cleanse rules with Cleanse Resist, durations and limits, and when the cast bar shows. It uses the terms of the website's skill mechanics cards (`website/src/lib/components/skill-mechanics/`), so a player meets one vocabulary on both. A summon is written with the game's word: the game tells its victim "You have been summoned!", and the website says "summons" too.
 
 ### Stated behaviour is observed first
 
-Every behaviour the panel states beyond the skill data is observed in a scratch session before it ships: the 5 s before the first special, the gap between specials, the 0.3 s cast bar threshold, the pull's reach and stun, and the fear's duration. A claim that fails in game is corrected or left out.
+Every behaviour the panel states beyond the skill data is observed in a scratch session before it ships: the 5 s before the first special, the gap between specials, the 0.3 s cast bar threshold, the summon's reach and stun, and the fear's duration. A claim that fails in game is corrected or left out.
 
 ### Choices players see go through comparisons
 

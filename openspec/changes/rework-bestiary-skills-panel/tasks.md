@@ -10,8 +10,10 @@
 ## 2. Choices players see
 
 - [x] 2.1 Choose the layout through a comparison (compare-options) with real screenshots. Decided on 2026-11-01: a window in the frame of the game's Quest Log beside the Journal, a summary of damage types and threats first, one card per special skill in the in-fight order, then the basic attack, over a table without a summary.
-- [ ] 2.2 Choose the summary's content and form and the card's structure through a comparison on Nyxarion, a boss with six specials and an elite without specials. Verify that the answer is recorded.
-- [ ] 2.3 Choose the labels and the hover text through a comparison, in the website's terms and the game's own words where the two differ. Summon Player is one: the panel draft and the website's summary say "pulls" (`formatSkillEffect.ts:1082`), the monster page says "Teleports target to this monster" and the game says "You have been summoned!" (`SummonSkillMonsters.cs:47-48`). In MMO usage "pull" means drawing a monster into a fight. Apply the chosen word to the website and the mod together, since the parity corpus ties them. Verify that the answer is recorded.
+- [x] 2.2 Choose the summary's content and form and the card's structure through a comparison on Nyxarion, a boss with six specials and an elite without specials. Verify that the answer is recorded. Decided on 2026-11-01 (`.local/changes/rework-bestiary-skills-panel/review/round-2/`): a two-line summary of damage types and "Watch for" without cast bars, cards with the cooldown and cast on top and one sentence below, and "No special skills." for a monster without specials.
+- [x] 2.3 Choose Summon Player's word and how much the hover text holds. Decided on 2026-11-01: "summons", the game's word, and the full mechanics in the website's terms.
+- [x] 2.4 Write "summons" for Summon Player on the website and in the mod together, since the parity corpus ties them: the skill summary (`formatSkillEffect.ts:1082`, `SkillEffectFormatter.cs`) and the monster page's type cell, which said "Teleports target to this monster". Verify with the parity test and on a monster page in a browser.
+- [ ] 2.5 Choose the remaining labels on the chosen layout through a comparison: the summary's heading and "Watch for", the card's timing line, and whether a card still marks a special without a cast bar now that the summary leaves it out. Verify that the answer is recorded.
 
 ## 3. Panel
 

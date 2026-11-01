@@ -8,7 +8,7 @@ Defines what the Skills panel beside a Bestiary page shows, where it sits, and h
 
 ### Requirement: The panel sits beside the page
 
-The Skills panel SHALL sit beside the Bestiary page at the page's height, framed like the game's own windows. It SHALL open with the page. Once the player closes it, later pages SHALL open without it until the player opens it again, also after a restart.
+The Skills panel SHALL sit beside the Bestiary page at the page's height, framed like the game's own windows. It SHALL open with the page. Once the player closes it, later pages SHALL open without it until the player opens it again, also after a restart. The player SHALL be able to drag the panel by its frame, and it SHALL stay where it was dragged, also after a restart.
 
 #### Scenario: Opening a boss's page
 
@@ -20,29 +20,34 @@ The Skills panel SHALL sit beside the Bestiary page at the page's height, framed
 - **WHEN** the player closes the panel and then opens Xylevis's page
 - **THEN** the page opens without the panel
 
+#### Scenario: Moving the panel
+
+- **WHEN** the player drags the panel by its frame, closes the Journal and opens another page
+- **THEN** the panel shows where it was dragged to
+
 ### Requirement: A summary comes first
 
-The panel SHALL begin with the damage types the monster deals, each with the largest amount the monster deals of it, followed by the attacks and effects a player prepares for: area and frontal attacks with their reach, attacks that land without a cast bar, pulls, stuns, fears and knockbacks, debuffs no cleanse removes, heals and enrages.
+The panel SHALL begin with two lines. The first SHALL name the damage types the monster deals, each with the largest amount the monster deals of it. The second SHALL name the attacks and effects a player prepares for: area and frontal attacks, summons, stuns, fears and knockbacks, debuffs no cleanse removes, heals and enrages. Reach and numbers SHALL stay on the cards, and the summary SHALL NOT mention cast bars.
 
 #### Scenario: Nyxarion's summary
 
 - **WHEN** the panel shows Nyxarion
 - **THEN** its summary names physical damage of 1,720 and cold damage of 4,650
-- **AND** it names the pull from up to 15 yd that lands without a cast bar
+- **AND** it names the summon, the frontal breath, the fear, the knockback and the stuns, without mentioning a cast bar
 
 ### Requirement: One card per special skill
 
-Each special skill SHALL have a card showing its icon, its name, its shape and reach in yd, its damage at the monster's level by type, its effects with chance and duration, its cooldown, its cast time, and whether a cast bar announces it. The basic attack and each passive or aura SHALL take one line each.
+Each special skill SHALL have a card with its icon and its name, its cooldown and cast time on the same line, and one sentence below that gives its shape and reach in yd, its damage at the monster's level by type, and its effects with chance and duration. The card SHALL also say whether a cast bar announces it. The basic attack and each passive or aura SHALL take one line each.
 
 #### Scenario: A frontal attack
 
 - **WHEN** the panel shows Nyxarion's Dragon Ice Breath
-- **THEN** the card says it hits 5 yd in front of him for 4,650 cold damage with a 75% chance to stun for 1.5 s, every 10 s with a 1.0 s cast
+- **THEN** the card's top line gives a 10 s cooldown and a 1 s cast, and its sentence says it hits everyone in a 5 yd square in front for 4,650 cold damage with a 75% chance to stun for 1.5 s
 
 #### Scenario: A monster without special skills
 
 - **WHEN** the panel shows an elite that has only a basic attack
-- **THEN** it shows the basic attack's line and the summary still names its damage type
+- **THEN** it says "No special skills.", shows the basic attack's line, and the summary still names its damage type
 
 ### Requirement: Damage matches the website
 

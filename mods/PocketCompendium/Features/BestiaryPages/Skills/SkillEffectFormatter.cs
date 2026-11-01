@@ -837,7 +837,7 @@ internal static class SkillEffectFormatter
         ["veteran_awareness"] = "reveals nearby monsters on minimap (not in Temple of Valaark)",
         ["parry"] = "while casting, blocks your target's physical melee hits & counters 50% (max 5,000)",
         ["symbiosis"] = "pet gets 10% × rank of your attributes, AC & resistances when summoned (max 50%)",
-        ["summon_player"] = "pulls a target 3 - 15 yd away to the caster, stun (2s)",
+        ["summon_player"] = "summons a target 3 - 15 yd away to the caster, stun (2s)",
         ["disarm_trap"] = "disarm traps (needs Detect Traps or Sharp Senses)",
         ["alchemy"] = "craft potions and elixirs",
         ["baking"] = "craft food and consumables",

@@ -760,7 +760,7 @@
     <span class="text-muted-foreground">
       {row.original.skill_type === "summon_monsters" &&
       row.original.summon_count_per_cast === 0
-        ? "Teleports target to this monster"
+        ? "Summons target to this monster"
         : formatSkillType(row.original.skill_type)}
     </span>
   {:else if cell.column.id === "effect"}

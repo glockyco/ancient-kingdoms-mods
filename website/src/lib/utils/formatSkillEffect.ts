@@ -1079,7 +1079,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   symbiosis:
     "pet gets 10% × rank of your attributes, AC & resistances when summoned (max 50%)",
   // Source: server-scripts/SummonSkillMonsters.cs:Apply — a target more than 3 yd and less than the cast range away is warped to the caster and stunned for 2s.
-  summon_player: `pulls a target ${formatRange(3, 15)} yd away to the caster, stun (2s)`,
+  summon_player: `summons a target ${formatRange(3, 15)} yd away to the caster, stun (2s)`,
   // Source: server-scripts/Trap.cs:OnInteractServer; Player.cs:HasDetectTraps — disarming needs Detect Traps or Sharp Senses.
   disarm_trap: "disarm traps (needs Detect Traps or Sharp Senses)",
   alchemy: "craft potions and elixirs",

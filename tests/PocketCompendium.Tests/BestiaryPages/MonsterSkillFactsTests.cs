@@ -52,18 +52,18 @@ public class MonsterSkillFactsTests
     }
 
     [Fact]
-    public void NyxarionsPullHasNoCastBarAndStunsWithinItsReach()
+    public void NyxarionsSummonHasNoCastBarAndStunsWithinItsReach()
     {
-        var pull = Skill("nyxarion", "summon_player");
-        Assert.Equal(SkillShape.Target, pull.Shape);
-        Assert.True(pull.PullsTarget);
-        Assert.Equal(3, pull.PullMinimumReach);
-        Assert.Equal(15, pull.PullMaximumReach);
-        Assert.Equal(10, pull.Delivery.cooldown);
-        Assert.Equal(0.1, pull.Delivery.cast_time);
-        Assert.False(pull.HasCastBar);
-        Assert.Null(pull.Damage);
-        var stun = Assert.Single(pull.Controls);
+        var summon = Skill("nyxarion", "summon_player");
+        Assert.Equal(SkillShape.Target, summon.Shape);
+        Assert.True(summon.SummonsTarget);
+        Assert.Equal(3, summon.SummonMinimumReach);
+        Assert.Equal(15, summon.SummonMaximumReach);
+        Assert.Equal(10, summon.Delivery.cooldown);
+        Assert.Equal(0.1, summon.Delivery.cast_time);
+        Assert.False(summon.HasCastBar);
+        Assert.Null(summon.Damage);
+        var stun = Assert.Single(summon.Controls);
         Assert.Equal(SkillThreatKind.Stun, stun.Kind);
         Assert.Equal(1, stun.Chance);
         Assert.Equal(2, stun.MinimumDuration);
@@ -85,16 +85,14 @@ public class MonsterSkillFactsTests
     }
 
     [Fact]
-    public void NyxarionsSummaryTakesTheMaximumPerTypeAndKeepsThePullWarning()
+    public void NyxarionsSummaryTakesTheMaximumPerTypeAndNamesTheSummon()
     {
         var summary = new MonsterSkillSummary(Skills("nyxarion"));
         Assert.Equal(2, summary.DamageTypes.Count);
         Assert.Equal(1720, summary.DamageTypes["Physical"]);
         Assert.Equal(4650, summary.DamageTypes["Cold"]);
         Assert.DoesNotContain("Magic", summary.DamageTypes.Keys);
-        var warning = Assert.Single(summary.Threats, t => t.Kind == SkillThreatKind.NoCastBar);
-        Assert.Equal("summon_player", warning.Skill.Effect.id);
-        Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Pull && t.Skill.PullMaximumReach == 15);
+        Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Summon && t.Skill.SummonMaximumReach == 15);
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Frontal && t.Skill.Reach == 5);
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Area && t.Skill.Reach == 10);
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Stun);
@@ -121,7 +119,7 @@ public class MonsterSkillFactsTests
         var summary = new MonsterSkillSummary(skills);
         Assert.Single(summary.DamageTypes);
         Assert.Equal(27, summary.DamageTypes["Physical"]);
-        Assert.DoesNotContain(summary.Threats, t => t.Kind is SkillThreatKind.NoCastBar or SkillThreatKind.Heal or SkillThreatKind.Enrage);
+        Assert.DoesNotContain(summary.Threats, t => t.Kind is SkillThreatKind.Heal or SkillThreatKind.Enrage);
     }
 
     [Fact]
@@ -199,7 +197,6 @@ public class MonsterSkillFactsTests
         var summary = new MonsterSkillSummary(new[] { heal, enrage });
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Heal);
         Assert.Contains(summary.Threats, t => t.Kind == SkillThreatKind.Enrage);
-        Assert.DoesNotContain(summary.Threats, t => t.Kind == SkillThreatKind.NoCastBar);
     }
 
     [Fact]
@@ -209,6 +206,6 @@ public class MonsterSkillFactsTests
         var summary = new MonsterSkillSummary(new[] { basic });
         Assert.Single(summary.DamageTypes);
         Assert.Equal(1720, summary.DamageTypes["Physical"]);
-        Assert.DoesNotContain(summary.Threats, t => t.Kind is SkillThreatKind.NoCastBar or SkillThreatKind.Area or SkillThreatKind.Frontal);
+        Assert.DoesNotContain(summary.Threats, t => t.Kind is SkillThreatKind.Area or SkillThreatKind.Frontal);
     }
 }

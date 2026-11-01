@@ -18,7 +18,7 @@ internal sealed class SkillDeliveryInput
 internal enum SkillShape { None, Target, AroundCaster, FrontalSquare, GroundZones }
 internal enum SkillThreatKind
 {
-    Area, Frontal, NoCastBar, Pull, Stun, Fear, Knockback, UncleanseableDebuff, Heal, Enrage,
+    Area, Frontal, Summon, Stun, Fear, Knockback, UncleanseableDebuff, Heal, Enrage,
 }
 
 internal sealed class ControlEffect
@@ -54,9 +54,9 @@ internal sealed class MonsterSkillFacts
     public int TargetGroundZones { get; }
     public double GroundZoneDiameter { get; }
     public double GroundWarningSeconds { get; }
-    public bool PullsTarget { get; }
-    public double PullMinimumReach => PullsTarget ? 3 : 0;
-    public double PullMaximumReach => PullsTarget ? Reach : 0;
+    public bool SummonsTarget { get; }
+    public double SummonMinimumReach => SummonsTarget ? 3 : 0;
+    public double SummonMaximumReach => SummonsTarget ? Reach : 0;
     public IReadOnlyList<ControlEffect> Controls { get; }
     public bool UncleanseableDebuff { get; }
     public bool Heals { get; }
@@ -93,10 +93,10 @@ internal sealed class MonsterSkillFacts
             GroundWarningSeconds = delivery.area_object_delay_damage;
         }
 
-        // Source: SummonSkillMonsters.cs:30-56. A zero summon count pulls instead.
-        PullsTarget = effect.skill_type == "summon_monsters" && effect.summon_count_per_cast == 0;
+        // Source: SummonSkillMonsters.cs:30-56. A zero summon count summons the target instead.
+        SummonsTarget = effect.skill_type == "summon_monsters" && effect.summon_count_per_cast == 0;
         var controls = new List<ControlEffect>();
-        if (PullsTarget)
+        if (SummonsTarget)
             controls.Add(new ControlEffect(SkillThreatKind.Stun, 1, 2, 2));
         else
         {
@@ -154,10 +154,8 @@ internal sealed class MonsterSkillSummary
                     threats.Add(new SkillThreat(SkillThreatKind.Area, skill));
                 if (skill.Shape == SkillShape.FrontalSquare)
                     threats.Add(new SkillThreat(SkillThreatKind.Frontal, skill));
-                if (!skill.HasCastBar)
-                    threats.Add(new SkillThreat(SkillThreatKind.NoCastBar, skill));
             }
-            if (skill.PullsTarget) threats.Add(new SkillThreat(SkillThreatKind.Pull, skill));
+            if (skill.SummonsTarget) threats.Add(new SkillThreat(SkillThreatKind.Summon, skill));
             foreach (var control in skill.Controls) threats.Add(new SkillThreat(control.Kind, skill));
             if (skill.UncleanseableDebuff) threats.Add(new SkillThreat(SkillThreatKind.UncleanseableDebuff, skill));
             if (skill.Heals) threats.Add(new SkillThreat(SkillThreatKind.Heal, skill));
