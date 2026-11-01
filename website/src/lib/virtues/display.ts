@@ -140,3 +140,12 @@ export function blessingSummary(
       return `Up to ${top.value} ${BLESSING_UNITS[virtue]}`;
   }
 }
+
+// Source: server-scripts/VirtueRules.cs:MaxRank — ranks run from 0 to 5.
+const TOP_RANK = 5;
+
+/** A blessing's bonus from rank 0 to the top rank, such as "0.5% to 5%". */
+export function bonusRange(bonus: (rank: number) => number): string {
+  const percent = (fraction: number) => `${Math.round(fraction * 1000) / 10}%`;
+  return `${percent(bonus(0))} to ${percent(bonus(TOP_RANK))}`;
+}

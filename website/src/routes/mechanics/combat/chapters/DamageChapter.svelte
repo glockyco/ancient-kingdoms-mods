@@ -10,6 +10,11 @@
     characterDamageCalculation,
     pipelineCalculation,
   } from "$lib/calculation/combat-rules";
+  import {
+    compassionHealingBonus,
+    valorDamageBonus,
+  } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
 </script>
 
 <Chapter id="damage">
@@ -77,15 +82,24 @@
       <li>
         Roll for a <a href="#critical-hits">critical hit</a> and apply its bonus.
       </li>
+      <!-- Source: server-scripts/Combat.cs:DealDamageAt; VirtueCombat.cs:ApplyValor — Valor raises the final damage to an elite or boss. -->
+      <li>
+        Against an elite or boss, an active <a href={virtueHref("valor")}
+          >Valor</a
+        >
+        blessing adds {bonusRange(valorDamageBonus)} damage, <RoundedTerm />.
+      </li>
     </ol>
 
     <h4>On-hit effects and {statName("health")}</h4>
-    <ol start="11">
+    <ol start="12">
       <!-- Source: server-scripts/Combat.cs:956-990 — a non-spell melee DamageSkill hit heals the attacker by each of the target's buffs' healOnHitPercent of the damage, rounded, before damage shields. -->
       <li>
         A non-spell melee hit on a target affected by
         <a href="/skills/root">Root</a> heals the attacker for Root's Heal on
-        Hit percentage of the damage, <RoundedTerm />. Then the target's
+        Hit percentage of the damage, <RoundedTerm />. The attacker's
+        <a href={virtueHref("compassion")}>Compassion</a> blessing adds
+        {bonusRange(compassionHealingBonus)} to that healing. Then the target's
         <a href="#damage-shields">damage shields</a> hurt the attacker. Neither changes
         this hit's damage.
       </li>

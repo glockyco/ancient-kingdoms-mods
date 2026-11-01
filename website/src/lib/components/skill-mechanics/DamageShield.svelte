@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { valorDamageBonus } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
   import { mechanicsSections } from "$lib/skills/mechanics-sections";
   import { getMechanicsContext } from "./context";
   import { statName } from "$lib/stats";
@@ -58,6 +60,14 @@
         class="text-blue-600 dark:text-blue-400 hover:underline"
         >damage shields</a
       >.
+    </span>
+    <span class="block">
+      Against an elite or boss, the wearer's
+      <a
+        href={virtueHref("valor")}
+        class="text-blue-600 dark:text-blue-400 hover:underline">Valor</a
+      >
+      blessing adds {bonusRange(valorDamageBonus)} to that damage.
     </span>
   </p>
 </div>

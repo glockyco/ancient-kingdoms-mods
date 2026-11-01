@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { valorDamageBonus } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { formatLinear } from "$lib/skills/skill-format";
   import { getMechanicsContext } from "./context";
@@ -30,6 +32,14 @@
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#parry">Parry's calculation</a
       >. Fully absorbed hits do not trigger it.</span
+    >
+    <span class="block"
+      >Against an elite or boss, your
+      <a
+        href={virtueHref("valor")}
+        class="text-blue-600 dark:text-blue-400 hover:underline">Valor</a
+      >
+      blessing adds {bonusRange(valorDamageBonus)} to the counter.</span
     >
   </p>
   <RoundingDefinition />

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { compassionHealingBonus } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
   import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
@@ -57,6 +59,13 @@
       </li>
       <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply; PlayerSkills.cs:GetFinalCadenceSongBonus — Final Cadence uses Charisma and Melody rather than Wisdom. -->
       <li><a href="/skills/final_cadence">Final Cadence</a> ignores Wisdom.</li>
+      <!-- Source: server-scripts/VirtueCombat.cs:ReceivedHealing; TargetHealSkill.cs:Apply; AreaHealSkill.cs:Apply; Skills.cs:GetFinalHealOverTime; PotionItem.cs:Use — Compassion raises the healing its holder receives, after a critical heal. -->
+      <li>
+        An active <a href={virtueHref("compassion")}>Compassion</a> blessing
+        adds {bonusRange(compassionHealingBonus)} to the healing its holder receives,
+        rounded, after any critical heal. It counts for heals, healing over time,
+        potions and bandages, heal on hit and lifetap.
+      </li>
     </ul>
     <SeeAlso
       links={[
@@ -108,6 +117,10 @@
     <p>
       Lifetap restores Hit Points without reducing the hit's damage. Overkill
       damage counts toward the healing.
+    </p>
+    <p>
+      The attacker's <a href={virtueHref("compassion")}>Compassion</a>
+      blessing adds {bonusRange(compassionHealingBonus)} to the result, rounded.
     </p>
     <!-- Source: server-scripts/Combat.cs:1291-1311 — lifetap healing rounds down after multiplying remaining damage by its percentage and summed active or permanent healing bonuses. -->
     <Formula calculation={lifetapCalculation()} />

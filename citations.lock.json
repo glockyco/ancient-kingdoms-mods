@@ -6197,6 +6197,9 @@
     "VirtueCombat.cs:OnDeath": {
       "span": 0
     },
+    "VirtueCombat.cs:ReceivedHealing": {
+      "span": 0
+    },
     "VirtueCombat.cs:SettleHonorIfFinished": {
       "span": 0
     },
@@ -6249,6 +6252,9 @@
       "span": 0
     },
     "VirtueRules.cs:IsEligibleMonster": {
+      "span": 0
+    },
+    "VirtueRules.cs:MaxRank": {
       "span": 0
     },
     "VirtueRules.cs:SacrificeItemLevel": {

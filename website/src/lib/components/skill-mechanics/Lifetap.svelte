@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { compassionHealingBonus } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
   import { formatPercent, formatNumber } from "$lib/utils/format";
   import { EXAMPLE_HIT, lifetapFromHit } from "$lib/skills/worked-examples";
   import * as fmt from "$lib/calculation/format";
@@ -36,7 +38,12 @@
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#lifetap">lifetap</a
-      >.
+      >. The attacker's
+      <a
+        href={virtueHref("compassion")}
+        class="text-blue-600 dark:text-blue-400 hover:underline">Compassion</a
+      >
+      blessing adds {bonusRange(compassionHealingBonus)} to the healing.
     </p>
   </div>
 {/if}

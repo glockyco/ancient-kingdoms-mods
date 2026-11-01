@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { valorDamageBonus } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
   import { statName } from "$lib/stats";
   import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
@@ -388,6 +390,12 @@
         neither bonus and is never critical.
       </li>
       <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,ApplyWardToDoTDamage: Ward absorbs the final tick after percentage-of-maximum-Health damage is added. -->
+      <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT; VirtueCombat.cs:ApplyValor — Valor raises each tick on an elite or boss, including maximum-Health damage. -->
+      <li>
+        On an elite or boss, the caster's active
+        <a href={virtueHref("valor")}>Valor</a> blessing adds
+        {bonusRange(valorDamageBonus)} to each tick, rounded.
+      </li>
       <li>Ward absorbs the final tick before the target loses Hit Points.</li>
     </ul>
   </Topic>

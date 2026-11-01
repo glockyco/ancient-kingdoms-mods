@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { valorDamageBonus } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
   import RefTable from "$lib/components/reference/RefTable.svelte";
@@ -211,6 +213,12 @@
       </li>
       <!-- Source: server-scripts/Combat.cs:DealDamageAt; Skills.cs:ApplyWardToDoTDamage — Mana Shield absorbs direct hits after Ward and ends only when remaining damage exceeds current Mana; ticks and Damage Shield bypass it. -->
       <li>Damage shield damage passes through Mana Shield.</li>
+      <!-- Source: server-scripts/Combat.cs:DealDamageAt; VirtueCombat.cs:ApplyValor — Valor raises shield damage to an elite or boss after the variation. -->
+      <li>
+        When the attacker is an elite or boss, an active
+        <a href={virtueHref("valor")}>Valor</a> blessing adds
+        {bonusRange(valorDamageBonus)} to that damage, rounded.
+      </li>
     </ul>
   </Topic>
 </Chapter>

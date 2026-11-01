@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { valorDamageBonus } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
   import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
@@ -70,6 +72,12 @@
       Your Ward and Mana Shield still absorb the hit first. Parry blocks the
       rest and returns half of it to the attacker, <RoundedTerm />, at least 1
       and at most 5&#8239;000. For example, 101 remaining damage returns 50.
+    </p>
+    <!-- Source: server-scripts/Combat.cs:DealDamageAt; VirtueCombat.cs:ApplyValor — Valor raises the counter to an elite or boss after the 5,000 limit. -->
+    <p>
+      When the attacker is an elite or boss, an active
+      <a href={virtueHref("valor")}>Valor</a> blessing adds
+      {bonusRange(valorDamageBonus)} to the returned damage, rounded.
     </p>
   </Topic>
 
