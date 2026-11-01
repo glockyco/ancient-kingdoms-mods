@@ -53,7 +53,18 @@ internal sealed class PageButton
         var onClick = _onClick;
         _button.onClick.AddListener((UnityEngine.Events.UnityAction)(() => onClick()));
 
-        _label = SkillsPanel.MakeText(_go.transform, string.Empty, 18f, FontStyles.Bold);
+        // The Bestiary's own Latin font, so the button reads like the page. GameText.ApplyFont
+        // switches it to the game's CJK fonts in those languages.
+        var labelObject = new GameObject("Text");
+        labelObject.transform.SetParent(_go.transform, false);
+        labelObject.AddComponent<RectTransform>();
+        _label = labelObject.AddComponent<TextMeshProUGUI>();
+        var detail = UIBestiaryDetail.singleton;
+        var font = GameText.LatinFont(detail != null && detail.loreBoss != null ? detail.loreBoss.font : null);
+        if (font != null) _label.font = font;
+        _label.fontSize = 18f;
+        _label.fontStyle = FontStyles.Bold;
+        _label.color = Color.white;
         _label.alignment = TextAlignmentOptions.Center;
         var labelRect = _label.GetComponent<RectTransform>();
         labelRect.anchorMin = Vector2.zero;

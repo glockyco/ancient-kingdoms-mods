@@ -10,10 +10,11 @@ using UnityEngine.UI;
 namespace PocketCompendium.Features.BestiaryPages.Ui;
 
 /// <summary>
-/// Lets a gamepad reach the Bestiary page's loot slots and the Skills button. The game gives
-/// loot slots no focus and shows their tooltips only on mouse hover. Each loot slot gets a
-/// Selectable, the right edge of the monster grid leads to the loot, and a focused slot shows its
-/// tooltip the way the game's own gamepad lists do (UINpcTradingSlot).
+/// Lets a gamepad reach the Bestiary page's loot slots, the buttons below the page and the cards
+/// of the Skills window. The game gives loot slots no focus and shows their tooltips only on mouse
+/// hover. Each loot slot gets a Selectable, the right edge of the monster grid leads to the loot,
+/// the right edge of the page leads to the cards, and a focused slot or card shows its tooltip the
+/// way the game's own gamepad lists do (UINpcTradingSlot).
 /// </summary>
 internal static class GamepadLootNavigation
 {
@@ -56,7 +57,7 @@ internal static class GamepadLootNavigation
         selectable.navigation = navigation;
     }
 
-    /// <summary>Shows the tooltip of a loot slot that just gained gamepad focus.</summary>
+    /// <summary>Shows the tooltip of a loot slot or skill card that just gained gamepad focus.</summary>
     internal static void Update()
     {
         var selected = GameManager.isUsingGamepad ? CurrentSelection() : null;
@@ -76,6 +77,9 @@ internal static class GamepadLootNavigation
             _tooltipOwner = selected;
             return;
         }
+
+        if (SkillsPanelController.ShowFocused(selected))
+            _tooltipOwner = selected;
     }
 
     // RefreshGamepadNavigation moves focus back to a grid slot every frame. While the focus is on
@@ -90,6 +94,7 @@ internal static class GamepadLootNavigation
 
         var loot = LootSelectables();
         var buttons = PageButtons();
+        var entries = SkillsPanelController.VisibleEntries;
         if (loot.Count == 0 && buttons.Count == 0)
             return;
 
@@ -100,6 +105,7 @@ internal static class GamepadLootNavigation
         var gridEntry = CurrentGridEntry(__instance, entryCount);
         var first = loot.Count > 0 ? loot[0] : buttons[0];
         var firstButton = buttons.Count > 0 ? buttons[0] : null;
+        var firstCard = entries.Count > 0 ? entries[0] : null;
 
         for (var i = 0; i < entryCount; i++)
         {
@@ -120,7 +126,7 @@ internal static class GamepadLootNavigation
             var navigation = new Navigation();
             navigation.mode = Navigation.Mode.Explicit;
             navigation.selectOnLeft = column > 0 ? loot[i - 1] : gridEntry;
-            navigation.selectOnRight = column < lootColumns - 1 && i + 1 < loot.Count ? loot[i + 1] : null;
+            navigation.selectOnRight = column < lootColumns - 1 && i + 1 < loot.Count ? loot[i + 1] : firstCard;
             navigation.selectOnUp = i >= lootColumns ? loot[i - lootColumns] : null;
             navigation.selectOnDown = i + lootColumns < loot.Count ? loot[i + lootColumns] : firstButton;
             loot[i].navigation = navigation;
@@ -132,8 +138,20 @@ internal static class GamepadLootNavigation
             navigation.mode = Navigation.Mode.Explicit;
             navigation.selectOnUp = loot.Count > 0 ? loot[(loot.Count - 1) / lootColumns * lootColumns] : null;
             navigation.selectOnLeft = i > 0 ? buttons[i - 1] : gridEntry;
-            navigation.selectOnRight = i + 1 < buttons.Count ? buttons[i + 1] : null;
+            navigation.selectOnRight = i + 1 < buttons.Count ? buttons[i + 1] : firstCard;
             buttons[i].navigation = navigation;
+        }
+
+        // The cards run top to bottom, and left leads back to the button that opens them.
+        var back = buttons.Count > 0 ? buttons[buttons.Count - 1] : first;
+        for (var i = 0; i < entries.Count; i++)
+        {
+            var navigation = new Navigation();
+            navigation.mode = Navigation.Mode.Explicit;
+            navigation.selectOnUp = i > 0 ? entries[i - 1] : null;
+            navigation.selectOnDown = i + 1 < entries.Count ? entries[i + 1] : null;
+            navigation.selectOnLeft = back;
+            entries[i].navigation = navigation;
         }
     }
 
@@ -164,6 +182,12 @@ internal static class GamepadLootNavigation
         foreach (var slot in BestiaryLootRenderer.ShownSlots)
         {
             if (slot != null && slot.gameObject == selected)
+                return true;
+        }
+
+        foreach (var entry in SkillsPanelController.VisibleEntries)
+        {
+            if (entry != null && entry.gameObject == selected)
                 return true;
         }
 

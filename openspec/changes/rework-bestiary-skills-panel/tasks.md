@@ -14,13 +14,14 @@
 - [x] 2.3 Choose Summon Player's word and how much the hover text holds. Decided on 2026-11-01: "summons", the game's word, and the full mechanics in the website's terms.
 - [x] 2.4 Write "summons" for Summon Player on the website and in the mod together, since the parity corpus ties them: the skill summary (`formatSkillEffect.ts:1082`, `SkillEffectFormatter.cs`) and the monster page's type cell, which said "Teleports target to this monster". Verify with the parity test and on a monster page in a browser.
 - [x] 2.5 Choose the remaining labels on the chosen layout through a comparison. Decided on 2026-11-01 (`.local/changes/add-pocket-compendium/review/round-6/`): the heading "AT A GLANCE", the threats line "Threats", the timing in the game's own form "1s cast    10s cooldown", and no mark for a special without a cast bar.
+- [ ] 2.6 Choose through a comparison the sentence patterns the build raised: a control effect that applies only when an earlier one fails, a debuff with stat losses, the 75% health gate of healing skills, whether a basic attack's stun chance counts as a threat, the heading for passives and the window's subtitle. Verify that the answers are applied and recorded.
 
 ## 3. Panel
 
-- [ ] 3.1 Build the window from the Journal's frame sprites, docked beside the page at its height, with a scroll view, movable by dragging its frame and remembering its place. Verify in game on a 1920 and a 1280 px window, and that a dragged window keeps its place after closing the Journal and after a restart.
-- [ ] 3.2 Build the summary, the cards, the one-line basic attack and passives, and the hover details as chosen. Verify in game for Nyxarion, Xylevis, Valaark, an elite without specials and with the game in Japanese.
-- [ ] 3.3 Open the panel with the page, remember a close in the Bestiary pages settings and keep the Skills button as a toggle. Verify in game across two pages and a restart.
-- [ ] 3.4 Order special skills with the in-fight cards' ordering. Verify in a fight with Nyxarion that both show his specials in the same order.
+- [x] 3.1 Build the window from the Journal's frame sprites, docked beside the page at its height, with a scroll view, movable by dragging its frame and remembering its place. Verify in game on a 1920 and a 1280 px window, and that a dragged window keeps its place after closing the Journal and after a restart. Verified on 2026-11-01 at 1800 and 1280 px, the largest and a small size this display offers. A dragged window kept its place after closing the Journal, on another page and after a restart.
+- [x] 3.2 Build the summary, the cards, the one-line basic attack and passives, and the hover details as chosen. Verify in game for Nyxarion, Xylevis, Valaark, an elite without specials and with the game in Japanese. Verified on 2026-11-01 for those, Slime King as the elite, Ancient Cyclops, Hrimsorr the Glacial Seer and North Gate's Guardian. Monster and skill names stay unbroken in Japanese, a name too long for the top line takes a second line, and a gamepad moves through the cards, showing each card's details and scrolling it into view.
+- [x] 3.3 Open the panel with the page, remember a close in the Bestiary pages settings and keep the Skills button as a toggle. Verify in game across two pages and a restart. Verified on 2026-11-01: after a close, Xylevis's page opened without the window, after a restart neither Nyxarion's nor Xylevis's page did, and Skills opened it again.
+- [x] 3.4 Order special skills with the in-fight cards' ordering. Verify in a fight with Nyxarion that both show his specials in the same order. Verified on 2026-11-01: both list Fear, Knockback, Dragon Ice Breath and Summon Player with the same icons.
 
 ## 4. Documentation and records
 

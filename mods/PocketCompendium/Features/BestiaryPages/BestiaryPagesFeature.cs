@@ -31,10 +31,25 @@ public sealed class BestiaryPagesFeature : Feature
             true,
             "Skills button",
             "Shows the Skills button and side panel on Bestiary pages.");
+        _skillsOpen = Settings.Stored("SkillsWindowOpen", true);
         _instance = this;
     }
 
     public ToggleSetting SkillsButton { get; }
+
+    private readonly MelonLoader.MelonPreferences_Entry<bool> _skillsOpen;
+
+    /// <summary>Whether the Skills window opens with a page, until the player closes it.</summary>
+    internal static bool SkillsWindowOpen
+    {
+        get => _instance == null || _instance._skillsOpen.Value;
+        set
+        {
+            if (_instance == null || _instance._skillsOpen.Value == value) return;
+            _instance._skillsOpen.Value = value;
+            _instance.Settings.Save();
+        }
+    }
 
     public override UnityEngine.Sprite Icon => Icons.BookOpen;
 
