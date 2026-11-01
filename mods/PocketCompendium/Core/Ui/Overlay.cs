@@ -36,19 +36,16 @@ public static class Overlay
 
     /// <summary>
     /// Lifts the game's tooltip above the panels, because the game shows a panel's tooltips beside
-    /// the hovered control, often over the panel itself. Hides the panels while the game's map is
-    /// open, because the map covers the whole play area.
+    /// the hovered control, often over the panel itself. Hides the panels and markers while the
+    /// game's map is open, because the map covers the whole play area.
     /// </summary>
     public static void Update()
     {
-        if (_panels != null)
-        {
-            var map = Il2Cpp.UIMap.singleton;
-            bool mapOpen = map != null && map.panel != null && map.panel.activeSelf;
-            // Inactive panels also ignore the pointer, so a click on the map never reaches one.
-            var root = _panels.Root.gameObject;
-            if (root.activeSelf == mapOpen) root.SetActive(!mapOpen);
-        }
+        var map = Il2Cpp.UIMap.singleton;
+        bool mapOpen = map != null && map.panel != null && map.panel.activeSelf;
+        // Inactive panels also ignore the pointer, so a click on the map never reaches one.
+        Show(_panels, !mapOpen);
+        Show(_markers, !mapOpen);
 
         var shortcuts = Il2Cpp.UIShortcuts.singleton;
         var tooltip = shortcuts != null ? shortcuts.toolTip : null;
@@ -59,6 +56,13 @@ public static class Overlay
         tooltipCanvas.overrideSorting = true;
         tooltipCanvas.sortingOrder = TooltipOrder;
         _raisedTooltip = tooltip;
+    }
+
+    private static void Show(Layer layer, bool shown)
+    {
+        if (layer == null) return;
+        var root = layer.Root.gameObject;
+        if (root.activeSelf != shown) root.SetActive(shown);
     }
 
     /// <summary>Screen pixels per canvas unit on the panel layer.</summary>
