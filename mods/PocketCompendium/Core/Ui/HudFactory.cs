@@ -187,11 +187,14 @@ public static class HudFactory
         text.overflowMode = TextOverflowModes.Ellipsis;
         text.fontStyle = bold ? FontStyles.Bold : FontStyles.Normal;
         text.extraPadding = false;
+        // Middle centers on the font's line metrics, so every label sits at the same height
+        // whatever letters it holds. Midline centers on the drawn glyphs and lifts text with
+        // descenders, which left icons beside such text looking low.
         text.alignment = align == Align.Right
-            ? TextAlignmentOptions.MidlineRight
+            ? TextAlignmentOptions.Right
             : align == Align.Center
-                ? TextAlignmentOptions.Midline
-                : TextAlignmentOptions.MidlineLeft;
+                ? TextAlignmentOptions.Center
+                : TextAlignmentOptions.Left;
         return new Label(go, text, monospaced);
     }
 

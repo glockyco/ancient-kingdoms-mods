@@ -141,7 +141,7 @@ internal sealed class EdgeArrowView
         _pointer.anchoredPosition = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * PointerOrbit;
         _pointer.localRotation = Quaternion.Euler(0f, 0f, angle - 90f);
 
-        var align = labelsRight ? TextAlignmentOptions.MidlineLeft : TextAlignmentOptions.MidlineRight;
+        var align = labelsRight ? TextAlignmentOptions.Left : TextAlignmentOptions.Right;
         if (_name.Text.alignment != align)
         {
             _name.Text.alignment = align;
