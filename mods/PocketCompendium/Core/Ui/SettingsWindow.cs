@@ -254,10 +254,9 @@ public sealed class SettingsWindow
 
             y += WrappedText("summary", page.Feature.Summary, Pad, y, width - SwitchView.Width - 12f, 12.5f, Theme.Muted, out _) + 4f;
 
-            _failedNote = HudFactory.Label("failed", _content, 12.5f, Theme.Cast, Align.Left);
-            HudFactory.TopLeft(_failedNote.Rect, Pad, y, width, 18f);
-            _failedNote.Value = "Stopped after an error. Restart the game to use it again. MelonLoader/Latest.log has the details.";
-            y += page.Feature.Failed ? 20f : 0f;
+            // The note wraps, because one line runs out of the window.
+            float failedHeight = WrappedText("failed", "Stopped after an error. Restart the game to use it again. MelonLoader/Latest.log has the details.", Pad, y, width, 12.5f, Theme.Cast, out _failedNote);
+            y += page.Feature.Failed ? failedHeight + 2f : 0f;
             _failedNote.SetActive(page.Feature.Failed);
         }
 
