@@ -158,20 +158,20 @@ internal sealed class RowView
         _name.LocalizedValue = data.Silhouette ? "???" : GameText.EntityName(monster.Key);
         HudFactory.TopLeft(_name.Rect, TextLeft, TopLine, textWidth, TopHeight);
 
+        // Above +10 the game's target frame shows only a skull. The row keeps the level beside it.
         var band = LevelBands.Of(monster.Level, data.PlayerLevel);
         bool skull = band == LevelBand.Skull;
         _skull.enabled = skull;
-        _level.SetActive(!skull);
+        float levelLeft = TextLeft;
         if (skull)
         {
-            HudFactory.TopLeft(_skull, TextLeft, BottomLine + (BottomHeight - 12f) / 2f, 12f, 12f);
+            HudFactory.TopLeft(_skull, TextLeft, BottomLine + (BottomHeight - 12f) / 2f - 1f, 12f, 12f);
+            levelLeft += 15f;
         }
-        else
-        {
-            _level.Value = "Lv " + monster.Level;
-            _level.Color = StateLook.LevelColor(band);
-            HudFactory.TopLeft(_level.Rect, TextLeft, BottomLine, textWidth, BottomHeight);
-        }
+
+        _level.Value = "Lv " + monster.Level;
+        _level.Color = StateLook.LevelColor(band);
+        HudFactory.TopLeft(_level.Rect, levelLeft, BottomLine, textWidth - (levelLeft - TextLeft), BottomHeight);
     }
 
     public void SetTooltip(string text)

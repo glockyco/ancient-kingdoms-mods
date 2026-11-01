@@ -9,7 +9,7 @@ public enum LevelBand
     Yellow,
     Red,
 
-    /// <summary>More than 10 levels above: a skull without a number.</summary>
+    /// <summary>More than 10 levels above, where the game's target frame shows a skull instead of the number.</summary>
     Skull,
 }
 

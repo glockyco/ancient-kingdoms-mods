@@ -24,12 +24,12 @@ Each list row SHALL show the portrait, the name, the level in the game's level c
 
 ### Requirement: Level colours follow the game
 
-The level SHALL use the game's colour for the monster's level minus the player's: gray below -10, green from -10 to -2, white from -1 to 1, yellow from 2 to 4, red from 5 to 10, and a skull without a number above 10.
+The level SHALL use the game's colour for the monster's level minus the player's: gray below -10, green from -10 to -2, white from -1 to 1, yellow from 2 to 4, red from 5 to 10, and red with a skull before the number above 10.
 
 #### Scenario: Monster far above the player
 
 - **WHEN** a level 14 player sees Ancient Cyclops at level 55
-- **THEN** its level shows as a red skull without a number
+- **THEN** its row shows a red skull followed by Lv 55
 
 ### Requirement: Dead portraits show progress
 
