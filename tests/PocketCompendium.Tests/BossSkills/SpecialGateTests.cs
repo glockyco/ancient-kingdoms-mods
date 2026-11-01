@@ -41,6 +41,21 @@ public sealed class SpecialGateTests
     }
 
     [Fact]
+    public void A_ready_longer_reach_special_out_of_reach_opens_the_gate_before_the_deadline()
+    {
+        var gate = new SpecialGate();
+        var reach = GateReading.FromServer(131.5, CombatStart, 0.0, 0.0, Cycle, longerReachReady: true);
+
+        Assert.Equal(GateStatus.Armed, gate.Evaluate(120, engaged: true, reach, anySpecialOffCooldown: true).Status);
+        Assert.Equal(GateStatus.Warmup, gate.Evaluate(CombatStart + 1, engaged: true, reach, anySpecialOffCooldown: true).Status);
+        Assert.Equal(GateStatus.Locked, gate.Evaluate(121, engaged: true, Server(131.5), anySpecialOffCooldown: true).Status);
+
+        var observed = new SpecialGate();
+        observed.Evaluate(100, engaged: true, Observed(), anySpecialOffCooldown: true);
+        Assert.Equal(GateStatus.Armed, observed.Evaluate(110, engaged: true, GateReading.FromObservation(0.0, Cycle, longerReachReady: true), anySpecialOffCooldown: true).Status);
+    }
+
+    [Fact]
     public void A_cast_sized_push_stays_locked()
     {
         var gate = new SpecialGate();

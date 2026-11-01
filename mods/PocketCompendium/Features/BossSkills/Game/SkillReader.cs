@@ -71,9 +71,30 @@ public static class SkillReader
             ? skills.skills[current].castTimeEnd
             : 0.0;
 
+        bool longerReach = LongerReachReady(monster, skills);
         return GameAccess.HostsServer
-            ? GateReading.FromServer(skills.nextSpecialCastTime, monster.startCombatTime, monster.basicOnlySkillTimeEnd, specialCastEnd, cycle)
-            : GateReading.FromObservation(specialCastEnd, cycle);
+            ? GateReading.FromServer(skills.nextSpecialCastTime, monster.startCombatTime, monster.basicOnlySkillTimeEnd, specialCastEnd, cycle, longerReach)
+            : GateReading.FromObservation(specialCastEnd, cycle, longerReach);
+    }
+
+    // Mirrors Monster.cs:1880-1898: with the target beyond the reach of the skill the monster
+    // would use, a ready skill with a longer reach may start at once.
+    private static bool LongerReachReady(Monster monster, MonsterSkills skills)
+    {
+        var target = monster.Networktarget;
+        if (target == null || skills.skills.Count <= 1) return false;
+        int current = skills.currentSkill >= 0 && skills.currentSkill < skills.skills.Count ? skills.currentSkill : 0;
+        Skill check = skills.skills[current];
+        if (skills.CastCheckDistance(check) && monster.isTargetVisible(target)) return false;
+
+        for (int index = 1; index < skills.skills.Count; index++)
+        {
+            Skill skill = skills.skills[index];
+            if (skill.castRange > check.castRange && skills.CastCheckSelf(skill) && skills.CastCheckTarget(skill) && skills.CastCheckDistance(skill))
+                return true;
+        }
+
+        return false;
     }
 
     private static bool IsNonCastable(ScriptableSkill data)

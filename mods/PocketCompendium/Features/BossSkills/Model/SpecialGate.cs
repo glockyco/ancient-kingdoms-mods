@@ -64,6 +64,10 @@ public sealed class SpecialGate
         if (now < warmupEnd)
             return Window(GateStatus.Warmup, reading, warmupEnd, reading.StartCombatTime);
 
+        // Out of reach, a ready special with a longer reach can come without the deadline.
+        if (reading.LongerReachReady)
+            return Window(GateStatus.Armed, reading, now, now);
+
         GateStatus locked = _held ? GateStatus.Held : GateStatus.Locked;
         return Window(now < _deadline ? locked : Open(anySpecialOffCooldown), reading, _deadline, _lockStart);
     }
@@ -73,6 +77,9 @@ public sealed class SpecialGate
         double warmupEnd = _combatStart + Tuning.SpecialWarmupSeconds;
         if (now < warmupEnd)
             return Window(GateStatus.Warmup, reading, warmupEnd, _combatStart);
+
+        if (reading.LongerReachReady)
+            return Window(GateStatus.Armed, reading, now, now);
 
         if (double.IsNaN(_lastSpecialCastEnd))
             return new GateVm(GateStatus.Unknown, reading.Provenance, 0, 0, 0);

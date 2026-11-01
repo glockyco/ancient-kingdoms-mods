@@ -25,8 +25,16 @@ public readonly struct GateReading
     /// </summary>
     public readonly double BasicCycleSeconds;
 
-    private GateReading(GateProvenance provenance, double nextSpecialCastTime, double startCombatTime, double basicOnlySkillTimeEnd, double specialCastEnd, double basicCycleSeconds)
+    /// <summary>
+    /// The target is out of the reach of the skill the monster would use, and a special with a
+    /// longer reach is ready. The monster may then cast it without waiting for its deadline
+    /// (Monster.cs:1880-1898).
+    /// </summary>
+    public readonly bool LongerReachReady;
+
+    private GateReading(GateProvenance provenance, double nextSpecialCastTime, double startCombatTime, double basicOnlySkillTimeEnd, double specialCastEnd, double basicCycleSeconds, bool longerReachReady)
     {
+        LongerReachReady = longerReachReady;
         Provenance = provenance;
         NextSpecialCastTime = nextSpecialCastTime;
         StartCombatTime = startCombatTime;
@@ -35,9 +43,9 @@ public readonly struct GateReading
         BasicCycleSeconds = basicCycleSeconds;
     }
 
-    public static GateReading FromServer(double nextSpecialCastTime, double startCombatTime, double basicOnlySkillTimeEnd, double specialCastEnd, double basicCycleSeconds)
-        => new(GateProvenance.Server, nextSpecialCastTime, startCombatTime, basicOnlySkillTimeEnd, specialCastEnd, basicCycleSeconds);
+    public static GateReading FromServer(double nextSpecialCastTime, double startCombatTime, double basicOnlySkillTimeEnd, double specialCastEnd, double basicCycleSeconds, bool longerReachReady = false)
+        => new(GateProvenance.Server, nextSpecialCastTime, startCombatTime, basicOnlySkillTimeEnd, specialCastEnd, basicCycleSeconds, longerReachReady);
 
-    public static GateReading FromObservation(double specialCastEnd, double basicCycleSeconds)
-        => new(GateProvenance.Observed, 0, 0, 0, specialCastEnd, basicCycleSeconds);
+    public static GateReading FromObservation(double specialCastEnd, double basicCycleSeconds, bool longerReachReady = false)
+        => new(GateProvenance.Observed, 0, 0, 0, specialCastEnd, basicCycleSeconds, longerReachReady);
 }
