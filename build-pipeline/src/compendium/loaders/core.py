@@ -37,6 +37,7 @@ from compendium.models import (
     StatCatalogData,
     SummonTriggerData,
     TreasureLocationData,
+    VirtuesExportData,
     VisualAssetData,
 )
 from compendium.visual_assets import (
@@ -1288,6 +1289,74 @@ def load_houses(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(houses)} houses")
+
+
+def load_virtues(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load the virtues, their ranks and the rules they share."""
+    console.print("Loading virtues...")
+
+    with open(export_dir / "virtues.json", encoding="utf-8") as f:
+        export = VirtuesExportData.model_validate(json.load(f))
+
+    thresholds = export.rank_thresholds
+    if len(export.humility_multipliers) != len(thresholds):
+        raise ValueError(
+            "virtues.json has "
+            f"{len(export.humility_multipliers)} Humility multipliers for "
+            f"{len(thresholds)} ranks"
+        )
+    if thresholds[0] != 0 or thresholds != sorted(set(thresholds)):
+        raise ValueError(f"virtues.json rank thresholds must rise from 0: {thresholds}")
+
+    skill_ids = {row[0] for row in conn.execute("SELECT id FROM skills")}
+    for virtue in export.virtues:
+        ranks = [(rank.rank, rank.points) for rank in virtue.ranks]
+        if ranks != list(enumerate(thresholds)):
+            raise ValueError(
+                f"virtues.json {virtue.id} ranks {ranks} do not follow the thresholds"
+            )
+        titled = [bool(rank.title) for rank in virtue.ranks]
+        if titled != [False] + [True] * (len(thresholds) - 1):
+            raise ValueError(
+                f"virtues.json {virtue.id} needs a title on every rank but rank 0"
+            )
+        if virtue.blessing_skill_id not in skill_ids:
+            raise ValueError(
+                f"virtues.json {virtue.id} names unknown skill {virtue.blessing_skill_id}"
+            )
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO virtue_rules VALUES (1, ?, ?, ?)",
+        (export.rank_zero_label, export.escort_points, export.return_points),
+    )
+    cursor.executemany(
+        "INSERT INTO virtue_rank_rules (rank, points, humility_multiplier) VALUES (?,?,?)",
+        [
+            (rank, points, multiplier)
+            for rank, (points, multiplier) in enumerate(
+                zip(thresholds, export.humility_multipliers, strict=True)
+            )
+        ],
+    )
+    cursor.executemany(
+        "INSERT INTO virtues (id, name, summary, blessing_skill_id, sort_order)"
+        " VALUES (?,?,?,?,?)",
+        [
+            (v.id, v.name, v.summary, v.blessing_skill_id, order)
+            for order, v in enumerate(export.virtues)
+        ],
+    )
+    cursor.executemany(
+        "INSERT INTO virtue_ranks (virtue_id, rank, title, effect) VALUES (?,?,?,?)",
+        [
+            (v.id, rank.rank, rank.title or None, rank.effect)
+            for v in export.virtues
+            for rank in v.ranks
+        ],
+    )
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(export.virtues)} virtues")
 
 
 def load_scribing_tables(conn: sqlite3.Connection, export_dir: Path) -> None:

@@ -13,9 +13,9 @@
 
 ## 3. Pipeline
 
-- [ ] 3.1 Add `virtues`, `virtue_ranks` and `virtue_shrines` to the schema, models, loaders and loader catalog, with tests. Verify that `uv run compendium build` loads every exported virtue, rank and shrine and that `uv run pytest` passes.
-- [ ] 3.2 Name `compassion_escort` under `[entities.exclude]` with its reason, and add the shrine family to the search keywords and redaction references where map-only families are listed. Verify that `compendium redactions check` reports the escort and nothing unexplained, and that the database has no `compassion_escort` row.
-- [ ] 3.3 Write each shrine's 240 by 135 yd map crop with the zone thumbnails' crop function, beside the zone artwork. Verify that each crop matches the live map at the shrine.
+- [x] 3.1 Add `virtues`, `virtue_ranks` and `virtue_shrines` to the schema, models, loaders and loader catalog, with tests. Verify that `uv run compendium build` loads every exported virtue, rank and shrine and that `uv run pytest` passes.
+- [x] 3.2 Name `compassion_escort` under `[entities.exclude]` with its reason, and declare the virtue references for the redaction graph. Verify that `compendium redactions check` reports the escort and nothing unexplained, and that the database has no `compassion_escort` row.
+- [x] 3.3 Write each shrine's 240 by 135 yd map crop with the zone thumbnails' crop function, beside the zone artwork. Verify that each crop matches the live map at the shrine.
 
 ## 4. Rules module
 

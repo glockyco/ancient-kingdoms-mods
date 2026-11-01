@@ -93,6 +93,9 @@ PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("luck_tokens", "fragment_token_id"),
         # A season gives its buff to every online player while it runs.
         ("seasons", "buff_skill_id"),
+        # A shrine gives its virtue's blessing, and the virtue grants that skill.
+        ("virtue_shrines", "virtue_id"),
+        ("virtues", "blessing_skill_id"),
     }
 )
 
@@ -124,6 +127,7 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
         ("stats", "pool_id"),
         ("treasure_locations", "required_map_id"),
         ("treasure_locations", "reward_id"),
+        ("virtue_ranks", "rank"),
     }
 )
 
@@ -140,7 +144,8 @@ JSON_PROVIDES: frozenset[tuple[str, str]] = frozenset(
 
 # Existing aggregate references. Canonical identified memberships are declared
 # separately because each membership is a graph node rather than a junction.
-PROVIDED_BY: frozenset[tuple[str, str]] = frozenset()
+# A virtue's ranks belong to it, so reaching the virtue reaches them.
+PROVIDED_BY: frozenset[tuple[str, str]] = frozenset({("virtue_ranks", "virtue_id")})
 
 # An armour set bonus is reached by wearing its pieces, so the pieces provide it.
 # A set whose every piece is removed is unobtainable.

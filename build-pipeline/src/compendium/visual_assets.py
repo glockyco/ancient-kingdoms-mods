@@ -36,6 +36,7 @@ DOMAIN_DIRECTORIES = {
     "gathering_resource": "gathering_resources",
     "chest": "chests",
     "zone": "zones",
+    "virtue_shrine": "virtue_shrines",
     "world": "world",
 }
 
@@ -53,6 +54,7 @@ DOMAIN_TABLES: dict[str, str | None] = {
     "gathering_resource": "gathering_resources",
     "chest": "chests",
     "zone": "zones",
+    "virtue_shrine": "virtue_shrines",
     "world": None,
 }
 

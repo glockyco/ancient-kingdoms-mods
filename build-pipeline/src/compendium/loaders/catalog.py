@@ -55,6 +55,7 @@ from compendium.loaders.core import (
     load_stats,
     load_summon_triggers,
     load_treasure_locations,
+    load_virtues,
     load_visual_assets,
     record_achievements,
     record_visual_assets,
@@ -71,6 +72,7 @@ from compendium.models import (
     NpcSpawnData,
     PortalData,
     TrapData,
+    VirtueShrineData,
     ZoneData,
     ZoneTriggerData,
 )
@@ -227,6 +229,20 @@ DATASETS: tuple[Dataset, ...] = (
         ("houses",),
         after=("zones", "zone_triggers"),
         handler=_plain(load_houses),
+    ),
+    Dataset(
+        "virtues",
+        ("virtues.json",),
+        ("virtue_rules", "virtue_rank_rules", "virtues", "virtue_ranks"),
+        after=("skills",),
+        handler=_plain(load_virtues),
+    ),
+    Dataset(
+        "virtue_shrines",
+        ("virtue_shrines.json",),
+        ("virtue_shrines",),
+        after=("zones", "zone_triggers", "virtues"),
+        model=VirtueShrineData,
     ),
     Dataset(
         "items",

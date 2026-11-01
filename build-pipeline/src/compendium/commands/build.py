@@ -22,7 +22,7 @@ from compendium.redactions import verify
 from compendium.redactions.references import resolve
 from compendium.session import resolve_export_session
 from compendium.visual_assets import reconcile
-from compendium.zone_artwork import publish_zone_thumbnails
+from compendium.zone_artwork import publish_shrine_maps, publish_zone_thumbnails
 from compendium.zone_shots import publish_zone_shots
 
 console = Console()
@@ -97,6 +97,7 @@ def run(config: dict) -> None:
             console.print()
             subject = denormalize_all(conn)
             publish_zone_thumbnails(conn, session_dir, export_root, stage_static_dir)
+            publish_shrine_maps(conn, session_dir, export_root, stage_static_dir)
             publish_zone_shots(
                 conn,
                 export_root,

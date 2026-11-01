@@ -8,6 +8,8 @@ from PIL import Image
 from compendium.db import create_database
 from compendium.visual_assets import reconcile
 from compendium.zone_artwork import (
+    SHRINE_MAP_BACKGROUND,
+    _shrine_map,
     _thumbnail,
     _zone_crop_box,
     publish_zone_thumbnails,
@@ -157,6 +159,22 @@ class ZoneArtworkTests(unittest.TestCase):
     def test_out_of_world_zone_bounds_fail_clearly(self):
         with self.assertRaisesRegex(ValueError, "outside world X bounds"):
             _zone_crop_box("far_away", (101, 10, 120, 20), WORLD_BOUNDS, (100, 100))
+
+    def test_shrine_map_stays_centred_on_a_shrine_near_the_world_edge(self):
+        # One pixel per yard, with each pixel's column in red and row in green.
+        source = Image.new("RGB", (200, 200))
+        for y in range(200):
+            for x in range(200):
+                source.putpixel((x, y), (x, y, 0))
+        bounds = {"min_x": 0, "max_x": 200, "min_z": 0, "max_z": 200}
+
+        shrine_map = _shrine_map("west_edge", 10, 100, source, bounds)
+
+        self.assertEqual((240, 135), shrine_map.size)
+        # The centre shows the shrine's spot: column 10, and row 99 because
+        # high game Z is at the top of the image.
+        self.assertEqual((10, 99, 0), shrine_map.getpixel((120, 67)))
+        self.assertEqual(SHRINE_MAP_BACKGROUND, shrine_map.getpixel((0, 67)))
 
 
 if __name__ == "__main__":

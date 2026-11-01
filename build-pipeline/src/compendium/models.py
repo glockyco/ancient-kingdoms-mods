@@ -1494,6 +1494,52 @@ class HouseData(BaseModel):
 
 
 # =============================================================================
+# Virtue Models
+# =============================================================================
+
+
+class VirtueRankData(BaseModel):
+    """One rank of a virtue from virtues.json. Rank 0 has no title."""
+
+    rank: int = Field(ge=0)
+    points: int = Field(ge=0)
+    title: str
+    effect: str = Field(min_length=1)
+
+
+class VirtueData(BaseModel):
+    """One virtue from virtues.json, in the game's order."""
+
+    id: str
+    name: str = Field(min_length=1)
+    summary: str = Field(min_length=1)
+    blessing_skill_id: str
+    ranks: list[VirtueRankData] = Field(min_length=1)
+
+
+class VirtuesExportData(BaseModel):
+    """The virtues and the rules they share, from virtues.json."""
+
+    rank_thresholds: list[int] = Field(min_length=1)
+    rank_zero_label: str = Field(min_length=1)
+    humility_multipliers: list[float] = Field(min_length=1)
+    escort_points: int = Field(gt=0)
+    return_points: int = Field(gt=0)
+    virtues: list[VirtueData] = Field(min_length=1)
+
+
+class VirtueShrineData(BaseModel):
+    """A shrine placement from virtue_shrines.json."""
+
+    id: str
+    virtue_id: str
+    name: str = Field(min_length=1)
+    zone_id: str
+    sub_zone_id: str | None = None
+    position: Position
+
+
+# =============================================================================
 # Scribing Models
 # =============================================================================
 

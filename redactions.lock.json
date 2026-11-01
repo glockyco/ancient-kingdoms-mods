@@ -22328,6 +22328,10 @@
         "npcs:zharvok"
       ]
     },
+    "npcs:compassion_escort": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "npcs:rhazek_drazhkar": {
       "mechanism": "cascade",
       "pass": 2,
@@ -23982,7 +23986,7 @@
     }
   },
   "snapshot": {
-    "game_version": "0.10.2.0",
+    "game_version": "0.10.2.1",
     "keys": "placement"
   },
   "suppressed_positions": {

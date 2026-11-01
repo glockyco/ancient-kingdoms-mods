@@ -6146,7 +6146,22 @@
     "Utils.cs:worldBosses": {
       "span": 0
     },
+    "VirtueEncounters.cs:EscortPoints": {
+      "span": 0
+    },
     "VirtueEncounters.cs:IsWorldPortalTrip": {
+      "span": 0
+    },
+    "VirtueEncounters.cs:ReturnPoints": {
+      "span": 0
+    },
+    "VirtueRules.cs:HumilityMultiplier": {
+      "span": 0
+    },
+    "VirtueRules.cs:Thresholds": {
+      "span": 0
+    },
+    "VirtueText.cs:Entries": {
       "span": 0
     },
     "WallTrap.cs:24-31": {

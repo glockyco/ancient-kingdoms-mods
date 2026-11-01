@@ -83,6 +83,13 @@ zone_ids = ["old_valorath"]
 # to 17 (UISkills.cs), professions start at slot 19, and veteran skills at slot
 # 30, so no player ever sees it. Its rows look like any other default passive.
 #
+# compassion_escort: the prefab the game copies for every stranded adventurer.
+# Each copy gets a generated name, the look of one of several NPCs, and its
+# level and Health from the dungeon it waits in (VirtueEscort.cs Initialize,
+# VirtueEscortStats.cs), so the prefab's own name, level and Health are values
+# no player meets. Its row looks like any other NPC published without a
+# placement.
+#
 # The class epic chains run through released zones and end in Old Valorath.
 # Each chain is named from its first step that needs Old Valorath content: a
 # kill of one of its monsters or one of its drops. Every later step is named
@@ -105,6 +112,7 @@ ids = [
     "the_royal_key_of_valorath",
     "valorath_royal_key",
     "new_skill_placeholder",
+    "compassion_escort",
     "valaarks_corrupted_seal",
     # Class epic chains from their first Old Valorath step.
     "11_a_road_for_the_living",

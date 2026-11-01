@@ -1,4 +1,4 @@
-"""Derive zone thumbnail artwork from the stitched world screenshot."""
+"""Derive zone thumbnails and shrine maps from the stitched world screenshot."""
 
 import json
 import math
@@ -22,6 +22,15 @@ ZONE_THUMBNAIL_MAX_EDGE = 512
 ZONE_THUMBNAIL_SOURCE_TYPE = "DerivedZoneMapCrop"
 ZONE_THUMBNAIL_SOURCE_FIELD = "screenshots.metadata.world_bounds"
 ZONE_THUMBNAIL_EXPORT_PATH = "screenshots/stitched/world.png"
+
+SHRINE_MAP_KIND = "map"
+# The window around a shrine, in yards: wide enough to show the way there.
+SHRINE_MAP_SIZE = (240.0, 135.0)
+SHRINE_MAP_MAX_EDGE = 960
+SHRINE_MAP_SOURCE_TYPE = "DerivedShrineMapCrop"
+# Where the map runs past the world's edge, the crop is padded in the map's
+# background so the shrine stays centred.
+SHRINE_MAP_BACKGROUND = (3, 6, 22)
 
 
 def _load_world_bounds(metadata_path: Path) -> dict[str, float]:
@@ -126,13 +135,10 @@ def _thumbnail(crop: Image.Image) -> Image.Image:
     return crop.resize(resized_size, Image.Resampling.LANCZOS)
 
 
-def publish_zone_thumbnails(
-    conn: sqlite3.Connection,
-    session_dir: Path,
-    export_root: Path,
-    static_dir: Path,
-) -> int:
-    """Publish one north-up thumbnail for each visible, bounded zone."""
+def _load_world(
+    session_dir: Path, export_root: Path
+) -> tuple[Image.Image, dict[str, float]]:
+    """The stitched world image with redacted zones blanked, and its world bounds."""
     screenshots_dir = export_root / "screenshots"
     metadata_path = screenshots_dir / "metadata.json"
     world_path = screenshots_dir / "stitched" / "world.png"
@@ -149,9 +155,20 @@ def publish_zone_thumbnails(
     with Image.open(world_path) as source_file:
         source = source_file.convert("RGB")
 
-    redacted = redacted_zone_ids()
-    excluded = load_excluded_zones(session_dir, redacted)
+    excluded = load_excluded_zones(session_dir, redacted_zone_ids())
     blank_excluded_zones(source, excluded, world_bounds, (0, 0, 0))
+    return source, world_bounds
+
+
+def publish_zone_thumbnails(
+    conn: sqlite3.Connection,
+    session_dir: Path,
+    export_root: Path,
+    static_dir: Path,
+) -> int:
+    """Publish one north-up thumbnail for each visible, bounded zone."""
+    source, world_bounds = _load_world(session_dir, export_root)
+    redacted = redacted_zone_ids()
 
     cursor = conn.cursor()
     rows = cursor.execute(
@@ -199,3 +216,78 @@ def publish_zone_thumbnails(
     conn.commit()
     console.print(f"  [green]OK[/green] Published {published_count} zone thumbnails")
     return published_count
+
+
+def _shrine_map(
+    shrine_id: str,
+    x: float,
+    y: float,
+    source: Image.Image,
+    world_bounds: dict[str, float],
+) -> Image.Image:
+    """A north-up map of the area around a shrine, centred on it."""
+    width, depth = SHRINE_MAP_SIZE
+    window = (x - width / 2, y - depth / 2, x + width / 2, y + depth / 2)
+    left, top, right, bottom = _zone_crop_box(
+        shrine_id, window, world_bounds, source.size
+    )
+
+    px_per_x = source.width / (world_bounds["max_x"] - world_bounds["min_x"])
+    px_per_z = source.height / (world_bounds["max_z"] - world_bounds["min_z"])
+    want_left = math.floor((window[0] - world_bounds["min_x"]) * px_per_x)
+    want_top = math.floor((world_bounds["max_z"] - window[3]) * px_per_z)
+    canvas = Image.new(
+        "RGB",
+        (math.ceil(width * px_per_x), math.ceil(depth * px_per_z)),
+        SHRINE_MAP_BACKGROUND,
+    )
+    canvas.paste(
+        source.crop((left, top, right, bottom)), (left - want_left, top - want_top)
+    )
+    canvas.thumbnail(
+        (SHRINE_MAP_MAX_EDGE, SHRINE_MAP_MAX_EDGE), Image.Resampling.LANCZOS
+    )
+    return canvas
+
+
+def publish_shrine_maps(
+    conn: sqlite3.Connection,
+    session_dir: Path,
+    export_root: Path,
+    static_dir: Path,
+) -> int:
+    """Publish a map of the surroundings of each shrine whose position is published."""
+    source, world_bounds = _load_world(session_dir, export_root)
+
+    cursor = conn.cursor()
+    rows = cursor.execute(
+        """
+        SELECT id, position_x, position_y FROM virtue_shrines
+        WHERE position_x IS NOT NULL AND position_y IS NOT NULL
+        ORDER BY id
+        """
+    ).fetchall()
+    for shrine_id, x, y in rows:
+        published = publish_image(
+            _shrine_map(shrine_id, float(x), float(y), source, world_bounds),
+            static_dir,
+            domain="virtue_shrine",
+            entity_id=shrine_id,
+            kind=SHRINE_MAP_KIND,
+            encoding=Encoding.PHOTO,
+        )
+        insert_asset(
+            cursor,
+            domain="virtue_shrine",
+            entity_id=shrine_id,
+            kind=SHRINE_MAP_KIND,
+            export_path=ZONE_THUMBNAIL_EXPORT_PATH,
+            asset=published,
+            source_field=ZONE_THUMBNAIL_SOURCE_FIELD,
+            source_type=SHRINE_MAP_SOURCE_TYPE,
+            source_name=shrine_id,
+        )
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Published {len(rows)} shrine maps")
+    return len(rows)

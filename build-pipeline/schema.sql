@@ -345,6 +345,62 @@ CREATE INDEX idx_houses_price ON houses(base_price);
 
 
 -- =============================================================================
+-- VIRTUES
+-- =============================================================================
+
+-- Rules every virtue shares.
+-- Source: server-scripts/VirtueText.cs:Entries — the rank 0 label.
+-- Source: server-scripts/VirtueEncounters.cs:EscortPoints,ReturnPoints — points per escort and per return.
+CREATE TABLE virtue_rules (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    rank_zero_label TEXT NOT NULL,
+    escort_points INTEGER NOT NULL CHECK (escort_points > 0),
+    return_points INTEGER NOT NULL CHECK (return_points > 0)
+);
+
+-- Source: server-scripts/VirtueRules.cs:Thresholds,HumilityMultiplier — the
+-- points a rank starts at and the Humility blessing's defense multiplier.
+CREATE TABLE virtue_rank_rules (
+    rank INTEGER PRIMARY KEY CHECK (rank >= 0),
+    points INTEGER NOT NULL CHECK (points >= 0),
+    humility_multiplier REAL NOT NULL CHECK (humility_multiplier > 0)
+);
+
+CREATE TABLE virtues (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    blessing_skill_id TEXT NOT NULL UNIQUE REFERENCES skills(id),
+    -- The game's VirtueKind order, which its shrine window and guide follow.
+    sort_order INTEGER NOT NULL UNIQUE
+);
+
+-- A rank's title is NULL at rank 0, which shows virtue_rules.rank_zero_label.
+CREATE TABLE virtue_ranks (
+    virtue_id TEXT NOT NULL REFERENCES virtues(id),
+    rank INTEGER NOT NULL REFERENCES virtue_rank_rules(rank),
+    title TEXT,
+    effect TEXT NOT NULL,
+    PRIMARY KEY (virtue_id, rank)
+);
+
+CREATE TABLE virtue_shrines (
+    id TEXT PRIMARY KEY,
+    virtue_id TEXT NOT NULL REFERENCES virtues(id),
+    name TEXT NOT NULL,
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
+    -- NULL where the zone's positions are suppressed.
+    position_x REAL,
+    position_y REAL,
+    position_z REAL
+);
+
+CREATE INDEX idx_virtue_shrines_zone ON virtue_shrines(zone_id);
+CREATE INDEX idx_virtue_shrines_virtue ON virtue_shrines(virtue_id);
+
+
+-- =============================================================================
 -- ITEMS
 -- =============================================================================
 
