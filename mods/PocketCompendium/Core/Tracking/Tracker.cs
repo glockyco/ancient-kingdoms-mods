@@ -212,30 +212,34 @@ public sealed class Tracker
 
         bool dead = placed.state == "DEAD";
         int health = placed.health.current;
+        bool hidden = placed.IsHidden();
         reading.Present = true;
         // Start fills the hover text outside batch mode, and applies the saved deadline.
         reading.Started = placed.basicInfo != null;
-        reading.Alive = !dead && health > 0 && !placed.IsHidden();
+        reading.Alive = !dead && health > 0 && !hidden;
         reading.Engaged = placed.aggroList.Count > 0;
         reading.Deadline = reading.Started ? placed.respawnTimeEnd : SavedDeadline(monster.Key);
         reading.SummonReady = placed.respawnSummonableReady;
 
-        NoteHostChanges(monster, reading, dead, health, now);
+        NoteHostChanges(monster, reading, dead, health, hidden, now);
         reading.LastRollFailed = monster.RollFailed;
         reading.KilledAt = monster.KilledAt;
         return SpawnResolver.Host(monster.Rules, reading, now);
     }
 
-    // A kill sets health to 0. A window despawn keeps it. A deadline that moves on while the
-    // monster stays dead is a failed roll. A renewal moves the deadline back to 0.
-    private static void NoteHostChanges(TrackedMonster monster, in HostReading reading, bool dead, int health, double now)
+    // A kill sets health to 0 and leaves a corpse. When a player first enters the zone, the game
+    // hides a monster whose saved deadline is still ahead, and puts off a chance spawn by one
+    // respawn time. Both set health to 0 without a corpse, so neither is a kill. A window despawn
+    // keeps the health. A deadline that moves on while the monster stays dead is a failed roll. A
+    // renewal moves the deadline back to 0.
+    private static void NoteHostChanges(TrackedMonster monster, in HostReading reading, bool dead, int health, bool hidden, double now)
     {
         if (reading.Alive)
         {
             monster.RollFailed = false;
             monster.KilledAt = null;
         }
-        else if (dead && health == 0 && monster.WasAlive)
+        else if (dead && health == 0 && monster.WasAlive && !hidden)
         {
             monster.KilledAt = now;
         }
@@ -246,7 +250,9 @@ public sealed class Tracker
 
         if (reading.Deadline < monster.LastDeadline) monster.RollFailed = false;
 
-        monster.WasAlive = reading.Alive;
+        // The state turns DEAD a frame after health reaches 0, so a dying monster still counts as
+        // alive until a refresh sees it dead.
+        monster.WasAlive = reading.Alive || (monster.WasAlive && !dead);
         monster.WasDead = dead;
         monster.LastDeadline = reading.Deadline;
     }
