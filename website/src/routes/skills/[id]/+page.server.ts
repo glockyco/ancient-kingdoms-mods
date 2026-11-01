@@ -33,6 +33,12 @@ import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { getSkillCategoryKey } from "$lib/utils/skill-category";
 import { skillLearningAtRank } from "$lib/acquisition/conditions";
 import type { Season } from "$lib/data/seasonal-events";
+import {
+  loadShrines,
+  loadVirtueRules,
+  loadVirtues,
+  type VirtueView,
+} from "$lib/queries/virtues.server";
 
 export const prerender = true;
 
@@ -45,6 +51,13 @@ export const entries: EntryGenerator = () => {
 export interface SkillDetailPageData {
   skill: SkillDetailView;
   season: Season | null;
+  /** The virtue whose shrines grant this skill as its blessing. */
+  virtue:
+    | (VirtueView & {
+        rankZeroLabel: string;
+        shrineZones: { id: string; name: string }[];
+      })
+    | null;
   gameTooltip: string;
   effectSummary: string;
   grantedByItems: SkillItemSource[];
@@ -471,6 +484,17 @@ export const load: PageServerLoad = async ({
     query<{ id: Season }>("SELECT id FROM seasons WHERE buff_skill_id = ?", [
       params.id,
     ])[0]?.id ?? null;
+  const grantingVirtue =
+    loadVirtues().find((v) => v.blessing_skill_id === params.id) ?? null;
+  const virtue = grantingVirtue
+    ? {
+        ...grantingVirtue,
+        rankZeroLabel: loadVirtueRules().rank_zero_label,
+        shrineZones: loadShrines()
+          .filter((shrine) => shrine.virtue_id === grantingVirtue.id)
+          .map((shrine) => ({ id: shrine.zone_id, name: shrine.zone_name })),
+      }
+    : null;
   // Source: server-scripts/EnviromentSystem.cs:CheckSpecialEvents — the hourly refresh interval is not the duration of the season's XP bonus.
   const effectSummary = formatSkillEffect({
     ...skillEffectInput(skill, casters),
@@ -503,6 +527,7 @@ export const load: PageServerLoad = async ({
   const description = skillDescription({
     name: skill.name,
     season,
+    virtue_name: grantingVirtue?.name ?? null,
     skill_type: skill.skill_type,
     tier: skill.tier,
     max_level: skill.max_level,
@@ -542,6 +567,7 @@ export const load: PageServerLoad = async ({
   return {
     skill,
     season,
+    virtue,
     // Source: server-scripts/Skills.cs:AddOrRefreshBuff — applying a categorized buff expires existing buffs of the same category.
     // Source: server-scripts/AreaBuffSkill.cs:Apply — a pet-cast area buff skips a target that already has a different buff of its category.
     categorySkills: skill.buff_category

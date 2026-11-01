@@ -1513,6 +1513,8 @@ export interface SkillGrantedByCounts {
 interface SkillDescriptionInput {
   name: string;
   season?: Season | null;
+  /** The virtue whose shrines grant this skill as its blessing. */
+  virtue_name?: string | null;
   skill_type: string;
   tier: number;
   max_level: number;
@@ -1670,6 +1672,9 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // Source: server-scripts/Player.cs:Start; server-scripts/EnviromentSystem.cs:CheckSpecialEvents — every online player receives the active season's buff.
   if (skill.season)
     return `${skill.effect_summary ?? "Double XP"}. Granted to every online player during ${seasonInSentence(skill.season)}.`;
+  // Source: server-scripts/Player.cs:BeginVirtueBlessing — a shrine grants its virtue's blessing for 3 hours online.
+  if (skill.virtue_name && skill.effect_summary)
+    return `${capitalizeFirst(skill.effect_summary)}. A Shrine of ${skill.virtue_name} grants it for 3 hours online.`;
   // Source: server-scripts/NecromancerDeathBloomSkill.cs:CorrectedTarget — another living Player or non-familiar Pet only.
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet — owned living combat pet, not a familiar or mercenary.
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — toggles the form buff.

@@ -34,7 +34,7 @@
 
 ## 7. Blessing skill pages
 
-- [ ] 7.1 Load the virtue for a Blessing skill page and render the "Granted by" card and the rank table, hiding the skill rank and the rank-learning link. Verify in a browser on all six Blessing pages.
+- [x] 7.1 Load the virtue for a Blessing skill page and render the "Granted by" card and the rank table, hiding the skill rank and the rank-learning link. Verify in a browser on all six Blessing pages.
 - [x] 7.2 Add the six Blessing summaries to `formatSkillEffect` and to the Pocket Compendium port, and regenerate the skill-effect parity corpus. Verify that `dotnet test tests/PocketCompendium.Tests` and the website tests pass.
 
 ## 8. Virtues on other pages

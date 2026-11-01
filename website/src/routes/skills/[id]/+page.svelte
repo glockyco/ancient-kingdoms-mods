@@ -3,6 +3,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import { seasonHref, seasonInSentence } from "$lib/data/seasonal-events";
+  import { virtueHref } from "$lib/virtues/display";
   import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
@@ -91,8 +92,10 @@
     hasteCooldownCasters,
   } = $derived(facts);
   const scalingColumns = $derived(getScalingColumns(skill, scrollOnly));
+  // A season or a virtue grants the buff: there are no ranks to learn or costs to pay.
+  const granted = $derived(Boolean(data.season || data.virtue));
   const showLevelScaling = $derived(
-    !data.season &&
+    !granted &&
       getShowLevelScaling(skill, scalingColumns, hasScrollMasteryScaling),
   );
   // Source: server-scripts/AreaBuffSkill.cs:Apply — a pet-cast area buff skips a target that already has a different buff of its category.
@@ -105,7 +108,7 @@
     mechanicsSections({ skill, spec: data.mechanicsSpec, facts }),
   );
   const showCostTiming = $derived(
-    !data.season &&
+    !granted &&
       Boolean(
         scrollOnly ||
         skill.is_bard_song ||
@@ -129,6 +132,7 @@
   const sections = $derived(
     [
       { id: "granted-to", label: "Granted to", show: Boolean(data.season) },
+      { id: "granted-by", label: "Granted by", show: Boolean(data.virtue) },
       {
         id: "appearance",
         label: "Appearance",
@@ -142,7 +146,7 @@
       {
         id: "requirements",
         label: "Requirements",
-        show: !data.season && hasRequirements,
+        show: !granted && hasRequirements,
       },
       {
         id: "cost-timing",
@@ -286,7 +290,7 @@
           {data.skillCategories.join(" / ")}
         </span>
       {/if}
-      {#if !data.season}
+      {#if !granted}
         <span>Max Rank {skill.max_level}</span>
         <a
           class="underline underline-offset-4 hover:text-foreground"
@@ -322,6 +326,61 @@
           href={seasonHref(data.season)}
           class="inline-block text-blue-600 hover:underline dark:text-blue-400"
           >How seasonal events work</a
+        >
+      </Card.Content>
+    </Card.Root>
+  {/if}
+  {#if data.virtue}
+    {@const virtue = data.virtue}
+    <Card.Root id="granted-by" class="bg-muted/30">
+      <Card.Header>
+        <Card.Title level={2}>Granted by</Card.Title>
+      </Card.Header>
+      <Card.Content class="space-y-3 text-sm">
+        <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing,TickVirtuesServer — a shrine grants the blessing for 3 hours online. -->
+        <p class="text-pretty">
+          A Shrine of {virtue.name} grants this blessing, in
+          {#each virtue.shrineZones as zone, index (zone.id)}{index === 0
+              ? ""
+              : index === virtue.shrineZones.length - 1
+                ? " and "
+                : ", "}<a
+              href="/zones/{zone.id}"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >{zone.name}</a
+            >{/each}. It lasts 3 hours online, and its strength follows your
+          rank in {virtue.name}.
+        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="text-muted-foreground">
+              <tr>
+                <th class="py-1 pr-4 font-medium">Rank</th>
+                <th class="py-1 pr-4 font-medium">Title</th>
+                <th class="py-1 pr-4 font-medium">Points</th>
+                <th class="py-1 font-medium">Effect</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each virtue.ranks as rank (rank.rank)}
+                <tr class="border-t border-border/60">
+                  <td class="py-1.5 pr-4 tabular-nums">{rank.rank}</td>
+                  <td class="py-1.5 pr-4 font-medium"
+                    >{rank.title ?? virtue.rankZeroLabel}</td
+                  >
+                  <td class="py-1.5 pr-4 tabular-nums"
+                    >{formatNumber(rank.points)}</td
+                  >
+                  <td class="py-1.5 text-pretty">{rank.effect}</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+        <a
+          href={virtueHref(virtue.id)}
+          class="inline-block text-blue-600 hover:underline dark:text-blue-400"
+          >How {virtue.name} works</a
         >
       </Card.Content>
     </Card.Root>
@@ -395,7 +454,7 @@
               </dl>
             </Tabs.Content>
             <Tabs.Content value="tooltip">
-              {#if !data.season}
+              {#if !granted}
                 <p class="mb-3 text-sm text-muted-foreground">
                   Rank 1. Base values before equipment and attribute bonuses.
                 </p>
@@ -430,7 +489,7 @@
             </div>
           </dl>
         {:else}
-          {#if !data.season}
+          {#if !granted}
             <p class="mb-3 text-sm text-muted-foreground">
               Rank 1. Base values before equipment and attribute bonuses.
             </p>
@@ -445,7 +504,7 @@
   {/if}
 
   <!-- Requirements -->
-  {#if !data.season && hasRequirements}
+  {#if !granted && hasRequirements}
     <Card.Root id="requirements" class="bg-muted/30">
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
