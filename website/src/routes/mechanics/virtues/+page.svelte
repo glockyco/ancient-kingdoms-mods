@@ -491,7 +491,7 @@
 
   <header class="space-y-3">
     <h1 class="text-4xl font-bold">Virtues</h1>
-    <p class="max-w-3xl text-lg text-pretty text-muted-foreground">
+    <p class="text-lg text-pretty text-muted-foreground">
       You earn a virtue's points while its blessing is active. Each rank brings
       a title and a stronger blessing.
     </p>
