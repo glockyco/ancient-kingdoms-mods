@@ -752,41 +752,6 @@
     </section>
   {/if}
 
-  {#if data.escort}
-    <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <Landmark class="h-5 w-5 text-pink-500" />
-        Stranded Adventurer
-      </h2>
-      <div class="bg-muted/30 rounded-md border p-4 space-y-2">
-        <!-- Source: server-scripts/VirtueEncounters.cs:TrySpawnEscort,TryEscortPosition — a random safe spot at least 24 yd from where you came in. -->
-        <p class="text-pretty">
-          If your <a
-            href={virtueHref("compassion")}
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-            >Compassion</a
-          >
-          blessing is active when you enter {data.zone.name}, an adventurer may
-          be stranded somewhere inside, at least 24&nbsp;yd from where you came
-          in. They are level {data.escort.level} with {formatNumber(
-            data.escort.health,
-          )} Health.
-        </p>
-        <!-- Source: server-scripts/VirtueEscort.cs:OnInteractServer,ServerTick — 15 minutes from talking to them, and a 35 yd leash. -->
-        <p class="text-pretty">
-          Talk to them to start the escort. From then on, monsters can attack
-          them, and you have 15&nbsp;minutes to lead them out. The escort ends
-          if they die or you get more than 35&nbsp;yd away from them.
-        </p>
-        <a
-          href={virtueHref("compassion")}
-          class="inline-block text-blue-600 dark:text-blue-400 hover:underline"
-          >How escorts work</a
-        >
-      </div>
-    </section>
-  {/if}
-
   <!-- Critters Section -->
   {#if critters.length > 0}
     <section>
@@ -830,6 +795,41 @@
         zebraStripe={true}
         class="bg-muted/30"
       />
+    </section>
+  {/if}
+
+  {#if data.escort}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Landmark class="h-5 w-5 text-pink-500" />
+        Stranded Adventurer
+      </h2>
+      <div class="bg-muted/30 rounded-md border p-4 space-y-2">
+        <!-- Source: server-scripts/VirtueEncounters.cs:TrySpawnEscort,TryEscortPosition — a random safe spot at least 24 yd from where you came in. -->
+        <p class="text-pretty">
+          If your <a
+            href={virtueHref("compassion")}
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Compassion</a
+          >
+          blessing is active when you enter {data.zone.name}, an adventurer may
+          be stranded somewhere inside, at least 24&nbsp;yd from where you came
+          in. They are level {data.escort.level} with {formatNumber(
+            data.escort.health,
+          )} Health.
+        </p>
+        <!-- Source: server-scripts/VirtueEscort.cs:OnInteractServer,ServerTick — 15 minutes from talking to them, and a 35 yd leash. -->
+        <p class="text-pretty">
+          Talk to them to start the escort. From then on, monsters can attack
+          them, and you have 15&nbsp;minutes to lead them out. The escort ends
+          if they die or you get more than 35&nbsp;yd away from them.
+        </p>
+        <a
+          href={virtueHref("compassion")}
+          class="inline-block text-blue-600 dark:text-blue-400 hover:underline"
+          >How escorts work</a
+        >
+      </div>
     </section>
   {/if}
 
