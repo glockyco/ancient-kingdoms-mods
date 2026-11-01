@@ -321,11 +321,14 @@ public sealed class StepperView
         _value.Color = enabled ? Theme.Text : Theme.Dim;
     }
 
-    /// <summary>Updates the hover look and reports a click: -1 to lower, 1 to raise, 0 for none.</summary>
+    /// <summary>
+    /// Updates the hover look and reports a click: -1 to lower, 1 to raise, 0 for none. A stepper
+    /// shown as disabled takes no clicks.
+    /// </summary>
     public int Update()
     {
-        if (_down.Update()) return -1;
-        return _up.Update() ? 1 : 0;
+        if (_down.Update(_shownEnabled)) return -1;
+        return _up.Update(_shownEnabled) ? 1 : 0;
     }
 
     // Minus and plus are drawn as bars, because not every game font has the minus sign.
@@ -359,12 +362,13 @@ public sealed class StepperView
             _bars = new[] { across, down };
         }
 
-        public bool Update()
+        public bool Update(bool enabled)
         {
-            bool hovered = Pointer.Over(_fill.rectTransform);
+            bool hovered = enabled && Pointer.Over(_fill.rectTransform);
             _fill.color = hovered ? FillHover : Fill;
-            foreach (var bar in _bars) bar.color = hovered ? Theme.Text : Theme.Muted;
-            return Pointer.Clicked(_fill.rectTransform);
+            var barColor = !enabled ? Theme.Dim : hovered ? Theme.Text : Theme.Muted;
+            foreach (var bar in _bars) bar.color = barColor;
+            return enabled && Pointer.Clicked(_fill.rectTransform);
         }
     }
 }
