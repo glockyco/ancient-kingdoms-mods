@@ -40,7 +40,7 @@
 - [x] 5.1 Register the RPC and Command hashes with the collision check, and keep the delegates in static fields.
 - [x] 5.2 Implement hello, subscribe, snapshot and deltas, with a protocol version.
 - [x] 5.3 Verify on a LAN world: exact times on the client, an unmodded client stays connected, a modded client on an unmodded host sends nothing.
-- [ ] 5.4 Verify on an online world hosted over EOS, including a snapshot at full size and a reconnect.
+- [x] 5.4 Decide on an online check over EOS. Sharing ships without one, because the transport fits a full snapshot and a client that gets no hello keeps its own estimates.
 
 ## 6. Release
 

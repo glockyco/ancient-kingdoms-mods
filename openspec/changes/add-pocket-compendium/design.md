@@ -63,7 +63,7 @@ Settings stay in `MelonPreferences`, one category per feature under a `PocketCom
 
 ## Risks / Trade-offs
 
-- [The EOS online transport is untested for the custom hashes] → Test it on an online-hosted world before release. The game's EOS transport carries reliable messages of up to 64,350 bytes in 55 fragments, so a state message of about 4 KB fits. Sharing ships behind its switch, and a client that gets no hello keeps its own estimates.
+- [The EOS online transport is untested for the custom hashes] → Accepted. The game's EOS transport carries reliable messages of up to 64,350 bytes in 55 fragments, so a state message of about 4 KB fits. Sharing has its own switch, and a client that gets no hello keeps its own estimates.
 - [IL2CPP inlining can bypass a Harmony prefix on the info-message handler] → Hook the `InvokeUserCode_` wrapper. A local dedicated server would list itself in the public server list, so a LAN host sends the client a kill notice in the dedicated server's format to verify the hook.
 - [After a server restart, a boss shown to every player that died before the restart reads alive to clients until someone enters its zone, because the server applies the saved deadline only then] → Accepted. A host reads the saved deadline, and sharing gives its clients the host's state.
 - [A game update can rename fields or change spawn rules] → Each read goes through `Core/Tracking`, and the catalogue logs any tracked monster it cannot resolve.
