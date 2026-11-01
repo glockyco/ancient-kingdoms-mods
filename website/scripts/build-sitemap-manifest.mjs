@@ -684,6 +684,9 @@ export async function computeHashes() {
       catalog: fileHash("src/lib/data/achievements/catalog.ts"),
       relationships: fileHash("src/lib/data/achievements/relationships.ts"),
     });
+    addHash("/mods", {
+      source: fileHash("src/routes/mods/+page.svelte"),
+    });
     // These pages have no reliable content date because they also depend on live version/map assets.
     return { hashes, bareUrls: [`${SITE_URL}/`, `${SITE_URL}/map`] };
   } finally {
@@ -944,6 +947,24 @@ async function addMechanicsHashes(db, addHash, context) {
           tiers: tableRows(db, "reputation_tiers"),
           factions: tableRows(db, "factions"),
           notableNpcs: tableRows(db, "npcs", "WHERE is_notable = 1"),
+        };
+        break;
+      case "virtues":
+        rows = {
+          rules: tableRows(db, "virtue_rules"),
+          rankRules: tableRows(db, "virtue_rank_rules"),
+          virtues: tableRows(db, "virtues"),
+          ranks: tableRows(db, "virtue_ranks"),
+          shrines: tableRows(db, "virtue_shrines"),
+          shrineMaps: tableRows(
+            db,
+            "visual_assets",
+            "WHERE domain = 'virtue_shrine'",
+          ),
+          progression: tableRows(db, "progression_rules"),
+          monsters: tableRows(db, "monsters"),
+          spawns: tableRows(db, "monster_spawns"),
+          zones: tableRows(db, "zones"),
         };
         break;
       default:
