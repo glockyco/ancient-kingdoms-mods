@@ -15,12 +15,17 @@ The boss list SHALL show monsters in the current zone first, then watched monste
 
 ### Requirement: List rows stay short
 
-Each list row SHALL show the portrait, the name, the level in the game's level colour, the state and, for monsters in the current zone, the distance in yd with an arrow to the spawn point or altar. Kill times, roll results and rules SHALL appear only in the row's tooltip. A name too long for its row SHALL end in an ellipsis, and the tooltip SHALL give it in full.
+Each list row SHALL show the portrait, the name, the level in the game's level colour, the state and, for monsters in the current zone, the distance in yd with an arrow. The arrow and distance SHALL lead to a monster that is up where the game shows it, and otherwise to its spawn point or altar. Kill times, roll results and rules SHALL appear only in the row's tooltip. A name too long for its row SHALL end in an ellipsis, and the tooltip SHALL give it in full.
 
 #### Scenario: Long name
 
 - **WHEN** a row's name is wider than the space before its state
 - **THEN** the name ends in an ellipsis and does not overlap the state
+
+#### Scenario: A boss that left its spawn point
+
+- **WHEN** Forsaken Skeleton is in combat 15 yd west of the player, far from its spawn point in the east
+- **THEN** its row's arrow points west and says 15 yd
 
 ### Requirement: Level colours follow the game
 

@@ -120,11 +120,7 @@ public sealed class WorldMarkersFeature : Feature
 
     private void ShowArrow(TrackedMonster monster, Camera camera, Vector2 player, Vector2 screen, int version)
     {
-        // A monster that is up may have left its spawn point, so the arrow follows it while the
-        // game shows it here.
-        Vector2 where = monster.Where;
-        var live = monster.Placed != null ? monster.Placed : monster.Live;
-        if (live != null && live.gameObject.activeInHierarchy) where = live.transform.position;
+        Vector2 where = monster.Position;
 
         Vector3 point = camera.WorldToScreenPoint(new Vector3(where.x, where.y, 0f));
         bool behind = point.z < 0f;

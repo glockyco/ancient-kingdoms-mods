@@ -16,7 +16,7 @@ public sealed class BossListSettings
             "Compact shows only portraits and times. Its header appears when you hover over it.",
             (ListStyle.List, "List"), (ListStyle.Compact, "Compact"));
         Direction = page.Toggle("Direction", true, "Direction",
-            "Shows the distance and direction to the spawn point or altar of monsters in your zone.");
+            "Shows the distance and direction to monsters in your zone, or to where they spawn.");
 
         page.Section("Show");
         Tiers = page.Chips("Tiers", null,

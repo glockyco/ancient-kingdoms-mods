@@ -47,6 +47,20 @@ public sealed class TrackedMonster
     /// <summary>The spawn point, the altar, or the monster whose death spawns it.</summary>
     public Vector2 Where { get; }
 
+    /// <summary>
+    /// Where the monster is now: a monster that is up and that the game shows nearby may have left
+    /// its spawn point, so this follows it. Otherwise <see cref="Where"/>.
+    /// </summary>
+    public Vector2 Position
+    {
+        get
+        {
+            if (!State.IsUp) return Where;
+            var live = Placed != null ? Placed : Live;
+            return live != null && live.gameObject.activeInHierarchy ? live.transform.position : Where;
+        }
+    }
+
     /// <summary>The item that starts the altar event, for altar spawns.</summary>
     public ScriptableItem AltarItem { get; }
 
