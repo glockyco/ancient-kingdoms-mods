@@ -29,13 +29,31 @@ public sealed class BestiaryPagesFeature : Feature
         SkillsButton = Settings.Toggle(
             "SkillsButton",
             true,
-            "Skills button",
-            "Shows the Skills button and side panel on Bestiary pages.");
+            "Skills panel",
+            "Shows the monster's skills beside its page, with what each does, its cast time and cooldown. Hover over a skill for its full mechanics.");
+        DropChances = Settings.Toggle(
+            "DropChances",
+            true,
+            "Drop chances",
+            "Shows each item's chance to drop when you kill the monster. A Fatecharm in your main inventory raises the chances shown.");
+        UndiscoveredMonsters = Settings.Toggle(
+            "UndiscoveredMonsters",
+            true,
+            "Undiscovered monsters",
+            "Shows the name, level, zone, stats and lore of monsters you haven't discovered yet, where the game shows ???.");
+        UndiscoveredDrops = Settings.Toggle(
+            "UndiscoveredDrops",
+            true,
+            "Undiscovered drops",
+            "Lets you hover over drops you haven't found yet for their tooltip, where the game shows only a black silhouette.");
         _skillsOpen = Settings.Stored("SkillsWindowOpen", true);
         _instance = this;
     }
 
     public ToggleSetting SkillsButton { get; }
+    public ToggleSetting DropChances { get; }
+    public ToggleSetting UndiscoveredMonsters { get; }
+    public ToggleSetting UndiscoveredDrops { get; }
 
     private readonly MelonLoader.MelonPreferences_Entry<bool> _skillsOpen;
 
@@ -57,6 +75,10 @@ public sealed class BestiaryPagesFeature : Feature
     internal static bool Active => _instance != null && _instance.Running && !_instance.Failed;
 
     internal static bool ShowSkillsButton => _instance != null && _instance.SkillsButton.Value;
+
+    internal static bool ShowDropChances => _instance == null || _instance.DropChances.Value;
+
+    internal static bool ShowUndiscoveredDrops => _instance == null || _instance.UndiscoveredDrops.Value;
 
     protected internal override void Enable()
     {
@@ -82,9 +104,20 @@ public sealed class BestiaryPagesFeature : Feature
         GamepadLootNavigation.Update();
     }
 
-    /// <summary>Whether Pocket Compendium draws this monster's page, rather than the game.</summary>
+    /// <summary>
+    /// Whether Pocket Compendium draws this monster's page, rather than the game. A monster the
+    /// player has not discovered keeps the game's ??? page while Undiscovered monsters is off.
+    /// </summary>
     internal static bool Draws(Monster monster) =>
-        Active && monster != null && !FailedMonsters.Contains(monster.nameEntity ?? string.Empty);
+        Active && monster != null && !FailedMonsters.Contains(monster.nameEntity ?? string.Empty) &&
+        (_instance.UndiscoveredMonsters.Value || Discovered(monster));
+
+    // Source: UIBestiaryDetail.cs:91. The game shows ??? until the monster has a Bestiary entry.
+    private static bool Discovered(Monster monster)
+    {
+        var player = Player.localPlayer;
+        return player != null && player.bossesKilled.ContainsKey(monster.nameEntity);
+    }
 
     internal static void ReportPageFailure(Monster monster, Exception ex)
     {

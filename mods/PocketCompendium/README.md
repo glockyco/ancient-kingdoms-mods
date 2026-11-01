@@ -1,6 +1,6 @@
 # Pocket Compendium
 
-Pocket Compendium is a MelonLoader mod for Ancient Kingdoms. It shows when bosses, elites, and fabled monsters spawn and where to find them. It also opens the full Bestiary page of any monster, even one you haven't met yet.
+Pocket Compendium is a MelonLoader mod for Ancient Kingdoms. It shows when bosses, elites, and fabled monsters spawn and where to find them. It also opens the full Bestiary page of any monster, even one you haven't discovered yet.
 
 The mod only displays information. It doesn't change combat, loot, or spawns.
 
@@ -32,7 +32,7 @@ The list shows the bosses, elites, and fabled monsters in your current zone, plu
 | An item and Altar | It only appears during an altar event, which you start with that item. |
 | Eye | You've seen it alive on this server, but its timer is unknown. A crossed-out eye means you haven't seen it there yet. |
 | `~` before a time | The time is an estimate. |
-| ??? and a silhouette | You haven't met it yet. |
+| ??? and a silhouette | You haven't discovered it yet. |
 | Skull before the level | It's more than 10 levels above you. |
 
 Click a row to watch that monster. Watched monsters stay in the list in every zone, have a gold corner, and trigger an alert when they spawn. Shift-click a row to open the monster's Bestiary page. The grid button at the top of the list switches to compact tiles.
@@ -57,7 +57,7 @@ When a watched monster spawns, the game announces it on screen and in chat, for 
 
 ## Bestiary
 
-Every Bestiary page shows the monster's stats, lore, and drops, including monsters you haven't met yet. Hover over a drop to see the item's full tooltip. Dead monsters show their respawn timer on their portrait and on their page. To open a monster's page from the world, hold Alt and click the monster.
+Every Bestiary page shows the monster's stats, lore, and drops, including monsters you haven't discovered yet. Hover over a drop to see the item's full tooltip. Dead monsters show their respawn timer on their portrait and on their page. To open a monster's page from the world, hold Alt and click the monster.
 
 Beside the page, the Skills panel sums up the damage the monster deals and its threats, then has a card for each special skill, in the order the boss skills panel shows them in a fight. Each card gives the skill's cast time, cooldown and what it does. Hover over a card for its full mechanics. If you close the panel, it stays closed until you click **Skills** below the page. Drag its frame to move it.
 

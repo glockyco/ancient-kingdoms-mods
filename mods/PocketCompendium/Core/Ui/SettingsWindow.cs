@@ -20,7 +20,8 @@ public sealed class SettingsWindow
     private const float NavItemHeight = 34f;
     private const float FooterHeight = 54f;
     private const float Pad = 20f;
-    private const float LabelWidth = 150f;
+    // Fits "Undiscovered monsters", the longest switch name.
+    private const float LabelWidth = 165f;
     private const float ControlHeight = 26f;
     private const float HelpGap = 5f;
 
@@ -391,6 +392,8 @@ public sealed class SettingsWindow
         label.Text.enableWordWrapping = true;
         label.Text.overflowMode = Il2CppTMPro.TextOverflowModes.Overflow;
         label.Text.alignment = Il2CppTMPro.TextAlignmentOptions.TopLeft;
+        // No line of a summary, help or note ends with one word alone.
+        text = PocketCompendium.Core.Text.Wrapping.KeepLastWordsTogether(text);
         label.Value = text;
         float height = label.Text.GetPreferredValues(text, width, 0f).y;
         HudFactory.TopLeft(label.Rect, x, y, width, height);

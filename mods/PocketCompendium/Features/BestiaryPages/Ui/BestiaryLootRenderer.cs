@@ -26,16 +26,18 @@ internal static class BestiaryLootRenderer
     internal static void Reveal(UIBestiaryDetail detail, Monster monster)
     {
         // Item tooltips depend on the monster, the language, and the player's level and class
-        // (requirement colors), and the chances on the Fatecharms in the main inventory, so the
-        // slots are rebuilt only when one of those changes.
+        // (requirement colors), the chances on the Fatecharms in the main inventory, and the marks
+        // on two switches, so the slots are rebuilt only when one of those changes.
         var player = Player.localPlayer;
+        bool chances = BestiaryPagesFeature.ShowDropChances;
+        bool undiscovered = BestiaryPagesFeature.ShowUndiscoveredDrops;
         var key = EntityNameLocalization.LocaleCode + "|" +
                   (player != null ? player.level.current + "|" + player.className : "-") + "|" +
-                  CarriedFatecharms(player);
+                  CarriedFatecharms(player) + "|" + chances + "|" + undiscovered;
         if (monster == _renderedMonster && key == _renderedFor)
             return;
 
-        var drops = BuildDisplayItems(monster);
+        var drops = BuildDisplayItems(monster, chances);
         var slots = SlotsFor(detail, drops.Count);
         var capacity = ApplyLayout(detail, drops.Count);
 
@@ -45,7 +47,8 @@ internal static class BestiaryLootRenderer
         {
             if (rendered >= capacity || rendered >= slots.Count)
                 break;
-            RenderSlot(slots[rendered], drop.Item);
+            // A drop not found yet keeps its chance as the game's black silhouette.
+            RenderSlot(slots[rendered], drop.Item, hidden: !undiscovered && !drop.Found);
             DropMarks.Apply(slots[rendered], drop.Chance, drop.Fatecharm, drop.Armed, drop.Found);
             Shown.Add(slots[rendered]);
             rendered++;
@@ -85,16 +88,17 @@ internal static class BestiaryLootRenderer
         public bool Armed;
     }
 
-    private static List<ShownDrop> BuildDisplayItems(Monster monster)
+    private static List<ShownDrop> BuildDisplayItems(Monster monster, bool chances)
     {
-        // One slot per item: a chance of at least one copy belongs to the item, not to an entry.
+        // One slot per item while chances show: a chance of at least one copy belongs to the
+        // item, not to an entry. Without chances, every entry in the game's order.
         var items = new List<ScriptableItem>();
         var seen = new HashSet<string>();
         if (monster.dropChances != null && monster.dropChances.Count > 0)
         {
             foreach (var drop in monster.dropChances)
             {
-                if (drop?.item != null && seen.Add(drop.item.name))
+                if (drop?.item != null && (!chances || seen.Add(drop.item.name)))
                     items.Add(drop.item);
             }
         }
@@ -114,7 +118,7 @@ internal static class BestiaryLootRenderer
 
             var shown = new ShownDrop { Item = item, Found = IsFound(monster, item.data.nameItem) };
             // Altar variants replace the normal reward by condition and are not in the table.
-            if (index < tableItems)
+            if (chances && index < tableItems)
             {
                 var id = DropTableReader.Id(items[index]);
                 var needed = new HashSet<string> { id };
@@ -293,7 +297,7 @@ internal static class BestiaryLootRenderer
     private static GridLayoutGroup Grid(UIBestiaryDetail detail) =>
         detail?.loot0 != null ? detail.loot0.transform.parent.GetComponent<GridLayoutGroup>() : null;
 
-    private static void RenderSlot(UIBestiaryLoot slot, Item item)
+    private static void RenderSlot(UIBestiaryLoot slot, Item item, bool hidden)
     {
         if (slot == null)
             return;
@@ -303,7 +307,8 @@ internal static class BestiaryLootRenderer
         if (slot.imageItem != null)
         {
             slot.imageItem.sprite = item.image;
-            slot.imageItem.color = Color.white;
+            // Source: UIBestiaryDetail.cs:159-163. The game's look for a drop not found yet.
+            slot.imageItem.color = hidden ? Color.black : Color.white;
         }
 
         if (slot.background != null)
@@ -311,10 +316,10 @@ internal static class BestiaryLootRenderer
 
         if (slot.tooltip != null)
         {
-            slot.tooltip.enabled = true;
+            slot.tooltip.enabled = !hidden;
             // Same text as the game's page shows for a discovered drop.
             var durability = "<color=#DA4ADC>" + GameText.FullDurability() + "</color>";
-            slot.tooltip.text = (item.ToolTip(false, true) ?? string.Empty).Replace(DurabilityToken, durability);
+            slot.tooltip.text = hidden ? string.Empty : (item.ToolTip(false, true) ?? string.Empty).Replace(DurabilityToken, durability);
         }
     }
 
