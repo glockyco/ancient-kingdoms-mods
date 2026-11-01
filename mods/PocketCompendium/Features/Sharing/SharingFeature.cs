@@ -57,7 +57,6 @@ public sealed class SharingFeature : Feature
     public SharingFeature()
         : base("Sharing", "Sharing", "Shares exact boss times between players who run Pocket Compendium, in a world one of them hosts.")
     {
-        Settings.Note("A host with the mod sends its exact times to joining players with the mod. Players without it notice nothing, and nothing goes through chat.");
     }
 
     public override Sprite Icon => Icons.Users;

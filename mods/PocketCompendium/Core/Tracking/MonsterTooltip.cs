@@ -15,6 +15,9 @@ internal static class MonsterTooltip
 {
     private static readonly StringBuilder Text = new();
 
+    // A half-height blank line between the header, the rule, the facts and the hint.
+    private const string SectionGap = "\n<size=50%> </size>";
+
     /// <param name="named">False for an undiscovered monster drawn as a silhouette.</param>
     /// <param name="distance">The distance to the spawn point in yd, for monsters in the player's zone.</param>
     public static string Build(TrackedMonster monster, double now, bool named, bool watched, float? distance, Vector2 direction)
@@ -30,10 +33,12 @@ internal static class MonsterTooltip
         Text.Append("<size=90%><color=#A3B0BF>").Append(TierWord(monster.Tier)).Append(" · ")
             .Append(GameText.Level(monster.Level));
         if (!string.IsNullOrEmpty(zone)) Text.Append(" · ").Append(zone);
-        Text.Append("</color></size>\n");
+        Text.Append("</color></size>").Append(SectionGap);
 
         AppendRule(monster);
         AppendState(monster, now, zone);
+
+        int facts = Text.Length;
         AppendSource(state, now);
 
         if (distance.HasValue)
@@ -42,8 +47,9 @@ internal static class MonsterTooltip
 
         int kills = Kills(monster.Key);
         if (kills > 0) Text.Append("\n<color=#A3B0BF>Your kills</color> ").Append(kills);
+        if (Text.Length > facts) Text.Insert(facts, SectionGap);
 
-        Text.Append("\n<size=90%><color=#6B7684>")
+        Text.Append(SectionGap).Append("\n<size=90%><color=#6B7684>")
             .Append(watched ? "Click to stop watching." : "Click to watch.")
             .Append(" Shift-click opens the Bestiary.</color></size>");
         return Text.ToString();

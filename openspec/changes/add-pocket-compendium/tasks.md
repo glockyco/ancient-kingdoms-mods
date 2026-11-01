@@ -33,7 +33,7 @@
 - [x] 4.5 Map pins with time tags, glow for monsters that are up, and tooltips on hover.
 - [x] 4.6 Bestiary grid countdown and the "Respawns in" plate on the split of the page. The countdown draws its own objects from its update, so the page keeps one patch, the full pages'.
 - [x] 4.7 Respawn alerts for watched monsters through `Player.ShowImportantMessage`.
-- [ ] 4.8 Capture each surface in game and compare with the mood board sketches, including Chinese and Japanese names.
+- [x] 4.8 Capture each surface in game and compare with the mood board sketches, including Chinese and Japanese names.
 
 ## 5. Sharing
 

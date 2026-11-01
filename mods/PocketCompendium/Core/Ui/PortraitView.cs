@@ -39,13 +39,16 @@ public sealed class PortraitView
         HudFactory.Stretch(_sweep, new Vector2(border, border), new Vector2(-border, -border));
 
         // A gold diamond with a dark edge over the top-right corner, like the compact tiles' mark.
+        // Its center sits half its reach inside the corner, so in a grid of tiles it stops short
+        // of the tile above and the tile beside.
         float cornerSize = Mathf.Round(size * 0.22f);
+        float inset = (cornerSize + 2f) * 0.7071f * 0.5f;
         var edge = HudFactory.Box("watched", Rect, Color.black);
         _corner = edge.rectTransform;
         _corner.anchorMin = _corner.anchorMax = new Vector2(1f, 1f);
         _corner.pivot = new Vector2(0.5f, 0.5f);
         _corner.sizeDelta = new Vector2(cornerSize + 2f, cornerSize + 2f);
-        _corner.anchoredPosition = new Vector2(-1f, -1f);
+        _corner.anchoredPosition = new Vector2(-inset, -inset);
         _corner.localRotation = Quaternion.Euler(0f, 0f, 45f);
         var gold = HudFactory.Box("gold", _corner, Theme.Golden);
         HudFactory.Stretch(gold, Vector2.one, -Vector2.one);
