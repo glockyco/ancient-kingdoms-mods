@@ -18,7 +18,7 @@ public sealed class BossListFeature : Feature
     private bool _settingsChanged;
 
     public BossListFeature()
-        : base("BossList", "Boss list", "Lists the bosses, elites and fabled monsters of your zone and the ones you watch, with when each spawns.")
+        : base("BossList", "Boss list", "Lists the bosses, elites and fabled monsters in your zone, plus the ones you watch, and when they spawn.")
     {
         _settings = new BossListSettings(Settings);
         Settings.Changed += () => _settingsChanged = true;

@@ -12,7 +12,7 @@ public sealed class BossListSettings
     public BossListSettings(SettingsPage page)
     {
         Style = page.Choice("Style", ListStyle.List, "Style",
-            "Compact shows portraits with times, and its header while you point at it.",
+            "Compact shows only portraits and times. Its header appears when you hover over it.",
             (ListStyle.List, "List"), (ListStyle.Compact, "Compact"));
 
         page.Section("Show");
@@ -21,23 +21,23 @@ public sealed class BossListSettings
             ("Elites", true, "Elites", () => GameAccess.TierColor(Tier.Elite)),
             ("Fabled", true, "Fabled", () => GameAccess.TierColor(Tier.Fabled)));
         Levels = page.Choice("Levels", LevelFilter.All, "Levels",
-            "Not trivial hides monsters the game greys out. Near my level hides those more than 10 levels from yours.",
+            "Not trivial hides monsters the game shows in grey. Near my level hides monsters more than 10 levels above or below you.",
             (LevelFilter.All, "All"), (LevelFilter.NotTrivial, "Not trivial"), (LevelFilter.NearMine, "Near my level"), (LevelFilter.Custom, "Custom"));
-        CustomLevels = page.Range("Custom", 1, 60, 1, 100, "Custom levels", "The levels Custom shows.",
+        CustomLevels = page.Range("Custom", 1, 60, 1, 100, "Custom levels", "The level range shown when Levels is set to Custom.",
             () => Levels.Value == LevelFilter.Custom);
         Zones = page.Choice("Zones", ZoneFilter.ThisZone, "Zones",
-            "This zone lists the zone you are in, and watched monsters from anywhere.",
+            "This zone shows only your current zone. Watched monsters are always shown.",
             (ZoneFilter.ThisZone, "This zone"), (ZoneFilter.AllZones, "All zones"));
         Undiscovered = page.Choice("Undiscovered", UndiscoveredFilter.Silhouette, "Undiscovered",
-            "Monsters not yet in your Bestiary.",
+            "How to show monsters you haven't met yet.",
             (UndiscoveredFilter.Silhouette, "Silhouette"), (UndiscoveredFilter.Show, "Show"), (UndiscoveredFilter.Hide, "Hide"));
-        page.Note("None of these hide watched monsters. Click a row to watch it.");
+        page.Note("Watched monsters are always shown, whatever these filters say. Click a row in the list to watch a monster.");
 
         page.Section("Rows");
         Sort = page.Choice("Sort", SortOrder.State, "Sort by", null,
             (SortOrder.State, "State"), (SortOrder.Distance, "Distance"), (SortOrder.Level, "Level"));
         Direction = page.Toggle("Direction", true, "Direction",
-            "Distance and an arrow to the spawn point or altar, for monsters in your zone.");
+            "Shows the distance and direction to the spawn point or altar of monsters in your zone.");
 
         Panel = new PanelHost(page, "Panel", PanelResize.Size,
             new Vector2(-810f, 235f), new Vector2(304f, 520f), new Vector2(240f, 120f), new Vector2(520f, 1000f));

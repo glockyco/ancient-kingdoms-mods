@@ -24,10 +24,10 @@ public sealed class WorldMarkersFeature : Feature
     private RectTransform _root;
 
     public WorldMarkersFeature()
-        : base("WorldMarkers", "World markers", "Shows dead monsters of your zone on their spawn points, and arrows at the screen's edge to the ones that are up out of sight.")
+        : base("WorldMarkers", "World markers", "Marks dead monsters in your zone on their spawn points, and points to living ones that are off screen.")
     {
         _edgeArrows = Settings.Toggle("EdgeArrows", true, "Edge arrows",
-            "An arrow at the screen's edge for each monster of your zone that is up out of sight.");
+            "Shows an arrow at the edge of the screen for each living monster in your zone that is off screen.");
     }
 
     public override Sprite Icon => Icons.LocateFixed;

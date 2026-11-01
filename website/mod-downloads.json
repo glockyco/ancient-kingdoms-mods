@@ -11,7 +11,7 @@
       "id": "pocket-compendium",
       "project": "PocketCompendium",
       "name": "Pocket Compendium",
-      "description": "Shows when every boss, elite, and fabled monster spawns, the skill cooldowns of the ones you fight, and every monster's full Bestiary page, each feature with its own switch."
+      "description": "Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster."
     }
   ]
 }

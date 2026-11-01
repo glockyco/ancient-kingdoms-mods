@@ -24,7 +24,7 @@ public sealed class MapPinsFeature : Feature
     private int _version = -1;
 
     public MapPinsFeature()
-        : base("MapPins", "Map pins", "Pins the bosses, elites and fabled monsters of your zone on the map, with their times.")
+        : base("MapPins", "Map pins", "Marks the bosses, elites and fabled monsters in your zone on the map, with their respawn timers.")
     {
     }
 

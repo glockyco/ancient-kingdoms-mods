@@ -21,7 +21,7 @@ public sealed class BossSkillsFeature : Feature
     private bool _reportedMissingNetworkManager;
 
     public BossSkillsFeature()
-        : base("BossSkills", "Boss skills", "Shows the skill cooldowns of the bosses, elites and fabled monsters you fight.")
+        : base("BossSkills", "Boss skills", "Shows the skill cooldowns of the bosses, elites and fabled monsters you're fighting.")
     {
         _settings = new BossSkillsSettings(Settings);
     }

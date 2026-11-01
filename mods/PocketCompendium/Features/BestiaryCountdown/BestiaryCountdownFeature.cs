@@ -20,7 +20,7 @@ public sealed class BestiaryCountdownFeature : Feature
     private int _version = -1;
 
     public BestiaryCountdownFeature()
-        : base("BestiaryCountdown", "Bestiary countdown", "Counts down dead monsters in the Bestiary, on their portraits in the grid and on their pages.")
+        : base("BestiaryCountdown", "Bestiary countdown", "Shows respawn timers for dead monsters in the Bestiary, on the grid and on their pages.")
     {
     }
 

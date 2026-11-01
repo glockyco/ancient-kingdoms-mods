@@ -21,7 +21,7 @@ public sealed class AlertsFeature : Feature
     private int _version = -1;
 
     public AlertsFeature()
-        : base("Alerts", "Alerts", "Announces the monsters you watch when they spawn, with the game's own message and a chat line.")
+        : base("Alerts", "Alerts", "Tells you on screen and in chat when a monster you watch spawns.")
     {
     }
 

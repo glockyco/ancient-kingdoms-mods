@@ -55,7 +55,7 @@ public sealed class SharingFeature : Feature
     private bool _reportedVersion;
 
     public SharingFeature()
-        : base("Sharing", "Sharing", "Shares exact boss times between players who run Pocket Compendium, in a world one of them hosts.")
+        : base("Sharing", "Sharing", "Shares exact boss times with players in your world who also use Pocket Compendium.")
     {
     }
 
