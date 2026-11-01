@@ -255,7 +255,7 @@ public sealed class SettingsWindow
             y += WrappedText("summary", page.Feature.Summary, Pad, y, width - SwitchView.Width - 12f, 12.5f, Theme.Muted, out _) + 4f;
 
             // The note wraps, because one line runs out of the window.
-            float failedHeight = WrappedText("failed", "Stopped after an error. Restart the game to use it again. Please report it on the About page.", Pad, y, width, 12.5f, Theme.Cast, out _failedNote);
+            float failedHeight = WrappedText("failed", "Stopped after an error. Please report it on the About page.", Pad, y, width, 12.5f, Theme.Cast, out _failedNote);
             y += page.Feature.Failed ? failedHeight + 2f : 0f;
             _failedNote.SetActive(page.Feature.Failed);
         }

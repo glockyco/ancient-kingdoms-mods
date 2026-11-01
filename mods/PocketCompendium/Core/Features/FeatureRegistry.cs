@@ -102,7 +102,7 @@ public sealed class FeatureRegistry
     {
         if (reportFailure)
         {
-            Log.Error($"{feature.Title} stopped after an error and stays off until the game restarts. Every other feature keeps running: {feature.Failure}");
+            Log.Error($"{feature.Title} stopped after an error. Every other feature keeps running: {feature.Failure}");
             StoppedAfterError?.Invoke(feature);
         }
 

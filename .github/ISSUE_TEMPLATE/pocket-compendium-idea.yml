@@ -5,18 +5,11 @@ labels: ["enhancement", "mods"]
 body:
   - type: markdown
     attributes:
-      value: |
-        One idea per report, please. Start with the situation in the game, even if you already have a solution in mind.
+      value: No GitHub account? Post in the #📖-compendium channel on the [game's Discord](https://discord.gg/8MkSWjXwab) instead.
   - type: textarea
     id: goal
     attributes:
-      label: What do you want to do in the game?
-    validations:
-      required: true
-  - type: textarea
-    id: obstacle
-    attributes:
-      label: What gets in the way?
+      label: What would you like to do in the game, and what gets in the way?
     validations:
       required: true
   - type: textarea
@@ -24,16 +17,8 @@ body:
     attributes:
       label: Your idea
       description: How Pocket Compendium could help, if you have something in mind.
-  - type: dropdown
-    id: frequency
-    attributes:
-      label: How often does this come up?
-      options:
-        - Every time I play
-        - Now and then
-        - Rarely
   - type: textarea
     id: screenshots
     attributes:
       label: Screenshots
-      description: Drag images into this field.
+      description: Drag them here.

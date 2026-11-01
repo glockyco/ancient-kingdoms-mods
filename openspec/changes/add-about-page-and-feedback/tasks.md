@@ -7,15 +7,15 @@
 
 ## 2. Forms
 
-- [ ] 2.1 Choose both forms' text through a comparison (compare-options), with references from issue forms of popular game mods. The ideas form's fields are decided: what the player wants to do and what gets in the way, required, then the idea, how often and screenshots, optional. Verify that the answer is recorded.
-- [ ] 2.2 Add the problem form and the ideas form to `.github/ISSUE_TEMPLATE/` with the chosen text and their labels, and a test that every field id in the report link exists in the problem form. Verify with that test and a check of both files against GitHub's issue form schema.
+- [x] 2.1 Choose both forms' text through a comparison (compare-options), with references from issue forms of popular game mods. Chosen on 2026-11-01: only the first field of each form is required, because an incomplete report is better than none. The problem form asks what went wrong, the setup and screenshots or the log file. The ideas form asks what the player would like to do and what gets in the way in one field, then the idea and screenshots. Verify that the answer is recorded.
+- [x] 2.2 Add the problem form and the ideas form to `.github/ISSUE_TEMPLATE/` with the chosen text and their labels, and a test that every field id in the report link exists in the problem form. Verify with that test and a check of both files against GitHub's issue form schema.
 
 ## 3. About page
 
-- [ ] 3.1 Choose the page's wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded. Decided on 2026-11-01: the version and fan-made lines, the link names, the report button's texts, the stopped-feature note, the Bestiary summaries and the Boss list page with Look, Show and Order headings. Still open: whether the stopped-feature note keeps "Restart the game to use it again", since a restarted feature can fail again.
+- [x] 3.1 Choose the page's wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded. Decided on 2026-11-01: the version and fan-made lines, the link names, the report button's texts, the stopped-feature note without any word on restarting, the Bestiary summaries and the Boss list page with Look, Show and Order headings.
 - [x] 3.2 Add a settings page kind that draws its own content, add Lucide's `info` icon to `website/scripts/generate-mod-icons.mjs`, and build the page as rows like the other pages, as decided on 2026-11-01: version, build and author, the fan-made line, a Links section with one row per address, and a Feedback section with the two buttons, with "Reset this page" hidden. Verify in game at the Mac's full screen of 1800 px, the widest at hand, and in a 1280 px window.
 - [x] 3.3 Keep the page's addresses in one class with a test that compares those the website also links with `website/src/lib/constants/links.ts` and `website/src/lib/seo/site.ts`. Verify with `dotnet test tests/PocketCompendium.Tests`.
-- [ ] 3.4 Apply the chosen wording of the other pages' summaries and help texts. Verify in game that no text ends with a single word on its last line.
+- [x] 3.4 Apply the chosen wording of the other pages' summaries and help texts. Verify in game that no text ends with a single word on its last line.
 
 ## 4. Actions and messages
 
@@ -27,7 +27,7 @@
 ## 5. Documentation and records
 
 - [x] 5.1 Link the forms and name the compendium channel on the game's Discord in the README, worded through a comparison. Chosen on 2026-11-01: a section of its own, "Problems and ideas". Verify with `pnpm check:docs`.
-- [ ] 5.2 Record each comparison's answer as a case in the vault's Ancient Kingdoms Compendium note. Verify that the note holds the cases.
+- [x] 5.2 Record each comparison's answer as a case in the vault's Ancient Kingdoms Compendium note. Verify that the note holds the cases.
 
 ## Workflow follow-up
 

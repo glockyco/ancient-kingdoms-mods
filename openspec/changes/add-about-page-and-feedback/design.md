@@ -43,7 +43,7 @@ The mod keeps the four addresses in one class. A test reads the website's `links
 
 ### Two forms, two actions
 
-Problems and ideas need different fields. The problem form takes the details the report action fills. The ideas form asks first what the player wants to do in the game and what gets in the way, both required, then for their idea, how often the need comes up and screenshots, all optional. Like every surveyed feature request form, it asks for no setup details. So the page has two actions, each opening its own form, instead of RuneLite's single entry. Both forms' wording is chosen through comparisons.
+Problems and ideas need different fields. The problem form takes the details the report action fills. The ideas form asks first, in one field, what the player would like to do in the game and what gets in the way, then for their idea and screenshots. Like every surveyed feature request form, it asks for no setup details. So the page has two actions, each opening its own form, instead of RuneLite's single entry.
 
 ### The browser posts the report
 
@@ -81,7 +81,7 @@ Alternative: the red page name alone, as today. Players do not open the settings
 
 ### The issue forms
 
-Both forms follow the structure of the Bloodline wrong-fact form: short fields, the prefilled one marked as filled by the game, and required fields only where a report is useless without them. The problem form asks what went wrong and how to see it, takes the details, and asks for the log and a screenshot. It says where the versions and the log are for players who open it from the README, and that the log can contain the Windows user name. Problem reports carry the labels `bug` and `mods`, and ideas `enhancement` and `mods`, through each form's `labels` key, which works for reporters who cannot set labels themselves.
+Both forms require only their first field, because an incomplete report is better than none, and they ask in words players use rather than naming a process. The problem form asks what went wrong and what the player was doing, takes the setup that the report action fills in, and offers a field for screenshots or the log file that says where the log is and that it can contain the Windows user name. Problem reports carry the labels `bug` and `mods`, and ideas `enhancement` and `mods`, through each form's `labels` key, which works for reporters who cannot set labels themselves.
 
 ### The log names where the player plays
 
