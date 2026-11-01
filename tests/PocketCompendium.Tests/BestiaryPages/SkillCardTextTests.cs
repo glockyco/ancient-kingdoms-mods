@@ -8,12 +8,14 @@ public class SkillCardTextTests
 {
     [Theory]
     [InlineData("nyxarion", "fear", "Nyxarion", "Fears everyone within 10 yd for 4 to 8 s.")]
-    [InlineData("nyxarion", "knockback", "Nyxarion", "1,625 physical damage to the target. 75% chance to knock it back 1.5 yd.")]
-    [InlineData("nyxarion", "dragon_ice_breath", "Nyxarion", "4,650 cold damage to everyone in a 5 yd square in front. 75% chance to stun for 1.5 s.")]
+    [InlineData("nyxarion", "knockback", "Nyxarion", "Deals 1,625 physical damage to the target. 75% chance to knock it back 1.5 yd.")]
+    [InlineData("nyxarion", "dragon_ice_breath", "Nyxarion", "Deals 4,650 cold damage to everyone in a 5 yd square in front. 75% chance to stun for 1.5 s.")]
     [InlineData("nyxarion", "summon_player", "Nyxarion", "Summons its target from 3 to 15 yd away to Nyxarion and stuns it for 2 s.")]
-    [InlineData("scaleblight", "blightstorm", "Scaleblight", "Everyone within 10 yd takes 1,800 disease damage per second and loses 1 speed for 30 s. 40% Cleanse Resist.")]
+    [InlineData("scaleblight", "blightstorm", "Scaleblight", "Deals 1,800 disease damage per second to everyone within 10 yd and lowers their speed by 1 for 30 s. 40% Cleanse Resist.")]
+    [InlineData("valaark", "grievous_wounds", "Valaark", "Deals 2,500 physical damage per second to the target and lowers its speed by 3 for 8 s. No cleanse removes this debuff.")]
+    [InlineData("xylevis", "king_of_harpies", "Xylevis", "Raises Xylevis's critical chance by 50% and accuracy by 25% for 8 s.")]
     [InlineData("scaleblight", "withering_scourge", "Scaleblight", "Removes the buffs of everyone within 10 yd.")]
-    [InlineData("scaleblight", "dragon_disease_breath", "Scaleblight", "7,500 disease damage to everyone in a 5 yd square in front, which heals Scaleblight by the damage dealt. 75% chance to stun for 1.5 s.")]
+    [InlineData("scaleblight", "dragon_disease_breath", "Scaleblight", "Deals 7,500 disease damage to everyone in a 5 yd square in front, which heals Scaleblight by the damage dealt. 75% chance to stun for 1.5 s.")]
     public void ApprovedSentencesMatchRuntimeFacts(string monster, string id, string name, string expected)
     {
         var c = SkillEffectFormatterTests.LoadCases().Single(c => c.monster_id == monster && c.skill_id == id);
@@ -24,7 +26,7 @@ public class SkillCardTextTests
     public void BasicAttackLineIncludesNameAndApprovedSentence()
     {
         var c = SkillEffectFormatterTests.LoadCases().Single(c => c.monster_id == "nyxarion" && c.skill_id == "dragon_claw_attack");
-        Assert.Equal("Dragon Claw Attack: 1,720 physical damage to the target. 5% chance to stun for 2 s.",
+        Assert.Equal("Dragon Claw Attack: Deals 1,720 physical damage to the target. 5% chance to stun for 2 s.",
             SkillCardText.Line(new MonsterSkillFacts(c.input, c.delivery!), "Dragon Claw Attack", "Nyxarion"));
     }
 
@@ -51,10 +53,10 @@ public class SkillCardTextTests
     [InlineData("ice_lance", "damage to a random target within 12 yd.")]
     [InlineData("ice_lance", "The projectile follows a random target.")]
     [InlineData("grievous_wounds", "No cleanse removes this debuff.")]
-    [InlineData("chains_of_valaark", "Roots everyone within 10 yd, and they lose 600 Armor Class for 10 s.")]
+    [InlineData("chains_of_valaark", "Roots everyone within 10 yd and lowers their Armor Class by 600 for 10 s.")]
     [InlineData("sundering_maw", "5% chance to stun for 2 s. Otherwise it knocks the target back 1.5 yd.")]
     [InlineData("arcane_regeneration", "below 75% health.")]
-    [InlineData("rampage", "deals 50% to 75% more non-spell damage.")]
+    [InlineData("rampage", "Raises Monster's non-spell damage by 50% to 75% while below 10% health.")]
     public void OtherMechanicsKeepTheirActionableFacts(string id, string fragment)
     {
         var c = SkillEffectFormatterTests.LoadCases().First(c => c.monster_id != null && c.skill_id == id);

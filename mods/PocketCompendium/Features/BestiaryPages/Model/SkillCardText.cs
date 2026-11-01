@@ -17,7 +17,7 @@ internal static class SkillCardText
         // Source: SkillEffectFormatter.FormatDamage and MonsterDamage.Amount resolve the caster's runtime damage.
         if (skill.Damage.HasValue)
         {
-            var hit = $"{SkillText.Number(skill.Damage.Value)}{Type(e.damage_type)} damage to {recipients}";
+            var hit = $"Deals {SkillText.Number(skill.Damage.Value)}{Type(e.damage_type)} damage to {recipients}";
             // Source: SkillEffectFormatter.FormatCrowdControl. Area projectiles do not forward lifetap.
             if (!(e.skill_type == "area_damage" && e.area_projectile) && Value(e.lifetap_percent) > 0)
                 hit += Value(e.lifetap_percent) == 1
@@ -88,7 +88,7 @@ internal static class SkillCardText
             }
         }
         // Source: Combat.cs:863-906. Enrage modifies non-spell damage below ten percent health.
-        if (skill.Enrages) sentences.Add($"Below {SkillText.Percent(skill.EnrageBelowHealth.Value)} health, {monsterName} deals {SkillText.Percent(0.5)} to {SkillText.Percent(0.75)} more non-spell damage.");
+        if (skill.Enrages) sentences.Add($"Raises {Possessive(monsterName)} non-spell damage by {SkillText.Percent(0.5)} to {SkillText.Percent(0.75)} while below {SkillText.Percent(skill.EnrageBelowHealth.Value)} health.");
         // Source: AreaObjectSpawnSkill.cs:35-47,159. Each cast adds one zone on the target.
         if (skill.Shape == SkillShape.GroundZones)
             sentences.Add($"Creates {SkillText.Number(skill.RandomGroundZones)} random ground zones and {SkillText.Number(skill.TargetGroundZones)} on the target within {SkillText.Yards(skill.Reach)}, each {SkillText.Yards(skill.GroundZoneDiameter)} wide, with {SkillText.Seconds(skill.GroundWarningSeconds)} warning.");
@@ -163,10 +163,10 @@ internal static class SkillCardText
         var speed = Value(e.speed_bonus);
         if (speed <= -50) actions.Add("puts " + recipients + " to sleep");
         else if (speed <= -10) actions.Add("roots " + recipients);
-        var changes = new List<string>();
+        var changes = new List<Change>();
         var dot = Value(e.healing_per_second_bonus);
-        if (dot < 0) changes.Add("takes " + SkillText.Number(-dot) + Type(e.damage_over_time_type) + " damage per second");
-        if (speed > -10 && speed != 0) changes.Add((speed < 0 ? "loses " : "gains ") + SkillText.Number(Math.Abs(speed)) + " speed");
+        if (dot < 0) changes.Add(Change.To("deals", SkillText.Number(-dot) + Type(e.damage_over_time_type) + " damage per second"));
+        if (speed > -10 && speed != 0) changes.Add(Change.Stat(speed, "speed", SkillText.Number(Math.Abs(speed))));
         AddChange(changes, e.health_max_bonus, "maximum health");
         AddChange(changes, e.health_max_percent_bonus, "maximum health", true);
         AddChange(changes, e.mana_max_bonus, "maximum mana");
@@ -206,7 +206,7 @@ internal static class SkillCardText
         AddChange(changes, e.constitution_bonus, "constitution");
         AddChange(changes, e.wisdom_bonus, "wisdom");
         AddChange(changes, e.charisma_bonus, "charisma");
-        if (dot > 0) changes.Add("recovers " + SkillText.Number(dot) + " health per second");
+        if (dot > 0) changes.Add(Change.To("restores", SkillText.Number(dot) + " health per second"));
         AddTick(changes, e.health_percent_per_second_bonus, "maximum health", true);
         AddTick(changes, e.mana_per_second_bonus, "mana", false);
         AddTick(changes, e.mana_percent_per_second_bonus, "maximum mana", true);
@@ -214,28 +214,18 @@ internal static class SkillCardText
         AddTick(changes, e.energy_percent_per_second_bonus, "maximum rage", true);
         if (changes.Count > 0)
         {
-            var areaBuff = e.skill_type == "area_buff";
-            if (debuff && actions.Count > 0)
-            {
-                // One sentence for one debuff: "Roots everyone within 10 yd, and they lose 600 Armor Class for 10 s."
-                bool single = skill.Shape == SkillShape.Target || e.affects_random_target;
-                var list = single ? changes : changes.ConvertAll(PluralVerb);
-                var merged = SkillText.JoinAnd(actions) + ", and " + (single ? "it " : "they ") + JoinChanges(list);
-                actions.Clear();
-                actions.Add(merged);
-            }
-            else
-            {
-                var who = debuff ? recipients : areaBuff ? name + " and every monster within " + SkillText.Yards(skill.Reach) : name;
-                if (areaBuff)
-                    for (var i = 0; i < changes.Count; i++)
-                        changes[i] = PluralVerb(changes[i]);
-                actions.Add(who + " " + JoinChanges(changes));
-            }
+            // "Roots everyone within 10 yd and lowers their Armor Class by 600 for 10 s."
+            var who = debuff ? recipients : e.skill_type == "area_buff" ? name + " and every monster within " + SkillText.Yards(skill.Reach) : name;
+            bool group = e.skill_type == "area_buff" || (debuff && skill.Shape != SkillShape.Target && !e.affects_random_target);
+            var phrases = new List<string>(actions);
+            bool named = actions.Count > 0;
+            actions.Clear();
+            phrases.AddRange(ChangePhrases(changes, who, group, named));
+            actions.Add(JoinPhrases(phrases));
         }
         if (Value(e.damage_shield) > 0) actions.Add("grants " + (debuff ? recipients : name) + " a shield that deals " + SkillText.Number(Value(e.damage_shield)) + Type(e.damage_shield_type) + " damage to melee attackers");
         // Source: Combat.DealDamageAt heals the melee attacker from the victim's healOnHitPercent.
-        if (Value(e.heal_on_hit_percent) > 0) actions.Add("melee hits on " + recipients + " heal the attacker by " + SkillText.Percent(Value(e.heal_on_hit_percent)) + " of the damage dealt");
+        if (Value(e.heal_on_hit_percent) > 0) actions.Add("makes melee hits on " + recipients + " heal the attacker by " + SkillText.Percent(Value(e.heal_on_hit_percent)) + " of the damage dealt");
         foreach (var action in actions)
         {
             var text = action;
@@ -247,57 +237,89 @@ internal static class SkillCardText
         if (e.prob_ignore_cleanse > 0) sentences.Add(skill.UncleanseableDebuff ? "No cleanse removes this debuff." : SkillText.Percent(e.prob_ignore_cleanse.Value) + " Cleanse Resist.");
     }
 
-    // "gains 50% critical chance and 25% accuracy", not "gains 50% critical chance and gains 25% accuracy".
-    private static string JoinChanges(List<string> changes)
+    // A stat change ("lowers their speed by 1") or an amount given to or taken from someone
+    // ("deals 1,800 disease damage per second to everyone within 10 yd").
+    private sealed class Change
+    {
+        public string Verb;
+        public string Text;
+        public string Amount;
+        public string Preposition;
+
+        public static Change Stat(double amount, string stat, string number) =>
+            new() { Verb = amount < 0 ? "lowers" : "raises", Text = stat, Amount = number };
+
+        public static Change To(string verb, string text) => new() { Verb = verb, Text = text, Preposition = verb == "drains" ? "from" : "to" };
+    }
+
+    // Each verb once: "lowers their speed by 2, magic resistance by 250 and haste by 25%".
+    private static List<string> ChangePhrases(List<Change> changes, string who, bool group, bool named)
     {
         var verbs = new List<string>();
-        var groups = new List<List<string>>();
+        var groups = new List<List<Change>>();
         foreach (var change in changes)
         {
-            var space = change.IndexOf(' ');
-            var verb = change.Substring(0, space);
-            var index = verbs.IndexOf(verb);
+            var index = verbs.IndexOf(change.Verb);
             if (index < 0)
             {
-                verbs.Add(verb);
-                groups.Add(new List<string>());
+                verbs.Add(change.Verb);
+                groups.Add(new List<Change>());
                 index = verbs.Count - 1;
             }
-            groups[index].Add(change.Substring(space + 1));
+            groups[index].Add(change);
         }
+
+        string pronoun = group ? "them" : "it";
+        string possessive = group ? "their" : "its";
         var phrases = new List<string>();
-        var nested = false;
         for (var i = 0; i < verbs.Count; i++)
         {
-            phrases.Add(verbs[i] + " " + SkillText.JoinAnd(groups[i]));
-            if (i < verbs.Count - 1 && groups[i].Count > 1) nested = true;
+            var items = groups[i];
+            if (items[0].Amount == null)
+            {
+                phrases.Add(verbs[i] + " " + SkillText.JoinAnd(items.ConvertAll(c => c.Text)) + " " + items[0].Preposition + " " + (named ? pronoun : who));
+                named = true;
+                continue;
+            }
+            var parts = items.ConvertAll(c => c.Text + " by " + c.Amount);
+            if (named) parts[0] = possessive + " " + parts[0];
+            // "a random target within 12 yd" takes no "'s", so it gets "the speed of …".
+            else if (group || who.Contains(" within ") || who.Contains(" in the "))
+            {
+                parts[0] = "the " + items[0].Text + " of " + who + " by " + items[0].Amount;
+                for (var j = 1; j < parts.Count; j++) parts[j] = possessive + " " + parts[j];
+            }
+            else parts[0] = Possessive(who) + " " + parts[0];
+            phrases.Add(verbs[i] + " " + SkillText.JoinAnd(parts));
+            named = true;
         }
-        // A comma before the last verb keeps a list inside the list readable.
-        return nested
+        return phrases;
+    }
+
+    // A comma before the last verb keeps a list inside the list readable.
+    private static string JoinPhrases(List<string> phrases)
+    {
+        var nested = false;
+        for (var i = 0; i < phrases.Count - 1; i++) nested |= phrases[i].Contains(" and ") || phrases[i].Contains(", ");
+        return nested && phrases.Count > 1
             ? string.Join(", ", phrases.GetRange(0, phrases.Count - 1)) + ", and " + phrases[phrases.Count - 1]
             : SkillText.JoinAnd(phrases);
     }
 
-    private static string PluralVerb(string text)
-    {
-        if (text.StartsWith("takes ", StringComparison.Ordinal)) return "take " + text.Substring(6);
-        if (text.StartsWith("loses ", StringComparison.Ordinal)) return "lose " + text.Substring(6);
-        if (text.StartsWith("gains ", StringComparison.Ordinal)) return "gain " + text.Substring(6);
-        if (text.StartsWith("recovers ", StringComparison.Ordinal)) return "recover " + text.Substring(9);
-        return text;
-    }
+    private static string Possessive(string owner) => owner + "'s";
 
-    private static void AddChange(List<string> changes, LinearValue value, string stat, bool percent = false)
+    private static void AddChange(List<Change> changes, LinearValue value, string stat, bool percent = false)
     {
         var amount = Value(value);
         if (amount == 0) return;
-        changes.Add((amount < 0 ? "loses " : "gains ") + (percent ? SkillText.Percent(Math.Abs(amount)) : SkillText.Number(Math.Abs(amount))) + " " + stat);
+        changes.Add(Change.Stat(amount, stat, percent ? SkillText.Percent(Math.Abs(amount)) : SkillText.Number(Math.Abs(amount))));
     }
 
-    private static void AddTick(List<string> changes, LinearValue value, string resource, bool percent)
+    private static void AddTick(List<Change> changes, LinearValue value, string resource, bool percent)
     {
         var amount = Value(value);
         if (amount == 0) return;
-        changes.Add((amount < 0 ? "loses " : "recovers ") + (percent ? SkillText.Percent(Math.Abs(amount)) : SkillText.Number(Math.Abs(amount))) + " " + resource + " per second");
+        var text = (percent ? SkillText.Percent(Math.Abs(amount)) : SkillText.Number(Math.Abs(amount))) + " " + resource + " per second";
+        changes.Add(Change.To(amount < 0 ? "drains" : "restores", text));
     }
 }
