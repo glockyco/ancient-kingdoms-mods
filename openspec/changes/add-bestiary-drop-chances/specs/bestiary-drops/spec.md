@@ -69,3 +69,17 @@ The Bestiary pages settings SHALL have a switch for drop chances, on at first st
 
 - **WHEN** the player switches drop chances off
 - **THEN** the drops show without chances and Fatecharm icons, in the game's order with every listed entry
+
+### Requirement: Discovery can be kept
+
+The Bestiary pages settings SHALL have one switch for pages of monsters the player has not met and one for drops the player has not found, both on at first start. While the first is off, a monster the game has not recorded as met SHALL show as the game shows it. While the second is off, a drop not found yet SHALL show as the game's black silhouette without its item tooltip. The Skills panel SHALL keep its own switch.
+
+#### Scenario: Keeping drops hidden
+
+- **WHEN** the player switches off drops not found yet and opens Verdant Glacius's page without having found any of its drops
+- **THEN** every drop shows as a black silhouette
+
+#### Scenario: Keeping monsters hidden
+
+- **WHEN** the player switches off monsters not met and opens the page of a monster they have not met
+- **THEN** the page shows "???" as the game does

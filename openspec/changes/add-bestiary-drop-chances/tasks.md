@@ -21,6 +21,7 @@
 - [ ] 4.1 Show the chances, the Fatecharm icons and the tooltip lines as chosen, with one slot per item while chances show. Verify in game on Xylevis, Stalag Terror, an elite, Avatar of Fire, an altar elite and with the game in Japanese.
 - [ ] 4.2 Mark found drops. Verify in game on a monster with found and not found drops.
 - [ ] 4.3 Add the drop chances switch, on at first start. Verify in game that switching it off restores the game's order with every entry and keeps the found marks.
+- [ ] 4.4 Add the switches for monsters not met and drops not found, on at first start, beside the Skills panel switch, as decided on 2026-11-01. Choose whether a hidden drop's chance shows through a comparison. Verify in game with both switches off on a monster not met and on one with found and not found drops.
 
 ## 5. Documentation and records
 
