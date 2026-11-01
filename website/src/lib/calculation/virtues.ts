@@ -174,8 +174,11 @@ export function sacrificeItemLevel(item: OfferedItem): number {
 }
 
 // Source: server-scripts/VirtueRules.cs:SacrificeItemLevelPerPoint,GoldPerPoint — 50 item levels or 1,000 gold make a point.
+export const SACRIFICE_ITEM_LEVELS_PER_POINT = 50;
+export const SACRIFICE_GOLD_PER_POINT = 1000;
+
 export function sacrificeItemPoints(itemLevel: number): number {
-  return itemLevel / 50;
+  return itemLevel / SACRIFICE_ITEM_LEVELS_PER_POINT;
 }
 
 // Source: server-scripts/VirtueRules.cs:SacrificeOfferingPoints — item levels and gold add up in thousandths of a point, rounded down.
@@ -185,9 +188,17 @@ export function sacrificeOfferingPoints(
 ): number {
   const itemLevel = itemLevels.reduce((sum, value) => sum + value, 0);
   if (itemLevel < 0 || gold < 0) return 0;
-  const whole = Math.floor(itemLevel / 50) + Math.floor(gold / 1000);
-  const thousandths = (itemLevel % 50) * 20 + (gold % 1000);
-  return Math.min(MAX_VIRTUE_POINTS, whole + Math.floor(thousandths / 1000));
+  const whole =
+    Math.floor(itemLevel / SACRIFICE_ITEM_LEVELS_PER_POINT) +
+    Math.floor(gold / SACRIFICE_GOLD_PER_POINT);
+  const thousandths =
+    (itemLevel % SACRIFICE_ITEM_LEVELS_PER_POINT) *
+      (SACRIFICE_GOLD_PER_POINT / SACRIFICE_ITEM_LEVELS_PER_POINT) +
+    (gold % SACRIFICE_GOLD_PER_POINT);
+  return Math.min(
+    MAX_VIRTUE_POINTS,
+    whole + Math.floor(thousandths / SACRIFICE_GOLD_PER_POINT),
+  );
 }
 
 export interface EscortSource {

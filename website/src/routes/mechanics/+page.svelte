@@ -11,6 +11,7 @@
   import Hammer from "@lucide/svelte/icons/hammer";
   import HeartCrack from "@lucide/svelte/icons/heart-crack";
   import House from "@lucide/svelte/icons/house";
+  import Landmark from "@lucide/svelte/icons/landmark";
   import Music from "@lucide/svelte/icons/music";
   import PartyPopper from "@lucide/svelte/icons/party-popper";
   import Shield from "@lucide/svelte/icons/shield";
@@ -32,6 +33,7 @@
     "/mechanics/inventory": Backpack,
     "/mechanics/crafting": Hammer,
     "/mechanics/housing": House,
+    "/mechanics/virtues": Landmark,
     "/mechanics/party": Users,
     "/mechanics/guilds": Castle,
     "/mechanics/world": Globe,

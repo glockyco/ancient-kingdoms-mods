@@ -282,6 +282,46 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
     reviewedBodySha256:
       "1ffd6e03b9bdb6dc58c16c81125561e7be0991b7495f51b4e50d02fe43740fd9",
   },
+  "virtues.compassion": {
+    href: "/mechanics/virtues#compassion",
+    reviewedBodySha256:
+      "5a1e47835f82eedd97f18b53d19e35fb40f92b344b929a52d467720663b5e602",
+  },
+  "virtues.honesty": {
+    href: "/mechanics/virtues#honesty",
+    reviewedBodySha256:
+      "fff680c6fa681cd1936c0a49916d099e3a401dd805eca131daa10b3e6fbd988e",
+  },
+  "virtues.honor": {
+    href: "/mechanics/virtues#honor",
+    reviewedBodySha256:
+      "8895d38dcc41b5088fcdcd251c89a0d367e55077b712b307a08e2fe69285e546",
+  },
+  "virtues.humility": {
+    href: "/mechanics/virtues#humility",
+    reviewedBodySha256:
+      "c09fdbf8872c5fc5cc38341312f1ef3f31bbadf1c072fe4bbc42a261af8f1e9f",
+  },
+  "virtues.progression-titles": {
+    href: "/mechanics/virtues#ranks-and-titles",
+    reviewedBodySha256:
+      "a98dcf77d7364ff6d23584cb6475f7be553b8f32d59459751d843a43dc6d5608",
+  },
+  "virtues.sacrifice": {
+    href: "/mechanics/virtues#sacrifice",
+    reviewedBodySha256:
+      "129698e9f66c24ee0c4676b013ccc6ed729229988070ebaa7843a179b776903d",
+  },
+  "virtues.shrines": {
+    href: "/mechanics/virtues#shrines",
+    reviewedBodySha256:
+      "c631628b131f9dcd3d8e05758ded10dac1454d3ec781e593b3390b3cda3a953e",
+  },
+  "virtues.valor": {
+    href: "/mechanics/virtues#valor",
+    reviewedBodySha256:
+      "96aa7170f82bddc77eeb141ed9c259db7ec66a6036b6d0a1e405ab464f399db7",
+  },
   "world.adventurers-guild": {
     href: "/professions/adventuring#how-it-works",
     reviewedBodySha256:

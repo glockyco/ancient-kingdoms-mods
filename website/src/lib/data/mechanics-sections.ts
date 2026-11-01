@@ -49,6 +49,8 @@ export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
       ...chapter.topics.map((topic) => ({ id: topic.id, label: topic.title })),
     ]),
     "/mechanics/death": [],
+    // The virtues are tabs, and the guide's articles lead to each one.
+    "/mechanics/virtues": [],
     "/mechanics/monster-spawns": [
       { id: "cycle", label: "The respawn cycle" },
       { id: "empty-zones", label: "What happens when everyone leaves?" },

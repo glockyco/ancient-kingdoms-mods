@@ -47,6 +47,14 @@ export const MECHANICS_GROUPS = [
         description: "Furniture, wardrobe, and barbers",
         summary: "Furniture and wardrobe",
       },
+      {
+        title: "Virtues",
+        href: "/mechanics/virtues",
+        description:
+          "Shrines, blessings, ranks, and how each virtue earns points",
+        summary: "Blessings and ranks",
+        featured: true,
+      },
     ],
   },
   {

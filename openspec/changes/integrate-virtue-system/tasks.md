@@ -25,12 +25,12 @@
 ## 5. Virtues page
 
 - [x] 5.1 Compare the page's structure and wording in Plannotator under `skill://compare-options`, with drafts on real data. Verify that the answer is recorded in the project note and in this change.
-- [ ] 5.2 Build `/mechanics/virtues` as design decision 5 describes: the intro, the four facts, the virtue tiles as tabs opened by the hash, each virtue's shrine cards, ways to earn, rules and rank cards, the Valor quarries for a level entered on the page, Compassion's stranded adventurers and the Sacrifice calculator, and register it in the mechanics index. Verify the page in a browser at phone and desktop widths, including the quarries at levels 1, 40 and 50 and a calculator result.
-- [ ] 5.3 Map the eight Virtues guide articles in `coverage.ts` with their reviewed digests. Verify that `coverage.db.test.ts` passes and that site search opens each article's section.
+- [x] 5.2 Build `/mechanics/virtues` as design decision 5 describes: the intro, the four facts, the virtue tiles as tabs opened by the hash, each virtue's shrine cards, ways to earn, rules and rank cards, the Valor quarries for a level entered on the page, Compassion's stranded adventurers and the Sacrifice calculator, and register it in the mechanics index. Verify the page in a browser at phone and desktop widths, including the quarries at levels 1, 40 and 50 and a calculator result.
+- [x] 5.3 Map the eight Virtues guide articles in `coverage.ts` with their reviewed digests. Verify that `coverage.db.test.ts` passes and that site search opens each article's section.
 
 ## 6. Shrines on the map
 
-- [ ] 6.1 Add the `virtue_shrine` entity family, the `shrines` marker group with the pink temple glyph shown by default, its popup with the blessing's strongest effect, and the map and site search documents. Verify in a browser that each shrine shows, its popup opens its virtue's section, and searching "Shrine of Valor" opens it.
+- [x] 6.1 Add the `virtue_shrine` entity family, the `shrines` marker group with the pink temple glyph shown by default, its popup with the blessing's strongest effect, and the map and site search documents. Verify in a browser that each shrine shows, its popup opens its virtue's section, and searching "Shrine of Valor" opens it.
 
 ## 7. Blessing skill pages
 

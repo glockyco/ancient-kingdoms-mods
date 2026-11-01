@@ -3524,6 +3524,9 @@
     "Player.cs:AssignValorTarget": {
       "span": 0
     },
+    "Player.cs:BeginVirtueBlessing": {
+      "span": 0
+    },
     "Player.cs:CanAttack": {
       "span": 0
     },
@@ -3600,6 +3603,9 @@
       "span": 0
     },
     "Player.cs:TargetRpcHouse": {
+      "span": 0
+    },
+    "Player.cs:TickVirtuesServer": {
       "span": 0
     },
     "Player.cs:TryConsumeRadiantAether": {
@@ -6167,10 +6173,34 @@
     "VirtueCombat.cs:ApplyValor": {
       "span": 0
     },
+    "VirtueCombat.cs:Assistance": {
+      "span": 0
+    },
+    "VirtueCombat.cs:BuffApplied": {
+      "span": 0
+    },
+    "VirtueCombat.cs:CancelHonor": {
+      "span": 0
+    },
+    "VirtueCombat.cs:CrowdControl": {
+      "span": 0
+    },
+    "VirtueCombat.cs:HostileAction": {
+      "span": 0
+    },
+    "VirtueCombat.cs:MonsterHit": {
+      "span": 0
+    },
     "VirtueCombat.cs:OnDeath": {
       "span": 0
     },
     "VirtueCombat.cs:SettleHonorIfFinished": {
+      "span": 0
+    },
+    "VirtueCombat.cs:Tick": {
+      "span": 0
+    },
+    "VirtueEncounters.cs:BeginHonestySearch": {
       "span": 0
     },
     "VirtueEncounters.cs:EscortPoints": {
@@ -6179,7 +6209,19 @@
     "VirtueEncounters.cs:IsWorldPortalTrip": {
       "span": 0
     },
+    "VirtueEncounters.cs:LostItemsPerSearch": {
+      "span": 0
+    },
     "VirtueEncounters.cs:ReturnPoints": {
+      "span": 0
+    },
+    "VirtueEncounters.cs:TryClaimEscort": {
+      "span": 0
+    },
+    "VirtueEscort.cs:OnInteractServer": {
+      "span": 0
+    },
+    "VirtueEscort.cs:ServerTick": {
       "span": 0
     },
     "VirtueEscortStats.cs:TryForDungeon": {
