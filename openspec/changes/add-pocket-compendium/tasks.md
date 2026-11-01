@@ -36,6 +36,8 @@
 - [x] 4.8 Capture each surface in game and compare with the mood board sketches, including Chinese and Japanese names.
 - [x] 4.9 Give the Bestiary countdown one switch for the grid beside the page and one for the page, as asked on 2026-11-01, with their wording chosen through a comparison. Verify in game that each switch removes only its own countdown and brings it back at once.
 - [ ] 4.10 Make the in-fight special gate account for a target out of reach: a monster then casts a special with a longer reach at random about 1 s after its last one, without waiting for the 6 to 12 s gap, so the strip shows LOCKED while a special can come (`Monster.cs:1880-1898`, observed with Nyxarion in `openspec/changes/rework-bestiary-skills-panel/observations.md`). Verify in game at 8 yd from Nyxarion.
+- [ ] 4.11 Show a chance spawn's chance outside the hover text, as asked on 2026-11-01: in list rows and in the Bestiary page countdown, placed and worded as chosen in `.local/changes/rework-bestiary-skills-panel/review/round-2/`. Verify in game on Forsaken Skeleton that the row and the page show 75%.
+- [ ] 4.12 Let a player watch a boss, elite or fabled monster from its Bestiary page, as asked on 2026-11-01, with the control chosen in the same review, sharing the list's watchlist. Verify in game that watching from the page marks the list row, and the reverse.
 
 ## 5. Sharing
 
@@ -59,4 +61,5 @@
 - [x] 7.5 Draw panels under the game's interface, and let a panel take the pointer only where nothing covers it.
 - [x] 7.6 Verify 7.1 to 7.5 in game.
 - [x] 7.7 Rewrite the README from a player's questions, with in-game screenshots.
+- [ ] 7.9 Retake the README screenshots that show the character with a fitting character name, such as "Compendium" or a blank name, as asked on 2026-11-01. Verify that no screenshot shows the scratch character's name.
 - [ ] 7.8 Push, and deploy the site with `pnpm cf-deploy`.
