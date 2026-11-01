@@ -6,16 +6,6 @@ Define player-facing explanations that are concise without hiding useful mechani
 
 ## Requirements
 
-### Requirement: Copy explains player outcomes
-
-The compendium SHALL describe player-visible outcomes, conditions and choices. It SHALL NOT present ordinary internal recomputation or synchronization as a special gameplay rule when the useful outcome is already stated. It SHALL preserve persistence, interruption, payment and timing rules that affect play.
-
-#### Scenario: A veteran bonus is recalculated when summoned
-
-- **WHEN** a page states the bonus a mercenary receives per total veteran point
-- **THEN** it does not repeat the stat restoration mechanism as a second benefit
-- **AND** it still explains any hire roll that remains fixed and affects hiring choices
-
 ### Requirement: Quantities and conditions are explicit
 
 A label or summary SHALL distinguish maximum pools from current resources, healing and regeneration. A chance SHALL identify its event and relevant condition. Duration displays SHALL preserve meaningful seconds rather than silently floor to whole minutes. Calculator defaults SHALL describe a state the corresponding character or caster can have.
@@ -92,29 +82,6 @@ Titles, search results and descriptions SHALL identify their subject using verif
 - **WHEN** an item and a skill have the same name
 - **THEN** the title or search context distinguishes the two subjects without misclassifying either
 
-### Requirement: Copy leads with the player's outcome
-
-Copy SHALL open with what the player gets, does or must avoid, in the game's vocabulary and with exact numbers.
-
-#### Scenario: Player outcome
-- WHEN copy introduces a player action
-- THEN it opens with what the player gets, does or must avoid
-
-### Requirement: Copy omits redundant and internal explanation
-Copy SHALL NOT open with a generic description of the game, restate a heading or the table beside it, decorate facts with flavour verbs, or explain an internal mechanism unless that mechanism changes what the player can do.
-
-#### Scenario: A section introduces a table
-
-- **WHEN** a section shows a table of monster spawns
-- **THEN** its sentence states what the table does not, such as the season and spawn hours shared by every row
-- **AND** it does not repeat the table's rows in prose
-
-#### Scenario: A time depends on how the server works
-
-- **WHEN** the page says when an event starts or ends
-- **THEN** it gives the time in the reader's time zone
-- **AND** it does not explain UTC date handling or the server's hourly date check
-
 ### Requirement: Derived numbers answer missing player inputs
 Copy SHALL state a derived number only when the player lacks an input to compute it, such as real minutes per game-time window, and SHALL NOT spell out arithmetic a player does at a glance, such as kills per token from a drop chance.
 
@@ -129,44 +96,12 @@ Copy SHALL state a derived number only when the player lacks an input to compute
 - **WHEN** monsters spawn from 20:00 to 08:00 game time
 - **THEN** the copy also gives the 30 real minutes in every hour that the window lasts
 
-### Requirement: Headings and sentences state facts plainly
-
-A heading SHALL name its content in the terms the site already uses for it.
-
-#### Scenario: A card holds a spawn table
-
-- **WHEN** a card shows where seasonal monsters spawn
-- **THEN** its heading is "Spawns", as on monster pages
-- **AND** it is not a question or a call to action such as "Where to hunt"
-
-### Requirement: Sentences state facts without addressing the reader
-Copy SHALL state facts in the third person or as conditions, and SHALL NOT address the reader with slogans, advice or marketing imperatives.
-
-#### Scenario: A summary describes a currency
-
-- **WHEN** a page says what a seasonal currency is for
-- **THEN** it says what the currency buys and during which events
-- **AND** it does not use a vague verb such as "works" or an imperative such as "Spend tokens on treats"
-
 ### Requirement: Labels identify their values
 A label SHALL say what a value is, so no footnote has to explain a column.
 
 #### Scenario: Table column label
 - WHEN a table column displays a value
 - THEN its label identifies the value without an explanatory footnote
-
-### Requirement: Action wording follows the game and players
-Copy SHALL use the words players and the game use for an action or effect, such as using an item, looting a corpse or a buff that does not stack, and SHALL NOT use literary verbs or internal terms where a plain word exists.
-
-#### Scenario: A potion's restriction
-
-- **WHEN** a page says a potion is unavailable during an event
-- **THEN** it says the potion cannot be used, not that it cannot be drunk
-
-#### Scenario: Effects that replace each other
-
-- **WHEN** a skill page says which effects replace each other
-- **THEN** it says the effect does not stack with them, not that it shares an overwrite group
 
 ### Requirement: Pitfalls are stated where the choice is made
 
@@ -201,3 +136,12 @@ Player-facing location displays SHALL offer map links instead of raw coordinates
 
 - **WHEN** a location has published map geometry
 - **THEN** the page links to that location on the map rather than displaying its coordinates
+
+### Requirement: Reader text is chosen in a comparison
+
+Text that players read SHALL be chosen by a person from two to four options that start from how large game wikis or popular mods handle the same thing, with every fact checked against the running game or its data.
+
+#### Scenario: A new settings explanation
+
+- **WHEN** a feature adds a settings explanation
+- **THEN** it ships only after a person picked it from drafted options shown in place
