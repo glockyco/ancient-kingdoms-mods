@@ -3,7 +3,7 @@
 ## 1. Runtime facts
 
 - [x] 1.1 List every `VirtueShrine` in the World scene with its virtue and position, and check that `VirtueText`'s table, `VirtueRules.Thresholds`, `TitleEnglish`, `HumilityMultiplier` and the `VirtueEncounters` point fields are readable from the interop assembly. Verify that `observations.md` in this change records the shrines and which reads work.
-- [ ] 1.2 In the same kind of session, activate each blessing on a scratch character and record what the character window shows before and after (Armor Class and resists for Humility, maximum Health for Sacrifice, Accuracy for Honor), the remaining time, a renewal, the Sacrifice refusal below rank 5 and the Honesty refusal with pending returns. Check each rule the pages state against the game, including a stranded adventurer's level and Health in one dungeon and an Honor fight's points. Verify that `observations.md` records each value next to the code that produces it.
+- [x] 1.2 In the same kind of session, activate each blessing on a scratch character and record what the character window shows before and after (Armor Class and resists for Humility, maximum Health for Sacrifice, Accuracy for Honor), the remaining time, a renewal, the Sacrifice refusal below rank 5 and the Honesty refusal with pending returns. Check each rule the pages state against the game, including a stranded adventurer's level and Health in one dungeon and an Honor fight's points. Verify that `observations.md` records each value next to the code that produces it.
 
 ## 2. Export
 
