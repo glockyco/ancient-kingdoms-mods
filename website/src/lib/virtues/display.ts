@@ -120,8 +120,7 @@ export function rankEffect(
 }
 
 /**
- * A blessing's range in one line, such as "Up to +10% healing received".
- * Humility starts below zero, so it states both ends.
+ * A blessing's strongest effect in one line, such as "Up to +10% healing received".
  */
 export function blessingSummary(
   virtue: VirtueId,
@@ -132,8 +131,6 @@ export function blessingSummary(
   switch (virtue) {
     case "honor":
       return `Up to ${top.extra} and ${top.value} Critical Resist`;
-    case "humility":
-      return `${rankEffect(virtue, 0, humilityMultipliers[0]).value} Armor Class and resistances, rising to ${top.value}`;
     case "honesty":
       return `Up to ${top.value} faction gains`;
     default:
