@@ -52,6 +52,7 @@ internal static class MonsterTooltip
         Text.Append(SectionGap).Append("\n<size=90%><color=#6B7684>")
             .Append(watched ? "Click to stop watching." : "Click to watch.")
             .Append(" Shift-click opens the Bestiary.</color></size>");
+        Wrapping.KeepLastWordsTogether(Text);
         return Text.ToString();
     }
 

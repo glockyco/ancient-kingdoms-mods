@@ -21,6 +21,7 @@
     <!-- Sources without game references, compiled directly. -->
     <Compile Include="..\..\mods\PocketCompendium\Core\Game\Tier.cs" Link="Sources\Core\Tier.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Text\ZoneNames.cs" Link="Sources\Core\ZoneNames.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Core\Text\Wrapping.cs" Link="Sources\Core\Wrapping.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Ui\PanelPlacement.cs" Link="Sources\Core\PanelPlacement.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Ui\RawImageRows.cs" Link="Sources\Core\RawImageRows.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Core\Tracking\GameClock.cs" Link="Sources\Tracking\GameClock.cs" />
