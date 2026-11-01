@@ -10,6 +10,7 @@ const DOMAIN_DIRECTORIES = {
   gathering_resource: "gathering_resources",
   chest: "chests",
   zone: "zones",
+  virtue_shrine: "virtue_shrines",
   world: "world",
 } as const;
 
