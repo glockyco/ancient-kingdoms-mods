@@ -89,7 +89,6 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
             "locked_icon_path",
         },
         "monster_spawns": {
-            "loot_zone_number",
             "loot_respawn",
             "loot_exp_multiplier",
             "loot_is_boss",

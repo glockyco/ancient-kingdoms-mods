@@ -113,7 +113,7 @@ export interface DungeonEscort {
   health: number;
 }
 
-// Source: server-scripts/VirtueEscortStats.cs:TryForDungeon — the dungeon's monsters that are not bosses, elites, fabled, dummies, passive or summoned.
+// Source: server-scripts/VirtueEscortStats.cs:TryForDungeon — the monsters whose idZone is the dungeon, which are not bosses, elites, fabled, dummies, passive or summoned. Some monsters standing in a dungeon carry another zone's number and do not count.
 /** The stranded adventurer of each dungeon, or of one dungeon. */
 export function loadDungeonEscorts(zoneId?: string): DungeonEscort[] {
   const spawns = query<{
@@ -128,7 +128,7 @@ export function loadDungeonEscorts(zoneId?: string): DungeonEscort[] {
        m.health_base, m.health_per_level, m.health_multiplier
      FROM monster_spawns s
      JOIN monsters m ON m.id = s.monster_id
-     JOIN zones z ON z.id = s.zone_id
+     JOIN zones z ON z.zone_id = s.loot_zone_number
      WHERE z.is_dungeon = 1 AND (? IS NULL OR z.id = ?)
        AND m.is_boss = 0 AND m.is_elite = 0 AND m.is_fabled = 0
        AND m.is_dummy = 0 AND m.no_aggro_monster = 0 AND m.is_summonable = 0`,

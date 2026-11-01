@@ -705,6 +705,10 @@ CREATE TABLE monster_spawns (
     monster_id TEXT NOT NULL REFERENCES monsters(id),
     zone_id TEXT NOT NULL REFERENCES zones(id),
     sub_zone_id TEXT REFERENCES zone_triggers(id),
+    -- The game's zone number for this monster (Monster.idZone). Zone rules such as
+    -- a dungeon's stranded adventurer select monsters by it, and some monsters
+    -- carry a number other than the zone they stand in.
+    loot_zone_number INTEGER,
     position_x REAL,
     position_y REAL,
     position_z REAL,

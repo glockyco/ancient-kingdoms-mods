@@ -293,6 +293,7 @@ export const PAGE_FINGERPRINT_FIELDS = Object.freeze({
     "id",
     "is_patrolling",
     "level",
+    "loot_zone_number",
     "magic_damage",
     "magic_resist",
     "monster_id",
