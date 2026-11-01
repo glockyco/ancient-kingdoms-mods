@@ -27,7 +27,7 @@ The mod only displays information. It doesn't change combat, loot, or spawns.
 
 Lists the bosses, elites, and fabled monsters in your zone and when they spawn. Times are exact in a world you host, and in a friend's world when you both use the mod. Elsewhere they are estimates and start with `~`.
 
-![The boss list in Twilight Forest with Seer Kzhal's spawn rules in a tooltip.](../../assets/pocket-compendium-list.webp)
+![The boss list in Twilight Forest with monsters that are up, in combat and respawning.](../../assets/pocket-compendium-list.webp)
 
 ### Map pins and world markers
 
