@@ -4,7 +4,7 @@ Pocket Compendium is a MelonLoader mod for Ancient Kingdoms. It shows when bosse
 
 The mod only displays information. It doesn't change combat, loot, or spawns.
 
-![The boss list in Crescent Coast with Ancient Cyclops up, Xylevis respawning in 23:33, a chance spawn and an altar boss, and two watched monsters from Twilight Forest. Xylevis's spawn point counts down in the world, and an arrow at the screen's edge points to Ancient Cyclops, 215 yd away.](../../assets/pocket-compendium-world.webp)
+![The boss list in Crescent Coast with Ancient Cyclops up, a chance spawn, Xylevis respawning in 34:03, a watched altar boss, and the watched Spirit of the Forest from Twilight Forest. Xylevis's spawn point counts down in the world, and an arrow at the screen's edge points to Ancient Cyclops, 202 yd away.](../../assets/pocket-compendium-world.webp)
 
 [Download PocketCompendium.dll](https://ancient-kingdoms.compendiums.org/mods/PocketCompendium.dll)
 
@@ -53,6 +53,8 @@ Dead monsters in your zone are marked on their spawn point with a respawn timer.
 
 When a watched monster spawns, the game announces it on screen and in chat, for example "Xylevis has spawned in Crescent Coast." If the mod only has estimated times for a server, the alert comes when you see the monster alive.
 
+![The message "Xylevis has spawned in Crescent Coast" across the screen. The boss list shows Xylevis up 15 yd away with the gold corner of a watched monster, and Xylevis stands in the distance.](../../assets/pocket-compendium-alert.webp)
+
 ## Bestiary
 
 Every Bestiary page shows the monster's stats, lore, and drops, including monsters you haven't met yet. Hover over a drop to see the item's full tooltip. Click **Skills** below the page to see the monster's skills. Dead monsters show their respawn timer on their portrait and on their page. To open a monster's page from the world, hold Alt and click the monster.
@@ -63,7 +65,9 @@ With a gamepad, move right from the monster grid to reach the drops, down to rea
 
 ## Boss skills
 
-During a fight, a panel shows the skills of every boss, elite, and fabled monster attacking you or your pet. It shows each skill's cooldown and when the next special attack can come. Out of combat, select one of these monsters to preview its skills. Drag the panel's header to move it, and drag its corner to resize it.
+During a fight, a panel shows the skills of every boss, elite, and fabled monster attacking you or your pet, unless its only skill is a basic attack. It shows each skill's cooldown and when the next special attack can come. Out of combat, select one of these monsters to preview its skills. Drag the panel's header to move it, and drag its corner to resize it. Its settings page chooses which of the three tiers it shows.
+
+![Ancient Cyclops casting Earthshatter Slam. The panel marks it as casting, shows Strong Knockback and Grasping Roots counting down, and says the next special can come in 6.2 to 8.2 s.](../../assets/pocket-compendium-skills.webp)
 
 ## Settings
 
