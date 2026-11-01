@@ -2,18 +2,18 @@
 
 ## Purpose
 
-Defines how a player reports a Pocket Compendium problem from the game, what a report carries, and how a feature that stopped after an error makes itself known.
+Defines how a player reports a Pocket Compendium problem or suggests an idea from the game, what a report carries, and how a feature that stopped after an error makes itself known.
 
 ## ADDED Requirements
 
-### Requirement: One action starts a report
+### Requirement: The report action prepares a report
 
-The settings window SHALL offer a report action at all times. The action SHALL open the repository's Pocket Compendium issue form in the browser with its details field filled in, copy the same details to the clipboard, and then show where `MelonLoader/Latest.log` is, with a way to open its folder.
+The report action SHALL open the repository's problem form in the browser with its details field filled in, copy the same details to the clipboard, and then show where `MelonLoader/Latest.log` is, with a way to open its folder.
 
 #### Scenario: Reporting from the game
 
 - **WHEN** the player uses the report action
-- **THEN** the browser shows the Pocket Compendium issue form with the details filled in
+- **THEN** the browser shows the problem form with the details filled in
 - **AND** the clipboard holds the same details
 - **AND** the settings window names the log file and can open its folder
 
@@ -49,14 +49,37 @@ The link SHALL stay within the length GitHub accepts by shortening error lines f
 - **WHEN** three features stopped with long errors
 - **THEN** the form opens with shortened error lines and the clipboard holds them in full
 
-### Requirement: The form takes the details
+### Requirement: The problem form takes the details
 
-The issue form SHALL have the details field that the report action fills, ask what went wrong and how to see it, and ask for the log file and a screenshot. It SHALL say where a player who opens it outside the game finds the versions and the log. Every report SHALL carry the labels `bug` and `mods`.
+The problem form SHALL have the details field that the report action fills, ask what went wrong and how to see it, and ask for the log file and a screenshot. It SHALL say where a player who opens it outside the game finds the versions and the log, and SHALL name the game's Discord as the place to post the copied details without a GitHub account. Every problem report SHALL carry the labels `bug` and `mods`.
 
 #### Scenario: Opening the form from the README
 
-- **WHEN** a player opens the form from the README
+- **WHEN** a player opens the problem form from the README
 - **THEN** the form says where the versions and the log file are
+
+#### Scenario: A player without a GitHub account
+
+- **WHEN** a player without a GitHub account reads the problem form
+- **THEN** the form names the game's Discord as the place to post the copied details
+
+### Requirement: The idea action opens the ideas form
+
+The idea action SHALL open the repository's ideas form in the browser. The ideas form SHALL ask about the player's situation in the game and SHALL NOT ask for versions, logs or other details of the player's setup. Every idea SHALL carry the labels `enhancement` and `mods`.
+
+#### Scenario: Suggesting an idea
+
+- **WHEN** the player uses the idea action
+- **THEN** the browser shows the ideas form, and it asks for no version or log
+
+### Requirement: The README names where to report
+
+The README's limits SHALL link the problem form and name the game's Discord for players without a GitHub account.
+
+#### Scenario: Reading the README
+
+- **WHEN** a player reads the README's limits
+- **THEN** they find the link to the problem form and the game's Discord
 
 ### Requirement: A stopped feature makes itself known
 

@@ -1,0 +1,34 @@
+# Tasks
+
+## 1. Details and link
+
+- [ ] 1.1 Add a pure details builder and link builder in `mods/PocketCompendium/Core`, compiled into the test project, with tests for the field order, the absence of addresses, names and paths, the URL encoding, and the length cap that shortens error lines first. Verify with `dotnet test tests/PocketCompendium.Tests`.
+- [ ] 1.2 Read the setup in game: versions, the system through the Wine exports, the language, alone, hosting or joined, the loaded mods and plugins, and the switched-off and stopped features. Verify by printing the details through HotRepl in single player, on a LAN host and on its client.
+
+## 2. Forms
+
+- [ ] 2.1 Choose both forms' fields and text through a comparison (compare-options), with references from issue forms of popular game mods. Verify that the answer is recorded.
+- [ ] 2.2 Add the problem form and the ideas form to `.github/ISSUE_TEMPLATE/` with the chosen text and their labels, and a test that every field id in the report link exists in the problem form. Verify with that test and a check of both files against GitHub's issue form schema.
+
+## 3. About page
+
+- [ ] 3.1 Choose the page's name, its content and its wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded.
+- [ ] 3.2 Add a settings page kind that draws its own content, and build the page as chosen, with "Reset this page" hidden. Verify in game on a 1920 and a 1280 px window.
+- [ ] 3.3 Keep the four addresses in one class with a test that compares them with `website/src/lib/constants/links.ts` and `website/src/lib/seo/site.ts`. Verify with `dotnet test tests/PocketCompendium.Tests`.
+- [ ] 3.4 Apply the chosen wording of the other pages' summaries and help texts. Verify in game that no text ends with a single word on its last line.
+
+## 4. Actions and messages
+
+- [ ] 4.1 Implement the report action: clipboard, `Application.OpenURL`, the result text and the button that opens the log's folder. Verify under CrossOver that the clipboard holds the details, that a local HTTP listener given as the link receives the request, and that the folder opens.
+- [ ] 4.2 Implement the idea action and the links. Verify under CrossOver that each one opens the browser.
+- [ ] 4.3 Choose the stopped-feature message through a comparison, then show it once per feature and session from the registry's failure path. Verify by forcing a failure in a scratch session and reading the message band and the log.
+- [ ] 4.4 Log alone, hosting or joined on each world entry. Verify in `MelonLoader/Latest.log` for single player, a LAN host and its client.
+
+## 5. Documentation and records
+
+- [ ] 5.1 Link the problem form and name the game's Discord in the README's limits, worded through a comparison. Verify with `pnpm check:docs`.
+- [ ] 5.2 Record each comparison's answer as a case in the vault's Ancient Kingdoms Compendium note. Verify that the note holds the cases.
+
+## Workflow follow-up
+
+- After the release push, use both actions in game and check that GitHub fills the details field and applies each form's labels.
