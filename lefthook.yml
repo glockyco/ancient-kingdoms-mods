@@ -27,15 +27,18 @@ pre-commit:
       glob: "**/*.{js,mjs,cjs,ts,svelte}"
       run: nix develop --command pnpm exec eslint --fix --max-warnings 0 {staged_files}
       stage_fixed: true
-    # These two artifacts are generated from website/data/compendium.db and then
+    # These artifacts are generated from website/data/compendium.db and then
     # committed, because a clean checkout has no database to derive them from. The
     # database is untracked, so a game update changes their content while staging
-    # no file that names them. Both globs therefore include version.ts: a data
+    # no file that names them. Every glob therefore includes version.ts: a data
     # update ends by publishing that version, so the check runs exactly once per
     # update. Without it a stale artifact commits silently.
     - name: website-skill-effect-parity-drift
       glob: "{website/src/lib/utils/formatSkillEffect.ts,website/src/lib/utils/format.ts,website/src/lib/skills/*.ts,website/scripts/gen-skill-effect-parity.ts,website/src/lib/constants/version.ts,tests/PocketCompendium.Tests/Fixtures/skill-effect-parity.json}"
       run: nix develop --command pnpm --filter website gen:skill-effect-parity && git diff --exit-code -- tests/PocketCompendium.Tests/Fixtures/skill-effect-parity.json
+    - name: website-drop-chance-parity-drift
+      glob: "{website/src/lib/calculation/boss-loot.ts,website/src/lib/acquisition/*.ts,website/src/lib/acquisition/*.json,website/scripts/gen-drop-chance-parity.ts,website/src/lib/constants/version.ts,tests/PocketCompendium.Tests/Fixtures/drop-chance-parity.json}"
+      run: nix develop --command pnpm --filter website gen:drop-chance-parity --check
     - name: website-home-counts-drift
       glob: "{website/scripts/generate-home-counts.mjs,website/src/lib/constants/version.ts,website/src/lib/generated/home-counts.ts}"
       run: nix develop --command pnpm --filter website gen:home-counts && git diff --exit-code -- website/src/lib/generated/home-counts.ts

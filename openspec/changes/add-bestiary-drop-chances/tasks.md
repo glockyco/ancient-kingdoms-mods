@@ -2,8 +2,8 @@
 
 ## 1. Calculation
 
-- [ ] 1.1 Port the website's boss calculation and its independent-roll formula to pure C# with tests for a guaranteed piece, a Fatecharm, a repeated item, a random item and a quest-flagged item. Verify with `dotnet test tests/PocketCompendium.Tests`.
-- [ ] 1.2 Add a script beside `gen-skill-effect-parity.ts` that writes a case for every drop of every Bestiary monster from the website's code, and a C# test that reads it. Verify with the script and `dotnet test tests/PocketCompendium.Tests`.
+- [x] 1.1 Port the website's boss calculation and its independent-roll formula to pure C# with tests for a guaranteed piece, a Fatecharm, a repeated item, a random item and a quest-flagged item. Verify with `dotnet test tests/PocketCompendium.Tests`.
+- [x] 1.2 Add a script beside `gen-skill-effect-parity.ts` that writes a case for every drop of every Bestiary monster from the website's code, and a C# test that reads it. Verify with the script and `dotnet test tests/PocketCompendium.Tests`.
 - [ ] 1.3 Build the inputs from the game's monster objects and compare them through HotRepl with the export for every monster with a drop table. Verify that the comparison lists no difference, or that each difference is explained in the change folder.
 
 ## 2. Observed in game
