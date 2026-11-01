@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { honestyGainBonus } from "$lib/calculation/virtues";
+  import { bonusRange, virtueHref } from "$lib/virtues/display";
   import { formatNumber } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
@@ -83,6 +85,16 @@
     return formatNumber(max - min);
   }
 </script>
+
+{#snippet honesty()}
+  <!-- Source: server-scripts/Player.cs:ApplyVirtueFactionGain — Honesty raises positive gains, rounded, and leaves losses alone. -->
+  An active
+  <a
+    href={virtueHref("honesty")}
+    class="text-blue-600 dark:text-blue-400 hover:underline">Honesty</a
+  >
+  blessing adds {bonusRange(honestyGainBonus)} to the gain, rounded.
+{/snippet}
 
 <Seo
   title="Reputation Mechanics - Ancient Kingdoms"
@@ -400,6 +412,7 @@
           >Handing in an ordinary quest gives 20 reputation per recommended
           level with its starting quest giver's faction.</span
         >
+        <span class="block">{@render honesty()}</span>
       </p>
       <p>
         <a
@@ -424,7 +437,7 @@
       <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — both reputation changes precede the reward roll. Source: website/data/compendium.db:chests — all 54 faction chests have a 75% gold reward chance and require no key. -->
       <p>
         Both reputation changes apply even if the chest gives no gold. The
-        chance of gold is 75%.
+        chance of gold is 75%. {@render honesty()}
       </p>
     </Card.Content>
   </Card.Root>
@@ -438,10 +451,10 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:14530-14534 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:ApplyVirtueFactionGain — petting adds its value through the Honesty blessing like every other gain. -->
       <p>
         Click an animal within 3 yd to pet it. The same animal can grant
-        reputation only once every 30 seconds.
+        reputation only once every 30 seconds. {@render honesty()}
       </p>
     </Card.Content>
   </Card.Root>

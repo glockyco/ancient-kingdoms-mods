@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { virtueHref } from "$lib/virtues/display";
   import { formatNumber } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -724,6 +725,14 @@
                       name={reputationReward.faction}
                       id={data.factionIds[reputationReward.faction]}
                     />
+                    <!-- Source: server-scripts/PlayerQuests.cs:449-452; Player.cs:ApplyVirtueFactionGain — the quest gain goes through the Honesty blessing. -->
+                    <span class="text-muted-foreground"
+                      >(more with <a
+                        href={virtueHref("honesty")}
+                        class="text-blue-600 dark:text-blue-400 hover:underline"
+                        >Honesty</a
+                      >)</span
+                    >
                   </span>
                 </div>
               {/each}

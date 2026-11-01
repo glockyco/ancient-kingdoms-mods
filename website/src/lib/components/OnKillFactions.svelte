@@ -4,6 +4,7 @@
     KillReputationEffect,
   } from "$lib/utils/killReputation";
   import FactionLink from "$lib/components/FactionLink.svelte";
+  import { virtueHref } from "$lib/virtues/display";
 
   interface Props {
     /** Reputation changes applied when the entity is killed */
@@ -36,6 +37,13 @@
           : ""}<FactionLink
           name={faction}
           id={factionIds[faction]}
-        />{/each}{/each}
+        />{/each}{/each}{#if effects.some((effect) => effect.direction === "improve")}
+      <!-- Source: server-scripts/Player.cs:ApplyVirtueFactionGain — Honesty raises positive gains only. -->
+      <span class="ml-1"
+        >(more with <a
+          href={virtueHref("honesty")}
+          class="text-blue-600 dark:text-blue-400 hover:underline">Honesty</a
+        >)</span
+      >{/if}
   </span>
 {/if}
