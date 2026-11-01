@@ -84,9 +84,9 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Weapons",
       href: "/items?items.item_type=weapon",
-      count: 173,
+      count: 188,
       icon: {
-        src: "/images/items/sunspear_of_the_citadel/icon.webp",
+        src: "/images/items/imperial_executioner/icon.webp",
         width: 30,
         height: 30,
       },
@@ -94,9 +94,9 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Equipment",
       href: "/items?items.item_type=equipment",
-      count: 778,
+      count: 847,
       icon: {
-        src: "/images/items/dawnforged_chestplate/icon.webp",
+        src: "/images/items/valorathian_minstrel_breastplate/icon.webp",
         width: 30,
         height: 29,
       },
@@ -134,7 +134,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Backpacks",
       href: "/items?items.item_type=backpack",
-      count: 19,
+      count: 20,
       icon: {
         src: "/images/items/giant_satchel/icon.webp",
         width: 26,
@@ -246,7 +246,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       type: "Crafting",
       href: "/recipes?recipes.type=Crafting",
-      count: 62,
+      count: 72,
       icon: {
         src: "/images/skills/crafting/icon.webp",
         width: 32,
@@ -824,6 +824,18 @@ export const HOME_SHOWCASE: HomeShowcase = {
       href: "/zones/temple_of_valaark",
       shot: {
         src: "/images/zones/temple_of_valaark/shot.webp",
+        width: 960,
+        height: 540,
+      },
+    },
+    {
+      id: "old_valorath",
+      name: "Old Valorath",
+      levelMedian: 55,
+      isDungeon: true,
+      href: "/zones/old_valorath",
+      shot: {
+        src: "/images/zones/old_valorath/shot.webp",
         width: 960,
         height: 540,
       },
