@@ -1,4 +1,5 @@
 using Il2Cpp;
+using PocketCompendium.Core.Text;
 using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.BossSkills.Model;
 using UnityEngine;
@@ -38,7 +39,7 @@ public sealed class ControlCluster
         _compactExpand = ControlIcon("compactExpand", CompactRect, Icons.ChevronsUpDown, Theme.Muted);
 
         SettingsRect = Slot("settings", parent, 2, size, gap, right);
-        AddTooltip(SettingsRect.gameObject, "<b>Settings</b>\nPocket Compendium's settings, on the Boss skills page.");
+        AddTooltip(SettingsRect.gameObject, "<b>Settings</b>\n" + ModText.Name + "'s settings, on the Boss skills page.");
         ControlIcon("settingsIcon", SettingsRect, Icons.Sliders, Theme.Muted);
     }
 

@@ -324,7 +324,7 @@ internal sealed class BossListPanel
         _lockButton = ControlButton(Icons.LockOpen, 0, out _lockTooltip);
         _styleButton = ControlButton(Icons.LayoutGrid, 1, out _styleTooltip);
         _settingsButton = ControlButton(Icons.Sliders, 2, out var settingsTooltip);
-        settingsTooltip.text = "<b>Settings</b>\nPocket Compendium's settings, on the Boss list page.";
+        settingsTooltip.text = "<b>Settings</b>\n" + ModText.Name + "'s settings, on the Boss list page.";
     }
 
     private IconButton ControlButton(Sprite icon, int slot, out UIShowToolTip tooltip)

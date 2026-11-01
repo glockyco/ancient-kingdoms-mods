@@ -6,6 +6,7 @@ using Il2CppMirror;
 using Il2CppMirror.RemoteCalls;
 using PocketCompendium.Core;
 using PocketCompendium.Core.Features;
+using PocketCompendium.Core.Text;
 using PocketCompendium.Core.Tracking;
 using PocketCompendium.Core.Ui;
 using UnityEngine;
@@ -55,7 +56,7 @@ public sealed class SharingFeature : Feature
     private bool _reportedVersion;
 
     public SharingFeature()
-        : base("Sharing", "Sharing", "Shares exact boss times with players in your world who also use Pocket Compendium.")
+        : base("Sharing", "Sharing", "Shares exact boss times with players in your world who also use " + ModText.Name + ".")
     {
     }
 
