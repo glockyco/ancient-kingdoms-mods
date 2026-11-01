@@ -49,84 +49,92 @@ for (const entry of entries) {
   byPool.set(entry.pool_id, pool);
 }
 
-const corpus = monsters.map((monster) => {
-  const pool = byPool.get(monster.loot_pool_id) ?? [];
-  const drops = pool.map((entry) => ({
-    itemId: entry.item_id ?? `anonymous:${entry.duplicate_group}`,
-    itemName: `group:${entry.duplicate_group}`,
-    probability: entry.probability,
-    countsAsEquipment: Boolean(entry.guaranteed_equipment_candidate),
-    requiresQuest: entry.quest_gate !== "none",
-    ...(entry.resolution === "uniform_child"
-      ? {
-          randomItems: (byPool.get(entry.child_pool_id!) ?? []).map(
-            (child) => ({
-              itemId: child.item_id ?? `anonymous-child:${child.ordinal}`,
-              countsAsEquipment: Boolean(child.counts_equipment),
-            }),
-          ),
-        }
-      : {}),
-  }));
-  const method: MethodRow = {
-    id: `parity:${monster.id}`,
-    kind: "kill",
-    rule_id: "monster_loot",
-    setup_method_id: null,
-    rooted: 1,
-    source_level_hint: null,
-  };
-  const detail: DataRow = {
-    id: method.id,
-    loot_pool_id: monster.loot_pool_id,
-    is_boss: monster.is_boss,
-    is_hunt: monster.is_hunt,
-    loot_zone_number: 0,
-  };
-  const targets = drops.flatMap((drop, ordinal) => [
-    { itemId: drop.itemId, ordinal },
-    ...[...new Set(drop.randomItems?.map((item) => item.itemId) ?? [])].map(
-      (itemId) => ({ itemId, ordinal }),
-    ),
-  ]);
-  const checks = targets.flatMap(({ itemId, ordinal }) =>
-    [false, true].map((questNeeded) => {
-      const neededQuestItemIds = questNeeded ? [itemId] : [];
-      const expected = [false, true].map((fatecharm) => {
-        const results = calculateMethodProbabilities(rows, method, detail, {
-          assumptions: {
-            ...BASELINE_ASSUMPTIONS,
-            questNeed: "specified",
-            fatecharm,
-          },
-          neededQuestItemIds: new Set(neededQuestItemIds),
+// A withheld entry hides a drop the game still rolls, so the site states the
+// pool's chances as unknown and there is no figure for the mod to match.
+const withheldPools = new Set(
+  entries.filter((entry) => entry.withheld).map((entry) => entry.pool_id),
+);
+const corpus = monsters
+  .filter((monster) => !withheldPools.has(monster.loot_pool_id))
+  .map((monster) => {
+    const pool = byPool.get(monster.loot_pool_id) ?? [];
+    const drops = pool.map((entry) => ({
+      itemId: entry.item_id ?? `anonymous:${entry.duplicate_group}`,
+      itemName: `group:${entry.duplicate_group}`,
+      probability: entry.probability,
+      countsAsEquipment: Boolean(entry.guaranteed_equipment_candidate),
+      requiresQuest: entry.quest_gate !== "none",
+      ...(entry.resolution === "uniform_child"
+        ? {
+            randomItems: (byPool.get(entry.child_pool_id!) ?? []).map(
+              (child) => ({
+                itemId: child.item_id ?? `anonymous-child:${child.ordinal}`,
+                countsAsEquipment: Boolean(child.counts_equipment),
+              }),
+            ),
+          }
+        : {}),
+    }));
+    const method: MethodRow = {
+      id: `parity:${monster.id}`,
+      kind: "kill",
+      rule_id: "monster_loot",
+      setup_method_id: null,
+      rooted: 1,
+      source_level_hint: null,
+    };
+    const detail: DataRow = {
+      id: method.id,
+      loot_pool_id: monster.loot_pool_id,
+      is_boss: monster.is_boss,
+      is_hunt: monster.is_hunt,
+      loot_zone_number: 0,
+    };
+    const targets = drops.flatMap((drop, ordinal) => [
+      { itemId: drop.itemId, ordinal },
+      ...[...new Set(drop.randomItems?.map((item) => item.itemId) ?? [])].map(
+        (itemId) => ({ itemId, ordinal }),
+      ),
+    ]);
+    const checks = targets.flatMap(({ itemId, ordinal }) =>
+      [false, true].map((questNeeded) => {
+        const neededQuestItemIds = questNeeded ? [itemId] : [];
+        const expected = [false, true].map((fatecharm) => {
+          const results = calculateMethodProbabilities(rows, method, detail, {
+            assumptions: {
+              ...BASELINE_ASSUMPTIONS,
+              questNeed: "specified",
+              fatecharm,
+            },
+            neededQuestItemIds: new Set(neededQuestItemIds),
+          });
+          const result = results.find(
+            (value) =>
+              value.target.kind === "item" && value.target.itemId === itemId,
+          );
+          // Random wrappers are not awarded themselves, so they have no result.
+          const chance =
+            result?.probability ?? (result === undefined ? 0 : null);
+          if (chance === null)
+            throw new Error(`Unknown chance for ${monster.id}/${itemId}`);
+          return chance;
         });
-        const result = results.find(
-          (value) =>
-            value.target.kind === "item" && value.target.itemId === itemId,
-        );
-        // Random wrappers are not awarded themselves, so they have no result.
-        const chance = result?.probability ?? (result === undefined ? 0 : null);
-        if (chance === null)
-          throw new Error(`Unknown chance for ${monster.id}/${itemId}`);
-        return chance;
-      });
-      return {
-        itemId,
-        ordinal,
-        neededQuestItemIds,
-        expected: expected[0],
-        expectedWithFatecharm: expected[1],
-      };
-    }),
-  );
-  return {
-    monsterId: monster.id,
-    isBoss: Boolean(monster.is_boss),
-    drops,
-    checks,
-  };
-});
+        return {
+          itemId,
+          ordinal,
+          neededQuestItemIds,
+          expected: expected[0],
+          expectedWithFatecharm: expected[1],
+        };
+      }),
+    );
+    return {
+      monsterId: monster.id,
+      isBoss: Boolean(monster.is_boss),
+      drops,
+      checks,
+    };
+  });
 
 const json = `[\n${corpus.map((item) => "  " + JSON.stringify(item)).join(",\n")}\n]\n`;
 const outPath = resolve(
