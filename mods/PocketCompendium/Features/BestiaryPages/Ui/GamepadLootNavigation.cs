@@ -89,8 +89,8 @@ internal static class GamepadLootNavigation
             return;
 
         var loot = LootSelectables();
-        var skills = SkillsPanelController.VisibleButton;
-        if (loot.Count == 0 && skills == null)
+        var buttons = PageButtons();
+        if (loot.Count == 0 && buttons.Count == 0)
             return;
 
         var entryCount = GameManager.singleton != null && GameManager.singleton.elitesBosses != null
@@ -98,7 +98,8 @@ internal static class GamepadLootNavigation
             : 0;
         var gridColumns = Math.Max(1, __instance.content.GetComponent<GridLayoutGroup>()?.constraintCount ?? 1);
         var gridEntry = CurrentGridEntry(__instance, entryCount);
-        var first = loot.Count > 0 ? loot[0] : skills;
+        var first = loot.Count > 0 ? loot[0] : buttons[0];
+        var firstButton = buttons.Count > 0 ? buttons[0] : null;
 
         for (var i = 0; i < entryCount; i++)
         {
@@ -121,17 +122,18 @@ internal static class GamepadLootNavigation
             navigation.selectOnLeft = column > 0 ? loot[i - 1] : gridEntry;
             navigation.selectOnRight = column < lootColumns - 1 && i + 1 < loot.Count ? loot[i + 1] : null;
             navigation.selectOnUp = i >= lootColumns ? loot[i - lootColumns] : null;
-            navigation.selectOnDown = i + lootColumns < loot.Count ? loot[i + lootColumns] : skills;
+            navigation.selectOnDown = i + lootColumns < loot.Count ? loot[i + lootColumns] : firstButton;
             loot[i].navigation = navigation;
         }
 
-        if (skills != null)
+        for (var i = 0; i < buttons.Count; i++)
         {
             var navigation = new Navigation();
             navigation.mode = Navigation.Mode.Explicit;
             navigation.selectOnUp = loot.Count > 0 ? loot[(loot.Count - 1) / lootColumns * lootColumns] : null;
-            navigation.selectOnLeft = gridEntry;
-            skills.navigation = navigation;
+            navigation.selectOnLeft = i > 0 ? buttons[i - 1] : gridEntry;
+            navigation.selectOnRight = i + 1 < buttons.Count ? buttons[i + 1] : null;
+            buttons[i].navigation = navigation;
         }
     }
 
@@ -153,9 +155,11 @@ internal static class GamepadLootNavigation
         if (selected == null)
             return false;
 
-        var skills = SkillsPanelController.VisibleButton;
-        if (skills != null && skills.gameObject == selected)
-            return true;
+        foreach (var button in PageButtons())
+        {
+            if (button.gameObject == selected)
+                return true;
+        }
 
         foreach (var slot in BestiaryLootRenderer.ShownSlots)
         {
@@ -164,6 +168,17 @@ internal static class GamepadLootNavigation
         }
 
         return false;
+    }
+
+    // The buttons below the page, left to right as they stand.
+    private static List<Selectable> PageButtons()
+    {
+        var buttons = new List<Selectable>(2);
+        var watch = WatchButtonController.VisibleButton;
+        if (watch != null) buttons.Add(watch);
+        var skills = SkillsPanelController.VisibleButton;
+        if (skills != null) buttons.Add(skills);
+        return buttons;
     }
 
     private static List<Selectable> LootSelectables()

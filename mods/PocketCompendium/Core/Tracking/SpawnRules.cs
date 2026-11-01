@@ -1,3 +1,5 @@
+using System;
+
 namespace PocketCompendium.Core.Tracking;
 
 /// <summary>Where a tracked monster comes from.</summary>
@@ -51,6 +53,9 @@ public sealed class SpawnRules
     public bool Summoned { get; }
 
     public bool Rolls => Chance < 1f;
+
+    /// <summary>The chance of each spawn in whole percent, as the surfaces write it, or null for a certain spawn.</summary>
+    public int? ChancePercent => Rolls ? (int)Math.Round(Chance * 100f) : null;
 
     public bool HasWindow => WindowStart != 0 || WindowEnd != 0;
 

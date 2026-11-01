@@ -15,7 +15,7 @@ The boss list SHALL show monsters in the current zone first, then watched monste
 
 ### Requirement: List rows stay short
 
-Each list row SHALL show the portrait, the name, the level in the game's level colour, the state and, for monsters in the current zone, the distance in yd with an arrow. The arrow and distance SHALL lead to a monster that is up where the game shows it, and otherwise to its spawn point or altar. Kill times, roll results and rules SHALL appear only in the row's tooltip. A name too long for its row SHALL end in an ellipsis, and the tooltip SHALL give it in full.
+Each list row SHALL show the portrait, the name, the level in the game's level colour, the state and, for monsters in the current zone, the distance in yd with an arrow. The arrow and distance SHALL lead to a monster that is up where the game shows it, and otherwise to its spawn point or altar. Kill times, roll results and the other rules SHALL appear only in the row's tooltip. A name too long for its row SHALL end in an ellipsis, and the tooltip SHALL give it in full.
 
 #### Scenario: Long name
 
@@ -26,6 +26,20 @@ Each list row SHALL show the portrait, the name, the level in the game's level c
 
 - **WHEN** Forsaken Skeleton is in combat 15 yd west of the player, far from its spawn point in the east
 - **THEN** its row's arrow points west and says 15 yd
+
+### Requirement: A chance spawn shows its chance
+
+A monster that spawns by chance SHALL show its chance after the level in its list row, such as "Lv 25 · 75% chance", and its Bestiary plate SHALL count down to its next roll with the chance, such as "75% chance in 15:33".
+
+#### Scenario: A chance spawn's row
+
+- **WHEN** the list shows Forsaken Skeleton, whose spawns each have a 75% chance
+- **THEN** its row's second line reads "Lv 25 · 75% chance"
+
+#### Scenario: A chance spawn's page
+
+- **WHEN** the player opens Forsaken Skeleton's page with 15:33 to its next roll
+- **THEN** the page shows "75% chance in 15:33"
 
 ### Requirement: Level colours follow the game
 
@@ -106,9 +120,14 @@ When a watched monster spawns, the mod SHALL raise the game's own important mess
 
 ### Requirement: Watching a monster
 
-Clicking a row, tile or pin SHALL toggle whether the monster is watched. Shift-clicking it SHALL open its Bestiary page.
+Clicking a row, tile or pin SHALL toggle whether the monster is watched. Shift-clicking it SHALL open its Bestiary page. The Bestiary page of a boss, elite or fabled monster SHALL have a Watch button beside the Skills button that toggles the same watch and reads "Watching" while the monster is watched.
 
 #### Scenario: Watching from the list
 
 - **WHEN** the player clicks Seer Kzhal's row
 - **THEN** Seer Kzhal is watched and stays listed in every zone
+
+#### Scenario: Watching from the Bestiary
+
+- **WHEN** the player clicks Watch on Forsaken Skeleton's Bestiary page
+- **THEN** the button reads "Watching", and Forsaken Skeleton's list row carries the gold corner

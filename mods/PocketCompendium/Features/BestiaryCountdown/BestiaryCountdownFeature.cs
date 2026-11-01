@@ -246,9 +246,10 @@ internal sealed class RespawnPlate
     {
         ShownKey = monster.Key;
         var state = monster.State;
+        // The Chance state comes only from rules that roll, so the percentage is there.
         string lead = state.State switch
         {
-            SpawnState.Chance => "Next roll in",
+            SpawnState.Chance => monster.Rules.ChancePercent.Value + "% chance in",
             SpawnState.Window => "Window opens in",
             _ => "Respawns in",
         };

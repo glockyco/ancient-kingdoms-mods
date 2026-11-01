@@ -33,7 +33,7 @@ A monster that the game hides outside its time window or event SHALL NOT be show
 
 ### Requirement: Chance spawns show the roll, not a return
 
-For a monster that spawns with a chance below 100%, a countdown SHALL be labelled as the next roll with a dice icon, and its tooltip SHALL give the chance. When the roll time passes, the state SHALL be Due, which says the roll is due and does not claim the monster is up.
+For a monster that spawns with a chance below 100%, a countdown SHALL be labelled as the next roll with a dice icon, and its list row, its Bestiary plate and its tooltip SHALL give the chance. When the roll time passes, the state SHALL be Due, which says the roll is due and does not claim the monster is up.
 
 #### Scenario: Failed roll
 

@@ -85,7 +85,7 @@ internal static class MonsterTooltip
         }
 
         Text.Append("Respawns ").Append(StateText.Minutes(rules.KillToRespawnSeconds)).Append(" after each kill.");
-        if (rules.Rolls) Text.Append(" Each spawn has a <b>").Append(Mathf.RoundToInt(rules.Chance * 100f)).Append("% chance</b>.");
+        if (rules.ChancePercent is int chance) Text.Append(" Each spawn has a <b>").Append(chance).Append("% chance</b>.");
         if (rules.Summoned) Text.Append(" It spawns only after all ").Append(monster.Guards.Length).Append(" of its guards are dead at the same time.");
         // Written like the game's clock on the minimap.
         if (rules.HasWindow)

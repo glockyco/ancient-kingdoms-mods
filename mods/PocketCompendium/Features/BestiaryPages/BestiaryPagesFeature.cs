@@ -11,8 +11,8 @@ using PocketCompendium.Features.BestiaryPages.Ui;
 namespace PocketCompendium.Features.BestiaryPages;
 
 /// <summary>
-/// Every monster's full Bestiary page: lore, stats, loot with tooltips, a Skills panel, gamepad
-/// focus on loot, and Alt-click to open a monster's page.
+/// Every monster's full Bestiary page: lore, stats, loot with tooltips, a Skills panel, a Watch
+/// button for tracked monsters, gamepad focus on loot, and Alt-click to open a monster's page.
 /// </summary>
 public sealed class BestiaryPagesFeature : Feature
 {
@@ -58,6 +58,7 @@ public sealed class BestiaryPagesFeature : Feature
         if (detail != null)
             BestiaryLootRenderer.RestoreGameLayout(detail);
         SkillsPanelController.Hide();
+        WatchButtonController.Hide();
     }
 
     protected internal override void Update()

@@ -11,15 +11,16 @@ namespace PocketCompendium.Features.BestiaryPages.Ui;
 internal static class SkillsPanelController
 {
     private static SkillsPanel _panel;
-    private static SkillsToggleButton _button;
+    private static PageButton _button;
     private static Monster _current;
     private static Monster _rendered;
     private static string _renderedLocale;
 
     /// <summary>The Skills button, while it is shown, for gamepad navigation.</summary>
-    internal static UnityEngine.UI.Selectable VisibleButton => _button != null ? _button.VisibleSelectable : null;
+    internal static UnityEngine.UI.Selectable VisibleButton => _button?.VisibleSelectable;
 
-    public static void OnBestiaryUpdate(UIBestiaryDetail detail)
+    /// <summary>Shows or hides the button and panel, and returns whether the button shows.</summary>
+    public static bool OnBestiaryUpdate(UIBestiaryDetail detail)
     {
         var journal = UIJournal.singleton;
         if (!BestiaryPagesFeature.ShowSkillsButton ||
@@ -28,26 +29,25 @@ internal static class SkillsPanelController
             journal.currentTab != "Bestiary")
         {
             Hide();
-            return;
+            return false;
         }
 
         _panel ??= new SkillsPanel();
-        _button ??= new SkillsToggleButton(TogglePanel);
+        _button ??= new PageButton("PC_SkillsButton", TogglePanel);
 
         _current = detail.monster;
         _button.EnsureCreated(journal);
-        _button.SetVisible(true);
-        _button.Refresh();
+        _button.Show(GameText.Term("Skills", "Skills"), UnityEngine.Color.white, slot: 0);
 
         // While open, keep the panel in sync with the selected monster and language.
         if (_panel.IsOpen && (_current != _rendered || _renderedLocale != EntityNameLocalization.LocaleCode))
             RenderCurrent();
+        return true;
     }
 
     internal static void Hide()
     {
-        if (_button != null)
-            _button.SetVisible(false);
+        _button?.Hide();
         if (_panel != null && _panel.IsOpen)
             _panel.SetOpen(false);
     }

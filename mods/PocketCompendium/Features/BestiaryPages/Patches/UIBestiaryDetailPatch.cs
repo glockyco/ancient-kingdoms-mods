@@ -27,19 +27,22 @@ internal static class UIBestiaryDetailPatch
         {
             Ui.BestiaryLootRenderer.RestoreGameLayout(__instance);
             Ui.SkillsPanelController.Hide();
+            Ui.WatchButtonController.Hide();
             return;
         }
 
         try
         {
             Ui.BestiaryDetailRenderer.Reveal(__instance);
-            Ui.SkillsPanelController.OnBestiaryUpdate(__instance);
+            bool skills = Ui.SkillsPanelController.OnBestiaryUpdate(__instance);
+            Ui.WatchButtonController.OnBestiaryUpdate(__instance, slot: skills ? 1 : 0);
         }
         catch (Exception ex)
         {
             BestiaryPagesFeature.ReportPageFailure(monster, ex);
             Ui.BestiaryLootRenderer.RestoreGameLayout(__instance);
             Ui.SkillsPanelController.Hide();
+            Ui.WatchButtonController.Hide();
         }
     }
 }

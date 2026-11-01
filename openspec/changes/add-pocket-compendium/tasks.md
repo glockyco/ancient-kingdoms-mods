@@ -36,8 +36,9 @@
 - [x] 4.8 Capture each surface in game and compare with the mood board sketches, including Chinese and Japanese names.
 - [x] 4.9 Give the Bestiary countdown one switch for the grid beside the page and one for the page, as asked on 2026-11-01, with their wording chosen through a comparison. Verify in game that each switch removes only its own countdown and brings it back at once.
 - [ ] 4.10 Make the in-fight special gate account for a target out of reach: a monster then casts a special with a longer reach at random about 1 s after its last one, without waiting for the 6 to 12 s gap, so the strip shows LOCKED while a special can come (`Monster.cs:1880-1898`, observed with Nyxarion in `openspec/changes/rework-bestiary-skills-panel/observations.md`). Verify in game at 8 yd from Nyxarion.
-- [ ] 4.11 Show a chance spawn's chance outside the hover text, as asked on 2026-11-01: in list rows and in the Bestiary page countdown, placed and worded as chosen in `.local/changes/rework-bestiary-skills-panel/review/round-2/`. Verify in game on Forsaken Skeleton that the row and the page show 75%.
-- [ ] 4.12 Let a player watch a boss, elite or fabled monster from its Bestiary page, as asked on 2026-11-01, with the control chosen in the same review, sharing the list's watchlist. Verify in game that watching from the page marks the list row, and the reverse.
+- [x] 4.11 Show a chance spawn's chance outside the hover text, as asked and chosen on 2026-11-01 (`.local/changes/rework-bestiary-skills-panel/review/round-2/`): "Lv 25 · 75% chance" on the row's second line, and "75% chance in 15:33" on the Bestiary page's plate. Verify in game on Forsaken Skeleton that the row and the page show 75%.
+- [x] 4.12 Let a player watch a boss, elite or fabled monster from its Bestiary page, as asked and chosen on 2026-11-01: a Watch button beside Skills that reads "Watching" while on, sharing the list's watchlist. Verify in game that watching from the page marks the list row, and the reverse.
+- [ ] 4.13 Tell players in the README about the chance on rows and plates and the Watch button, worded through a comparison. Verify with `pnpm check:docs`.
 
 ## 5. Sharing
 
