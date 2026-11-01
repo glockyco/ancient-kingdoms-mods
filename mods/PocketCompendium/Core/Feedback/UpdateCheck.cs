@@ -16,7 +16,7 @@ namespace PocketCompendium.Core.Feedback;
 internal static class UpdateCheck
 {
     public const string ManifestUrl = ModLinks.Site + "/mods/manifest.json";
-    public const string DownloadUrl = ModLinks.Site + "/mods/PocketCompendium.dll";
+    public const string DownloadUrl = ModLinks.Site + "/mods";
     private const string ModId = "pocket-compendium";
 
     private static MelonPreferences_Entry<string> _announced;

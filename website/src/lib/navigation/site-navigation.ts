@@ -68,6 +68,7 @@ export const PRIMARY_LINKS: readonly NavigationLink[] = [
   { ...entity("zone"), wideOnly: true },
   entity("recipe"),
   entity("class"),
+  { label: "Mods", href: "/mods" },
 ];
 
 const mechanicsPages: readonly MechanicsPage[] = MECHANICS_GROUPS.flatMap(
