@@ -57,11 +57,13 @@ When a watched monster spawns, the game announces it on screen and in chat, for 
 
 ## Bestiary
 
-Every Bestiary page shows the monster's stats, lore, and drops, including monsters you haven't met yet. Hover over a drop to see the item's full tooltip. Click **Skills** below the page to see the monster's skills. Dead monsters show their respawn timer on their portrait and on their page. To open a monster's page from the world, hold Alt and click the monster.
+Every Bestiary page shows the monster's stats, lore, and drops, including monsters you haven't met yet. Hover over a drop to see the item's full tooltip. Dead monsters show their respawn timer on their portrait and on their page. To open a monster's page from the world, hold Alt and click the monster.
 
-![Xylevis's Bestiary page with his stats, lore, and four drops. The page says Respawns in 14:41, and his portrait in the grid counts down.](../../assets/pocket-compendium-bestiary.webp)
+Beside the page, the Skills panel sums up the damage the monster deals and its threats, then has a card for each special skill, in the order the boss skills panel shows them in a fight. Each card gives the skill's cast time, cooldown and what it does. Hover over a card for its full mechanics. If you close the panel, it stays closed until you click **Skills** below the page. Drag its frame to move it.
 
-With a gamepad, move right from the monster grid to reach the drops, down to reach **Skills**, and left to go back.
+![Nyxarion's Bestiary page with his stats, lore, and drops. Beside it, the Skills panel shows his physical damage of 1,720 and cold damage of 4,650, his threats, and cards for Fear, Knockback, Dragon Ice Breath, and Summon Player.](../../assets/pocket-compendium-bestiary.webp)
+
+With a gamepad, move right from the monster grid to reach the drops, down to reach **Skills**, right to reach the skill cards, and left to go back.
 
 ## Boss skills
 

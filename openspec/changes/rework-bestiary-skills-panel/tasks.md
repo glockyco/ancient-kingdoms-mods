@@ -25,5 +25,5 @@
 
 ## 4. Documentation and records
 
-- [ ] 4.1 Update the README's Bestiary section and its screenshot, worded through a comparison. Verify with `pnpm check:docs`.
+- [x] 4.1 Update the README's Bestiary section and its screenshot, worded through a comparison. Verify with `pnpm check:docs`. Decided on 2026-11-01 (`.local/changes/rework-bestiary-skills-panel/review/round-7/`): a paragraph of its own for the Skills panel and a screenshot of Nyxarion's page with the panel.
 - [ ] 4.2 Record each comparison's answer as a case in the vault's Ancient Kingdoms Compendium note. Verify that the note holds the cases.
