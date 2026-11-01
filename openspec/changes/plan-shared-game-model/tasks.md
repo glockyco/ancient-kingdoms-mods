@@ -37,11 +37,12 @@ Each follow-up change cites this design by decision number and lists the facts i
 - [x] 6.3 Propose acquisition, usage and requirements (D3, D4) as `unify-acquisition-usage-requirements`, reconciling input gaps, NPC membership and inherited popup scope. Proposal completion is not implementation acceptance. Its tasks own the accepted development corrections and remaining production-build, preview and publication gates.
 - [ ] 6.4 Propose and implement the remaining shared read models and relation components (D7) after acquisition acceptance. Consume its canonical relation boundary and transfer the uncompleted altar domain and architecture-boundary work from `consolidate-server-read-models`.
 - [ ] 6.5 Character model, store and share links (D6, D13, D14).
-- [ ] 6.6 Propose reference kinds: stats, effects with full applier/parameter coverage and mechanic definitions, armor sets, races and crafting stations (D2, D3, D9).
+- [ ] 6.6 Propose reference kinds: stats, effects with full applier/parameter coverage and mechanic definitions, armor sets, races, crafting stations and token currencies (D2, D3, D9).
 - [ ] 6.7 Zones by level.
 - [ ] 6.8 Character planner with build, stat sheet and mercenaries (D10, D11).
 - [ ] 6.9 "Where to Get".
 - [ ] 6.10 Save import with progress views and stash search (D12).
+- [ ] 6.11 Propose the reader features accepted on 2026-10-16 that no other task covers: the odds of a drop within N kills (50%, 90% and 99%) beside drop chances, a chest roll simulator, a searchable lore book and NPC dialogue archive, and traces that show which rules produce a mechanics or skill page's result. The ideas are in `.local/research/2026-10-16-compendium-features-moodboard/`.
 
 ## 7. Close
 

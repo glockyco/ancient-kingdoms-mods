@@ -22,6 +22,7 @@
 - [ ] 4.2 Mark found drops. Verify in game on a monster with found and not found drops.
 - [ ] 4.3 Add the drop chances switch, on at first start. Verify in game that switching it off restores the game's order with every entry and keeps the found marks.
 - [ ] 4.4 Add the switches for monsters not met and drops not found, on at first start, beside the Skills panel switch, as decided on 2026-11-01. Choose whether a hidden drop's chance shows through a comparison. Verify in game with both switches off on a monster not met and on one with found and not found drops.
+- [ ] 4.5 Keep long lore texts off the drops, which about 60 pages' lore covers in the game's layout and would hide the chances. Choose between smaller text, a scrolling lore box and a taller lore area through a comparison. Verify in game on the longest lore texts.
 
 ## 5. Documentation and records
 
