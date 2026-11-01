@@ -36,7 +36,7 @@ export function drainMagnitude(value: LinearValue): LinearValue {
   };
 }
 
-// Source: server-scripts/Skills.cs:1663-1669 — Reaper Form drains RoundToInt(max(0, −rate) × maximum Health) each recovery tick.
+// Source: server-scripts/Skills.cs:1672-1686 — Reaper Form drains RoundToInt(max(0, −rate) × maximum Health) each recovery tick.
 export function reaperDrain(rate: LinearValue, rank: number): number {
   const share = Math.max(0, -atRank(rate, rank));
   return iround(multiplyF32(MAX_HEALTH.value, share));
@@ -47,7 +47,7 @@ export function executeTick(bonus: LinearValue, rank: number): number {
   return damageOverTimeBonuses(EXAMPLE_HIT, 3, 0, atRank(bonus, rank)).total;
 }
 
-// Source: server-scripts/Combat.cs:1212-1227 — lifetap healing is FloorToInt(share × damage × (1 + summed bonuses)).
+// Source: server-scripts/Combat.cs:1295-1311 — lifetap healing is FloorToInt(share × damage × (1 + summed bonuses)).
 export function lifetapFromHit(share: LinearValue, rank: number): number {
   return lifetapHeal(EXAMPLE_HIT, atRank(share, rank), 0);
 }
@@ -57,7 +57,7 @@ export function lifetapWithBonus(bonus: LinearValue, rank: number): number {
   return lifetapHeal(EXAMPLE_HIT, 1, atRank(bonus, rank));
 }
 
-// Source: server-scripts/Combat.cs:941-955 — each victim effect heals the attacker RoundToInt(share × damage after mitigation and critical hits).
+// Source: server-scripts/Combat.cs:956-971 — each victim effect heals the attacker RoundToInt(share × damage after mitigation and critical hits).
 export function healOnHit(share: LinearValue, rank: number): number {
   return iround(multiplyF32(atRank(share, rank), EXAMPLE_HIT));
 }
@@ -82,7 +82,7 @@ export function scrollRank(maxRank: number): number {
   return clamp(iround(multiplyF32(EXAMPLE_SCROLL_MASTERY, 20)), 1, maxRank);
 }
 
-// Source: server-scripts/AreaHealSkill.cs:78-96 — each character's Health becomes RoundToInt(maximum Health × the averaged Health fraction).
+// Source: server-scripts/AreaHealSkill.cs:78-101 — each character's Health becomes RoundToInt(maximum Health × the averaged Health fraction).
 export function balancedHealth(): number {
   return iround(multiplyF32(MAX_HEALTH.value, EXAMPLE_SHARED_HEALTH));
 }

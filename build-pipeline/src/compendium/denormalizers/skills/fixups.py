@@ -16,7 +16,7 @@ _ZERO_JSON = '{"base_value": 0, "bonus_per_level": 0}'
 
 # All LinearFloat stat fields that can appear on buff/debuff skills.
 # Dispel skills (is_dispel=1) never call AddOrRefreshBuff, so these are unused.
-# Source: server-scripts/AreaDebuffSkill.cs:192-313; TargetDebuffSkill.cs:181-302 — the dispel
+# Source: server-scripts/AreaDebuffSkill.cs:192-314; TargetDebuffSkill.cs:181-303 — the dispel
 # branch calls SpawnEffect without applying a buff. AddOrRefreshBuff is in the else branch.
 _STAT_JSON_FIELDS = [
     "damage_bonus",
@@ -92,7 +92,7 @@ def run(conn: sqlite3.Connection) -> None:
     # Dispel skills: AreaDebuffSkill.cs and TargetDebuffSkill.cs both take an
     # early path when isDispel=true that never reaches AddOrRefreshBuff, so all
     # stat fields are inert. Zero them out to avoid misleading display.
-    # Source: server-scripts/AreaDebuffSkill.cs:192-313; TargetDebuffSkill.cs:181-302 — dispel branches do not apply buff stat fields.
+    # Source: server-scripts/AreaDebuffSkill.cs:192-314; TargetDebuffSkill.cs:181-303 — dispel branches do not apply buff stat fields.
     set_clause = ", ".join(f"{f} = ?" for f in _STAT_JSON_FIELDS)
     cursor.execute(
         f"UPDATE skills SET {set_clause} WHERE is_dispel = 1",

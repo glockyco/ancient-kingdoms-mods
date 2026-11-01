@@ -636,7 +636,7 @@
           {/if}
         </dl>
         {#if shortensCast || timingModels.has("player_auto") || hasteCooldownCasters}
-          <!-- Source: server-scripts/Skills.cs:924-933,1141-1173; Player.cs:3458-3495 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
+          <!-- Source: server-scripts/Skills.cs:932-941,1149-1181; Player.cs:3771-3808 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
           <div class="mt-3 space-y-1 text-sm text-muted-foreground">
             {#if shortensCast && skill.cast_time}
               <!-- Source: server-scripts/Pet.cs:TryStartAttackIfInRange; server-scripts/BardMercenarySkills.cs:StartSongCast; Combat.cs:spellHaste — mercenary casts use the mercenary's own spell haste, bounded to −50%–50%. -->
@@ -1294,7 +1294,7 @@
             {/if}
             {#if skill.health_percent_per_second_bonus}
               <div>
-                <!-- Source: server-scripts/Skills.cs:1663-1669 — Reaper Form drains the caster's maximum Health each second. -->
+                <!-- Source: server-scripts/Skills.cs:1672-1686 — Reaper Form drains the caster's maximum Health each second. -->
                 <dt class="text-muted-foreground">
                   {skill.is_necromancer_reaper_form
                     ? "Self Health drain %/sec"
@@ -1407,7 +1407,7 @@
             {/if}
             {#if skill.is_invisibility}
               <!-- Source: server-scripts/Entity.cs:368-384 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
-              <!-- Source: server-scripts/Skills.cs:1012, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
+              <!-- Source: server-scripts/Skills.cs:1020, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
               <p class="text-purple-600 dark:text-purple-400">
                 <span class="block"
                   >Grants invisibility{#if skill.ignores_see_invisibility}, even

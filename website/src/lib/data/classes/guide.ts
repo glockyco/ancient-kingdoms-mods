@@ -7,7 +7,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Each Strength point adds 1 Attack Power and 10 maximum Rage. Each Constitution point adds 25 maximum Hit Points and 0.03% Block Chance. Constitution adds no Health Regeneration.",
       source:
-        "Source: server-scripts/Strength.cs:15-18,80-83; server-scripts/Constitution.cs:13-25,73-76; server-scripts/Health.cs:28-44 — Constitution adds maximum health, not recovery",
+        "Source: server-scripts/Strength.cs:15-18,80-83; server-scripts/Constitution.cs:13-25,73-76; server-scripts/Health.cs:32-58 — Constitution adds maximum health, not recovery",
     },
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
@@ -23,7 +23,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You gain Rage when your auto attacks deal damage and when a single-target physical melee hit damages you.",
         source:
-          "Source: server-scripts/Combat.cs:1384-1397,1069-1088,1464-1469 — Rage gain from targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Combat.cs:1119-1132,1118-1153,1180-1185 — Rage gain from targeted physical melee hits and auto attacks",
         href: "/mechanics/combat#rage-generation",
         linkText: "Rage formulas",
       },
@@ -72,7 +72,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:832-837,1082-1085; server-scripts/Player.cs:11529-11535 — dungeon casting restriction and buff removal",
+          "Source: server-scripts/PlayerSkills.cs:832-837,1082-1085; server-scripts/Player.cs:12310-12316 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
@@ -129,7 +129,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when a single-target physical melee hit damages you. Passive skills and buffs can add regeneration.",
         source:
-          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1384-1397,1069-1088,1464-1469 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:448-466; server-scripts/Combat.cs:1119-1132,1118-1153,1180-1185 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
         href: "/mechanics/character#resources",
         linkText: "Resource rules",
       },
@@ -150,19 +150,19 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Mystic Spark costs no Mana and gives back 35% of its damage as Mana, rounded down. Damage beyond the target's remaining Hit Points does not count.",
         source:
-          "Source: server-scripts/Combat.cs:1116-1125,1126-1175 — Mystic Spark caps mana return by target health and restores it before ward absorption",
+          "Source: server-scripts/Combat.cs:1199-1208,1209-1258 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
         text: "Mana Shield spends 1 Mana per damage point absorbed. Damage beyond your remaining Mana reaches your Hit Points and ends the shield.",
         source:
-          "Source: server-scripts/Combat.cs:1176-1206 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
+          "Source: server-scripts/Combat.cs:1259-1289 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
         href: "/skills/mana_shield",
         linkText: "Mana Shield",
       },
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
         source:
-          "Source: server-scripts/Combat.cs:797-800; server-scripts/Skills.cs:1638-1655 — damage ends movement-lock sleep effects",
+          "Source: server-scripts/Combat.cs:811-814; server-scripts/Skills.cs:1647-1664 — damage ends movement-lock sleep effects",
       },
     ],
   },
@@ -203,7 +203,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. It also strengthens Bone Aegis's Ward, Mend Undead's Health Regeneration, Ossuary Bulwark's Armor Class, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum Hit Points per point but no Health Regeneration.",
       source:
-        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:471-534; server-scripts/Buff.cs:46-59,112-149; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
+        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:480-543; server-scripts/Buff.cs:46-59,112-149; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",

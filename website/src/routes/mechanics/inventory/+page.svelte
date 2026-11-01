@@ -142,11 +142,11 @@
           >) or the skillbar button.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:587-593 — backpack slots reject non-backpack items. -->Backpack
+          <!-- Source: server-scripts/PlayerInventory.cs:597-603 — backpack slots reject non-backpack items. -->Backpack
           slots accept backpacks only.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:641-655 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
+          <!-- Source: server-scripts/PlayerInventory.cs:651-665 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
           <span class="block"
             >You can equip only one of each Unique backpack.</span
           >
@@ -155,16 +155,16 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/UIBigBackpack.cs:317-329; server-scripts/PlayerInventory.cs:2244-2264,808-829 — clicking an equipped backpack moves it to the first empty base slot unless removal would lock occupied storage slots or all 24 base slots are full. -->
+          <!-- Source: server-scripts/UIBigBackpack.cs:317-329; server-scripts/PlayerInventory.cs:2256-2276,818-839 — clicking an equipped backpack moves it to the first empty base slot unless removal would lock occupied storage slots or all 24 base slots are full. -->
           To take a backpack off, click it in the Combined Backpack window. It moves
           to your main inventory, which needs a free slot.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:626-642 — removal or downgrade is blocked if items would be locked away. -->You
+          <!-- Source: server-scripts/PlayerInventory.cs:636-652 — removal or downgrade is blocked if items would be locked away. -->You
           cannot remove or replace a bag with a smaller one if stored items
           would lose their slots.
         </li>
-        <!-- Source: server-scripts/PlayerInventory.cs:689-699,738-744,832-838 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:699-709,748-754,842-848 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
         <li>
           <span class="block"
             >You cannot move an equipped bag directly to the bank or a house
@@ -293,7 +293,7 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:413 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:13908-13933 and 13943-13971 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:14692-14717 and 14727-14755 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -316,7 +316,7 @@
         >
         <span class="block">Moving away or entering combat closes it.</span>
       </p>
-      <!-- Source: server-scripts/PlayerBank.cs:397-456 — Auto Stack moves carried stackable items only when the selected tab already contains that item, filling existing stacks before empty slots. -->
+      <!-- Source: server-scripts/PlayerBank.cs:400-459 — Auto Stack moves carried stackable items only when the selected tab already contains that item, filling existing stacks before empty slots. -->
       <p class="text-sm text-muted-foreground">
         <span class="block">Auto Stack checks the selected tab only.</span>
         <span class="block"
@@ -410,7 +410,7 @@
         <p>
           <span class="block"
             ><!-- Source: server-scripts/CustomStrucUI.cs:211-234 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 337-356 and Player.cs:13659-13671 — move mode hides the structure, then repositions the same one without charging gold. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 337-356 and Player.cs:14443-14455 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -426,7 +426,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:71-76 and 268-286 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10767-10800 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:11540-11573 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >
@@ -567,15 +567,15 @@
           storage slots.
         </li>
         <li>
-          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:2029-2043 — stack increases are clamped by target max stack. -->Matching
+          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:2041-2055 — stack increases are clamped by target max stack. -->Matching
           stacks merge up to the target stack limit.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:658-663 and 707-720 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
+          <!-- Source: server-scripts/PlayerInventory.cs:668-673 and 717-730 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
           Shift while you drag a stack onto an empty slot, then choose how many
           items to move.
         </li>
-        <!-- Source: server-scripts/PlayerInventory.cs:738-794,832-890,1951-2013 and server-scripts/PlayerBank.cs:60-79 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:748-804,842-900,1963-2025 and server-scripts/PlayerBank.cs:60-79 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
         <li>
           <span class="block"
             >Splitting also works between inventory and bank or house chest
@@ -586,7 +586,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:722-725 — non-split, non-merge inventory drag swaps slots. -->Dragging
+          <!-- Source: server-scripts/PlayerInventory.cs:732-735 — non-split, non-merge inventory drag swaps slots. -->Dragging
           an item between inventory slots swaps their contents unless you split
           or merge a stack.
         </li>
@@ -775,7 +775,7 @@
           Switching applies saved choices to all 16 equipment slots.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3208-3210 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
+          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3216-3218 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
           Template 1 starts out holding the gear your character was created with.
         </li>
         <!-- Source: server-scripts/PlayerEquipment.cs:455-482,1657-1672 — active template tracks equipment changes and unlocking copies current gear then activates the new template. -->
@@ -812,7 +812,7 @@
           inventory.
         </li>
         <li>
-          <!-- Source: server-scripts/Database.cs:425-435,805-806,2714-2738 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
+          <!-- Source: server-scripts/Database.cs:425-435,807-808,2718-2742 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
           Templates belong to one character and do not carry across your other characters.
         </li>
       </ul>
@@ -906,7 +906,7 @@
           >.</span
         >
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:50-84, server-scripts/PlayerNpcTrading.cs:29-43,519-547 and server-scripts/Player.cs:4644-4647 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
+      <!-- Source: server-scripts/ScrollItem.cs:50-84, server-scripts/PlayerNpcTrading.cs:29-43,519-547 and server-scripts/Player.cs:4962-4965 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
         <span class="block">Kits do not repair inventory tools.</span>
         <span class="block"
@@ -998,7 +998,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PotionItem.cs:99-107,141-166, server-scripts/FoodItem.cs:14-36 and server-scripts/ScrollItem.cs:95-130 — potions restore resources or apply buffs, food and drink apply buffs, and spell scrolls invoke skills. -->
+      <!-- Source: server-scripts/PotionItem.cs:107-116,150-175, server-scripts/FoodItem.cs:14-36 and server-scripts/ScrollItem.cs:95-130 — potions restore resources or apply buffs, food and drink apply buffs, and spell scrolls invoke skills. -->
       <p>
         <span class="block">Potions restore resources or apply buffs.</span>
         <span class="block">Food and drink apply buffs.</span>
@@ -1030,7 +1030,7 @@
         run out.
         <!-- Source: server-scripts/PlayerInventory.cs:127-132 — starting a timed scroll cast cancels the current cast and clears pending and follow-up skill state. -->
       </p>
-      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3184-3242 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
+      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3497-3555 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
       <p>
         Moving, losing your target, starting a skill, changing or removing the
         casting item, stun, fear, death, trading, or cancelling the action

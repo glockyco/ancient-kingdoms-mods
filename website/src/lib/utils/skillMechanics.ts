@@ -366,7 +366,7 @@ export function computeMechanicsSpec(
   }> = [];
 
   if (isHealSkill && !skill.is_necromancer_death_bloom) {
-    // Source: server-scripts/TargetHealSkill.cs:290-293; AreaHealSkill.cs:109-111 — target healing requires canHealOthers, area healing always rolls for critical healing.
+    // Source: server-scripts/TargetHealSkill.cs:294-297; AreaHealSkill.cs:114-116 — target healing requires canHealOthers, area healing always rolls for critical healing.
     const canCrit = skill.skill_type === "area_heal" || skill.can_heal_others;
 
     // Source: server-scripts/ScrollItem.cs:UseAfterCast; TargetHealSkill.cs:Apply — scrolls call Apply as a player; pet/mercenary restoration keeps the player's Wisdom bonus.
@@ -482,8 +482,8 @@ export function computeMechanicsSpec(
 
   // ---------- timing ----------
   // Populated for follow-up attacks and non-spell combat-pet skill 0.
-  // Source: server-scripts/Skills.cs:1141-1159; Combat.cs:340-346 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
-  // Source: server-scripts/Player.cs:3458-3495 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
+  // Source: server-scripts/Skills.cs:1149-1167; Combat.cs:340-346 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
+  // Source: server-scripts/Player.cs:3771-3808 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ caster: Caster; model: TimingModel }> = [];
 
@@ -512,7 +512,7 @@ export function computeMechanicsSpec(
       timingPairs.push({ caster: { kind: "player", classId: cls }, model });
     }
     for (const pet of mercPets) {
-      // Source: server-scripts/Skills.cs:1141-1159 — mercenary non-spells with followupDefaultAttack use cooldown * (1 - haste).
+      // Source: server-scripts/Skills.cs:1149-1167 — mercenary non-spells with followupDefaultAttack use cooldown * (1 - haste).
       const model: TimingModel = isSpell ? "merc_spell" : "merc_auto";
       timingPairs.push({
         caster: { kind: "mercenary", className: pet.type_monster ?? "Unknown" },
@@ -524,7 +524,7 @@ export function computeMechanicsSpec(
       const model: TimingModel = isSpell ? "monster_spell" : "monster";
       timingPairs.push({ caster: { kind: "monster" }, model });
     }
-    // Source: server-scripts/Skills.cs:1141-1173 — only non-familiar combat-pet non-spell skillIndex 0 receives haste-reduced cooldown.
+    // Source: server-scripts/Skills.cs:1149-1181 — only non-familiar combat-pet non-spell skillIndex 0 receives haste-reduced cooldown.
     for (const pet of usedByPets.filter((p) => !p.is_mercenary)) {
       timingPairs.push({
         caster: { kind: pet.is_familiar ? "familiar" : "companion" },
@@ -579,7 +579,7 @@ export function computeMechanicsSpec(
         bonusAttrKind: playerMercKind,
       });
     }
-    // Source: server-scripts/TargetDamageSkill.cs:246-288; ProjectileSkillEffect.cs:196; TargetDebuffSkill.cs:283-287; BuffSkill.cs:GetDebuffPowerAttribute — weapon procs apply at rank one using their caster's debuff attribute, except scrolls use zero.
+    // Source: server-scripts/TargetDamageSkill.cs:246-288; ProjectileSkillEffect.cs:196; TargetDebuffSkill.cs:284-288; BuffSkill.cs:GetDebuffPowerAttribute — weapon procs apply at rank one using their caster's debuff attribute, except scrolls use zero.
     // Proc skills need no player_classes entries for that attribute scaling.
     if (isWeaponProc) {
       debuffPairs.push({

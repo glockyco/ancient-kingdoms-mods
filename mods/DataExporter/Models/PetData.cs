@@ -41,7 +41,7 @@ public class PetData
 
     /// <summary>
     /// Health.multiplierHealth: maximum Health is round(baseHealth at the pet's level × this).
-    /// Source: server-scripts/Health.cs:34
+    /// Source: server-scripts/Health.cs:38
     /// </summary>
     public float health_multiplier { get; set; }
 

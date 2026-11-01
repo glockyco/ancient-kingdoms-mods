@@ -39,7 +39,7 @@ export const DAMAGE = characterStat("damage", "attack_power", 200);
 /** The Magic Damage the character window shows (`Combat.magicDamage`). */
 export const MAGIC_DAMAGE = characterStat("magicDamage", "spell_power", 200);
 
-// Source: server-scripts/Combat.cs:350-360; Player.cs:2915-2920; Pet.cs:2315-2320 — spell haste is the summed bonus clamped between -50% and 50%, and player and mercenary casts use that value.
+// Source: server-scripts/Combat.cs:350-360; Player.cs:3228-3233; Pet.cs:2333-2338 — spell haste is the summed bonus clamped between -50% and 50%, and player and mercenary casts use that value.
 export const SPELL_HASTE: CalculationInput = {
   key: "spellHaste",
   label: statName("spell_haste"),

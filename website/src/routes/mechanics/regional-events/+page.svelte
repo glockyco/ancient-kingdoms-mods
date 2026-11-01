@@ -402,7 +402,7 @@
     <Card.Header><Card.Title>Prosperity</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEventProgress.cs:109-113,157-164; server-scripts/RegionalEvents.cs:188-195,363-375 — completion grants a regional 15% XP multiplier, floored, with dungeon combat mapped to its parent region. -->
-      <!-- Source: server-scripts/PlayerQuests.cs:388-401; server-scripts/Player.cs:13452-13455,13861-13874,14178-14180,14176-14180; server-scripts/Npc.cs:1608-1616,1641-1649 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
+      <!-- Source: server-scripts/PlayerQuests.cs:388-401; server-scripts/Player.cs:14234-14237,14645-14658,14962-14964,14960-14964; server-scripts/Npc.cs:1608-1616,1641-1649 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
       <p>
         When the goal is reached, the region prospers for
         {formatNumber(data.settings.prosperity_duration_minutes)} minutes. Everyone

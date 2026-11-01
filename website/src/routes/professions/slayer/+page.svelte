@@ -86,7 +86,7 @@
 
   // Source: server-scripts/EventAltar.cs:203-215; server-scripts/DefaultEvent.cs:200-213 — altar activation starts the event that spawns each wave.
   // Source: server-scripts/Monster.cs:712-723,2240-2260 — summonable monsters start hidden and wait for readiness.
-  // Source: server-scripts/Monster.cs:2968-2977 — a slain monster can spawn its configured placeholder.
+  // Source: server-scripts/Monster.cs:2970-2979 — a slain monster can spawn its configured placeholder.
   function requirementText(target: SlayerTarget): string {
     if (target.spawn_type === "altar") {
       const wave =
@@ -391,7 +391,7 @@
             Only these {formatNumber(data.targets.length)} targets give Slayer mastery.
             When you come near one, your Bestiary adds it with zero kills.
           </p>
-          <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:14228-14235; server-scripts/UIBestiaryDetail.cs:152-156 — approach discovery and loot discovery are separate records. -->
+          <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:15012-15019; server-scripts/UIBestiaryDetail.cs:152-156 — approach discovery and loot discovery are separate records. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             Finding a boss does not reveal its drops. You discover loot
             separately.
@@ -523,7 +523,7 @@
       kills from a minimum of 100 targets.
     </p>
 
-    <!-- Source: server-scripts/Database.cs:3431-3439 — each target adds 0.02% per account kill up to 50 kills, and the total stops at 100%. -->
+    <!-- Source: server-scripts/Database.cs:3439-3447 — each target adds 0.02% per account kill up to 50 kills, and the total stops at 100%. -->
     <Calculation calculation={slayerMasteryCalculation()} />
 
     <div class="max-w-2xl space-y-3 text-pretty text-sm text-muted-foreground">

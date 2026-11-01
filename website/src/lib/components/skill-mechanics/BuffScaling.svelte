@@ -36,7 +36,7 @@
             )}
           />
           {#if skill.scales_with_charisma}
-            <!-- Source: server-scripts/BardSongSkill.cs:Apply; Skills.cs:307-318 — Charisma-scaled song heals skip the Wisdom healing bonus. -->
+            <!-- Source: server-scripts/BardSongSkill.cs:Apply; Skills.cs:315-326 — Charisma-scaled song heals skip the Wisdom healing bonus. -->
             <p class="text-muted-foreground">
               {#if (skill.healing_per_second_bonus?.base_value ?? 0) > 0}
                 Wisdom does not change this song's healing.

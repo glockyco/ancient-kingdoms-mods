@@ -168,7 +168,7 @@
   <section aria-labelledby="pet-stats-title" class="space-y-4">
     <h2 id="pet-stats-title" class="text-xl font-semibold">Base stats</h2>
     <!-- Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13; SummonSkill.cs:99 — stats scale from their base values with level, companions stop at Level.max, and familiars use the summoning skill rank. -->
-    <!-- Source: server-scripts/Health.cs:34; NecromancerPetStats.cs:50 — Health applies its exported multiplier before rounding, and the veteran Health bonus rounds separately from the unrounded multiplied base. -->
+    <!-- Source: server-scripts/Health.cs:38; NecromancerPetStats.cs:50 — Health applies its exported multiplier before rounding, and the veteran Health bonus rounds separately from the unrounded multiplied base. -->
     <!-- Source: server-scripts/NecromancerPetStats.cs:GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus; NecromancerMercenaryPet.cs:GetDamageBonus,GetMagicDamageBonus,GetVeteranResistanceBonus — up to 200 veteran points add rounded bonuses to Health, damage, defense, and resistances for undead companions, and to damage and resistances for mercenary companions, not block or critical chance. -->
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <Table.Root class="text-base">

@@ -135,7 +135,7 @@
         </table>
       </div>
 
-      <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; Combat.cs:1152-1171; website/data/compendium.db skills.buff_category — categorized songs apply fresh effects, a Ward song applies once per cast and restores a suspended Ward with time and absorption left, and other songs restore suspended effects. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; Combat.cs:1235-1254; website/data/compendium.db skills.buff_category — categorized songs apply fresh effects, a Ward song applies once per cast and restores a suspended Ward with time and absorption left, and other songs restore suspended effects. -->
       <p>
         Leaving range removes the aura. Most songs resume with the same strength
         and time left when you return, including any weakening from cleansing.<br
@@ -286,7 +286,7 @@
         Each point of Charisma adds 0.045% to that share, up to 100%. Negative Charisma
         counts as 0.
       </p>
-      <!-- Source: server-scripts/Monster.cs:2519-2603,2625-2719 — the charmed creature follows its Bard when idle and finds reachable nearby monsters that threaten the Bard's group. -->
+      <!-- Source: server-scripts/Monster.cs:2520-2604,2626-2720 — the charmed creature follows its Bard when idle and finds reachable nearby monsters that threaten the Bard's group. -->
       <p>
         Your charmed creature follows you and attacks nearby monsters
         threatening you or your party. Selecting a monster does not order it to
@@ -310,7 +310,7 @@
         Repeating the song renews your existing charm, regardless of your
         selection. Keep the creature visible and within cast range.
       </p>
-      <!-- Source: server-scripts/Monster.cs:2481-2500,2606-2622,2913-2916, PlayerSkills.cs:1664-1683,1736-1748,1849-1853; ZoneTrigger.cs:94-100 — charm ends on removal or expiry, monster death, Bard death, zone separation, or leaving the server. -->
+      <!-- Source: server-scripts/Monster.cs:2482-2501,2607-2623,2915-2918, PlayerSkills.cs:1664-1683,1736-1748,1849-1853; ZoneTrigger.cs:94-101 — charm ends on removal or expiry, monster death, Bard death, zone separation, or leaving the server. -->
       <p>
         Charm ends if its effect expires or is removed, or if the creature dies.<br
         />

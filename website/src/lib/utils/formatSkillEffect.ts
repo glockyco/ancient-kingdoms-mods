@@ -801,7 +801,7 @@ function formatBuffDebuffStats(
   }
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
   // Source: server-scripts/BuffSkill.cs:illusionRace,90-100 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:6933-6943 (ReSkinPlayer picks the illusion race)
+  // server-scripts/Player.cs:7252-7262 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
   // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Skills.cs — undeadIlussion redraws a player as undead.
@@ -853,7 +853,7 @@ function formatBuffDebuffStats(
   );
 
   const lifetapHealing = parseLinearValue(skill.lifetap_healing_percent_bonus);
-  // Source: server-scripts/Combat.cs:1212-1222 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
+  // Source: server-scripts/Combat.cs:1295-1306 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
   if (lifetapHealing) {
     parts.push(
       `+${formatLinearPercent(lifetapHealing, options)} lifetap healing`,
@@ -976,7 +976,7 @@ function formatBuffDebuffStats(
     }
   }
 
-  // Source: server-scripts/Skills.cs:1663-1669,1897-1903 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second, after resists and DoT bonuses.
+  // Source: server-scripts/Skills.cs:1672-1686,1956-1966 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second, after resists and DoT bonuses.
   const hpPct = parseLinearValue(skill.health_percent_per_second_bonus);
   if (hpPct && hpPct.base_value !== 0) {
     if (hpPct.base_value > 0) {
@@ -1107,7 +1107,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-199,204-217;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:9153-9170 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:9472-9489 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — while active, a Rogue's
   // followupDefaultAttack skill, Stab, switches to Poison damage and adds the rounded 250% Dexterity
@@ -1258,7 +1258,7 @@ export function formatSkillEffect(
   // Only monsters enrage from a passive: DealDamageAt scans monster and NPC skill
   // lists alone, and no NPC carries a skill, so a player passive with the flag
   // changes no damage.
-  // Source: server-scripts/Combat.cs:849-892 (enrage scan and damage bonus, non-spell hits only)
+  // Source: server-scripts/Combat.cs:863-906 (enrage scan and damage bonus, non-spell hits only)
   if (skill.skill_type === "passive" && skill.is_enrage) {
     parts.push(`+${formatRange("50%", "75%")} non-spell dmg below 10% hp`);
   }
@@ -1291,7 +1291,7 @@ export function formatSkillEffect(
       `${formatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item`,
     );
   }
-  // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2178-2189 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
+  // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2196-2207 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
   if (skill.food_and_drink_buff_duration_bonus_per_level) {
     parts.push(
       `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food`,
