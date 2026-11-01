@@ -6,9 +6,9 @@ Defines the settings page about Pocket Compendium itself, so a player can see wh
 
 ## ADDED Requirements
 
-### Requirement: The settings window ends with a page about the mod
+### Requirement: The settings window ends with an About page
 
-The settings window SHALL end its page list with a page about Pocket Compendium itself. The page SHALL show the mod's version and build commit. It SHALL have no feature switch, and the window SHALL hide "Reset this page" while it is shown.
+The settings window SHALL end its page list with a page named About, about Pocket Compendium itself. The page SHALL show the mod's version and build commit. It SHALL have no feature switch, and the window SHALL hide "Reset this page" while it is shown.
 
 #### Scenario: Opening the page
 
@@ -18,7 +18,7 @@ The settings window SHALL end its page list with a page about Pocket Compendium 
 
 ### Requirement: The page links the project
 
-The page SHALL link the Ancient Kingdoms Compendium website, Pocket Compendium's source on GitHub and its Ko-fi page, at the addresses the website uses. Each link SHALL open in the browser.
+The page SHALL link the Ancient Kingdoms Compendium website, Pocket Compendium's source on GitHub, the game's Discord and Pocket Compendium's Ko-fi page, at the addresses the website uses where it links the same places. Each link SHALL open in the browser.
 
 #### Scenario: Following the Ko-fi link
 

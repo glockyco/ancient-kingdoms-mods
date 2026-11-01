@@ -24,16 +24,16 @@
 
 - Sending a report or an idea from the mod itself. The player posts it.
 - Collecting the log automatically.
-- Checking for a newer version. It needs network access and its own failure handling, so it is a change of its own if it is wanted.
+- Checking for a newer version. It needs network access and its own failure handling, so it gets its own change after this one.
 - Reports about the website, which has no form yet.
 
 ## Decisions
 
-### A page about the mod, last in the window
+### An About page, last in the window
 
-The window gets a page kind that draws its own content instead of saved setting rows, and the page about the mod is its first use. It comes last, after Layout, because it holds no settings, and the footer hides "Reset this page" while it shows.
+The window gets a page kind that draws its own content instead of saved setting rows, and the About page is its first use. It comes last, after Layout, because it holds no settings, and the footer hides "Reset this page" while it shows.
 
-It shows the name with the version and build, links the compendium website, the mod's folder on GitHub, whose README is the mod's page, and Ko-fi, and holds the report and idea actions. The page's name and whatever else it shows, such as the author, the game's Discord or a note that the mod is unofficial, are chosen through a comparison with screenshots of the real window.
+It shows the name with the version and build, links the compendium website, the mod's folder on GitHub, whose README is the mod's page, the game's Discord and Ko-fi, and holds the report and idea actions. Its icon, and whether it names the author and says that the mod is fan-made, are chosen through comparisons with screenshots of the real window.
 
 Alternatives: the actions in the footer beside "Reset this page", where they crowd every page and read as page actions, and an icon in the title bar, which players do not find.
 
@@ -43,7 +43,7 @@ The mod keeps the four addresses in one class. A test reads the website's `links
 
 ### Two forms, two actions
 
-Problems and ideas need different fields. The problem form takes the details the report action fills. The ideas form asks about the player's situation in the game and asks for no setup details, as no surveyed feature request form does. So the page has two actions, each opening its own form, instead of RuneLite's single entry. The ideas form's fields and both forms' wording are chosen through comparisons.
+Problems and ideas need different fields. The problem form takes the details the report action fills. The ideas form asks first what the player wants to do in the game and what gets in the way, both required, then for their idea, how often the need comes up and screenshots, all optional. Like every surveyed feature request form, it asks for no setup details. So the page has two actions, each opening its own form, instead of RuneLite's single entry. Both forms' wording is chosen through comparisons.
 
 ### The browser posts the report
 
@@ -69,9 +69,9 @@ A report is public, so the details leave out server addresses, character names a
 
 After a click the page says that the browser has the form and the clipboard has the details, names `MelonLoader/Latest.log`, and offers a button that opens the log's folder. Whether that button uses `explorer.exe /select` or a `file:` URL is settled by trying both under CrossOver, keeping the one that opens the host's file manager or at least a folder view.
 
-### Discord for players without a GitHub account
+### The compendium channel for players without a GitHub account
 
-The problem form and the README name the game's Discord as the place to post the copied details. The details are plain text, so a Discord post carries the same facts as an issue.
+The problem form and the README name the #📖-compendium channel on the game's Discord ([channel](https://discord.com/channels/901387547110944808/1329166511189004400), [invite](https://discord.gg/8MkSWjXwab)) as the place to post the copied details. The details are plain text, so a post there carries the same facts as an issue.
 
 ### A stopped feature shows a message
 

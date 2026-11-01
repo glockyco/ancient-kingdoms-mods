@@ -51,7 +51,7 @@ The link SHALL stay within the length GitHub accepts by shortening error lines f
 
 ### Requirement: The problem form takes the details
 
-The problem form SHALL have the details field that the report action fills, ask what went wrong and how to see it, and ask for the log file and a screenshot. It SHALL say where a player who opens it outside the game finds the versions and the log, and SHALL name the game's Discord as the place to post the copied details without a GitHub account. Every problem report SHALL carry the labels `bug` and `mods`.
+The problem form SHALL have the details field that the report action fills, ask what went wrong and how to see it, and ask for the log file and a screenshot. It SHALL say where a player who opens it outside the game finds the versions and the log, and SHALL name the compendium channel on the game's Discord as the place to post the copied details without a GitHub account. Every problem report SHALL carry the labels `bug` and `mods`.
 
 #### Scenario: Opening the form from the README
 
@@ -61,25 +61,25 @@ The problem form SHALL have the details field that the report action fills, ask 
 #### Scenario: A player without a GitHub account
 
 - **WHEN** a player without a GitHub account reads the problem form
-- **THEN** the form names the game's Discord as the place to post the copied details
+- **THEN** the form names the compendium channel on the game's Discord as the place to post the copied details
 
 ### Requirement: The idea action opens the ideas form
 
-The idea action SHALL open the repository's ideas form in the browser. The ideas form SHALL ask about the player's situation in the game and SHALL NOT ask for versions, logs or other details of the player's setup. Every idea SHALL carry the labels `enhancement` and `mods`.
+The idea action SHALL open the repository's ideas form in the browser. The ideas form SHALL ask what the player wants to do in the game and what gets in the way, both required, and SHALL offer optional fields for the player's idea, how often the need comes up and screenshots. It SHALL NOT ask for versions, logs or other details of the player's setup. Every idea SHALL carry the labels `enhancement` and `mods`.
 
 #### Scenario: Suggesting an idea
 
 - **WHEN** the player uses the idea action
-- **THEN** the browser shows the ideas form, and it asks for no version or log
+- **THEN** the browser shows the ideas form, which asks first what the player wants to do and what gets in the way, and asks for no version or log
 
 ### Requirement: The README names where to report
 
-The README's limits SHALL link the problem form and name the game's Discord for players without a GitHub account.
+The README's limits SHALL link the problem form and name the compendium channel on the game's Discord for players without a GitHub account.
 
 #### Scenario: Reading the README
 
 - **WHEN** a player reads the README's limits
-- **THEN** they find the link to the problem form and the game's Discord
+- **THEN** they find the link to the problem form and the compendium channel on the game's Discord
 
 ### Requirement: A stopped feature makes itself known
 

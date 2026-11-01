@@ -7,14 +7,14 @@
 
 ## 2. Forms
 
-- [ ] 2.1 Choose both forms' fields and text through a comparison (compare-options), with references from issue forms of popular game mods. Verify that the answer is recorded.
+- [ ] 2.1 Choose both forms' text through a comparison (compare-options), with references from issue forms of popular game mods. The ideas form's fields are decided: what the player wants to do and what gets in the way, required, then the idea, how often and screenshots, optional. Verify that the answer is recorded.
 - [ ] 2.2 Add the problem form and the ideas form to `.github/ISSUE_TEMPLATE/` with the chosen text and their labels, and a test that every field id in the report link exists in the problem form. Verify with that test and a check of both files against GitHub's issue form schema.
 
 ## 3. About page
 
-- [ ] 3.1 Choose the page's name, its content and its wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded.
+- [ ] 3.1 Choose the page's icon, whether it names the author and says the mod is fan-made, and its wording, together with the wording of the other pages' summaries and help texts, through comparisons with screenshots of the real settings window. Verify that the answers are recorded.
 - [ ] 3.2 Add a settings page kind that draws its own content, and build the page as chosen, with "Reset this page" hidden. Verify in game on a 1920 and a 1280 px window.
-- [ ] 3.3 Keep the four addresses in one class with a test that compares them with `website/src/lib/constants/links.ts` and `website/src/lib/seo/site.ts`. Verify with `dotnet test tests/PocketCompendium.Tests`.
+- [ ] 3.3 Keep the page's addresses in one class with a test that compares those the website also links with `website/src/lib/constants/links.ts` and `website/src/lib/seo/site.ts`. Verify with `dotnet test tests/PocketCompendium.Tests`.
 - [ ] 3.4 Apply the chosen wording of the other pages' summaries and help texts. Verify in game that no text ends with a single word on its last line.
 
 ## 4. Actions and messages
@@ -26,7 +26,7 @@
 
 ## 5. Documentation and records
 
-- [ ] 5.1 Link the problem form and name the game's Discord in the README's limits, worded through a comparison. Verify with `pnpm check:docs`.
+- [ ] 5.1 Link the problem form and name the compendium channel on the game's Discord in the README's limits, worded through a comparison. Verify with `pnpm check:docs`.
 - [ ] 5.2 Record each comparison's answer as a case in the vault's Ancient Kingdoms Compendium note. Verify that the note holds the cases.
 
 ## Workflow follow-up
