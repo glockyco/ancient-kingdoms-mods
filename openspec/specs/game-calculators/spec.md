@@ -15,6 +15,16 @@ An interactive calculator SHALL compute its result with the inputs, coefficients
 - **WHEN** a calculator's cited source uses a coefficient that differs from the calculator
 - **THEN** the calculator uses the coefficient from the source
 
+### Requirement: Calculator inputs are available to the player
+
+A calculator SHALL accept quantities the player can obtain from the game and derive intermediate components itself, because an unknown intermediate damage value cannot serve as a useful input.
+
+#### Scenario: A damage formula has an intermediate component
+
+- **WHEN** the game derives a damage component from visible character and skill values
+- **THEN** the calculator accepts those available values
+- **AND** it does not require the player to supply the intermediate component
+
 ### Requirement: The altar preview scales monsters like the event
 
 The Forgotten Altar preview SHALL add the player level, `round(total veteran points / 40)`, and the monster's base level, minus 30. The rounding SHALL match `Mathf.RoundToInt`, which rounds a half to the nearest even number.
