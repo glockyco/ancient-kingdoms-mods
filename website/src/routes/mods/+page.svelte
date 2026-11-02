@@ -80,9 +80,12 @@
         <BookOpen class="size-5" aria-hidden="true" />How to install
       </a>
     </div>
+    <!-- The file's size, so the page keeps the picture's space while it loads. -->
     <img
       src="/mod-pictures/pocket-compendium-world.webp"
       alt="The boss list in Twilight Forest, a respawn timer on Gukavep's spawn point, and arrows to four monsters off screen."
+      width="1585"
+      height="880"
       class="w-full rounded-lg border"
     />
   </section>
