@@ -33,6 +33,8 @@
   const isHome = $derived(page.url.pathname === "/");
 
   onMount(() => {
+    // Read by the recovery script in app.html.
+    (window as { __sitebooted?: boolean }).__sitebooted = true;
     // Allow forcing theme via URL parameter (e.g. ?theme=dark for embeds)
     const themeParam = new URLSearchParams(getNormalizedUrlSearch()).get(
       "theme",

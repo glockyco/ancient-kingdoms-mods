@@ -33,6 +33,25 @@
       }
     </style>
     <script>
+      // A deploy deletes the previous build's scripts while the edge may
+      // still serve its pages for up to a minute (see _headers). When the
+      // scripts fail to start, load the page once more past the edge cache.
+      // The layout sets __sitebooted once the app has started.
+      (function () {
+        const url = new URL(location.href);
+        if (url.searchParams.has("fresh")) {
+          url.searchParams.delete("fresh");
+          history.replaceState(history.state, "", url);
+          return;
+        }
+        addEventListener("unhandledrejection", function () {
+          if (window.__sitebooted) return;
+          url.searchParams.set("fresh", String(Date.now()));
+          location.replace(url);
+        });
+      })();
+    </script>
+    <script>
       // Handle explicit user preference (overrides system preference)
       (function () {
         const theme = localStorage.getItem("mode-watcher-mode");
