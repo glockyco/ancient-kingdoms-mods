@@ -21,6 +21,7 @@
   import Box from "@lucide/svelte/icons/box";
   import Hammer from "@lucide/svelte/icons/hammer";
   import Map from "@lucide/svelte/icons/map";
+  import Puzzle from "@lucide/svelte/icons/puzzle";
   import Star from "@lucide/svelte/icons/star";
   import Cat from "@lucide/svelte/icons/cat";
   import Swords from "@lucide/svelte/icons/swords";
@@ -193,31 +194,25 @@
       <HomeSearch />
     </div>
 
-    <!-- Flagship: interactive world map -->
-    <a
-      href="/map"
-      class="group flex flex-col items-center gap-4 rounded-lg border bg-card p-6 text-center shadow-sm transition-colors hover:border-foreground/20 hover:bg-muted/40 sm:flex-row sm:gap-6 sm:p-7 sm:text-left"
-    >
-      <div
-        class="grid size-15 shrink-0 place-items-center rounded-xl bg-teal-500/10 text-teal-500"
-      >
-        <Map class="size-8" />
-      </div>
-      <div class="flex-1">
-        <h2 class="text-xl font-bold tracking-tight group-hover:underline">
-          Interactive World Map
-        </h2>
-        <p class="mt-1 text-muted-foreground">
-          Find monsters, NPCs, and resources across {HOME_COUNTS.zones} zones on the
-          map of Eratiath.
-        </p>
-      </div>
-      <span
-        class="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors group-hover:text-foreground"
-      >
-        Explore <ArrowRight class="size-4" />
-      </span>
-    </a>
+    <!-- Flagships: the interactive world map and the mod -->
+    <div class="grid gap-4 lg:grid-cols-2">
+      {@render flagship(
+        "/map",
+        Map,
+        "bg-teal-500/10 text-teal-500",
+        "Interactive World Map",
+        `Find monsters, NPCs, and resources across ${HOME_COUNTS.zones} zones on the map of Eratiath.`,
+        "Explore",
+      )}
+      {@render flagship(
+        "/mods",
+        Puzzle,
+        "bg-amber-500/10 text-amber-500",
+        "Pocket Compendium",
+        "Shows when bosses, elites and fabled monsters respawn, puts a timer on each spawn point, and counts down their skills while you fight them.",
+        "Get the mod",
+      )}
+    </div>
 
     <!-- Browse -->
     <section>
@@ -314,4 +309,38 @@
   >
     {label}
   </p>
+{/snippet}
+
+{#snippet flagship(
+  href: string,
+  Icon: typeof Map,
+  badge: string,
+  title: string,
+  text: string,
+  action: string,
+)}
+  <!-- The action sits under the text, which keeps the text wide enough when
+       two cards share a row. -->
+  <a
+    {href}
+    class="group flex flex-col items-center gap-4 rounded-lg border bg-card p-6 text-center shadow-sm transition-colors hover:border-foreground/20 hover:bg-muted/40 sm:flex-row sm:items-start sm:gap-6 sm:p-7 sm:text-left"
+  >
+    <div class="grid size-15 shrink-0 place-items-center rounded-xl {badge}">
+      <Icon class="size-8" />
+    </div>
+    <div class="flex flex-1 flex-col items-center gap-3 sm:items-start">
+      <div>
+        <h2 class="text-xl font-bold tracking-tight group-hover:underline">
+          {title}
+        </h2>
+        <p class="mt-1 text-pretty text-muted-foreground">{text}</p>
+      </div>
+      <span
+        class="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors group-hover:text-foreground"
+      >
+        {action}
+        <ArrowRight class="size-4" />
+      </span>
+    </div>
+  </a>
 {/snippet}

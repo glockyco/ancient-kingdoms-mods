@@ -13,6 +13,7 @@
   import Gem from "@lucide/svelte/icons/gem";
   import Pause from "@lucide/svelte/icons/pause";
   import Play from "@lucide/svelte/icons/play";
+  import Puzzle from "@lucide/svelte/icons/puzzle";
   import titleScreenAnimated from "$lib/assets/home/title-screen-animated.webp";
   import titleScreenStill from "$lib/assets/home/title-screen.webp";
   import gameTitle from "$lib/assets/home/title.png";
@@ -86,6 +87,11 @@
         <Gem class="size-[1.15rem]" aria-hidden="true" />
         <span class="long">Browse Items</span>
         <span class="short">Items</span>
+      </a>
+      <a class="action secondary" href="/mods">
+        <Puzzle class="size-[1.15rem]" aria-hidden="true" />
+        <span class="long">Get the Mod</span>
+        <span class="short">Mod</span>
       </a>
     </div>
     <GameVersionBanner {live} {checkedAt} />
@@ -271,10 +277,9 @@
   /* From tablet width the motion switch moves to the artwork's lower right
      corner, where a reader looks for a media control. */
   @media (min-width: 640px) {
-    /* The field matches the width of the actions below it, so the shelf reads
-       as one column at every scale. Centred on the altar's top surface
-       (artwork rows 488 to 524), it sits between the candle groups from a
-       scale of 1.25 up. */
+    /* The field keeps to the altar's top surface (artwork rows 488 to 524),
+       where it sits between the candle groups from a scale of 1.25 up. The
+       actions sit under the artwork, so they may run wider than the field. */
     .search {
       width: min(24rem, 100%);
     }
@@ -291,7 +296,7 @@
     }
   }
 
-  /* On a phone the title spans the screen, and the two destinations share
+  /* On a phone the title spans the screen, and the three destinations share
      one row under shorter names. */
   @media (max-width: 520px) {
     .title {
@@ -301,7 +306,7 @@
     .actions {
       display: grid;
       width: 100%;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
     }
     .action {
       justify-content: center;

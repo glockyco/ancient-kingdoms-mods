@@ -24,10 +24,10 @@
       alt: "Gukavep's spawn point with a respawn timer, and arrows to Maltheris Vex and Spirit of the Forest.",
     },
     {
-      title: "Map pins",
-      text: "Marks the bosses, elites, and fabled monsters in your zone on the map, with their respawn timers.",
-      image: "/mod-pictures/card-map-pins.webp",
-      alt: "The map of Twilight Forest with a pin for each monster and Nivalis's spawn rules.",
+      title: "Boss skills",
+      text: "Shows the skill cooldowns of the monsters you're fighting, and when their next special can come.",
+      image: "/mod-pictures/card-boss-skills.webp",
+      alt: "Ancient Cyclops casting Earthshatter Slam while his other skills count down.",
     },
     {
       title: "Bestiary",
@@ -36,10 +36,10 @@
       alt: "Troll King Grimlok's Bestiary page with drop chances, a drop's tooltip and his skills.",
     },
     {
-      title: "Boss skills",
-      text: "Shows the skill cooldowns of the monsters you're fighting, and when their next special can come.",
-      image: "/mod-pictures/card-boss-skills.webp",
-      alt: "Ancient Cyclops casting Earthshatter Slam while his other skills count down.",
+      title: "Map pins",
+      text: "Marks the bosses, elites, and fabled monsters in your zone on the map, with their respawn timers.",
+      image: "/mod-pictures/card-map-pins.webp",
+      alt: "The map of Twilight Forest with a pin for each monster and Nivalis's spawn rules.",
     },
     {
       title: "Fatecharms",
@@ -52,7 +52,7 @@
 
 <Seo
   title="Pocket Compendium - Ancient Kingdoms Mod"
-  description="Pocket Compendium shows when bosses, elites and fabled monsters spawn in Ancient Kingdoms, where they are, and what they drop."
+  description="Pocket Compendium shows when bosses, elites and fabled monsters spawn in Ancient Kingdoms, where they are, their skill cooldowns in a fight, and what they drop."
   path="/mods"
 />
 
@@ -68,8 +68,8 @@
       </div>
       <p class="text-lg text-balance text-muted-foreground">
         A mod for Ancient Kingdoms that shows when bosses, elites, and fabled
-        monsters spawn and where to find them. It also opens the full Bestiary
-        page of any monster.
+        monsters spawn, where to find them, and their skill cooldowns in a
+        fight. It also opens the full Bestiary page of any monster.
       </p>
     </div>
     <div class="flex flex-wrap gap-3">
@@ -129,6 +129,14 @@
         game. Press F8 for the settings.
       </li>
     </ol>
+    <img
+      src="/mod-pictures/settings-window.webp"
+      alt="Pocket Compendium's settings window on its Boss list page, with the list's style, direction, tiers and levels."
+      width="786"
+      height="565"
+      loading="lazy"
+      class="w-full max-w-xl rounded-lg border"
+    />
   </section>
 </div>
 
