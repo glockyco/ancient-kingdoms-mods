@@ -78,6 +78,21 @@ internal static class BestiaryLootRenderer
         _renderedFor = null;
     }
 
+    /// <summary>
+    /// Destroys the slots added to the page and forgets the page drawn last. The feature calls it
+    /// when it stops, and when the World scene unloads, which has destroyed the slots already.
+    /// </summary>
+    internal static void Forget()
+    {
+        foreach (var slot in ExtraSlots)
+            if (slot != null) Object.Destroy(slot.gameObject);
+        ExtraSlots.Clear();
+        Shown.Clear();
+        _renderedMonster = null;
+        _renderedFor = null;
+        _appliedCell = LootGridLayout.VanillaCell;
+    }
+
     private struct ShownDrop
     {
         public Item Item;
@@ -343,7 +358,7 @@ internal static class BestiaryLootRenderer
 
     private static void SetSlotActive(UIBestiaryLoot slot, bool active)
     {
-        if (slot?.gameObject != null && slot.gameObject.activeSelf != active)
+        if (slot != null && slot.gameObject.activeSelf != active)
             slot.gameObject.SetActive(active);
     }
 

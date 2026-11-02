@@ -49,6 +49,14 @@ public sealed class BestiaryCountdownFeature : Feature
         _plate = null;
     }
 
+    // The countdowns live inside the game's Bestiary, which goes with the World scene.
+    protected internal override void OnSceneUnloaded(string sceneName)
+    {
+        if (sceneName != "World") return;
+        _slots.Clear();
+        _plate = null;
+    }
+
     protected internal override void Update()
     {
         var tracker = Tracker.Current;

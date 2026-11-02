@@ -94,8 +94,15 @@ public sealed class BestiaryPagesFeature : Feature
         var detail = UIBestiaryDetail.singleton;
         if (detail != null)
             BestiaryLootRenderer.RestoreGameLayout(detail);
+        BestiaryLootRenderer.Forget();
         SkillsPanelController.Hide();
         WatchButtonController.Hide();
+    }
+
+    // The slots added to the page live inside the game's Bestiary, which goes with the World scene.
+    protected internal override void OnSceneUnloaded(string sceneName)
+    {
+        if (sceneName == "World") BestiaryLootRenderer.Forget();
     }
 
     protected internal override void Update()

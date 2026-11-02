@@ -41,6 +41,14 @@ public sealed class MapPinsFeature : Feature
         _pins.Clear();
     }
 
+    // The pins live inside the game's map, which goes with the World scene.
+    protected internal override void OnSceneUnloaded(string sceneName)
+    {
+        if (sceneName != "World") return;
+        _container = null;
+        _pins.Clear();
+    }
+
     protected internal override void Update()
     {
         var tracker = Tracker.Current;
