@@ -44,6 +44,9 @@
           history.replaceState(history.state, "", url);
           return;
         }
+        // Crawlers index the prerendered HTML. A script redirect would make
+        // them record the page as redirecting to the fresh copy.
+        if (/bot|crawl|spider|google/i.test(navigator.userAgent)) return;
         addEventListener("unhandledrejection", function () {
           if (window.__sitebooted) return;
           url.searchParams.set("fresh", String(Date.now()));
