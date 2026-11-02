@@ -978,10 +978,13 @@
       >
     </p>
     <!-- Source: server-scripts/MonsterSkills.cs:177-286; Pet.cs:2840-2847,2952-2973 — telegraphed area avoidance needs a reachable safe destination; mercenaries react to any cast time and take the shortest safe path, companions need a cast time of at least 1 second; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->
+    <!-- Source: server-scripts/MonsterSkills.cs:GetBestEscapePosition; Pet.cs:TryEvaluateMercenaryRepositioningPath — a mercenary prefers an escape path clear of other monsters' aggro range, and takes the best other path when none is clear. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Mercenaries try to dodge every area attack that has a cast time, and
-        run to the nearest safe spot they can reach in time.</span
+        run to the nearest safe spot they can reach in time. They prefer a route
+        that does not pull more monsters, but take one that does when no other
+        escape exists.</span
       >
       <span class="block"
         >Companions only dodge area attacks with cast times of at least 1
