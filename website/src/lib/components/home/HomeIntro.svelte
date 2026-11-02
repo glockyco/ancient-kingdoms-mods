@@ -1,5 +1,6 @@
 <!--
-  What the game and the compendium are, at the end of both home layouts.
+  What the game and the compendium are, at the end of both home layouts. Both
+  layouts are in the page at once, so the section carries no id.
 -->
 <script lang="ts">
   import {
@@ -8,8 +9,8 @@
   } from "$lib/constants/links";
 </script>
 
-<section aria-labelledby="home-about">
-  <h2 id="home-about" class="sr-only">About the compendium</h2>
+<section>
+  <h2 class="sr-only">About the compendium</h2>
   <div
     class="max-w-[70ch] space-y-3 text-[0.9375rem] leading-relaxed text-pretty text-muted-foreground"
   >
