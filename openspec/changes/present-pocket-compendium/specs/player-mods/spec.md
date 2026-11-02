@@ -27,3 +27,12 @@ The mods page SHALL name respawn timers, spawn locations and boss skill cooldown
 
 - **WHEN** a player reaches the step that says to press F8 for the settings
 - **THEN** a picture of the settings window follows it
+
+### Requirement: The mods page holds the whole install
+
+The mods page SHALL give every step of installing the fixed MelonLoader and Pocket Compendium, with direct downloads of both, and SHALL name each system where a step differs. The steps SHALL come from one file in the repository that also becomes the README.txt of the MelonLoader zip.
+
+#### Scenario: A Mac player installs
+
+- **WHEN** a player on a Mac with CrossOver follows the mods page
+- **THEN** each step that differs on their system names Mac with CrossOver and says what to do there, without a visit to GitHub
