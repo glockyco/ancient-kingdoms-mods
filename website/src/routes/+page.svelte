@@ -4,6 +4,7 @@
   import TitleScreenHero from "$lib/components/home/TitleScreenHero.svelte";
   import ClassicHome from "$lib/components/home/ClassicHome.svelte";
   import EntityGlyph from "$lib/components/EntityGlyph.svelte";
+  import HomeIntro from "$lib/components/home/HomeIntro.svelte";
   import { HOME_COUNTS } from "$lib/generated/home-counts";
   import {
     HOME_SHOWCASE,
@@ -331,6 +332,7 @@
         {/each}
       </div>
     </section>
+    <HomeIntro />
   </div>
 </div>
 
