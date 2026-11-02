@@ -92,6 +92,17 @@ internal static class SkillsPanelController
         _window?.SetOpen(false);
     }
 
+    /// <summary>
+    /// Forgets the window and button, which the World scene destroys when it unloads, so a window
+    /// that is gone then does not count as closed by the game.
+    /// </summary>
+    internal static void Forget()
+    {
+        _window = null;
+        _button = null;
+        _shown = false;
+    }
+
     private static void Show()
     {
         _window.SetOpen(true);

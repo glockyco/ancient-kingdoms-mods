@@ -99,10 +99,13 @@ public sealed class BestiaryPagesFeature : Feature
         WatchButtonController.Hide();
     }
 
-    // The slots added to the page live inside the game's Bestiary, which goes with the World scene.
+    // The slots added to the page and the Skills window live inside the game's Bestiary, which
+    // goes with the World scene.
     protected internal override void OnSceneUnloaded(string sceneName)
     {
-        if (sceneName == "World") BestiaryLootRenderer.Forget();
+        if (sceneName != "World") return;
+        BestiaryLootRenderer.Forget();
+        SkillsPanelController.Forget();
     }
 
     protected internal override void Update()

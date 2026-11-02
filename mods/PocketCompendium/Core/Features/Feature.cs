@@ -53,6 +53,11 @@ public abstract class Feature
     {
     }
 
+    /// <summary>
+    /// Called when a scene unloads while the feature runs. Leaving a world unloads "World", which
+    /// destroys the game's interface in it, so a feature forgets every view it keeps there, or
+    /// checks with Unity's null test that the view still exists before each use.
+    /// </summary>
     protected internal virtual void OnSceneUnloaded(string sceneName)
     {
     }
