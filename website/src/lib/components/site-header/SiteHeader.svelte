@@ -14,6 +14,7 @@
   import KofiIcon from "$lib/components/KofiIcon.svelte";
   import SearchButton from "$lib/components/search/SearchButton.svelte";
   import HomeLayoutToggle from "$lib/components/home/HomeLayoutToggle.svelte";
+  import CompendiumSwitcher from "./CompendiumSwitcher.svelte";
   import { DISCORD_URL, KOFI_URL, STEAM_GUIDE_URL } from "$lib/constants/links";
   import {
     BROWSE_GROUPS,
@@ -220,6 +221,7 @@
         <DiscordIcon class="size-5" />
       </a>
       <span class="divider" aria-hidden="true"></span>
+      <CompendiumSwitcher />
       <a
         class="kofi"
         href={KOFI_URL}
@@ -590,8 +592,8 @@
       gap: 0.5rem;
       padding: 0 0.75rem;
     }
-    /* A phone keeps search, the theme switch, and Ko-fi; Steam and Discord
-       stay in the footer of the home page. */
+    /* A phone keeps search, the theme switch, the switcher, and Ko-fi. Steam
+       and Discord stay in the footer. */
     .tool,
     .divider {
       display: none;

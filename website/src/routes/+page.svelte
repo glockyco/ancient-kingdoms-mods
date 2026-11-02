@@ -4,10 +4,6 @@
   import TitleScreenHero from "$lib/components/home/TitleScreenHero.svelte";
   import ClassicHome from "$lib/components/home/ClassicHome.svelte";
   import EntityGlyph from "$lib/components/EntityGlyph.svelte";
-  import SteamIcon from "$lib/components/SteamIcon.svelte";
-  import DiscordIcon from "$lib/components/DiscordIcon.svelte";
-  import KofiIcon from "$lib/components/KofiIcon.svelte";
-  import { COMPENDIUM_VERSION } from "$lib/constants/version";
   import { HOME_COUNTS } from "$lib/generated/home-counts";
   import {
     HOME_SHOWCASE,
@@ -15,13 +11,6 @@
   } from "$lib/generated/home-showcase";
   import { MECHANICS_GROUPS } from "$lib/data/mechanics";
   import { entityRegistry, type EntityId } from "$lib/entities/registry";
-  import {
-    AK_MONITOR_DISCORD_URL,
-    DISCORD_URL,
-    KOFI_URL,
-    STEAM_GUIDE_URL,
-    STEAM_STORE_URL,
-  } from "$lib/constants/links";
 
   let { data } = $props();
 
@@ -71,15 +60,6 @@
     { id: "chest", count: HOME_COUNTS.chests },
     { id: "altar", count: HOME_COUNTS.altars },
     { id: "trap", count: HOME_COUNTS.traps },
-  ];
-
-  const footerLinks = [
-    { label: "Map", href: "/map" },
-    { label: "Items", href: "/items" },
-    { label: "Monsters", href: "/monsters" },
-    { label: "Recipes", href: "/recipes" },
-    { label: "Classes", href: "/classes" },
-    { label: "Zones", href: "/zones" },
   ];
 </script>
 
@@ -352,93 +332,6 @@
       </div>
     </section>
   </div>
-
-  <footer class="border-t bg-muted/40">
-    <div class="container mx-auto px-5 py-10 sm:px-8">
-      <h2 class="sr-only">About the compendium</h2>
-      <div
-        class="max-w-[70ch] space-y-3 text-[0.9375rem] leading-relaxed text-pretty text-muted-foreground"
-      >
-        <p>
-          <strong class="text-foreground">Ancient Kingdoms</strong> is a 2D
-          pixel-art RPG by Ancient Pixels, inspired by classic MMORPGs. You can
-          play alone or in co-op in the world of Eratiath. The game is in
-          <a
-            href={STEAM_STORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-foreground underline underline-offset-2"
-          >
-            Early Access on Steam</a
-          >.
-        </p>
-        <p>
-          The <strong class="text-foreground"
-            >Ancient Kingdoms Compendium</strong
-          > is a fan-made wiki, interactive world map, and searchable game database.
-          We update the listings from game files after each patch. They cover items,
-          monsters, NPCs, zones, quests, skills, classes, professions, and more.
-        </p>
-        <p>
-          Do you run a server? <a
-            href={AK_MONITOR_DISCORD_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-foreground underline underline-offset-2"
-          >
-            Ancient Kingdoms Monitor</a
-          > by Thero manages a dedicated server from a desktop app: restarts, crash
-          recovery, SteamCMD updates, backups, and RCON. The monitor is a separate
-          community project, not part of the compendium.
-        </p>
-        <p>Ancient Kingdoms artwork © Ancient Pixels, used with permission.</p>
-      </div>
-
-      <div
-        class="mt-8 flex flex-wrap items-center justify-between gap-x-10 gap-y-4 border-t pt-6 text-sm text-muted-foreground"
-      >
-        <div>
-          Ancient Kingdoms Compendium · Updated for v{COMPENDIUM_VERSION}
-        </div>
-        <nav class="flex flex-wrap gap-x-4 gap-y-1" aria-label="Site sections">
-          {#each footerLinks as link (link.href)}
-            <a href={link.href} class="transition-colors hover:text-foreground">
-              {link.label}
-            </a>
-          {/each}
-        </nav>
-        <div class="flex items-center gap-1">
-          <a
-            href={STEAM_GUIDE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Compendium guide on Steam"
-            class="footer-icon"
-          >
-            <SteamIcon class="size-5" />
-          </a>
-          <a
-            href={DISCORD_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Join the Ancient Kingdoms Discord"
-            class="footer-icon"
-          >
-            <DiscordIcon class="size-5" />
-          </a>
-          <a
-            href={KOFI_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Support on Ko-fi"
-            class="footer-icon"
-          >
-            <KofiIcon class="size-5" />
-          </a>
-        </div>
-      </div>
-    </div>
-  </footer>
 </div>
 
 {#snippet heading(id: string, title: string, href: string, label: string)}
@@ -930,17 +823,5 @@
   }
   .profession-icon img {
     image-rendering: pixelated;
-  }
-
-  .footer-icon {
-    display: grid;
-    width: 2.25rem;
-    height: 2.25rem;
-    place-items: center;
-    border-radius: calc(var(--radius) - 2px);
-  }
-  .footer-icon:hover {
-    background: var(--muted);
-    color: var(--foreground);
   }
 </style>

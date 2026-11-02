@@ -687,6 +687,9 @@ export async function computeHashes() {
     addHash("/mods", {
       source: fileHash("src/routes/mods/+page.svelte"),
     });
+    addHash("/about", {
+      source: fileHash("src/routes/about/+page.svelte"),
+    });
     // These pages have no reliable content date because they also depend on live version/map assets.
     return { hashes, bareUrls: [`${SITE_URL}/`, `${SITE_URL}/map`] };
   } finally {

@@ -5,22 +5,10 @@
 -->
 <script lang="ts">
   import { formatNumber } from "$lib/utils/format";
-  import SteamIcon from "$lib/components/SteamIcon.svelte";
-  import DiscordIcon from "$lib/components/DiscordIcon.svelte";
-  import KofiIcon from "$lib/components/KofiIcon.svelte";
   import GameVersionBanner from "$lib/components/GameVersionBanner.svelte";
   import HomeSearch from "$lib/components/HomeSearch.svelte";
-  import { buttonVariants } from "$lib/components/ui/button";
-  import { COMPENDIUM_VERSION } from "$lib/constants/version";
   import { HOME_COUNTS } from "$lib/generated/home-counts";
   import { MECHANICS_GROUPS } from "$lib/data/mechanics";
-  import {
-    AK_MONITOR_DISCORD_URL,
-    DISCORD_URL,
-    KOFI_URL,
-    STEAM_GUIDE_URL,
-    STEAM_STORE_URL,
-  } from "$lib/constants/links";
   import Gem from "@lucide/svelte/icons/gem";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Skull from "@lucide/svelte/icons/skull";
@@ -188,17 +176,6 @@
       count: HOME_COUNTS.traps,
     },
   ];
-
-  // Curated footer nav: the highest-traffic sections only (no Mechanics — it
-  // has its own section above).
-  const footerLinks = [
-    { label: "Map", href: "/map" },
-    { label: "Items", href: "/items" },
-    { label: "Monsters", href: "/monsters" },
-    { label: "Zones", href: "/zones" },
-    { label: "Classes", href: "/classes" },
-    { label: "Professions", href: "/professions" },
-  ];
 </script>
 
 <div class="mx-auto max-w-5xl px-6 pt-8">
@@ -329,87 +306,6 @@
       </div>
     </section>
   </div>
-
-  <!-- Page foot: about prose + meta -->
-  <footer class="mt-12 border-t pt-10 pb-10">
-    <div
-      class="max-w-[66ch] space-y-3 text-sm leading-relaxed text-pretty text-muted-foreground"
-    >
-      <p>
-        <strong>Ancient Kingdoms</strong> is a 2D pixel-art RPG by Ancient
-        Pixels, inspired by classic MMORPGs. You can play alone or in co-op in
-        the world of Eratiath. The game is in
-        <a
-          href={STEAM_STORE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-foreground underline underline-offset-2"
-        >
-          Early Access on Steam</a
-        >.
-      </p>
-      <p>
-        The <strong>Ancient Kingdoms Compendium</strong> is a fan-made wiki, interactive
-        world map, and searchable game database. We update the listings from game
-        files after each patch. They cover items, monsters, NPCs, zones, quests, skills,
-        classes, professions, and more.
-      </p>
-      <p>
-        Do you run a server? <a
-          href={AK_MONITOR_DISCORD_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-foreground underline underline-offset-2"
-        >
-          Ancient Kingdoms Monitor</a
-        > by Thero manages a dedicated server from a desktop app: restarts, crash
-        recovery, SteamCMD updates, backups, and RCON. The monitor is a separate community
-        project, not part of the compendium.
-      </p>
-    </div>
-
-    <div
-      class="mt-10 flex flex-wrap items-center justify-between gap-x-10 gap-y-6 text-[0.8125rem] text-muted-foreground"
-    >
-      <div>Ancient Kingdoms Compendium · Updated for v{COMPENDIUM_VERSION}</div>
-      <nav class="flex flex-wrap gap-x-4 gap-y-1" aria-label="Site sections">
-        {#each footerLinks as link (link.href)}
-          <a href={link.href} class="transition-colors hover:text-foreground">
-            {link.label}
-          </a>
-        {/each}
-      </nav>
-      <div class="flex items-center gap-1">
-        <a
-          href={STEAM_GUIDE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Compendium guide on Steam"
-          class={buttonVariants({ variant: "ghost", size: "icon" })}
-        >
-          <SteamIcon class="size-5" />
-        </a>
-        <a
-          href={DISCORD_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Join the Ancient Kingdoms Discord"
-          class={buttonVariants({ variant: "ghost", size: "icon" })}
-        >
-          <DiscordIcon class="size-5" />
-        </a>
-        <a
-          href={KOFI_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Support on Ko-fi"
-          class={buttonVariants({ variant: "ghost", size: "icon" })}
-        >
-          <KofiIcon class="size-5" />
-        </a>
-      </div>
-    </div>
-  </footer>
 </div>
 
 {#snippet sectionLabel(label: string)}

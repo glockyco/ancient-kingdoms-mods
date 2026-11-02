@@ -15,6 +15,7 @@
   import { onMount } from "svelte";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
   import SiteHeader from "$lib/components/site-header/SiteHeader.svelte";
+  import SiteFooter from "$lib/components/site-footer/SiteFooter.svelte";
   import RoundingScope from "$lib/components/RoundingScope.svelte";
 
   let { children } = $props();
@@ -101,6 +102,9 @@
     </RoundingScope>
   {/key}
 </main>
+{#if !isMap}
+  <SiteFooter />
+{/if}
 
 <style>
   .skip-link {
