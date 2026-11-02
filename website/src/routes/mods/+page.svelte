@@ -66,7 +66,7 @@
         <span class="text-lg text-muted-foreground">Version {data.version}</span
         >
       </div>
-      <p class="text-lg text-pretty text-muted-foreground">
+      <p class="text-lg text-balance text-muted-foreground">
         A mod for Ancient Kingdoms that shows when bosses, elites, and fabled
         monsters spawn and where to find them. It also opens the full Bestiary
         page of any monster.
