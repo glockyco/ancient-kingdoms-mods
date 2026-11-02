@@ -24,6 +24,7 @@
   import GitBranch from "@lucide/svelte/icons/git-branch";
   import FileText from "@lucide/svelte/icons/file-text";
   import ListTree from "@lucide/svelte/icons/list-tree";
+  import Package from "@lucide/svelte/icons/package";
 
   let { data } = $props();
 
@@ -421,6 +422,8 @@
           </h2>
           <div class="bg-muted/30 rounded-md border p-4">
             <ItemLink
+              variant="reference"
+              fallback={Package}
               itemId={data.givenItemOnStart.id}
               itemName={data.givenItemOnStart.name}
               quality={data.givenItemOnStart.quality}
@@ -473,6 +476,8 @@
                   Gather
                 </span>
                 <ItemLink
+                  variant="reference"
+                  fallback={Package}
                   itemId={item.id}
                   itemName={item.name}
                   quality={item.quality}
@@ -503,6 +508,8 @@
                   </span>
                 {/if}
                 <ItemLink
+                  variant="reference"
+                  fallback={Package}
                   itemId={item.id}
                   itemName={item.name}
                   quality={item.quality}
@@ -524,6 +531,8 @@
                   {data.quest.remove_items_on_complete ? "Deliver" : "Have"}
                 </span>
                 <ItemLink
+                  variant="reference"
+                  fallback={Package}
                   itemId={item.id}
                   itemName={item.name}
                   quality={item.quality}
@@ -547,6 +556,8 @@
                   Equip
                 </span>
                 <ItemLink
+                  variant="reference"
+                  fallback={Package}
                   itemId={item.id}
                   itemName={item.name}
                   quality={item.quality}
@@ -564,14 +575,18 @@
                 >
                   Read
                 </span>
-                {#if book.withheld}
+                {#if book.withheld || !book.item_id}
                   <span class="text-muted-foreground">An unpublished book</span>
                 {:else}
-                  <a
-                    href="/items/{book.item_id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >{book.name}</a
-                  >
+                  <ItemLink
+                    variant="reference"
+                    fallback={Package}
+                    itemId={book.item_id}
+                    itemName={book.name ?? book.item_id}
+                    quality={book.quality}
+                    tooltipHtml={book.tooltip_html}
+                    imageAvailable={data.itemIconPaths[book.item_id]}
+                  />
                 {/if}
               </div>
             {/each}
@@ -603,6 +618,8 @@
                   Brew
                 </span>
                 <ItemLink
+                  variant="reference"
+                  fallback={Package}
                   itemId={data.potionItem.id}
                   itemName={data.potionItem.name}
                   quality={data.potionItem.quality}
@@ -766,6 +783,8 @@
                         <ClassPills classes={[item.class_specific]} />
                       {/if}
                       <ItemLink
+                        variant="reference"
+                        fallback={Package}
                         itemId={item.item_id}
                         itemName={item.item_name}
                         quality={item.quality}

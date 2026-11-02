@@ -226,7 +226,7 @@ export const load: PageServerLoad = async ({
     book_requirements: db
       .prepare(
         `
-      SELECT r.id, r.item_id, i.name, r.withheld
+      SELECT r.id, r.item_id, i.name, i.quality, i.tooltip_html, r.withheld
       FROM quest_book_requirements r LEFT JOIN items i ON i.id = r.item_id
       WHERE r.quest_id = ? ORDER BY r.ordinal
     `,
@@ -490,6 +490,9 @@ export const load: PageServerLoad = async ({
     ...equipItems.map((item) => item.id),
     ...(potionItem ? [potionItem.id] : []),
     ...givenItemsOnStart.map((item) => item.id),
+    ...quest.book_requirements.flatMap((book) =>
+      book.withheld || !book.item_id ? [] : [book.item_id],
+    ),
   ]);
   db.close();
 

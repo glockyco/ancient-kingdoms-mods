@@ -124,6 +124,8 @@ export interface QuestInfo {
     id: string;
     item_id: string | null;
     name: string | null;
+    quality: number | null;
+    tooltip_html: string | null;
     withheld: number;
   }[];
   profession_requirements: {
