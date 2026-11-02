@@ -7,4 +7,4 @@
 
 ## 2. Release
 
-- [ ] 2.1 Set Pocket Compendium's version to 1.0.1, commit, and tag `pocket-compendium-v1.0.1` and `field-default-value-hook-fix-v1.0.1`. Verify with `dotnet run --project build-tool publish-mods` that the manifest names both versions from their tags while the working tree holds other changes, and that the published DLLs name the tagged commit as their build.
+- [x] 2.1 Set Pocket Compendium's version to 1.0.1, commit, and tag `pocket-compendium-v1.0.1` and `field-default-value-hook-fix-v1.0.1`. Verify with `dotnet run --project build-tool publish-mods` that the manifest names both versions from their tags while the working tree holds other changes, and that the published DLLs name the tagged commit as their build.
