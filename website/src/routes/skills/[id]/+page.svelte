@@ -35,6 +35,8 @@
   import Target from "@lucide/svelte/icons/target";
   import ScrollText from "@lucide/svelte/icons/scroll-text";
   import Gem from "@lucide/svelte/icons/gem";
+  import Package from "@lucide/svelte/icons/package";
+  import ItemLink from "$lib/components/ItemLink.svelte";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
@@ -55,20 +57,26 @@
 
   /** How each kind of item grants this skill, in player terms. */
   const GRANT_LABELS: Record<string, string> = {
-    food_buff: "food",
-    potion_buff: "potion",
-    relic_buff: "relic",
-    scroll: "scroll",
+    food_buff: "Food",
+    potion_buff: "Potion",
+    relic_buff: "Relic",
+    scroll: "Scroll",
+    weapon_proc: "Weapon effect",
   };
-  /** A weapon proc's label and chance wording by what rolls it. */
+  /** When a weapon effect rolls its chance. */
   const WEAPON_PROC_TRIGGERS = {
-    hit: { label: "weapon on-hit effect", chance: " on hit" },
-    spell: {
-      label: "weapon spell-cast effect",
-      chance: " after damaging spells",
-    },
-    heal: { label: "weapon heal effect", chance: " after direct heals" },
+    hit: "on hit",
+    spell: "after damaging spells",
+    heal: "after direct heals",
   } as const;
+  /** What a granting item is and when it applies the skill, such as "Weapon effect, 15% chance after direct heals". */
+  function grantDetail(item: PageData["grantedByItems"][number]): string {
+    const kind = GRANT_LABELS[item.type];
+    if (!kind) throw new Error(`Unknown way to grant a skill: ${item.type}`);
+    if (item.probability === undefined || item.probability >= 1) return kind;
+    const chance = `${formatPercent(item.probability, { decimals: 1 })} chance`;
+    return `${kind}, ${chance}${item.trigger ? ` ${WEAPON_PROC_TRIGGERS[item.trigger]}` : ""}`;
+  }
 
   const skill = $derived(data.skill);
   const skillIconSrc = $derived(
@@ -1597,27 +1605,22 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <div class="space-y-2">
+        <div class="space-y-3">
           {#each data.grantedByItems as item (item.item_id)}
-            <div class="flex items-center gap-2">
-              <a
-                href="/items/{item.item_id}"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                {item.item_name}
-              </a>
-              <span class="text-sm text-muted-foreground"
-                >({item.trigger
-                  ? WEAPON_PROC_TRIGGERS[item.trigger].label
-                  : GRANT_LABELS[item.type]})</span
-              >
-              {#if item.probability !== undefined && item.probability < 1}
-                <span class="text-sm text-muted-foreground">
-                  {formatPercent(item.probability, { decimals: 1 })} chance{item.trigger
-                    ? WEAPON_PROC_TRIGGERS[item.trigger].chance
-                    : ""}
-                </span>
-              {/if}
+            <div>
+              <ItemLink
+                variant="reference"
+                fallback={Package}
+                itemId={item.item_id}
+                itemName={item.item_name}
+                quality={item.quality}
+                tooltipHtml={item.tooltip_html}
+                imageAvailable={item.icon_path}
+              />
+              <!-- Indented past the 28 px icon and its 8 px gap, so the line starts under the name. -->
+              <p class="pl-9 text-sm text-balance text-muted-foreground">
+                {grantDetail(item)}
+              </p>
             </div>
           {/each}
         </div>

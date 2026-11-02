@@ -300,10 +300,18 @@ export const load: PageServerLoad = async ({
       query<{
         id: string;
         name: string;
+        quality: number;
+        tooltip_html: string | null;
+        icon_path: string | null;
         weapon_proc_on_spell_cast: number;
         weapon_proc_on_direct_heal: number;
       }>(
-        `SELECT id, name, weapon_proc_on_spell_cast, weapon_proc_on_direct_heal FROM items WHERE id IN (${placeholders})`,
+        `SELECT i.id, i.name, i.quality, i.tooltip_html, va.public_path AS icon_path,
+           i.weapon_proc_on_spell_cast, i.weapon_proc_on_direct_heal
+         FROM items i
+         LEFT JOIN visual_assets va
+           ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+         WHERE i.id IN (${placeholders})`,
         itemIds,
       ).map((i) => [i.id, i]),
     );
@@ -312,6 +320,9 @@ export const load: PageServerLoad = async ({
       return {
         item_id: item.item_id,
         item_name: row?.name || item.item_id,
+        quality: row?.quality ?? null,
+        tooltip_html: row?.tooltip_html ?? null,
+        icon_path: row?.icon_path ?? null,
         type: item.type,
         probability: item.probability,
         // Source: server-scripts/Skills.cs:TrySpellCastWeaponProc — a spell-cast weapon rolls after damaging spells, or after direct heals when it is also flagged for them.

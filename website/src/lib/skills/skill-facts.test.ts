@@ -239,7 +239,14 @@ describe("skill page facts", () => {
     ).toBe(true);
   });
   test("scroll-only skills exclude every learned, pet, monster, or non-scroll path", () => {
-    const scroll = { item_id: "scroll", item_name: "Scroll", type: "scroll" };
+    const scroll = {
+      item_id: "scroll",
+      item_name: "Scroll",
+      quality: 0,
+      tooltip_html: null,
+      icon_path: null,
+      type: "scroll",
+    };
     expect(facts({}, [], [], false, [scroll]).scrollOnly).toBe(true);
     expect(
       facts({ player_classes: ["cleric"] }, [], [], false, [scroll]).scrollOnly,

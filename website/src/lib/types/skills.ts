@@ -271,6 +271,9 @@ export interface SkillDetailView {
 export interface SkillItemSource {
   item_id: string;
   item_name: string;
+  quality: number | null;
+  tooltip_html: string | null;
+  icon_path: string | null;
   type: string;
   probability?: number;
   // What rolls a weapon proc: hits, damaging spells or direct heals.
