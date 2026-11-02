@@ -606,7 +606,7 @@ function augmentDescription(item: Item): string {
     const skillPhrase = skills.length
       ? ` 5 pieces: ${joinList(skills.map((b) => `${b.skill_name} +${b.level_bonus} ${b.level_bonus === 1 ? "rank" : "ranks"}`))}.`
       : "";
-    return `${item.augment_armor_set_name} set bonuses${classRestrictionPhrase(item.class_required)}.${attributePhrase}${skillPhrase}`;
+    return `Bonuses for ${item.augment_armor_set_name}${classRestrictionPhrase(item.class_required)}.${attributePhrase}${skillPhrase}`;
   }
   const target = item.augment_is_defensive ? "armor piece" : "weapon";
   return `${q} ${item.augment_is_defensive ? "armor" : "weapon"} augment.${itemStatPhrase(item)} Socket it into ${target === "armor piece" ? "an armor piece" : "a weapon"} at a crafting station. An Augmenter can remove it.`;

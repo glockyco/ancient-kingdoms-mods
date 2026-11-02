@@ -1,7 +1,7 @@
 import { test } from "vitest";
 import assert from "node:assert/strict";
 import { itemDescription } from "./meta-description.ts";
-import type { Item } from "$lib/queries/items";
+import { ITEM_DETAIL_SELECT, type Item } from "$lib/queries/items";
 import Database from "better-sqlite3";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemSourcesFromModel, loadItemSourceModel } from "./item-sources";
@@ -37,3 +37,31 @@ for (const [id, expected] of [
     }
   });
 }
+
+test("armor set metadata preserves set names and piece thresholds without duplicating set", () => {
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  try {
+    const items = db
+      .prepare(
+        `${ITEM_DETAIL_SELECT} WHERE i.item_type = 'augment' AND i.augment_armor_set_name != ''`,
+      )
+      .all() as Item[];
+    assert.ok(items.length > 0);
+    for (const item of items) {
+      const out = itemDescription(item);
+      assert.ok(
+        out.startsWith(`Bonuses for ${item.augment_armor_set_name}`),
+        out,
+      );
+      assert.ok(!out.includes("Set set bonuses"), out);
+      if (JSON.parse(item.augment_attribute_bonuses || "[]").length) {
+        assert.ok(out.includes("3 pieces:"), out);
+      }
+      if (JSON.parse(item.augment_skill_bonuses_with_names || "[]").length) {
+        assert.ok(out.includes("5 pieces:"), out);
+      }
+    }
+  } finally {
+    db.close();
+  }
+});

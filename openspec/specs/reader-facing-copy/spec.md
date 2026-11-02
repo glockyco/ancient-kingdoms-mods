@@ -82,6 +82,12 @@ Titles, search results and descriptions SHALL identify their subject using verif
 - **WHEN** an item and a skill have the same name
 - **THEN** the title or search context distinguishes the two subjects without misclassifying either
 
+#### Scenario: An armor set name already ends in Set
+
+- **WHEN** metadata describes an armor set's bonuses
+- **THEN** it preserves the game's set name without appending a redundant "set"
+- **AND** it retains the piece thresholds and the bonuses they grant
+
 ### Requirement: Derived numbers answer missing player inputs
 Copy SHALL state a derived number only when the player lacks an input to compute it, such as real minutes per game-time window, and SHALL NOT spell out arithmetic a player does at a glance, such as kills per token from a drop chance.
 
