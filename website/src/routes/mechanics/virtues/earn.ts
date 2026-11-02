@@ -319,8 +319,8 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       title: "Good to know",
       kind: "info",
       items: [
-        // Source: server-scripts/Player.cs:AssignValorTarget — the shrine refuses Valor when no quarry fits.
-        'When none fits your level, the shrine says "No worthy quarry answers the shrine at this time."',
+        // Source: server-scripts/Player.cs:AssignValorTarget,UserCode_CmdActivateVirtue__VirtueShrine — below rank 5, the shrine refuses Valor when no quarry fits.
+        'Below rank 5, when none fits your level, the shrine says "No worthy quarry answers the shrine at this time."',
       ],
     },
   ],
