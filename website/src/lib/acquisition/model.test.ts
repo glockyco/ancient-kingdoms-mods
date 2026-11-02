@@ -3230,71 +3230,10 @@ describe("epic quest completion gates", () => {
     }
   });
 
-  it("blocks accepting and completing the alternative while active or completed", async () => {
+  it("loads recipe quest gates with class restrictions, including withheld targets", async () => {
     const f = fixture();
     try {
       addQuest(f, "epic");
-      addQuest(f, "alternative");
-      f.db
-        .prepare(
-          "UPDATE quests SET alternative_ending_quest_id='alternative' WHERE id='epic'",
-        )
-        .run();
-      const model = await f.model({
-        kind: "requirements",
-        entities: [{ kind: "quest", id: "epic" }],
-      });
-      for (const phase of ["accept", "complete"]) {
-        const root = model.requirements
-          .get("quest:epic")!
-          .find((root) => root.phase === phase)!;
-        for (const [active, completed, expected] of [
-          [false, false, "met"],
-          [true, false, "unmet"],
-          [false, true, "unmet"],
-        ] as const)
-          expect(
-            evaluateRequirement(root, {
-              subjects: {
-                player: {
-                  quests: {
-                    entries: [
-                      {
-                        questId: "epic",
-                        active: phase === "complete",
-                        completed: false,
-                      },
-                      { questId: "alternative", active, completed },
-                    ],
-                    complete: true,
-                  },
-                },
-              },
-            }).status,
-          ).toBe(expected);
-      }
-      f.db
-        .prepare(
-          "UPDATE quests SET alternative_ending_quest_id=NULL,alternative_ending_withheld=1 WHERE id='epic'",
-        )
-        .run();
-      const withheld = await f.model({
-        kind: "requirements",
-        entities: [{ kind: "quest", id: "epic" }],
-      });
-      expect(JSON.stringify(withheld.requirements.get("quest:epic"))).toContain(
-        '"kind":"withheld"',
-      );
-    } finally {
-      f.db.close();
-    }
-  });
-
-  it("loads recipe quest gates with class and alternative restrictions, including withheld targets", async () => {
-    const f = fixture();
-    try {
-      addQuest(f, "epic");
-      addQuest(f, "alternative");
       addCreation(f);
       f.insert("quest_class_requirements", {
         id: "epic-class",
@@ -3304,21 +3243,12 @@ describe("epic quest completion gates", () => {
       });
       f.db
         .prepare(
-          "UPDATE quests SET alternative_ending_quest_id='alternative' WHERE id='epic'",
-        )
-        .run();
-      f.db
-        .prepare(
           "UPDATE acquisition_recipe_details SET required_quest_id='epic' WHERE id='recipe-a'",
         )
         .run();
       const model = await f.model({ kind: "items", itemIds: ["arrows"] });
       const root = model.methodViews.get("recipe-a")!.requirements[0];
-      const facts = (
-        classId: string,
-        alternativeActive: boolean,
-        completed: boolean,
-      ) => ({
+      const facts = (classId: string, completed: boolean) => ({
         subjects: {
           player: {
             identities: {
@@ -3330,30 +3260,20 @@ describe("epic quest completion gates", () => {
             },
             quests: {
               complete: true,
-              entries: [
-                { questId: "epic", active: false, completed },
-                {
-                  questId: "alternative",
-                  active: alternativeActive,
-                  completed: false,
-                },
-              ],
+              entries: [{ questId: "epic", active: false, completed }],
             },
           },
         },
       });
-      expect(
-        evaluateRequirement(root, facts("warrior", false, true)).status,
-      ).toBe("met");
-      expect(
-        evaluateRequirement(root, facts("wizard", false, true)).status,
-      ).toBe("unmet");
-      expect(
-        evaluateRequirement(root, facts("warrior", true, true)).status,
-      ).toBe("unmet");
-      expect(
-        evaluateRequirement(root, facts("warrior", false, false)).status,
-      ).toBe("unmet");
+      expect(evaluateRequirement(root, facts("warrior", true)).status).toBe(
+        "met",
+      );
+      expect(evaluateRequirement(root, facts("wizard", true)).status).toBe(
+        "unmet",
+      );
+      expect(evaluateRequirement(root, facts("warrior", false)).status).toBe(
+        "unmet",
+      );
       expect(
         itemSourcesFromModel(model, "arrows").recipes.find(
           (row) => row.variant_id === "recipe-a",
@@ -3368,7 +3288,7 @@ describe("epic quest completion gates", () => {
       expect(
         evaluateRequirement(
           withheld.methodViews.get("recipe-a")!.requirements[0],
-          facts("warrior", false, true),
+          facts("warrior", true),
         ).status,
       ).toBe("unknown");
       expect(

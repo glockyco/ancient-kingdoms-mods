@@ -591,7 +591,7 @@ internal static class SkillEffectFormatter
             }
         }
 
-        // Source: server-scripts/Skills.cs:1672-1686,1956-1966 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second.
+        // Source: server-scripts/Skills.cs:1691-1705,1975-1985 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second.
         var hpPct = ParseLinearValue(skill.health_percent_per_second_bonus);
         if (hpPct != null && hpPct.base_value != 0)
         {

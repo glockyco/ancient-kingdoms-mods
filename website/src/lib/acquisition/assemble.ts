@@ -820,7 +820,7 @@ export function assembleAcquisitionModel(
           "scribing",
         ]);
         const parts: RequirementExpression[] = [];
-        // Source: server-scripts/CraftingItems.cs:CanCraft - crafting requires the completed quest, its class, and its alternative ending gate.
+        // Source: server-scripts/CraftingItems.cs:CanCraft - crafting requires the completed quest and its class.
         if (detail.required_quest_withheld)
           parts.push(
             predicate({ kind: "withheld", reason: "unpublished_target" }),
@@ -847,21 +847,8 @@ export function assembleAcquisitionModel(
                   }),
             );
           if (classes.length) parts.push(combine("any", classes));
-          if (quest.alternative_ending_withheld)
-            parts.push(
-              predicate({ kind: "withheld", reason: "unpublished_target" }),
-            );
-          else if (typeof quest.alternative_ending_quest_id === "string")
-            for (const state of ["not_active", "not_completed"] as const)
-              parts.push(
-                predicate({
-                  kind: "quest_state",
-                  questId: quest.alternative_ending_quest_id,
-                  state,
-                }),
-              );
         }
-        // Source: server-scripts/Player.cs:14580-14621; server-scripts/TableUI.cs:71-98.
+        // Source: server-scripts/Player.cs:14713-14754; server-scripts/TableUI.cs:71-98.
         // Scribing uses Alchemy success but does not require learning the recipe.
         if (method.rule_id === "alchemy")
           parts.push(

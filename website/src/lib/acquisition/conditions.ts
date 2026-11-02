@@ -1025,19 +1025,6 @@ export function composeRequirements(
               standing: Number(faction.standing),
             }),
       );
-    // Source: server-scripts/EpicWeaponQuest.cs:CanChoose,IsFulfilled - the alternative must be neither active nor completed.
-    const alternative: RequirementExpression[] = [];
-    if (quest.alternative_ending_withheld) alternative.push(withheld());
-    else if (typeof quest.alternative_ending_quest_id === "string")
-      for (const state of ["not_active", "not_completed"] as const)
-        alternative.push(
-          predicate({
-            kind: "quest_state",
-            questId: quest.alternative_ending_quest_id,
-            state,
-          }),
-        );
-    parts.push(...alternative);
     parts.push(
       predicate({
         kind: "quest_state",
@@ -1045,7 +1032,7 @@ export function composeRequirements(
         state: "not_active",
       }),
     );
-    // Source: server-scripts/PlayerQuests.cs:224-257.
+    // Source: server-scripts/PlayerQuests.cs:220-253.
     if (!quest.is_adventurer_quest && !quest.is_repeatable)
       parts.push(
         predicate({
@@ -1071,7 +1058,7 @@ export function composeRequirements(
         }),
       );
     add(`quest:${quest.id}`, "accept", parts);
-    const objectives: RequirementExpression[] = [...alternative];
+    const objectives: RequirementExpression[] = [];
     // Source: server-scripts/EpicGatherQuest.cs:MeetsAdditionalRequirements - every required book must have been read and every profession threshold must be met.
     for (const book of matching(
       "quest_book_requirements",

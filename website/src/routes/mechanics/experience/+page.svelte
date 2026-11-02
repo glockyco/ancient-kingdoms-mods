@@ -721,7 +721,7 @@
           20&#8239;000 XP. Resetting refunds only 1 of the 2 points.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:12148-12183; server-scripts/Npc.cs:1832-1850; server-scripts/PlayerSkills.cs:1931-1958 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
+          <!-- Source: server-scripts/Player.cs:12281-12316; server-scripts/Npc.cs:1832-1850; server-scripts/PlayerSkills.cs:1931-1958 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
           {#if data.veteranMaster}
             <a
               href="/npcs/{data.veteranMaster.id}"
@@ -1023,11 +1023,11 @@
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,826 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:14655-14668 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:14663-14668 — double XP applies to scribing -->
+        <!-- Source: server-scripts/Player.cs:14788-14801 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:14796-14801 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — Double XP applies to attaching augments. -->
-        <!-- Source: server-scripts/PlayerQuests.cs:399-400 — no double XP for quests -->
+        <!-- Source: server-scripts/PlayerQuests.cs:404-405 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
           <span class="block"
@@ -1280,7 +1280,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:14655-14662 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:14788-14795 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1345,8 +1345,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:14903-14909 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:14919-14954 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:15036-15042 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:15052-15087 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1385,7 +1385,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:14903-14909 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:15036-15042 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1462,7 +1462,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/PlayerQuests.cs:399-400 — rewardExperience added directly, no multipliers -->
+      <!-- Source: server-scripts/PlayerQuests.cs:404-405 — rewardExperience added directly, no multipliers -->
       <p class="text-sm text-muted-foreground">
         XP varies per quest and is shown on each quest's page. No bonus or
         penalty changes it.

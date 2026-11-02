@@ -59,6 +59,6 @@
     "essence": "Player.UserCode_CmdPrimalEssence",
     "capXp": "Experience.current",
     "altar": "DefaultEvent.SummonMonsters",
-    "questClassAmmo": "PlayerQuests.UserCode_CmdComplete__NetworkIdentity__Int32"
+    "questClassAmmo": "PlayerQuests.UserCode_CmdComplete__NetworkIdentity__Int32__Int32"
   }
 }

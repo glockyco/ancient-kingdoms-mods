@@ -126,7 +126,7 @@ function additiveLead(value: number, negative = false): string {
     ? `${sign}${number(value)}`
     : `${sign}${percent(value, { decimals: 2, preserveNonzero: true })} of`;
 }
-// Source: server-scripts/BuffSkill.cs:ScaleWithCharisma,246-263,480-543; Wisdom.cs:116-128 — song power multiplies a song's values by its share of the Charisma bonus, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
+// Source: server-scripts/BuffSkill.cs:ScaleWithCharisma,246-263,480-543; Wisdom.cs:118-130 — song power multiplies a song's values by its share of the Charisma bonus, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
 /** How an attribute source changes one listed value, as a note lead, or null when it does not. */
 function scalingLead(
   scaling: EffectScaling,

@@ -976,7 +976,7 @@ function formatBuffDebuffStats(
     }
   }
 
-  // Source: server-scripts/Skills.cs:1672-1686,1956-1966 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second, after resists and DoT bonuses.
+  // Source: server-scripts/Skills.cs:1691-1705,1975-1985 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second, after resists and DoT bonuses.
   const hpPct = parseLinearValue(skill.health_percent_per_second_bonus);
   if (hpPct && hpPct.base_value !== 0) {
     if (hpPct.base_value > 0) {

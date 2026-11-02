@@ -1,5 +1,5 @@
 <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcAddBlind and UserCode_TargetRpcRemoveBlind -->
-<!-- Source: server-scripts/Skills.cs:1316-1318 (isBlindness check, Player only) -->
+<!-- Source: server-scripts/Skills.cs:1335-1337 (isBlindness check, Player only) -->
 <div class="space-y-1">
   <h3 class="font-semibold">Blindness</h3>
   <p class="text-muted-foreground">

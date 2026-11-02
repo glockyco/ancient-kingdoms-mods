@@ -128,7 +128,7 @@
             </thead>
             <tbody>
               <!-- Source: server-scripts/PlayerDead.cs:103-119 — only the character who died can collect unused remains. -->
-              <!-- Source: server-scripts/Player.cs:15558-15567 — collecting remains returns half the stored XP loss and destroys the remains. -->
+              <!-- Source: server-scripts/Player.cs:15691-15700 — collecting remains returns half the stored XP loss and destroys the remains. -->
               <tr class="border-b">
                 <th class="p-2 font-medium text-foreground"
                   >Collect your remains</th
@@ -142,7 +142,7 @@
                   >
                 </td>
               </tr>
-              <!-- Source: server-scripts/TargetHealSkill.cs:260-274 — Resurrection targets unused player remains after their owner respawns and passes the remains' coordinates to the player. -->
+              <!-- Source: server-scripts/TargetHealSkill.cs:273-287 — Resurrection targets unused player remains after their owner respawns and passes the remains' coordinates to the player. -->
               <!-- Source: server-scripts/Player.cs:UserCode_CmdResurrect__Int32__Single__Single__NetworkIdentity — accepting moves the player to remains, sets Health to 60% max Health and Mana to 20% max Health, leaves Rage unchanged, and returns 75% lost XP. -->
               <!-- Source: server-scripts/EnergyResource.cs:current — Mana is capped by maximum Mana. -->
               <tr>
@@ -165,7 +165,7 @@
           </table>
         </div>
         <Calculation calculation={deathRecovery()} />
-        <!-- Source: server-scripts/Player.cs:14378-14379; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
+        <!-- Source: server-scripts/Player.cs:14511-14512; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
         <!-- Observed: docs/game-bugs/resurrection-restores-mana-from-maximum-health.md — both live resurrection trials restore Mana from maximum Health. -->
         <p>
           Rage is unchanged. The Mana amount uses maximum Hit Points because of
@@ -198,11 +198,11 @@
             >Scroll of Resurrection</a
           >.
         </p>
-        <!-- Source: server-scripts/Player.cs:14347-14379 — resurrection restores resources and XP without changing equipment durability. -->
+        <!-- Source: server-scripts/Player.cs:14480-14512 — resurrection restores resources and XP without changing equipment durability. -->
         <p>Resurrection does not repair your equipment.</p>
       </div>
 
-      <!-- Source: server-scripts/Player.cs:4511-4518,10918-10921 — Hardcore death deletes the character instead of saving the normal death state. -->
+      <!-- Source: server-scripts/Player.cs:4511-4518,11051-11054 — Hardcore death deletes the character instead of saving the normal death state. -->
       <p
         class="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-foreground"
       >

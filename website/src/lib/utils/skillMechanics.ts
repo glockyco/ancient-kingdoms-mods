@@ -366,7 +366,7 @@ export function computeMechanicsSpec(
   }> = [];
 
   if (isHealSkill && !skill.is_necromancer_death_bloom) {
-    // Source: server-scripts/TargetHealSkill.cs:294-297; AreaHealSkill.cs:114-116 — target healing requires canHealOthers, area healing always rolls for critical healing.
+    // Source: server-scripts/TargetHealSkill.cs:307-310; AreaHealSkill.cs:114-116 — target healing requires canHealOthers, area healing always rolls for critical healing.
     const canCrit = skill.skill_type === "area_heal" || skill.can_heal_others;
 
     // Source: server-scripts/ScrollItem.cs:UseAfterCast; TargetHealSkill.cs:Apply — scrolls call Apply as a player; pet/mercenary restoration keeps the player's Wisdom bonus.

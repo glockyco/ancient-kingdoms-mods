@@ -31,8 +31,7 @@
   const hasRequirements = $derived(
     data.quest.race_requirements.length > 0 ||
       data.quest.class_requirements.length > 0 ||
-      data.quest.faction_requirements.length > 0 ||
-      data.quest.alternative_ending !== null,
+      data.quest.faction_requirements.length > 0,
   );
 
   // Check if quest has any objectives to display
@@ -306,23 +305,6 @@
                   {/if}
                 </div>
               {/each}
-            {/if}
-            {#if data.quest.alternative_ending}
-              <!-- Source: server-scripts/EpicWeaponQuest.cs:CanChoose - an active or completed alternative blocks this quest. -->
-              <p>
-                Not available while
-                {#if data.quest.alternative_ending.withheld}
-                  <span class="text-muted-foreground">an unpublished quest</span
-                  >
-                {:else}
-                  <a
-                    href="/quests/{data.quest.alternative_ending.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >{data.quest.alternative_ending.name}</a
-                  >
-                {/if}
-                is active or completed.
-              </p>
             {/if}
           </div>
         </section>
@@ -725,7 +707,7 @@
                       name={reputationReward.faction}
                       id={data.factionIds[reputationReward.faction]}
                     />
-                    <!-- Source: server-scripts/PlayerQuests.cs:449-452; Player.cs:ApplyVirtueFactionGain — the quest gain goes through the Honesty blessing. -->
+                    <!-- Source: server-scripts/PlayerQuests.cs:454-457; Player.cs:ApplyVirtueFactionGain — the quest gain goes through the Honesty blessing. -->
                     <span class="text-muted-foreground"
                       >(more with <a
                         href={virtueHref("honesty")}

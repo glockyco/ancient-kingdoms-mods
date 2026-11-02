@@ -129,11 +129,6 @@ export interface QuestInfo {
     name: string;
     minimum_percent: number;
   }[];
-  alternative_ending: {
-    id: string | null;
-    name: string | null;
-    withheld: number;
-  } | null;
   rewards: QuestRewards;
   tooltip: string | null;
   tooltip_complete: string | null;

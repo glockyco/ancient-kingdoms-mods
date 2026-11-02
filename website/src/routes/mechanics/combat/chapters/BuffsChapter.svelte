@@ -112,7 +112,7 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/Buff.cs:46-227; Wisdom.cs:116-127; Combat.cs:988-1001 — positive non-song effects add the selected attribute, with per-effect rounding. -->
+    <!-- Source: server-scripts/Buff.cs:46-227; Wisdom.cs:118-129; Combat.cs:988-1001 — positive non-song effects add the selected attribute, with per-effect rounding. -->
     <!-- Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus — Leadership adds its stored buff attribute to both listed damage bonuses. -->
     <!-- Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity. -->
     <RefTable caption="What the buff attribute adds to each effect">
@@ -409,7 +409,7 @@
       cannot be cleansed. Each debuff starts with three layers and ends when the
       last one is removed.
     </p>
-    <!-- Source: server-scripts/Skills.cs:1944-1947 — ticks with two or one remaining layers deal 85% or 70%, rounded up. -->
+    <!-- Source: server-scripts/Skills.cs:1963-1966 — ticks with two or one remaining layers deal 85% or 70%, rounded up. -->
     <p>
       A debuff deals 85% of its <a href="#damage-over-time">damage over time</a>
       with two layers left and 70% with one, rounded up.

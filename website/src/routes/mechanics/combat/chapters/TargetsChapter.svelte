@@ -24,7 +24,7 @@
       always fight an NPC that targets you, a party member, or a mercenary,
       companion or familiar belonging to either.
     </p>
-    <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,100-152; PlayerSkills.cs:837-860 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
+    <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,113-165; PlayerSkills.cs:837-860 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
     <ul>
       <li>
         A targeted heal can reach yourself, another player, or a mercenary,

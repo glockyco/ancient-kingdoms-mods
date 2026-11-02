@@ -62,7 +62,7 @@ function linear(skill: SkillDetailView, key: LinearSkillField): LinearValue {
 }
 
 /** The share of a heal each point of the caster's Wisdom adds, or null when Wisdom does not apply. */
-// Source: server-scripts/TargetHealSkill.cs:154-161,294-306; AreaHealSkill.cs:106-127; Wisdom.cs:107-114 — players add 0.4% per point of Wisdom, Rangers three times that, and mercenaries 0.4% of their own. Scroll heals skip it unless a player restores a pet.
+// Source: server-scripts/TargetHealSkill.cs:167-174,307-319; AreaHealSkill.cs:106-127; Wisdom.cs:109-116 — players add 0.4% per point of Wisdom, Rangers three times that, and mercenaries 0.4% of their own. Scroll heals skip it unless a player restores a pet.
 export function healWisdomShare(
   skill: SkillDetailView,
   kind: HealBonusKind,
@@ -79,8 +79,8 @@ export function healWisdomShare(
     : WISDOM_HEAL_SHARE;
 }
 
-// Source: server-scripts/TargetHealSkill.cs:154-161,294-306; AreaHealSkill.cs:106-127; Wisdom.cs:107-114 — round the capped Wisdom bonus separately, then add the base.
-// Source: server-scripts/TargetHealSkill.cs:170-195; AreaHealSkill.cs:135-160 — resource restoration uses the rank's amount without Wisdom. A critical player-cast pet restoration rolls its resource multiplier separately.
+// Source: server-scripts/TargetHealSkill.cs:167-174,307-319; AreaHealSkill.cs:106-127; Wisdom.cs:109-116 — round the capped Wisdom bonus separately, then add the base.
+// Source: server-scripts/TargetHealSkill.cs:183-208; AreaHealSkill.cs:135-160 — resource restoration uses the rank's amount without Wisdom. A critical player-cast pet restoration rolls its resource multiplier separately.
 export function healingCalculation(
   skill: SkillDetailView,
   kind: HealBonusKind,
@@ -418,7 +418,7 @@ export interface EffectScaling {
   factor: number;
 }
 
-// Source: server-scripts/Buff.cs:46-257; BuffSkill.cs:246-263,480-543; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:453-464 — which listed effects an attribute scales, and how.
+// Source: server-scripts/Buff.cs:46-257; BuffSkill.cs:246-263,480-543; Wisdom.cs:118-130; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:453-464 — which listed effects an attribute scales, and how.
 /** The listed effects of a buff or debuff that its caster's attribute scales. */
 export function effectScalings(
   skill: SkillDetailView,
@@ -477,7 +477,7 @@ export function effectScalings(
     });
 }
 
-// Source: server-scripts/Buff.cs:46-257; BuffSkill.cs:246-263,480-543; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:453-464 — signed stat getters, separate rounded attribute bonuses, and ward contribution transformation.
+// Source: server-scripts/Buff.cs:46-257; BuffSkill.cs:246-263,480-543; Wisdom.cs:118-130; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:453-464 — signed stat getters, separate rounded attribute bonuses, and ward contribution transformation.
 export function effectScalingCalculation(
   skill: SkillDetailView,
   source: BuffBonusAttrSource | DebuffBonusAttrKind,

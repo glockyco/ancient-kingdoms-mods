@@ -252,11 +252,11 @@
       </p>
       <!-- Source: server-scripts/PlayerEquipment.cs:190-221,259-285 — equipment and augments apply attribute bonuses. -->
       <!-- Source: server-scripts/PlayerSkills.cs:1887-1909 — passive skills apply attribute bonuses. -->
-      <!-- Source: server-scripts/Skills.cs:1539-1571 — active buffs can change attribute values. -->
+      <!-- Source: server-scripts/Skills.cs:1558-1590 — active buffs can change attribute values. -->
       <p>
         Equipment, augments, passive skills, and buffs can also change your
         attributes.
-        <!-- Source: server-scripts/Player.cs:13491-13526 — reading attribute books permanently raises their listed attributes. -->
+        <!-- Source: server-scripts/Player.cs:13624-13659 — reading attribute books permanently raises their listed attributes. -->
         Reading certain
         <a
           href="/professions/lore_keeping"
@@ -330,7 +330,7 @@
           </thead>
           <tbody>
             <!-- Source: server-scripts/Mana.cs:28-54 — max mana and mana recovery have distinct calculations. -->
-            <!-- Source: server-scripts/Intelligence.cs:21-28,96-99 and server-scripts/Wisdom.cs:27-35,102-105 — Intelligence adds pool but neither attribute adds recovery. -->
+            <!-- Source: server-scripts/Intelligence.cs:21-28,96-99 and server-scripts/Wisdom.cs:29-37,104-107 — Intelligence adds pool but neither attribute adds recovery. -->
             <!-- Source: server-scripts/Player.cs:1770-1781 — Cleric, Druid, Ranger, Wizard and Necromancer use Mana. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Mana</th>
@@ -512,7 +512,7 @@
             >Veteran point counting and reset losses</a
           > explains how the game miscounts ranks that cost 2 veteran points.
         </p>
-        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16332-16335 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
+        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16465-16468 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
           On some saved characters, the first specialization switch resets
           assigned attributes for free.
@@ -547,7 +547,7 @@
           resets your assigned attribute points for the same price, but not while
           a debuff is on you.
         </p>
-        <!-- Source: server-scripts/Player.cs:12116-12122,12148-12182 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
+        <!-- Source: server-scripts/Player.cs:12249-12255,12281-12315 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
         <!-- Source: server-scripts/PlayerSkills.cs:1880-1973 — each reset returns points only for its own skill pool. -->
         <p>
           <span class="block"

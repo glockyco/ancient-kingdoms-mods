@@ -160,7 +160,7 @@
       Movement Speed bonus below −10, except damage over time with no other
       effect besides a slow.
     </p>
-    <!-- Source: server-scripts/Monster.cs:469-481; Skills.cs:1255-1279 — bosses and immune monsters ignore all slows, elites ignore speed bonuses at most -10, and these monsters skip the strong-slow movement reset. -->
+    <!-- Source: server-scripts/Monster.cs:469-481; Skills.cs:1274-1298 — bosses and immune monsters ignore all slows, elites ignore speed bonuses at most -10, and these monsters skip the strong-slow movement reset. -->
     <p>
       Bosses and monsters with Immune to Debuffs ignore every slow. Elite
       monsters ignore Movement Speed bonuses of −10 or lower.

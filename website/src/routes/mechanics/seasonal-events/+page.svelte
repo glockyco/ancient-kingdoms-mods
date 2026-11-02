@@ -368,7 +368,7 @@
       <Card.Content class="space-y-4 text-muted-foreground">
         <!-- Source: server-scripts/EnviromentSystem.cs:CheckSpecialEvents; server-scripts/Player.cs:Start — every online player gets the season's Double XP buff, including on login. -->
         <!-- Source: server-scripts/Monster.cs:OnDeath; server-scripts/Npc.cs:OnDeath; server-scripts/GatherItem.cs:OnInteractServer,OnInteractFishServer; server-scripts/Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String,UserCode_CmdCraftItem__NetworkIdentity__Int32 — hasDoubleExp doubles character XP from kills, gathering, fishing, alchemy, scribing, augments and crafting, including cooking. -->
-        <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/Player.cs:UserCode_CmdGetExperienceNewZone__Int64 — quest and exploration XP are awarded without Double XP. -->
+        <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32__Int32; server-scripts/Player.cs:UserCode_CmdGetExperienceNewZone__Int64 — quest and exploration XP are awarded without Double XP. -->
         <p>
           Every online player has a Double XP buff while either event runs:
           {#each data.seasons as season, i (season.id)}{i
@@ -396,7 +396,7 @@
     <Card.Root id="currencies" class="bg-muted/30">
       <Card.Header><Card.Title>Currencies</Card.Title></Card.Header>
       <Card.Content class="text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:OnDeath; server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/NpcTrading.cs:VisibleSaleItemsFor — tokens come from configured drops or quest rewards and buy the season's merchant items. -->
+        <!-- Source: server-scripts/Monster.cs:OnDeath; server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32__Int32; server-scripts/NpcTrading.cs:VisibleSaleItemsFor — tokens come from configured drops or quest rewards and buy the season's merchant items. -->
         <table class={TABLE}>
           <thead
             ><tr class="border-b"
@@ -580,7 +580,7 @@
             { href: mapHref(npc.id, "npc"), label: npc.name },
           ])}
           <div class="grid gap-3">
-            <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32; server-scripts/KillQuest.cs:IsFulfilled; server-scripts/GatherInventoryQuest.cs:IsFulfilled — quests use their configured objectives and award shared and class-specific rewards on completion. -->
+            <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32__Int32; server-scripts/KillQuest.cs:IsFulfilled; server-scripts/GatherInventoryQuest.cs:IsFulfilled — quests use their configured objectives and award shared and class-specific rewards on completion. -->
             {#each data.quests as quest (quest.id)}
               <article
                 class="grid gap-x-6 gap-y-4 rounded-lg border p-5 sm:grid-cols-[1fr_15rem]"

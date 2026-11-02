@@ -1353,7 +1353,7 @@
             {/if}
             {#if skill.health_percent_per_second_bonus}
               <div>
-                <!-- Source: server-scripts/Skills.cs:1672-1686 — Reaper Form drains the caster's maximum Health each second. -->
+                <!-- Source: server-scripts/Skills.cs:1691-1705 — Reaper Form drains the caster's maximum Health each second. -->
                 <dt class="text-muted-foreground">
                   {skill.is_necromancer_reaper_form
                     ? "Self Health drain %/sec"

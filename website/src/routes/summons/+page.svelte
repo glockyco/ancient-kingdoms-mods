@@ -301,7 +301,7 @@
             <dt class="text-muted-foreground">Level</dt>
             <dd class="text-right">Your level, up to {companionCaps}</dd>
           </div>
-          <!-- Source: server-scripts/Pet.cs:4112-4123 — a dead combat pet or familiar is removed. -->
+          <!-- Source: server-scripts/Pet.cs:4123-4134 — a dead combat pet or familiar is removed. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">On death</dt>
             <dd class="text-right">Summon it again</dd>
@@ -424,7 +424,7 @@
           <li>Use the whistle again to dismiss the pet.</li>
           <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454 — a follower without its inventory whistle is removed. -->
           <li>The pet leaves if its whistle is not in your inventory.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:14530-14534 — petting grants 1–4 faction standing every 30 seconds per animal. -->
+          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:14663-14667 — petting grants 1–4 faction standing every 30 seconds per animal. -->
           <li>
             <a
               href="/mechanics/reputation#pets"

@@ -36,7 +36,7 @@ export function drainMagnitude(value: LinearValue): LinearValue {
   };
 }
 
-// Source: server-scripts/Skills.cs:1672-1686 — Reaper Form drains RoundToInt(max(0, −rate) × maximum Health) each recovery tick.
+// Source: server-scripts/Skills.cs:1691-1705 — Reaper Form drains RoundToInt(max(0, −rate) × maximum Health) each recovery tick.
 export function reaperDrain(rate: LinearValue, rank: number): number {
   const share = Math.max(0, -atRank(rate, rank));
   return iround(multiplyF32(MAX_HEALTH.value, share));

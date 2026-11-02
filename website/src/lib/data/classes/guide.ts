@@ -33,7 +33,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Each Wisdom point adds 0.4% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
-        "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:46-59,112-149; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
+        "Source: server-scripts/Wisdom.cs:109-116; server-scripts/Buff.cs:46-59,112-149; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
@@ -61,7 +61,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Each Wisdom point adds 0.4% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
-        "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:46-59,112-149; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
+        "Source: server-scripts/Wisdom.cs:109-116; server-scripts/Buff.cs:46-59,112-149; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
@@ -72,7 +72,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:832-837,1082-1085; server-scripts/Player.cs:12319-12325 — dungeon casting restriction and buff removal",
+          "Source: server-scripts/PlayerSkills.cs:832-837,1082-1085; server-scripts/Player.cs:12452-12458 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
@@ -87,7 +87,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Each Dexterity point adds 0.05% Accuracy and 0.03% Critical Strike. Bow damage gains 150% of your Dexterity, rounded. Each Strength point adds 1 Attack Power. Direct heals gain 1.2% per Wisdom point, up to a 500% bonus.",
       source:
-        "Source: server-scripts/Dexterity.cs:59-71,89-92; server-scripts/Strength.cs:15-18; server-scripts/Wisdom.cs:107-114 — attribute effects and Ranger multiplier",
+        "Source: server-scripts/Dexterity.cs:59-71,89-92; server-scripts/Strength.cs:15-18; server-scripts/Wisdom.cs:109-116 — attribute effects and Ranger multiplier",
     },
     equipment: {
       text: "Your bow goes in the off-hand slot. Your main-hand weapon stays available for melee skills.",
@@ -162,7 +162,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
         source:
-          "Source: server-scripts/Combat.cs:811-814; server-scripts/Skills.cs:1647-1664 — damage ends movement-lock sleep effects",
+          "Source: server-scripts/Combat.cs:811-814; server-scripts/Skills.cs:1666-1683 — damage ends movement-lock sleep effects",
       },
     ],
   },

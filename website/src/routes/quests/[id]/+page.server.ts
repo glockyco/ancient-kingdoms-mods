@@ -239,19 +239,6 @@ export const load: PageServerLoad = async ({
     `,
       )
       .all(params.id) as QuestInfo["profession_requirements"],
-    alternative_ending: questRaw.alternative_ending_withheld
-      ? { id: null, name: null, withheld: 1 }
-      : typeof questRaw.alternative_ending_quest_id === "string"
-        ? {
-            id: questRaw.alternative_ending_quest_id,
-            name: db
-              .prepare<[string], { name: string }>(
-                "SELECT name FROM quests WHERE id = ?",
-              )
-              .get(questRaw.alternative_ending_quest_id)!.name,
-            withheld: 0,
-          }
-        : null,
     rewards,
     tooltip: (questRaw.tooltip as string) || null,
     tooltip_complete: (questRaw.tooltip_complete as string) || null,

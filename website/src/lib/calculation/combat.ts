@@ -401,7 +401,7 @@ export function songCalculation(): Calculation {
   };
 }
 
-// Source: server-scripts/Buff.cs:46-227; Wisdom.cs:116-127; Combat.cs:988-1001 — positive non-song effects add the selected attribute, with per-effect rounding.
+// Source: server-scripts/Buff.cs:46-227; Wisdom.cs:118-129; Combat.cs:988-1001 — positive non-song effects add the selected attribute, with per-effect rounding.
 export function attributeBuff(
   baseValue: number,
   attribute: number,

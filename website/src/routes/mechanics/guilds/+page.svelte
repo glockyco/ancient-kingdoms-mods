@@ -62,7 +62,7 @@
           >Another character on that account can join the guild if it has room.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:13006-13041 and server-scripts/Database.cs:1319-1362 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
+      <!-- Source: server-scripts/Player.cs:13139-13174 and server-scripts/Database.cs:1319-1362 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
       <p>
         <span class="block"
           >The leader can invite an online guildless character by name at the
@@ -70,7 +70,7 @@
         >
         <span class="block">A full guild cannot invite another member.</span>
       </p>
-      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:12973-12991,13029-13040 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
+      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:13106-13124,13162-13173 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
       <p>
         <span class="block">An invitation expires after 5 minutes.</span>
         <span class="block"
@@ -78,7 +78,7 @@
           account for 3 hours, or until the server restarts.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:13057-13072 and server-scripts/Database.cs:1454-1487,1794-1808 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
+      <!-- Source: server-scripts/Player.cs:13190-13205 and server-scripts/Database.cs:1454-1487,1794-1808 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
       <p>
         <span class="block"
           >Leaving at the registrar removes only that character and clears its
