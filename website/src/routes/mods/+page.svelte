@@ -4,11 +4,16 @@
   import * as Card from "$lib/components/ui/card";
   import Download from "@lucide/svelte/icons/download";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import installText from "../../../../mods/INSTALL.md?raw";
+  import { parseInstallGuide } from "$lib/mods/install-steps";
 
   let { data } = $props();
 
-  const MELONLOADER =
-    "https://github.com/glockyco/ancient-kingdoms-mods/releases/tag/melonloader-0.7.3-unity6000.6";
+  const guide = parseInstallGuide(installText);
+
+  // Too large for the site's own files, so the download comes straight from the GitHub release.
+  const MELONLOADER_ZIP =
+    "https://github.com/glockyco/ancient-kingdoms-mods/releases/download/melonloader-0.7.3-unity6000.6/AncientKingdoms-MelonLoader-Unity6000.6.zip";
 
   const features = [
     {
@@ -112,23 +117,68 @@
     </div>
   </section>
 
-  <section id="install" class="scroll-mt-20 space-y-3">
+  <section id="install" class="scroll-mt-20 space-y-4">
     <h2 class="text-2xl font-semibold">Install</h2>
-    <ol class="list-decimal space-y-2 pl-6 text-pretty">
-      <li>
-        Install the <a class="underline" href={MELONLOADER}>fixed MelonLoader</a
-        > as the README.txt in its zip describes. The official one doesn't work with
-        the current game.
-      </li>
-      <li>
-        If you have BossTracker.dll, BossSkillTracker.dll, or BetterBestiary.dll
-        in the game's <code>Mods</code> folder, delete them.
-      </li>
-      <li>
-        Copy PocketCompendium.dll into the <code>Mods</code> folder and start the
-        game. Press F8 for the settings.
-      </li>
+    <!-- mods/INSTALL.md holds the steps, so this page and the MelonLoader zip's README.txt agree. -->
+    <ol>
+      {#each guide.steps as step, i (step.title)}
+        <li class="relative flex gap-4 pb-7 last:pb-0">
+          {#if i < guide.steps.length - 1}
+            <span
+              class="absolute top-8 bottom-1 left-3.5 w-px bg-border"
+              aria-hidden="true"
+            ></span>
+          {/if}
+          <span
+            class="flex size-7 shrink-0 items-center justify-center rounded-full border text-sm font-semibold text-foreground"
+            >{i + 1}</span
+          >
+          <div class="min-w-0 flex-1 pt-0.5">
+            <h3 class="font-semibold text-foreground">{step.title}</h3>
+            {#each step.paragraphs as paragraph (paragraph)}
+              <p class="mt-1 text-pretty text-muted-foreground">
+                {@render withCode(paragraph)}
+              </p>
+            {/each}
+            {#if i === 0}
+              <div class="mt-3 flex flex-wrap gap-3">
+                <a class="cta primary" href={MELONLOADER_ZIP}>
+                  <Download class="size-5" aria-hidden="true" />MelonLoader (40
+                  MB)
+                </a>
+                <a
+                  class="cta secondary"
+                  href="/mods/PocketCompendium.dll"
+                  download
+                >
+                  <Download class="size-5" aria-hidden="true" />Pocket
+                  Compendium
+                </a>
+              </div>
+            {/if}
+            {#if step.notes.length > 0}
+              <div class="mt-3 grid min-w-0 grid-cols-1 gap-2">
+                {#each step.notes as note (note.system)}
+                  <p
+                    class="min-w-0 rounded-md border bg-muted/40 px-3 py-2 text-sm text-pretty"
+                  >
+                    <span class="font-medium text-foreground"
+                      >{note.system}:</span
+                    >
+                    <span class="text-muted-foreground"
+                      >{@render withCode(note.text)}</span
+                    >
+                  </p>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        </li>
+      {/each}
     </ol>
+    {#each guide.closing as paragraph (paragraph)}
+      <p class="text-sm text-pretty text-muted-foreground">{paragraph}</p>
+    {/each}
     <img
       src="/mod-pictures/settings-window.webp"
       alt="Pocket Compendium's settings window on its Boss list page, with the list's style, direction, tiers and levels."
@@ -139,6 +189,15 @@
     />
   </section>
 </div>
+
+{#snippet withCode(text: string)}
+  {#each text.split(/(`[^`]+`)/) as part, i (i)}
+    {#if part.startsWith("`")}<code
+        class="mt-1 block w-fit max-w-full rounded bg-muted px-2 py-1 text-xs"
+        >{part.slice(1, -1)}</code
+      >{:else}{part}{/if}
+  {/each}
+{/snippet}
 
 <style>
   .cta {

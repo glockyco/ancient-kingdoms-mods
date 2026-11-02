@@ -6,7 +6,7 @@ FieldDefaultValueHookFix is an unofficial MelonLoader mod for Ancient Kingdoms t
 
 ## Setup
 
-The fixed MelonLoader linked from [Mods for players](../../README.md#mods-for-players) already contains FieldDefaultValueHookFix.dll in its `Mods` folder. It works automatically and has no settings.
+The fixed MelonLoader from the [install steps](https://ancient-kingdoms.compendiums.org/mods#install) already contains FieldDefaultValueHookFix.dll in its `Mods` folder. It works automatically and has no settings.
 
 ## Limits
 
