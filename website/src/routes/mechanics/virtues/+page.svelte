@@ -519,8 +519,8 @@
         {@render stepTitle(3, "Do its deeds")}
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
           A blessing lasts 3 hours online. Receiving another replaces it, but
-          rank 5 blessings stay alongside the others. Renew it at a shrine to
-          keep earning.
+          rank&nbsp;5 blessings stay alongside the others. Renew it at a shrine
+          to keep earning.
         </p>
       </li>
       <li id="ranks-and-titles" class="rounded-lg border bg-card p-4">

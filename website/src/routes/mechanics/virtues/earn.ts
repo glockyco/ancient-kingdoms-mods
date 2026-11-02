@@ -309,7 +309,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
         // Source: server-scripts/VirtueEncounters.cs:LostItemsPerSearch,BeginHonestySearch — 10 belongings, 3 hours apart.
         "A search hides 10 belongings. The next can start 3 hours later.",
         // Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine — the shrine refuses Honesty while belongings are out, unless Honesty is at rank 5.
-        "Returns count even after the blessing ends, but below rank 5 you must return everything before taking Honesty again.",
+        "Returns count even after the blessing ends, but below rank\u00a05 you must return everything before taking Honesty again.",
         "The bank and house chests do not take belongings.",
       ],
     },
@@ -320,7 +320,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       kind: "info",
       items: [
         // Source: server-scripts/Player.cs:AssignValorTarget,UserCode_CmdActivateVirtue__VirtueShrine — below rank 5, the shrine refuses Valor when no quarry fits.
-        'Below rank 5, when none fits your level, the shrine says "No worthy quarry answers the shrine at this time."',
+        'Below rank\u00a05, when none fits your level, the shrine says "No worthy quarry answers the shrine at this time."',
       ],
     },
   ],
