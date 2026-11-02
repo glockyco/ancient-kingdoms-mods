@@ -902,7 +902,12 @@
           bind:page={() => pagination.pageIndex + 1, changePage}
         >
           {#snippet children({ pages })}
-            <Pagination.Content>
+            <!-- The full row needs 324px, which the list's column only has
+                 from a 388px screen. Narrower, 28px controls make it 238px,
+                 which fits the 256px column of a 320px screen. -->
+            <Pagination.Content
+              class="max-[24.25rem]:gap-0.5 max-[24.25rem]:*:*:size-7 max-[24.25rem]:*:*:px-0"
+            >
               <Pagination.Item>
                 <Pagination.PrevButton
                   href={crawlable && defaultPagination
