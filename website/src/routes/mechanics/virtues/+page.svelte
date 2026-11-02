@@ -518,16 +518,15 @@
       <li class="rounded-lg border bg-card p-4">
         {@render stepTitle(3, "Do its deeds")}
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
-          A blessing lasts 3 hours online. Receiving another replaces it, but
-          rank&nbsp;5 blessings stay alongside the others. Renew it at a shrine
-          to keep earning.
+          A blessing lasts 3 hours online. Renew it at a shrine to keep earning.
         </p>
       </li>
       <li id="ranks-and-titles" class="rounded-lg border bg-card p-4">
         {@render stepTitle(4, "Rise in rank")}
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
           Points and titles stay when you switch. Pick the title you show at
-          that virtue's shrine.
+          that virtue's shrine. At rank&nbsp;5, its blessing stays alongside the
+          others.
         </p>
       </li>
     </ol>
