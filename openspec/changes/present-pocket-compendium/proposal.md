@@ -8,7 +8,7 @@ The home page leads to the mods page only through the site bar's Mods link. The 
 
 - The title-screen home page gets a third button, "Get the Mod", beside Open the Map and Browse Items. Phones show it as "Mod" in a row of three.
 - The classic home page puts a Pocket Compendium card beside the Interactive World Map card on wide screens, and under it on narrow ones.
-- The mods page holds the whole install, from one file that also becomes the MelonLoader zip's README.txt, with a direct download of the zip.
+- An install page linked from the mods page holds the whole install for the reader's chosen system, from one file that also becomes the MelonLoader zip's README.txt, with a direct download of the zip.
 - The mods page introduction names skill cooldowns, Boss skills moves up to the third feature, and the install steps end with a picture of the settings window.
 
 ## Capabilities

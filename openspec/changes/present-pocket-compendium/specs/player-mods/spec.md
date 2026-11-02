@@ -28,11 +28,20 @@ The mods page SHALL name respawn timers, spawn locations and boss skill cooldown
 - **WHEN** a player reaches the step that says to press F8 for the settings
 - **THEN** a picture of the settings window follows it
 
-### Requirement: The mods page holds the whole install
+### Requirement: An install guide holds the whole install
 
-The mods page SHALL give every step of installing the fixed MelonLoader and Pocket Compendium, with direct downloads of both, and SHALL name each system where a step differs. The steps SHALL come from one file in the repository that also becomes the README.txt of the MelonLoader zip.
+The site SHALL give every step of installing the fixed MelonLoader and Pocket Compendium on an install page that the mods page links, with direct downloads of both. The steps SHALL come from one file in the repository that also becomes the README.txt of the MelonLoader zip.
+
+#### Scenario: A player replaces an older MelonLoader
+
+- **WHEN** a player with an older MelonLoader follows the steps in order
+- **THEN** they delete its MelonLoader folder and version.dll before they copy the new files
+
+### Requirement: The install page shows the reader's system
+
+The install page SHALL let the reader choose Windows, Mac with CrossOver, or Steam Deck or Linux, SHALL preselect the reader's system from the browser, and SHALL show only the chosen system's lines.
 
 #### Scenario: A Mac player installs
 
-- **WHEN** a player on a Mac with CrossOver follows the mods page
-- **THEN** each step that differs on their system names Mac with CrossOver and says what to do there, without a visit to GitHub
+- **WHEN** a player on a Mac with CrossOver opens the install page
+- **THEN** Mac with CrossOver is chosen, and the steps give the CrossOver route to the game folder and the Wine library setting, without the other systems' lines
