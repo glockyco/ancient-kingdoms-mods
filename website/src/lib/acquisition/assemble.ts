@@ -495,7 +495,7 @@ export function assembleAcquisitionModel(
       dataError(objective.id, "missing typed objective child");
   }
   for (const slot of rows.facts.quest_reward_slots ?? []) {
-    enumField(slot, "slot_kind", ["shared", "class"]);
+    enumField(slot, "slot_kind", ["shared", "class", "choice"]);
     flag(slot, "class_withheld");
     flag(slot, "item_withheld");
     integer(slot, "amount", 1);
@@ -1337,6 +1337,22 @@ export function assembleAcquisitionModel(
                       kind: "identity_is",
                       identityKind: "class",
                       id: text(slot, "class_id", id),
+                    }),
+              });
+            else if (slot.slot_kind === "choice")
+              outputRequirements.push({
+                phase: "complete",
+                subject: "player",
+                enforcement: "both",
+                expression: slot.item_withheld
+                  ? predicate({
+                      kind: "withheld",
+                      reason: "unpublished_target",
+                    })
+                  : predicate({
+                      kind: "reward_choice",
+                      questId: String(detail.quest_id),
+                      itemId: text(slot, "item_id", id),
                     }),
               });
           } else if (method.rule_id !== "altar_final_loot")

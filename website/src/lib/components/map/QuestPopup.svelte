@@ -107,9 +107,12 @@
     !isAdventurerQuest ? (details?.npcs.filter((n) => n.isTurnIn) ?? []) : [],
   );
 
-  // Split reward items into regular and class-specific
+  // Split reward items into regular, chosen and class-specific
   let regularRewards = $derived(
-    details?.rewardItems.filter((r) => !r.classSpecific) ?? [],
+    details?.rewardItems.filter((r) => !r.classSpecific && !r.choice) ?? [],
+  );
+  let choiceRewards = $derived(
+    details?.rewardItems.filter((r) => r.choice) ?? [],
   );
   let classRewards = $derived(
     details?.rewardItems.filter((r) => r.classSpecific) ?? [],
@@ -343,6 +346,29 @@
             </div>
           {/if}
           {#each regularRewards as item, i (i)}
+            <div class="truncate">
+              <MapItemLink
+                itemId={item.itemId}
+                itemName={item.itemName}
+                tooltipHtml={item.tooltipHtml}
+                imageAvailable={itemIconPaths?.[item.itemId]}
+                colorClass={getQualityTextColorClass(item.quality)}
+                onSelect={onSelectItem}
+              />
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Rewards the player picks one of -->
+    {#if choiceRewards.length > 0}
+      <div class="border-t pt-2">
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Choose One
+        </div>
+        <div class="space-y-0.5">
+          {#each choiceRewards as item, i (i)}
             <div class="truncate">
               <MapItemLink
                 itemId={item.itemId}

@@ -326,6 +326,7 @@ export type PredicatePayload =
     }
   | { kind: "faction_at_least"; factionId: string; standing: number }
   | { kind: "book_read"; itemId: string }
+  | { kind: "reward_choice"; questId: string; itemId: string }
   | {
       kind: "profession_percent";
       professionId: Profession | "hunter";

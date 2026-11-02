@@ -61,6 +61,18 @@
       data.achievements.length > 0,
   );
 
+  // Items the quest always gives, then those the player picks one of.
+  const rewardGroups = $derived([
+    {
+      label: "Items:",
+      items: data.quest.rewards.items.filter((item) => !item.choice),
+    },
+    {
+      label: "Choose one:",
+      items: data.quest.rewards.items.filter((item) => item.choice),
+    },
+  ]);
+
   // Check if quest is part of a chain
   const hasQuestChain = $derived(data.chainGraph !== null);
 
@@ -742,30 +754,34 @@
                 <AchievementReward achievements={data.achievements} />
               {/if}
             </div>
-            {#if data.quest.rewards.items.length > 0}
-              <div class="pt-2 border-t space-y-2">
-                <span class="text-sm text-muted-foreground">Items:</span>
-                {#each data.quest.rewards.items as item, i (i)}
-                  <div class="flex items-center gap-2">
-                    {#if item.class_specific}
-                      <ClassPills classes={[item.class_specific]} />
-                    {/if}
-                    <ItemLink
-                      itemId={item.item_id}
-                      itemName={item.item_name}
-                      quality={item.quality}
-                      tooltipHtml={item.tooltip_html}
-                      imageAvailable={data.itemIconPaths[item.item_id]}
-                    />
-                    {#if item.amount && item.amount > 1}
-                      <span class="text-muted-foreground"
-                        >×{formatNumber(item.amount)}</span
-                      >
-                    {/if}
-                  </div>
-                {/each}
-              </div>
-            {/if}
+            {#each rewardGroups as group (group.label)}
+              {#if group.items.length > 0}
+                <div class="pt-2 border-t space-y-2">
+                  <span class="text-sm text-muted-foreground"
+                    >{group.label}</span
+                  >
+                  {#each group.items as item, i (i)}
+                    <div class="flex items-center gap-2">
+                      {#if item.class_specific}
+                        <ClassPills classes={[item.class_specific]} />
+                      {/if}
+                      <ItemLink
+                        itemId={item.item_id}
+                        itemName={item.item_name}
+                        quality={item.quality}
+                        tooltipHtml={item.tooltip_html}
+                        imageAvailable={data.itemIconPaths[item.item_id]}
+                      />
+                      {#if item.amount && item.amount > 1}
+                        <span class="text-muted-foreground"
+                          >×{formatNumber(item.amount)}</span
+                        >
+                      {/if}
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            {/each}
           </div>
         </section>
       {/if}

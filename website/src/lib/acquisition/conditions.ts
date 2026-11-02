@@ -81,6 +81,7 @@ const PREDICATE_FIELDS: Record<
   faction_at_least: { strings: ["factionId"], numbers: ["standing"] },
   quest_state: { strings: ["questId", "state"], numbers: [] },
   book_read: { strings: ["itemId"], numbers: [] },
+  reward_choice: { strings: ["questId", "itemId"], numbers: [] },
   profession_percent: {
     strings: ["professionId"],
     numbers: ["minimumPercent"],
@@ -298,6 +299,13 @@ function evaluatePredicate(
       return countItem(s, p);
     case "book_read":
       return membership(s?.books, (id) => id === p.itemId);
+    // Source: server-scripts/EpicWeaponQuest.cs:TryGetReward; PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32__Int32 — completing the quest grants the one reward the player picked.
+    case "reward_choice":
+      return {
+        status: "met",
+        children: [],
+        evidence: ["chosen on completion"],
+      };
     // Source: server-scripts/EpicGatherQuest.cs:MeetsAdditionalRequirements - profession levels use fractions with a 0.001 percentage point tolerance.
     case "profession_percent":
       return compare(
@@ -644,6 +652,8 @@ function describePredicate(
       return `${requirementName(names, "quests", p.questId)} ${p.state.replaceAll("_", " ")}`;
     case "book_read":
       return `Read ${requirementName(names, "items", p.itemId)}`;
+    case "reward_choice":
+      return `Choose ${requirementName(names, "items", p.itemId)} as the reward`;
     case "profession_percent":
       return `${requirementName(names, "professions", p.professionId)} ${p.minimumPercent}%`;
     case "quest_progress": {

@@ -8,6 +8,8 @@ export interface QuestRewardItem {
   item_name: string;
   quality: number;
   class_specific: string | null;
+  // One of the rewards the player picks from on completion.
+  choice: boolean;
   tooltip_html: string | null;
   amount: number | null;
 }

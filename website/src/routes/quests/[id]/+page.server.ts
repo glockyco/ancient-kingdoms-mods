@@ -107,13 +107,14 @@ export const load: PageServerLoad = async ({
   const rewardSlots = db
     .prepare(
       `
-    SELECT r.ordinal, c.name AS class_specific, r.class_withheld
+    SELECT r.ordinal, r.slot_kind, c.name AS class_specific, r.class_withheld
     FROM quest_reward_slots r LEFT JOIN classes c ON c.id = r.class_id
     WHERE r.quest_id = ? ORDER BY r.ordinal
   `,
     )
     .all(params.id) as {
     ordinal: number;
+    slot_kind: string;
     class_specific: string | null;
     class_withheld: number;
   }[];
@@ -163,6 +164,7 @@ export const load: PageServerLoad = async ({
         class_specific: slot?.class_withheld
           ? "Unpublished class"
           : (slot?.class_specific ?? null),
+        choice: slot?.slot_kind === "choice",
         amount: output.quantity.kind === "exact" ? output.quantity.value : null,
       });
     }

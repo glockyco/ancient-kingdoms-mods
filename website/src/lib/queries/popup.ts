@@ -323,6 +323,8 @@ export interface QuestRewardItem {
   itemName: string;
   quality: number;
   classSpecific: string | null;
+  // One of the rewards the player picks from on completion.
+  choice: boolean;
   tooltipHtml: string | null;
 }
 
@@ -1497,7 +1499,11 @@ export async function loadQuestPopupDetailsBatch(
         const classSpecific =
           slot?.slot_kind === "class" ? String(classRow?.name) : null;
         const fields = itemFields(model, output.item_id);
-        rewardItems.push({ ...fields, classSpecific });
+        rewardItems.push({
+          ...fields,
+          classSpecific,
+          choice: slot?.slot_kind === "choice",
+        });
       }
     const objectives = objectivesByQuest.get(questId) ?? [];
     const npcs = npcsByQuest.get(questId) ?? [];

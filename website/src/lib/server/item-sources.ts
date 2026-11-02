@@ -55,6 +55,25 @@ const str = (row: DataRow | undefined, key: string, fallback = ""): string =>
 const unique = <T>(rows: T[]): T[] => [
   ...new Map(rows.map((row) => [JSON.stringify(row), row])).values(),
 ];
+// The rewards a quest offers instead of this item, which the player gives up by choosing it.
+function otherRewardChoices(
+  model: AcquisitionModel,
+  questId: string,
+  itemId: string,
+): string[] {
+  const choices = (model.rows.facts.quest_reward_slots ?? []).filter(
+    (slot) => slot.quest_id === questId && slot.slot_kind === "choice",
+  );
+  if (!choices.some((slot) => slot.item_id === itemId)) return [];
+  const others = choices
+    .filter((slot) => slot.item_id !== itemId)
+    .map((slot) =>
+      slot.item_withheld
+        ? "an unpublished item"
+        : str(sourceEntity(model, "items", slot.item_id), "name"),
+    );
+  return others.length ? [`Choose instead of ${others.join(" or ")}`] : [];
+}
 export function itemProbability(
   results: readonly ProbabilityResult[],
   itemId: string,
@@ -341,6 +360,7 @@ export function itemSourcesFromModel(
         completion_requirements:
           method.kind === "quest_complete"
             ? [
+                ...otherRewardChoices(model, String(quest.id), itemId),
                 ...(model.rows.facts.quest_book_requirements ?? [])
                   .filter((row) => row.quest_id === quest.id)
                   .map((row) =>
