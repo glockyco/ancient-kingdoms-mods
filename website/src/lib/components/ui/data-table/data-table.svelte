@@ -347,7 +347,13 @@
     sorting = state.sorting ?? initialSorting;
   });
 
+  // Saved choices restore only where the URL names no page of its own.
+  const restoresSavedState = $derived(!crawlable || crawlable.page === 1);
+
   onMount(() => {
+    // Every table on the page restores its state in this same flush, before
+    // the next paint, so the page-wide flag set in app.html can go now.
+    document.documentElement.classList.remove("table-state-pending");
     if (urlKey) {
       const {
         hasUrlState,
@@ -382,7 +388,7 @@
         if (crawlable && restoredPage === null && !defaultPagination) {
           pagination = { ...pagination, pageIndex: 0 };
         }
-      } else if (!crawlable || crawlable.page === 1) {
+      } else if (restoresSavedState) {
         // Numbered routes take precedence over saved filters and pages.
         const stored = loadFromStorage();
         if (stored) {
@@ -684,10 +690,22 @@
   });
 </script>
 
+<svelte:head>
+  {#if urlKey}
+    <!-- Read by app.html before the first paint. -->
+    <meta
+      name="table-state"
+      content={urlKey}
+      data-restores-saved={restoresSavedState ? "" : undefined}
+    />
+  {/if}
+</svelte:head>
+
 <div class:zebra-stripe={zebraStripe}>
   {#if !isHydrated || waitingForRows}
     <div
       class="loading-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      class:prehydration={!isHydrated}
     >
       <div class="text-center">
         <div
@@ -954,6 +972,14 @@
 </div>
 
 <style>
+  /* Before the scripts run, the cover shows only when the URL or saved
+     choices are about to replace the prerendered rows (see app.html). */
+  .loading-overlay.prehydration {
+    display: none;
+  }
+  :global(html.table-state-pending) .loading-overlay.prehydration {
+    display: flex;
+  }
   .data-table-container {
     scroll-margin-top: 6rem;
     /* Keep boundary scrolling inside the table so the page does not shift sideways. */

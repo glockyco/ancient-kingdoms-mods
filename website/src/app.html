@@ -51,6 +51,31 @@
       })();
     </script>
     %sveltekit.head%
+    <script>
+      // A table replaces its prerendered rows when the page starts only if
+      // the URL carries its state or it restores saved choices. Only then is
+      // its loading cover shown before the scripts run (DataTable).
+      (function () {
+        const names = [...new URLSearchParams(location.search).keys()];
+        for (const meta of document.querySelectorAll(
+          'meta[name="table-state"]',
+        )) {
+          const key = meta.content;
+          let pending = names.some((name) => name.startsWith(key + "."));
+          if (!pending && meta.hasAttribute("data-restores-saved")) {
+            try {
+              pending = localStorage.getItem("table-state-" + key) !== null;
+            } catch {
+              // Storage may be unavailable.
+            }
+          }
+          if (pending) {
+            document.documentElement.classList.add("table-state-pending");
+            return;
+          }
+        }
+      })();
+    </script>
   </head>
   <body data-sveltekit-preload-data="hover">
     <div style="display: contents">%sveltekit.body%</div>
