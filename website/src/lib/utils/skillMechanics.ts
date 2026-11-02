@@ -374,8 +374,8 @@ export function computeMechanicsSpec(
     for (const cls of healClasses) {
       const bonusKind: HealBonusKind =
         cls === "ranger"
-          ? "player_ranger" // Source: Wisdom.cs — GetHealBonus(isRanger:true) → WIS×3×0.004
-          : "player_other"; // Source: Wisdom.cs — GetHealBonus(isRanger:false) → WIS×0.004
+          ? "player_ranger" // Source: server-scripts/Wisdom.cs:GetHealBonus — isRanger triples Wisdom: WIS × 3 × 0.003.
+          : "player_other"; // Source: server-scripts/Wisdom.cs:GetHealBonus — WIS × 0.003 otherwise.
       healPairs.push({
         caster: { kind: "player", classId: cls },
         bonusKind,

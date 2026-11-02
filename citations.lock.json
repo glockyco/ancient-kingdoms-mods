@@ -1279,6 +1279,9 @@
     "EpicProfessionRequirement.cs:GetLevel": {
       "span": 0
     },
+    "EpicWeaponQuest.cs:TryGetReward": {
+      "span": 0
+    },
     "EquipItemQuest.cs:9-19": {
       "sha256": "d4d02cf5cadd5589ab5d45803bbf837660ef4d229cb4b06a4e3469204c4cc61a",
       "span": 11
@@ -2357,6 +2360,9 @@
       "sha256": "cb9c02c62b293c2d7365e65bfdf37d02e580f2f7d0e7bd8d9f5fe2cfa15bad77",
       "span": 110
     },
+    "MonsterSkills.cs:GetBestEscapePosition": {
+      "span": 0
+    },
     "MonsterSkills.cs:OnStartServer": {
       "span": 0
     },
@@ -2864,6 +2870,9 @@
       "span": 0
     },
     "Pet.cs:SetIndividualHoldPosition": {
+      "span": 0
+    },
+    "Pet.cs:TryEvaluateMercenaryRepositioningPath": {
       "span": 0
     },
     "Pet.cs:TryQueueHealSkill": {
@@ -3573,6 +3582,9 @@
       "span": 0
     },
     "Player.cs:IsProtectedFriendlyNpc": {
+      "span": 0
+    },
+    "Player.cs:IsVirtueMastered": {
       "span": 0
     },
     "Player.cs:LateUpdate": {
@@ -5454,6 +5466,9 @@
     "TargetHealSkill.cs:CorrectedTarget": {
       "span": 0
     },
+    "TargetHealSkill.cs:GetDirectHealTarget": {
+      "span": 0
+    },
     "TargetHealSkill.cs:GetHealingAmount": {
       "span": 0
     },
@@ -6296,6 +6311,9 @@
       "sha256": "b4a7445beb9e3fe6521be6bd170aa00fa690cb1052098c9191709ef500291573",
       "span": 1
     },
+    "WeaponItem.cs:procOnDirectHeal": {
+      "span": 0
+    },
     "WeaponItem.cs:procOnSpellCast": {
       "span": 0
     },
@@ -6320,6 +6338,9 @@
       "span": 9
     },
     "Wisdom.cs:GetHealBonus": {
+      "span": 0
+    },
+    "Wisdom.cs:GetHealingPerSecondBuffBonus": {
       "span": 0
     },
     "ZoneInfo.cs:185-201": {

@@ -25,7 +25,7 @@ import { melodyBonus } from "$lib/calculation/bard";
 import {
   RANGER_ATTRIBUTE_MULTIPLIER,
   SONG_POWER_PER_CHARISMA,
-  WISDOM_HEAL_SHARE,
+  WISDOM_HEAL_OVER_TIME_SHARE,
 } from "$lib/calculation/combat";
 import {
   damageFormulaStats,
@@ -148,7 +148,7 @@ function scalingLead(
       return additiveLead(factor * multiplier, value.base_value < 0);
     case "healing":
       return durationBase < 60
-        ? `${percent(WISDOM_HEAL_SHARE * multiplier, { decimals: 2, preserveNonzero: true })} more`
+        ? `${percent(WISDOM_HEAL_OVER_TIME_SHARE * multiplier, { decimals: 2, preserveNonzero: true })} more`
         : additiveLead(factor * multiplier);
     case "ward":
       return additiveLead(factor * multiplier);

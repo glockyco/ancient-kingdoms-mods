@@ -395,7 +395,7 @@ describe("healing and effect calculations", () => {
       resultNumbers(healingCalculation(heal, "player_ranger"), {
         wisdom: 125,
       })[0],
-    ).toBe(13);
+    ).toBe(11);
     expect(
       resultNumbers(
         healingCalculation({ ...heal, is_scroll: true }, "player_other"),
@@ -555,13 +555,13 @@ describe("healing and effect calculations", () => {
         rank: 1,
         wisdom: 125,
       }),
-    ).toEqual([1500]);
+    ).toEqual([1375]);
     expect(
       resultNumbers(healingCalculation(restore, "player_ranger"), {
         rank: 1,
         wisdom: 125,
       }),
-    ).toEqual([2500]);
+    ).toEqual([2125]);
     expect(
       resultNumbers(healingCalculation(restore, "merc"), {
         rank: 1,

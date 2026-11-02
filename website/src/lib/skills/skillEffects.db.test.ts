@@ -55,7 +55,9 @@ describe("skill effect summaries", () => {
   });
 
   test("note how the caster's attribute scales a heal, a buff and a damage over time", () => {
-    expect(summary("healing")).toContain("0.4% more per WIS");
+    // Source: server-scripts/Wisdom.cs:GetHealBonus,GetHealingPerSecondBuffBonus — direct heals and short heals over time scale differently.
+    expect(summary("healing")).toContain("0.3% more per WIS");
+    expect(summary("early_spring")).toContain("0.4% more per WIS");
     expect(summary("fortitude")).toContain("+2 per WIS");
     expect(summary("venom_of_the_grave")).toContain("% of INT");
   });

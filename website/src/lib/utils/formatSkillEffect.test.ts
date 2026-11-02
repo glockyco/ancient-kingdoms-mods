@@ -70,11 +70,11 @@ describe("formatSkillEffect caster notes", () => {
   const heal = {
     skill_type: "target_heal",
     heals_health: { base_value: 250, bonus_per_level: 250 },
-    notes: { heals_health: "0.4% more per WIS" },
+    notes: { heals_health: "0.3% more per WIS" },
   };
 
   it("qualifies the value an attribute scales", () => {
-    expect(formatSkillEffect(heal)).toContain("hp (0.4% more per WIS)");
+    expect(formatSkillEffect(heal)).toContain("hp (0.3% more per WIS)");
   });
 
   it("drops the reader's attribute notes from a monster's cast", () => {

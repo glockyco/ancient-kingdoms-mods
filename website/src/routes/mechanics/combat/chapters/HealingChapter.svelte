@@ -33,7 +33,7 @@
       bind:value={healer}
     />
     {#key healer}
-      <!-- Source: server-scripts/Wisdom.cs:GetHealBonus; TargetHealSkill.cs:GetHealingAmount; AreaHealSkill.cs:Apply — the Wisdom bonus is 0.4% per positive point, capped at 500%, with the extra healing rounded. Player Rangers triple Wisdom. -->
+      <!-- Source: server-scripts/Wisdom.cs:GetHealBonus; TargetHealSkill.cs:GetHealingAmount; AreaHealSkill.cs:Apply — the Wisdom bonus is 0.3% per positive point, capped at 500%, with the extra healing rounded. Player Rangers triple Wisdom. -->
       <Formula calculation={healingCalculation(healer === "ranger")} />
     {/key}
     <ul>

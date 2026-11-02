@@ -31,7 +31,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   cleric: {
     attributes: {
-      text: "Each Wisdom point adds 0.4% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
+      text: "Each Wisdom point adds 0.3% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:109-116; server-scripts/Buff.cs:46-59,112-149; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
@@ -59,7 +59,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   druid: {
     attributes: {
-      text: "Each Wisdom point adds 0.4% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
+      text: "Each Wisdom point adds 0.3% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:109-116; server-scripts/Buff.cs:46-59,112-149; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
@@ -85,7 +85,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   ranger: {
     attributes: {
-      text: "Each Dexterity point adds 0.05% Accuracy and 0.03% Critical Strike. Bow damage gains 150% of your Dexterity, rounded. Each Strength point adds 1 Attack Power. Direct heals gain 1.2% per Wisdom point, up to a 500% bonus.",
+      text: "Each Dexterity point adds 0.05% Accuracy and 0.03% Critical Strike. Bow damage gains 150% of your Dexterity, rounded. Each Strength point adds 1 Attack Power. Direct heals gain 0.9% per Wisdom point, up to a 500% bonus.",
       source:
         "Source: server-scripts/Dexterity.cs:59-71,89-92; server-scripts/Strength.cs:15-18; server-scripts/Wisdom.cs:109-116 — attribute effects and Ranger multiplier",
     },

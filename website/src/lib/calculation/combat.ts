@@ -236,18 +236,25 @@ export function avoidanceCalculation(physical = false): Calculation {
   };
 }
 
-/** The share of a heal each point of the healer's Wisdom adds. */
-export const WISDOM_HEAL_SHARE = 0.004;
+/** The share of a direct heal each point of the healer's Wisdom adds. */
+export const WISDOM_DIRECT_HEAL_SHARE = 0.003;
+/** The share of a short heal-over-time buff each attribute point adds. */
+export const WISDOM_HEAL_OVER_TIME_SHARE = 0.004;
 /** The highest share the Wisdom bonus adds to a heal. */
 export const WISDOM_HEAL_CAP = 5;
 /** A player Ranger's Wisdom and Intelligence count three times for heals and targeted buffs. */
 export const RANGER_ATTRIBUTE_MULTIPLIER = 3;
 
-// Source: server-scripts/Wisdom.cs:GetHealBonus; TargetHealSkill.cs:GetHealingAmount; AreaHealSkill.cs:Apply; HealSkill.cs:ToolTip — player Ranger healing triples Wisdom. The tooltip shows listed healing before a separate attribute bonus.
-export function wisdomHeal(baseHeal: number, wisdom: number, ranger = false) {
+// Source: server-scripts/Wisdom.cs:GetHealBonus,GetHealingPerSecondBuffBonus; TargetHealSkill.cs:GetHealingAmount; AreaHealSkill.cs:Apply; HealSkill.cs:ToolTip — direct heals use 0.3% per Wisdom point, short heal-over-time buffs use 0.4%, and player Rangers triple Wisdom for direct heals. The tooltip shows listed healing before a separate attribute bonus.
+export function wisdomHeal(
+  baseHeal: number,
+  wisdom: number,
+  ranger = false,
+  sharePerPoint = WISDOM_DIRECT_HEAL_SHARE,
+) {
   const rawShare = multiplyF32(
     Math.max(0, wisdom * (ranger ? RANGER_ATTRIBUTE_MULTIPLIER : 1)),
-    WISDOM_HEAL_SHARE,
+    sharePerPoint,
   );
   const share = Math.min(rawShare, WISDOM_HEAL_CAP);
   const bonus = iround(multiplyF32(baseHeal, share));
@@ -278,7 +285,7 @@ export function healingCalculation(ranger = false): Calculation {
     steps: [
       {
         name: `${statName("wisdom")} bonus`,
-        expression: `0.4% per point of ${ranger ? `tripled ${statName("wisdom")}` : statName("wisdom")} above 0`,
+        expression: `0.3% per point of ${ranger ? `tripled ${statName("wisdom")}` : statName("wisdom")} above 0`,
         limit: "at most 500%",
       },
       {
@@ -310,7 +317,7 @@ export function healingCalculation(ranger = false): Calculation {
         ],
         result: `Heals ${number(received)} Hit Points before a critical heal`,
         working: [
-          `${statName("wisdom")} bonus: ${formatStat("wisdom", wisdom)}${ranger ? " × 3" : ""} × 0.4% = ${percent(result.rawShare, { decimals: 2, preserveNonzero: true })}${result.rawShare !== result.share ? `, limited to ${percent(result.share, { decimals: 2, preserveNonzero: true })}` : ""}`,
+          `${statName("wisdom")} bonus: ${formatStat("wisdom", wisdom)}${ranger ? " × 3" : ""} × 0.3% = ${percent(result.rawShare, { decimals: 2, preserveNonzero: true })}${result.rawShare !== result.share ? `, limited to ${percent(result.share, { decimals: 2, preserveNonzero: true })}` : ""}`,
           `Extra healing: ${number(baseValue)} × ${percent(result.share, { decimals: 2, preserveNonzero: true })} = ${number(result.bonus)}, rounded`,
           `Healing: ${number(baseValue)} + ${number(result.bonus)} = ${number(result.total)}`,
           ...(rank === null
@@ -409,7 +416,7 @@ export function attributeBuff(
   healing = false,
 ) {
   const bonus = healing
-    ? wisdomHeal(baseValue, attribute).bonus
+    ? wisdomHeal(baseValue, attribute, false, WISDOM_HEAL_OVER_TIME_SHARE).bonus
     : iround(multiplyF32(attribute, factor));
   return { bonus, total: baseValue + bonus };
 }
@@ -549,7 +556,12 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
         caster,
         usesIntelligence === 1,
       );
-      const healing = wisdomHeal(baseValue, attribute);
+      const healing = wisdomHeal(
+        baseValue,
+        attribute,
+        false,
+        WISDOM_HEAL_OVER_TIME_SHARE,
+      );
       const result = attributeBuff(
         baseValue,
         attribute,

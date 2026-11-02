@@ -147,13 +147,13 @@
                 >
               </td>
             </tr>
-            <!-- Source: server-scripts/Wisdom.cs:GetHealBonus — direct heals gain 0.4% per Wisdom point, tripled for Rangers and capped at 500%. -->
+            <!-- Source: server-scripts/Wisdom.cs:GetHealBonus — direct heals gain 0.3% per Wisdom point, tripled for Rangers and capped at 500%. -->
             <!-- Source: server-scripts/Buff.cs:healthMaxBonus,defenseBonus,magicResistBonus; server-scripts/BuffSkill.cs:GetBuffPowerAttribute; server-scripts/TargetBuffSkill.cs:453-464; server-scripts/AreaBuffSkill.cs:33-45 — protective buffs select Intelligence or Wisdom, with targeted Ranger buffs tripling that attribute. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Wisdom</th>
               <td class="p-2">
                 <span class="block"
-                  >Wisdom increases direct healing by 0.4% per point, or 1.2%
+                  >Wisdom increases direct healing by 0.3% per point, or 0.9%
                   for Rangers, up to a 500% bonus.</span
                 >
                 <span class="block"

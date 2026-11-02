@@ -39,7 +39,8 @@ import { casterRankInputs } from "./example-ranks";
 import {
   RANGER_ATTRIBUTE_MULTIPLIER,
   WISDOM_HEAL_CAP,
-  WISDOM_HEAL_SHARE,
+  WISDOM_DIRECT_HEAL_SHARE,
+  WISDOM_HEAL_OVER_TIME_SHARE,
   attributeBuff,
   bardBonus,
   buffSongPower,
@@ -62,7 +63,7 @@ function linear(skill: SkillDetailView, key: LinearSkillField): LinearValue {
 }
 
 /** The share of a heal each point of the caster's Wisdom adds, or null when Wisdom does not apply. */
-// Source: server-scripts/TargetHealSkill.cs:167-174,307-319; AreaHealSkill.cs:106-127; Wisdom.cs:109-116 — players add 0.4% per point of Wisdom, Rangers three times that, and mercenaries 0.4% of their own. Scroll heals skip it unless a player restores a pet.
+// Source: server-scripts/TargetHealSkill.cs:167-174,307-319; AreaHealSkill.cs:106-127; Wisdom.cs:109-116 — players add 0.3% per point of Wisdom, Rangers three times that, and mercenaries 0.3% of their own. Scroll heals skip it unless a player restores a pet.
 export function healWisdomShare(
   skill: SkillDetailView,
   kind: HealBonusKind,
@@ -75,8 +76,8 @@ export function healWisdomShare(
     (kind === "player_other" || kind === "player_ranger");
   if (skill.is_scroll && !petRestoration) return null;
   return kind === "player_ranger"
-    ? WISDOM_HEAL_SHARE * RANGER_ATTRIBUTE_MULTIPLIER
-    : WISDOM_HEAL_SHARE;
+    ? WISDOM_DIRECT_HEAL_SHARE * RANGER_ATTRIBUTE_MULTIPLIER
+    : WISDOM_DIRECT_HEAL_SHARE;
 }
 
 // Source: server-scripts/TargetHealSkill.cs:167-174,307-319; AreaHealSkill.cs:106-127; Wisdom.cs:109-116 — round the capped Wisdom bonus separately, then add the base.
@@ -463,7 +464,8 @@ export function effectScalings(
               : 0;
         } else if (!song) {
           mode = "healing";
-          factor = skill.duration_base >= 60 ? 0.3 : WISDOM_HEAL_SHARE;
+          factor =
+            skill.duration_base >= 60 ? 0.3 : WISDOM_HEAL_OVER_TIME_SHARE;
         }
       } else if (!song && debuff) {
         factor =
@@ -760,7 +762,12 @@ export function effectScalingCalculation(
               song || mode === "healing" ? Math.max(0, attribute) : attribute;
             const shortHeal = mode === "healing" && skill.duration_base < 60;
             const healing = shortHeal
-              ? wisdomHeal(base, effectiveAttribute)
+              ? wisdomHeal(
+                  base,
+                  effectiveAttribute,
+                  false,
+                  WISDOM_HEAL_OVER_TIME_SHARE,
+                )
               : null;
             const scaled =
               healing ?? attributeBuff(base, effectiveAttribute, factor);

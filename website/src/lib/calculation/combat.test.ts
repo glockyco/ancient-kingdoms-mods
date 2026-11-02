@@ -82,13 +82,17 @@ describe("combat calculations", () => {
   it("distinguishes exact healing halves from float32 near-halves", () => {
     const ordinary = healingCalculation();
     const ranger = healingCalculation(true);
-    // Ordinary 125 Wisdom gives exactly 50%. Triple Wisdom × 0.4% is slightly above 150% in float32.
+    // Direct heals add 0.3% per Wisdom point, with tripled Wisdom for Rangers.
     expect(wisdomHeal(1, 125)).toMatchObject({ bonus: 0, total: 1 });
-    expect(wisdomHeal(3, 125)).toMatchObject({ bonus: 2, total: 5 });
-    expect(wisdomHeal(1, 125, true)).toMatchObject({ bonus: 2, total: 3 });
-    expect(wisdomHeal(3, 125, true)).toMatchObject({ bonus: 5, total: 8 });
+    expect(wisdomHeal(3, 125)).toMatchObject({ bonus: 1, total: 4 });
+    expect(wisdomHeal(1, 125, true)).toMatchObject({ bonus: 1, total: 2 });
+    expect(wisdomHeal(3, 125, true)).toMatchObject({ bonus: 3, total: 6 });
     expect(ordinary.example?.({ baseValue: 1, wisdom: 125 })).toBeDefined();
     expect(ranger.example?.({ baseValue: 1, wisdom: 125 })).toBeDefined();
+    expect(attributeBuff(3, 125, 0.004, true)).toMatchObject({
+      bonus: 2,
+      total: 5,
+    });
     expect(attributeBuff(10, 10_000, 0.004, true)).toMatchObject({
       bonus: 50,
       total: 60,
@@ -172,7 +176,7 @@ describe("combat calculations", () => {
 
   it("exposes raw values before shared healing, song, and interval bounds", () => {
     const healing = wisdomHeal(100, 3000);
-    expect(healing.rawShare).toBeCloseTo(12);
+    expect(healing.rawShare).toBeCloseTo(9);
     expect(healing.share).toBe(5);
     const bonus = bardBonus(3000);
     expect(bonus.raw).toBeCloseTo(3);
