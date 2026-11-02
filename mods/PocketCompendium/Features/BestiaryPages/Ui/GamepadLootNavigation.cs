@@ -84,12 +84,36 @@ internal static class GamepadLootNavigation
 
     // RefreshGamepadNavigation moves focus back to a grid slot every frame. While the focus is on
     // the page, the method is skipped; the grid keeps the navigation it set on earlier frames.
-    private static bool KeepFocusOnPage(UIJournal __instance) =>
-        !(DrivesPage(__instance) && IsPageSelectable(CurrentSelection()));
+    // An exception would reach the game on every frame, so a failure stops Bestiary pages and the
+    // game keeps its own navigation.
+    private static bool KeepFocusOnPage(UIJournal __instance)
+    {
+        try
+        {
+            return !(DrivesPage(__instance) && IsPageSelectable(CurrentSelection()));
+        }
+        catch (Exception ex)
+        {
+            BestiaryPagesFeature.ReportFailure(ex);
+            return true;
+        }
+    }
 
     private static void LinkPageToGrid(UIJournal __instance)
     {
-        if (!DrivesPage(__instance))
+        try
+        {
+            LinkPage(__instance);
+        }
+        catch (Exception ex)
+        {
+            BestiaryPagesFeature.ReportFailure(ex);
+        }
+    }
+
+    private static void LinkPage(UIJournal journal)
+    {
+        if (!DrivesPage(journal))
             return;
 
         var loot = LootSelectables();
@@ -99,10 +123,10 @@ internal static class GamepadLootNavigation
             return;
 
         var entryCount = GameManager.singleton != null && GameManager.singleton.elitesBosses != null
-            ? Math.Min(GameManager.singleton.elitesBosses.Count, __instance.content.childCount)
+            ? Math.Min(GameManager.singleton.elitesBosses.Count, journal.content.childCount)
             : 0;
-        var gridColumns = Math.Max(1, __instance.content.GetComponent<GridLayoutGroup>()?.constraintCount ?? 1);
-        var gridEntry = CurrentGridEntry(__instance, entryCount);
+        var gridColumns = Math.Max(1, journal.content.GetComponent<GridLayoutGroup>()?.constraintCount ?? 1);
+        var gridEntry = CurrentGridEntry(journal, entryCount);
         var first = loot.Count > 0 ? loot[0] : buttons[0];
         var firstButton = buttons.Count > 0 ? buttons[0] : null;
         var firstCard = entries.Count > 0 ? entries[0] : null;
@@ -111,7 +135,7 @@ internal static class GamepadLootNavigation
         {
             if (i % gridColumns != gridColumns - 1 && i != entryCount - 1)
                 continue;
-            var slot = __instance.content.GetChild(i).GetComponent<UIJournalSlot>();
+            var slot = journal.content.GetChild(i).GetComponent<UIJournalSlot>();
             if (slot == null || slot.button == null)
                 continue;
             var navigation = slot.button.navigation;

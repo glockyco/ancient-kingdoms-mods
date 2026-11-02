@@ -18,6 +18,7 @@ body:
     attributes:
       label: Your setup
       description: The game fills this in when you report from the About page in Pocket Compendium's settings. Otherwise leave it empty.
+      render: text
   - type: textarea
     id: files
     attributes:

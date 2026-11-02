@@ -84,7 +84,7 @@ public sealed class Tracker
         {
             Failed = true;
             Forget();
-            Log.Error($"Respawn tracking stopped after an error: {exception}");
+            Log.Error("Respawn tracking stopped after an error", exception);
         }
     }
 

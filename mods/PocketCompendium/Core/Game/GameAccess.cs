@@ -17,6 +17,9 @@ public static class GameAccess
     /// </summary>
     public static bool HostsServer => NetworkServer.active;
 
+    /// <summary>Whether this process runs or joined a world's network, which the game starts on entering a world.</summary>
+    public static bool NetworkActive => NetworkServer.active || NetworkClient.active;
+
     /// <summary>
     /// The game's network manager, whose <c>offsetNetworkTime</c> turns <c>NetworkTime.time</c>
     /// into server time. Null when the singleton is missing or of another type.

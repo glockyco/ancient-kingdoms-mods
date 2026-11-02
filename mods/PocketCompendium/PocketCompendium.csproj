@@ -4,6 +4,10 @@
     <AssemblyName>PocketCompendium</AssemblyName>
     <RootNamespace>PocketCompendium</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <!-- Stack traces in the log and in problem reports name files and lines. The repository
+         root reads as /_/, so the DLL holds no local path. -->
+    <DebugType>embedded</DebugType>
+    <PathMap>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '..', '..'))=/_/</PathMap>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MelonLoader"><HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath><Private>False</Private></Reference>

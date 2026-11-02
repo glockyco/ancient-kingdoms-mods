@@ -132,6 +132,9 @@ public sealed class BestiaryPagesFeature : Feature
         if (!FailedMonsters.Add(name))
             return;
 
-        Log.Error($"Bestiary pages could not draw the page of '{name}' and leave it to the game for this session: {ex}");
+        Log.Error($"Bestiary pages could not draw the page of '{name}' and leave it to the game for this session", ex);
     }
+
+    /// <summary>Stops the feature after a failure in its patches outside the drawing of one page.</summary>
+    internal static void ReportFailure(Exception ex) => _instance?.Fail(ex);
 }

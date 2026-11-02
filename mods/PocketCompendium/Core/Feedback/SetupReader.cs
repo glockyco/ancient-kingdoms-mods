@@ -59,6 +59,8 @@ public static class SetupReader
             System = SystemName(),
             Language = GameManager.languageSelected,
             Setting = Setting(),
+            WorldsEntered = SessionRecord.WorldsEntered,
+            ErrorCount = SessionRecord.ErrorCount,
         };
 
         foreach (var melon in MelonPlugin.RegisteredMelons)
@@ -67,11 +69,11 @@ public static class SetupReader
             if (melon.Info.Name != "Pocket Compendium")
                 facts.OtherMods.Add((melon.Info.Name, melon.Info.Version));
 
+        // A feature that stopped is among the errors, so it is not also switched off.
         foreach (var feature in features)
-        {
-            if (feature.Failed) facts.Stopped.Add((feature.Title, feature.Failure?.ToString()));
-            else if (!feature.Switch.Value) facts.SwitchedOff.Add(feature.Title);
-        }
+            if (!feature.Failed && !feature.Switch.Value)
+                facts.SwitchedOff.Add(feature.Title);
+        facts.Errors.AddRange(SessionRecord.Errors);
 
         return facts;
     }

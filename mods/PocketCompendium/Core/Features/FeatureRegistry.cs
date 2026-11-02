@@ -102,7 +102,7 @@ public sealed class FeatureRegistry
     {
         if (reportFailure)
         {
-            Log.Error($"{feature.Title} stopped after an error. Every other feature keeps running: {feature.Failure}");
+            Log.Error($"{feature.Title} stopped after an error", feature.Failure);
             StoppedAfterError?.Invoke(feature);
         }
 
@@ -112,7 +112,7 @@ public sealed class FeatureRegistry
         }
         catch (Exception exception)
         {
-            Log.Error($"{feature.Title} could not clean up after stopping: {exception}");
+            Log.Error($"{feature.Title} could not clean up after stopping", exception);
         }
 
         feature.Running = false;

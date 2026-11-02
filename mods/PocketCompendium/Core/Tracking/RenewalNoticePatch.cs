@@ -40,7 +40,7 @@ internal static class RenewalNoticePatch
         catch (Exception exception)
         {
             _failed = true;
-            Log.Error($"Respawn tracking stopped reading dungeon renewals: {exception}");
+            Log.Error("Respawn tracking stopped reading dungeon renewals", exception);
         }
     }
 }

@@ -62,6 +62,8 @@ public sealed class PocketCompendiumMod : MelonMod
 
     public override void OnUpdate()
     {
+        // Errors logged in this frame carry its world.
+        SessionRecord.Observe(GameAccess.NetworkActive);
         Overlay.Update();
 
         // The window updates first, so a click on it never reaches a panel below.
@@ -78,12 +80,12 @@ public sealed class PocketCompendiumMod : MelonMod
         }
     }
 
-    // A log then shows the setting of the errors that follow.
+    // A log then shows the world and setting of the errors that follow.
     private void LogWorldEntry()
     {
         if (_worldLogged) return;
         _worldLogged = true;
-        LoggerInstance.Msg($"Entered a world. Playing: {ProblemReport.SettingText(SetupReader.Setting())}.");
+        LoggerInstance.Msg($"Entered world {SessionRecord.WorldsEntered}. Playing: {ProblemReport.SettingText(SetupReader.Setting())}.");
     }
 
     // A feature can stop before the player exists, so the notice waits for the player. The game

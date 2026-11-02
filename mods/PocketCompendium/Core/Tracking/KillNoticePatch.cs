@@ -40,7 +40,7 @@ internal static class KillNoticePatch
         catch (Exception exception)
         {
             _failed = true;
-            Log.Error($"Respawn tracking stopped reading kill notices: {exception}");
+            Log.Error("Respawn tracking stopped reading kill notices", exception);
         }
     }
 }
