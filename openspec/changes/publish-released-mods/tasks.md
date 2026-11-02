@@ -2,8 +2,8 @@
 
 ## 1. Publish
 
-- [ ] 1.1 Build each mod in `publish-mods` from the newest `<id>-v<version>` tag in a temporary worktree that gets the local `Local.props`, check that the DLL names the tag's version, and remove the worktree afterwards. Cover the newest tag, a missing tag, a version mismatch and a failed build with tests in `tests/BuildTool.Tests/PublishModsCommandTests.cs`. Verify with `dotnet test tests/BuildTool.Tests`.
-- [ ] 1.2 Describe in `CONTRIBUTING.md` that publish-mods builds the released tags and how to release a mod.
+- [x] 1.1 Build each mod in `publish-mods` from the newest `<id>-v<version>` tag in a temporary worktree that gets the local `Local.props`, check that the DLL names the tag's version, and remove the worktree afterwards. Cover the newest tag, a missing tag, a version mismatch and a failed build with tests in `tests/BuildTool.Tests/PublishModsCommandTests.cs`. Verify with `dotnet test tests/BuildTool.Tests`.
+- [x] 1.2 Describe in `CONTRIBUTING.md` that publish-mods builds the released tags and how to release a mod.
 
 ## 2. Release
 

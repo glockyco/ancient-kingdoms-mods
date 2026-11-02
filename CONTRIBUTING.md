@@ -47,7 +47,9 @@ pnpm preview      # serve the last build
 pnpm cf-deploy    # build and deploy to production
 ```
 
-`pnpm dev` and `pnpm build` first run `build-tool publish-mods`, which builds the mods that `website/mod-downloads.json` selects and publishes them under `/mods/`. Both therefore need `Local.props` and the game install, as well as `website/data/compendium.db`. After a new `compendium build`, restart `pnpm dev` so that it rebuilds the search index and the compressed database copies.
+`pnpm dev` and `pnpm build` first run `build-tool publish-mods`, which builds each mod that `website/mod-downloads.json` selects from the newest tag of its releases and publishes it under `/mods/`. Both therefore need `Local.props` and the game install, as well as `website/data/compendium.db`. After a new `compendium build`, restart `pnpm dev` so that it rebuilds the search index and the compressed database copies.
+
+To release a mod, set the version in its `MelonInfo` attribute, commit, and tag that commit `<id>-v<version>` with the mod's id from `website/mod-downloads.json`, such as `pocket-compendium-v1.0.1`. Push the tag with the commit. The next deploy publishes the release, and Pocket Compendium's update notice then tells its players. A mod without a release tag, or whose tagged build names another version, stops the build.
 
 `pnpm -C website cf-deploy:demo` deploys the same build to a separate demo Worker on workers.dev, and `pnpm -C website cf-deploy:redirect` deploys the Worker that redirects the old workers.dev hostname to the site.
 

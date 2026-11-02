@@ -67,52 +67,71 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
             Directory.CreateDirectory(stagingDir);
             foreach (var mod in config.Mods)
             {
-                var projectPath = Path.Combine(_repoRoot, "mods", mod.Project, $"{mod.Project}.csproj");
-                if (!File.Exists(projectPath))
-                    throw new InvalidDataException($"Project '{mod.Project}' does not exist at {projectPath}.");
-
-                Console.WriteLine($"Building {mod.Project}...");
-                var result = await _runner.RunAsync(
-                    new ProcessRequest(
-                        Program: "dotnet",
-                        Arguments: new[] { "build", projectPath, "-c", "Release", "--no-incremental" }),
-                    cancellationToken);
-                if (!string.IsNullOrWhiteSpace(result.StandardOutput))
-                    Console.WriteLine(result.StandardOutput);
-                if (!string.IsNullOrWhiteSpace(result.StandardError))
-                    Console.Error.WriteLine(result.StandardError);
-                if (result.ExitCode != 0)
+                // A deploy runs this, so each mod comes from the newest tag of its releases and never from
+                // unreleased work in the working tree.
+                var release = await NewestReleaseAsync(mod.Id, cancellationToken);
+                var worktree = Path.Combine(Path.GetTempPath(), $"publish-{mod.Id}-{Guid.NewGuid():N}");
+                await RunGitAsync(new[] { "worktree", "add", "--detach", worktree, release.Tag }, cancellationToken);
+                try
                 {
-                    _resultStore.SetErrorDetails(new { mod.Project, projectPath, result.ExitCode });
-                    return ExitCodes.CommandFailed;
+                    // The tag's tree has no Local.props, which names the game install the build references.
+                    var localProps = Path.Combine(_repoRoot, "Local.props");
+                    if (File.Exists(localProps))
+                        File.Copy(localProps, Path.Combine(worktree, "Local.props"));
+
+                    var projectPath = Path.Combine(worktree, "mods", mod.Project, $"{mod.Project}.csproj");
+                    if (!File.Exists(projectPath))
+                        throw new InvalidDataException($"Project '{mod.Project}' does not exist at {release.Tag}.");
+
+                    Console.WriteLine($"Building {mod.Project} from {release.Tag}...");
+                    var result = await _runner.RunAsync(
+                        new ProcessRequest(
+                            Program: "dotnet",
+                            Arguments: new[] { "build", projectPath, "-c", "Release", "--no-incremental" }),
+                        cancellationToken);
+                    if (!string.IsNullOrWhiteSpace(result.StandardOutput))
+                        Console.WriteLine(result.StandardOutput);
+                    if (!string.IsNullOrWhiteSpace(result.StandardError))
+                        Console.Error.WriteLine(result.StandardError);
+                    if (result.ExitCode != 0)
+                    {
+                        _resultStore.SetErrorDetails(new { mod.Project, release.Tag, projectPath, result.ExitCode });
+                        return ExitCodes.CommandFailed;
+                    }
+
+                    var fileName = $"{mod.Project}.dll";
+                    var sourcePath = Path.Combine(
+                        worktree,
+                        "mods",
+                        mod.Project,
+                        "bin",
+                        "Release",
+                        "net6.0",
+                        fileName);
+                    if (!File.Exists(sourcePath))
+                        throw new InvalidDataException($"Build did not produce {sourcePath}.");
+
+                    var version = ReadVersion(sourcePath, fileName);
+                    if (version != release.Version)
+                        throw new InvalidDataException($"{fileName} built from {release.Tag} names version {version}.");
+                    File.Copy(sourcePath, Path.Combine(stagingDir, fileName));
+
+                    using var stream = File.OpenRead(sourcePath);
+                    var sha256 = Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+                    artifacts.Add(new PublishedMod(
+                        mod.Id,
+                        mod.Name,
+                        version,
+                        mod.Description,
+                        fileName,
+                        $"/mods/{fileName}",
+                        stream.Length,
+                        sha256));
                 }
-
-                var fileName = $"{mod.Project}.dll";
-                var sourcePath = Path.Combine(
-                    _repoRoot,
-                    "mods",
-                    mod.Project,
-                    "bin",
-                    "Release",
-                    "net6.0",
-                    fileName);
-                if (!File.Exists(sourcePath))
-                    throw new InvalidDataException($"Build did not produce {sourcePath}.");
-
-                File.Copy(sourcePath, Path.Combine(stagingDir, fileName));
-                var version = ReadVersion(sourcePath, fileName);
-
-                using var stream = File.OpenRead(sourcePath);
-                var sha256 = Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
-                artifacts.Add(new PublishedMod(
-                    mod.Id,
-                    mod.Name,
-                    version,
-                    mod.Description,
-                    fileName,
-                    $"/mods/{fileName}",
-                    stream.Length,
-                    sha256));
+                finally
+                {
+                    await RemoveWorktreeAsync(worktree, cancellationToken);
+                }
             }
 
             var manifest = new DownloadManifest(ManifestSchemaVersion, artifacts);
@@ -162,6 +181,53 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
         catch (BadImageFormatException ex)
         {
             throw new InvalidDataException($"{fileName} is not a .NET assembly: {ex.Message}");
+        }
+    }
+
+    // A release is a tag named after the mod's id and its version, such as pocket-compendium-v1.0.1.
+    private async Task<Release> NewestReleaseAsync(string id, CancellationToken cancellationToken)
+    {
+        var listing = await RunGitAsync(new[] { "tag", "--list", $"{id}-v*" }, cancellationToken);
+        var pattern = new Regex($"^{Regex.Escape(id)}-v(\\d+)\\.(\\d+)\\.(\\d+)$", RegexOptions.CultureInvariant);
+        Release? newest = null;
+        (int, int, int) newestKey = default;
+        foreach (var line in listing.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var match = pattern.Match(line);
+            if (!match.Success)
+                continue;
+            var key = (int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value), int.Parse(match.Groups[3].Value));
+            if (newest is null || key.CompareTo(newestKey) > 0)
+            {
+                newest = new Release(line, $"{key.Item1}.{key.Item2}.{key.Item3}");
+                newestKey = key;
+            }
+        }
+
+        return newest ?? throw new InvalidDataException(
+            $"{id} has no release tag. Tag the commit of its release as {id}-v<version>, the version its MelonInfo names.");
+    }
+
+    private async Task<string> RunGitAsync(string[] arguments, CancellationToken cancellationToken)
+    {
+        var result = await _runner.RunAsync(
+            new ProcessRequest(Program: "git", Arguments: arguments, WorkingDirectory: _repoRoot),
+            cancellationToken);
+        if (result.ExitCode != 0)
+            throw new InvalidDataException($"git {string.Join(' ', arguments)} failed: {result.StandardError.Trim()}");
+        return result.StandardOutput;
+    }
+
+    // A worktree left behind only costs disk space, so a failed removal warns instead of failing the publish.
+    private async Task RemoveWorktreeAsync(string worktree, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await RunGitAsync(new[] { "worktree", "remove", "--force", worktree }, cancellationToken);
+        }
+        catch (InvalidDataException ex)
+        {
+            Console.Error.WriteLine($"Could not remove the build worktree {worktree}: {ex.Message}");
         }
     }
 
@@ -232,6 +298,8 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
     private sealed record DownloadConfig(int SchemaVersion, List<DownloadMod> Mods);
 
     private sealed record DownloadMod(string Id, string Project, string Name, string Description);
+
+    private sealed record Release(string Tag, string Version);
 
     private sealed record DownloadManifest(int SchemaVersion, List<PublishedMod> Mods);
 
