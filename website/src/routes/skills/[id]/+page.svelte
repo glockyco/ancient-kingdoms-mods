@@ -59,8 +59,16 @@
     potion_buff: "potion",
     relic_buff: "relic",
     scroll: "scroll",
-    weapon_proc: "weapon on-hit effect",
   };
+  /** A weapon proc's label and chance wording by what rolls it. */
+  const WEAPON_PROC_TRIGGERS = {
+    hit: { label: "weapon on-hit effect", chance: " on hit" },
+    spell: {
+      label: "weapon spell-cast effect",
+      chance: " after damaging spells",
+    },
+    heal: { label: "weapon heal effect", chance: " after direct heals" },
+  } as const;
 
   const skill = $derived(data.skill);
   const skillIconSrc = $derived(
@@ -1599,13 +1607,14 @@
                 {item.item_name}
               </a>
               <span class="text-sm text-muted-foreground"
-                >({GRANT_LABELS[item.type]})</span
+                >({item.trigger
+                  ? WEAPON_PROC_TRIGGERS[item.trigger].label
+                  : GRANT_LABELS[item.type]})</span
               >
               {#if item.probability !== undefined && item.probability < 1}
                 <span class="text-sm text-muted-foreground">
-                  {formatPercent(item.probability, { decimals: 1 })} chance{item.type ===
-                  "weapon_proc"
-                    ? " on hit"
+                  {formatPercent(item.probability, { decimals: 1 })} chance{item.trigger
+                    ? WEAPON_PROC_TRIGGERS[item.trigger].chance
                     : ""}
                 </span>
               {/if}

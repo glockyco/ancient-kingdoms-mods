@@ -1472,11 +1472,13 @@
             {/if}
             {#if data.item.weapon_proc_effect_id}
               <div class={styles.fact}>
-                <!-- Source: server-scripts/WeaponItem.cs:procOnSpellCast; Skills.cs:TrySpellCastWeaponProc — a flagged weapon rolls after damaging spells instead of on hits. -->
+                <!-- Source: server-scripts/WeaponItem.cs:procOnSpellCast,procOnDirectHeal; Skills.cs:TrySpellCastWeaponProc — a spell-cast weapon rolls after damaging spells instead of on hits, or after direct heals when it is also flagged for them. -->
                 <dt class={styles.label}>
-                  {data.item.weapon_proc_on_spell_cast
-                    ? "Spell-Cast Effect"
-                    : "On-Hit Effect"}
+                  {!data.item.weapon_proc_on_spell_cast
+                    ? "On-Hit Effect"
+                    : data.item.weapon_proc_on_direct_heal
+                      ? "Heal Effect"
+                      : "Spell-Cast Effect"}
                 </dt>
                 <dd>
                   <a

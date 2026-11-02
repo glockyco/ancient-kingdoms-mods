@@ -296,18 +296,35 @@ export const load: PageServerLoad = async ({
   if (grantedByItemsRaw.length > 0) {
     const itemIds = grantedByItemsRaw.map((i) => i.item_id);
     const placeholders = itemIds.map(() => "?").join(",");
-    const nameMap = new Map(
-      query<{ id: string; name: string }>(
-        `SELECT id, name FROM items WHERE id IN (${placeholders})`,
+    const itemRows = new Map(
+      query<{
+        id: string;
+        name: string;
+        weapon_proc_on_spell_cast: number;
+        weapon_proc_on_direct_heal: number;
+      }>(
+        `SELECT id, name, weapon_proc_on_spell_cast, weapon_proc_on_direct_heal FROM items WHERE id IN (${placeholders})`,
         itemIds,
-      ).map((i) => [i.id, i.name]),
+      ).map((i) => [i.id, i]),
     );
-    grantedByItems = grantedByItemsRaw.map((item) => ({
-      item_id: item.item_id,
-      item_name: nameMap.get(item.item_id) || item.item_id,
-      type: item.type,
-      probability: item.probability,
-    }));
+    grantedByItems = grantedByItemsRaw.map((item) => {
+      const row = itemRows.get(item.item_id);
+      return {
+        item_id: item.item_id,
+        item_name: row?.name || item.item_id,
+        type: item.type,
+        probability: item.probability,
+        // Source: server-scripts/Skills.cs:TrySpellCastWeaponProc — a spell-cast weapon rolls after damaging spells, or after direct heals when it is also flagged for them.
+        trigger:
+          item.type !== "weapon_proc"
+            ? undefined
+            : !row?.weapon_proc_on_spell_cast
+              ? "hit"
+              : row.weapon_proc_on_direct_heal
+                ? "heal"
+                : "spell",
+      };
+    });
   }
   // Source: server-scripts/UsableItem.cs:Use — scroll casts use the granting item's cooldown and category, not the skill cooldown.
   const scrollItemIds = grantedByItems

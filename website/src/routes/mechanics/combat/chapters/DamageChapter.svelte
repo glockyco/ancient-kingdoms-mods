@@ -383,6 +383,11 @@
         you finish a damaging spell or the last pulse of a channel, and never on
         auto attacks.
       </li>
+      <!-- Source: server-scripts/Skills.cs:TrySpellCastWeaponProc; WeaponItem.cs:procOnDirectHeal; TargetHealSkill.cs:GetDirectHealTarget — a spell-cast weapon flagged procOnDirectHeal rolls after a single-target heal that restores health instead of after damage spells, and buffs the living healed player or non-familiar pet. -->
+      <li>
+        A main-hand weapon with a heal effect rolls its chance instead when you
+        finish a direct heal, and gives its effect to the healed target.
+      </li>
     </ul>
   </Topic>
 

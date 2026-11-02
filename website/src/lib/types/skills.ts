@@ -273,6 +273,8 @@ export interface SkillItemSource {
   item_name: string;
   type: string;
   probability?: number;
+  // What rolls a weapon proc: hits, damaging spells or direct heals.
+  trigger?: "hit" | "spell" | "heal";
 }
 
 /**
@@ -322,7 +324,7 @@ export type Caster =
   | { kind: "any_player" }
   /** A mercenary, by its class name such as "Ranger". */
   | { kind: "mercenary"; className: string }
-  /** A weapon's on-hit effect, applied by a player or a mercenary. */
+  /** A weapon's effect, applied by a player or a mercenary. */
   | { kind: "weapon_effect" }
   /** A monster or NPC. */
   | { kind: "monster" }

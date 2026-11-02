@@ -92,6 +92,7 @@ export interface Item {
   weapon_proc_effect_id: string | null;
   weapon_proc_effect_name: string | null;
   weapon_proc_on_spell_cast: number;
+  weapon_proc_on_direct_heal: number;
   weapon_delay: number;
   weapon_required_ammo_id: string | null;
   // Fragment

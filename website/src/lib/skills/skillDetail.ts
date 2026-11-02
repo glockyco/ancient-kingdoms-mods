@@ -69,7 +69,7 @@ export type SkillCasterPet = Pick<
   "is_mercenary" | "is_familiar" | "type_monster" | "skill_index"
 >;
 
-/** A weapon whose on-hit effect casts the skill. */
+/** A weapon whose effect casts the skill. */
 export interface SkillWeaponProc {
   classes: string[] | null;
   weaponCategory: string | null;
