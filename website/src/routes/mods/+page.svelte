@@ -1,19 +1,12 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import * as Card from "$lib/components/ui/card";
   import Download from "@lucide/svelte/icons/download";
   import BookOpen from "@lucide/svelte/icons/book-open";
-  import installText from "../../../../mods/INSTALL.md?raw";
-  import { parseInstallGuide } from "$lib/mods/install-steps";
+  import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  import Cta from "$lib/mods/Cta.svelte";
 
   let { data } = $props();
-
-  const guide = parseInstallGuide(installText);
-
-  // Too large for the site's own files, so the download comes straight from the GitHub release.
-  const MELONLOADER_ZIP =
-    "https://github.com/glockyco/ancient-kingdoms-mods/releases/download/melonloader-0.7.3-unity6000.6/AncientKingdoms-MelonLoader-Unity6000.6.zip";
 
   const features = [
     {
@@ -61,29 +54,40 @@
   path="/mods"
 />
 
-<div class="container mx-auto max-w-5xl space-y-12 p-8">
+<div class="container mx-auto max-w-5xl px-6 py-8 sm:px-8">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Mods" }]} />
 
-  <section class="space-y-6">
-    <div class="space-y-3">
-      <div class="flex flex-wrap items-baseline gap-x-3">
-        <h1 class="text-4xl font-bold">Pocket Compendium</h1>
-        <span class="text-lg text-muted-foreground">Version {data.version}</span
-        >
+  <!-- Three columns like the feature grid, so the picture lines up with its second and third. -->
+  <header class="mt-6 grid items-center gap-x-6 gap-y-8 lg:grid-cols-3">
+    <div class="space-y-6">
+      <div class="space-y-3">
+        <h1 class="text-3xl font-bold sm:text-4xl lg:text-3xl">
+          Pocket Compendium
+        </h1>
+        <p class="text-lg text-muted-foreground">Version {data.version}</p>
+        <p class="text-lg text-pretty text-muted-foreground">
+          A mod for Ancient Kingdoms that shows when bosses, elites, and fabled
+          monsters spawn, where to find them, and their skill cooldowns in a
+          fight. It also opens the full Bestiary page of any monster.
+        </p>
       </div>
-      <p class="text-lg text-balance text-muted-foreground">
-        A mod for Ancient Kingdoms that shows when bosses, elites, and fabled
-        monsters spawn, where to find them, and their skill cooldowns in a
-        fight. It also opens the full Bestiary page of any monster.
-      </p>
-    </div>
-    <div class="flex flex-wrap gap-3">
-      <a class="cta primary" href="/mods/PocketCompendium.dll" download>
-        <Download class="size-5" aria-hidden="true" />Download Pocket Compendium
-      </a>
-      <a class="cta secondary" href="#install">
-        <BookOpen class="size-5" aria-hidden="true" />How to install
-      </a>
+      <div class="flex flex-wrap gap-3 lg:flex-col">
+        <Cta
+          href="/mods/PocketCompendium.dll"
+          download
+          class="w-full sm:w-auto lg:w-full"
+        >
+          <Download class="size-5" aria-hidden="true" />Download Pocket
+          Compendium
+        </Cta>
+        <Cta
+          href="/mods/install"
+          variant="secondary"
+          class="w-full sm:w-auto lg:w-full"
+        >
+          <BookOpen class="size-5" aria-hidden="true" />How to install
+        </Cta>
+      </div>
     </div>
     <!-- The file's size, so the page keeps the picture's space while it loads. -->
     <img
@@ -91,146 +95,45 @@
       alt="The boss list in Twilight Forest, a respawn timer on Gukavep's spawn point, and arrows to four monsters off screen."
       width="1585"
       height="880"
-      class="w-full rounded-lg border"
+      class="w-full rounded-lg ring-1 ring-border lg:col-span-2"
     />
-  </section>
+  </header>
 
-  <section class="space-y-4">
+  <section class="mt-20 space-y-6">
     <h2 class="text-2xl font-semibold">Features</h2>
-    <div class="grid gap-6 md:grid-cols-2">
+    <ul class="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
       {#each features as feature (feature.title)}
-        <Card.Root class="gap-0 overflow-hidden bg-muted/30 py-0">
+        <li class="space-y-3">
           <img
             src={feature.image}
             alt={feature.alt}
             loading="lazy"
-            class="aspect-[3/2] w-full border-b object-cover"
+            width="1200"
+            height="800"
+            class="aspect-[3/2] w-full rounded-lg object-cover ring-1 ring-border"
           />
-          <Card.Header class="py-5">
-            <Card.Title>{feature.title}</Card.Title>
-            <Card.Description class="text-pretty"
-              >{feature.text}</Card.Description
-            >
-          </Card.Header>
-        </Card.Root>
-      {/each}
-    </div>
-  </section>
-
-  <section id="install" class="scroll-mt-20 space-y-4">
-    <h2 class="text-2xl font-semibold">Install</h2>
-    <!-- mods/INSTALL.md holds the steps, so this page and the MelonLoader zip's README.txt agree. -->
-    <ol>
-      {#each guide.steps as step, i (step.title)}
-        <li class="relative flex gap-4 pb-7 last:pb-0">
-          {#if i < guide.steps.length - 1}
-            <span
-              class="absolute top-8 bottom-1 left-3.5 w-px bg-border"
-              aria-hidden="true"
-            ></span>
-          {/if}
-          <span
-            class="flex size-7 shrink-0 items-center justify-center rounded-full border text-sm font-semibold text-foreground"
-            >{i + 1}</span
-          >
-          <div class="min-w-0 flex-1 pt-0.5">
-            <h3 class="font-semibold text-foreground">{step.title}</h3>
-            {#each step.paragraphs as paragraph (paragraph)}
-              <p class="mt-1 text-pretty text-muted-foreground">
-                {@render withCode(paragraph)}
-              </p>
-            {/each}
-            {#if i === 0}
-              <div class="mt-3 flex flex-wrap gap-3">
-                <a class="cta primary" href={MELONLOADER_ZIP}>
-                  <Download class="size-5" aria-hidden="true" />MelonLoader (40
-                  MB)
-                </a>
-                <a
-                  class="cta secondary"
-                  href="/mods/PocketCompendium.dll"
-                  download
-                >
-                  <Download class="size-5" aria-hidden="true" />Pocket
-                  Compendium
-                </a>
-              </div>
-            {/if}
-            {#if step.notes.length > 0}
-              <div class="mt-3 grid min-w-0 grid-cols-1 gap-2">
-                {#each step.notes as note (note.system)}
-                  <p
-                    class="min-w-0 rounded-md border bg-muted/40 px-3 py-2 text-sm text-pretty"
-                  >
-                    <span class="font-medium text-foreground"
-                      >{note.system}:</span
-                    >
-                    <span class="text-muted-foreground"
-                      >{@render withCode(note.text)}</span
-                    >
-                  </p>
-                {/each}
-              </div>
-            {/if}
+          <div class="space-y-1">
+            <h3 class="font-semibold">{feature.title}</h3>
+            <p class="text-sm text-pretty text-muted-foreground">
+              {feature.text}
+            </p>
           </div>
         </li>
       {/each}
-    </ol>
-    {#each guide.closing as paragraph (paragraph)}
-      <p class="text-sm text-pretty text-muted-foreground">{paragraph}</p>
-    {/each}
-    <img
-      src="/mod-pictures/settings-window.webp"
-      alt="Pocket Compendium's settings window on its Boss list page, with the list's style, direction, tiers and levels."
-      width="786"
-      height="565"
-      loading="lazy"
-      class="w-full max-w-xl rounded-lg border"
-    />
+    </ul>
+  </section>
+
+  <section
+    class="mt-20 flex flex-col gap-6 rounded-xl border bg-card p-6 sm:p-8 md:flex-row md:items-center md:justify-between"
+  >
+    <div class="space-y-1">
+      <h2 class="text-2xl font-semibold">Install</h2>
+      <p class="text-pretty text-muted-foreground">
+        The steps cover Windows, Mac with CrossOver, and Steam Deck or Linux.
+      </p>
+    </div>
+    <Cta href="/mods/install" variant="secondary" class="w-full sm:w-auto">
+      Open the install guide<ArrowRight class="size-5" aria-hidden="true" />
+    </Cta>
   </section>
 </div>
-
-{#snippet withCode(text: string)}
-  {#each text.split(/(`[^`]+`)/) as part, i (i)}
-    {#if part.startsWith("`")}<code
-        class="mt-1 block w-fit max-w-full rounded bg-muted px-2 py-1 text-xs"
-        >{part.slice(1, -1)}</code
-      >{:else}{part}{/if}
-  {/each}
-{/snippet}
-
-<style>
-  .cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    min-height: 3rem;
-    padding: 0 1.4rem;
-    border-radius: calc(var(--radius) - 2px);
-    font-size: 1rem;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-    transition:
-      background-color 0.15s,
-      border-color 0.15s;
-  }
-  .cta.primary {
-    background: var(--brand-gold-fill);
-    color: var(--brand-gold-fill-foreground);
-  }
-  .cta.primary:hover {
-    background: color-mix(in oklab, var(--brand-gold-fill) 88%, white);
-  }
-  .cta.secondary {
-    border: 1px solid color-mix(in oklab, var(--brand-gold) 60%, transparent);
-    color: var(--brand-gold);
-  }
-  .cta.secondary:hover {
-    border-color: var(--brand-gold);
-  }
-  .cta:focus-visible {
-    outline: 2px solid var(--brand-gold);
-    outline-offset: 2px;
-  }
-</style>

@@ -22,7 +22,7 @@ The compendium withholds some game content. [redactions.toml](redactions.toml) d
 
 ## Mods for players
 
-You need Ancient Kingdoms and MelonLoader. The latest official MelonLoader (0.7.3) does not work with the current version of the game, so the mods need an unofficial fixed version. The [install steps](https://ancient-kingdoms.compendiums.org/mods#install) on the compendium's mods page link it and cover Windows, Mac with CrossOver, and Steam Deck or Linux.
+You need Ancient Kingdoms and MelonLoader. The latest official MelonLoader (0.7.3) does not work with the current version of the game, so the mods need an unofficial fixed version. The compendium's [install guide](https://ancient-kingdoms.compendiums.org/mods/install) links it and cover Windows, Mac with CrossOver, and Steam Deck or Linux.
 
 | Mod | What it does | Download |
 | --- | --- | --- |
