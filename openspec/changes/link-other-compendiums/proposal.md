@@ -7,7 +7,7 @@ The four game compendiums, Afallon, Ancient Kingdoms, Erenshor and The Bloodline
 - A grid button directly left of the Ko-fi mug opens a panel that lists the four compendiums, marks this one and links About this Compendium. The logo stays the link home.
 - Every page but the map ends with one footer. Its bands are This Site, Project, Game & Community and Other Compendiums, followed by the game version and the notices. Game & Community starts with Ancient Kingdoms on Steam and its Discord.
 - A new `/about` page says what the compendium is, describes the game, says how the compendium is made and that it is unofficial, and links the other compendiums and the game's pages.
-- The two home layouts lose their own footers, whose links move to the shared footer. Their introduction of the game and the compendium stays at the end of the home page.
+- The two home layouts lose their own footers, whose links move to the shared footer, and their closing introduction, whose text the About page carries. Thero's server monitor stays linked in the footer's Game & Community band.
 
 ## Capabilities
 

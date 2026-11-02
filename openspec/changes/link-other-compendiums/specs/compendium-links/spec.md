@@ -29,15 +29,6 @@ Every page except the map SHALL end with a footer whose bands are This Site, Pro
 - WHEN a visitor opens `/map`
 - THEN no footer is shown
 
-### Requirement: The home page introduces the game and the compendium
-
-Both home layouts SHALL end with a short introduction of the game, the compendium and the server monitor by Thero, above the footer.
-
-#### Scenario: A visitor reaches the end of the home page
-
-- WHEN a visitor scrolls to the end of either home layout
-- THEN the introduction of Ancient Kingdoms and the compendium precedes the footer
-
 ### Requirement: An About page describes the compendium
 
 The site SHALL have an About page at `/about` that says the compendium is a fan-made wiki, world map and game database generated from the game's files, describes the game, says how the compendium is made with a link to its code, says it is an unofficial fan project, links the other compendiums as equal cards and lists the game's Steam page, the compendium guide on Steam, the game's Discord and Ko-fi.

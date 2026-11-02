@@ -7,7 +7,6 @@
   import { formatNumber } from "$lib/utils/format";
   import GameVersionBanner from "$lib/components/GameVersionBanner.svelte";
   import HomeSearch from "$lib/components/HomeSearch.svelte";
-  import HomeIntro from "./HomeIntro.svelte";
   import { HOME_COUNTS } from "$lib/generated/home-counts";
   import { MECHANICS_GROUPS } from "$lib/data/mechanics";
   import Gem from "@lucide/svelte/icons/gem";
@@ -306,7 +305,6 @@
         {/each}
       </div>
     </section>
-    <HomeIntro />
   </div>
 </div>
 
