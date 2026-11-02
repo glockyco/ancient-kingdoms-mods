@@ -72,5 +72,5 @@ How an error's circumstances read, and the header of the error list, are player-
 ## Risks / Trade-offs
 
 - [A future `Log.Error` message names a path or a character] → The method's documentation says that its message reaches public reports, and the details still cut directories from every line.
-- [Release builds inline small methods, so a frame can name the caller] → The caller's frame still names its file and the line of the call.
+- [Release builds inline small methods and optimize away exact line mappings, so a frame can name the caller or a later line of its method] → The frame still names the method and its file. In a scratch session on 0.10.2.3, a Bestiary page failure thrown on line 40 of `BestiaryDetailRenderer.cs` read line 55, the method's last, while the Map pins failure named its exact line 90.
 - [The DLL grows by its symbols] → The Release DLL went from 371,712 to 436,736 bytes, which stays small beside the game's own download.
