@@ -1,12 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import Check from "@lucide/svelte/icons/check";
-  import Clock from "@lucide/svelte/icons/clock";
-  import Crown from "@lucide/svelte/icons/crown";
   import Info from "@lucide/svelte/icons/info";
   import MapPin from "@lucide/svelte/icons/map-pin";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
-  import TrendingUp from "@lucide/svelte/icons/trending-up";
   import X from "@lucide/svelte/icons/x";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Calculation from "$lib/components/Calculation.svelte";
@@ -174,11 +170,13 @@
   />
 {/snippet}
 
-{#snippet fact(Icon: typeof Clock, title: string, text: string)}
-  <div class="rounded-lg border bg-card p-4">
-    <Icon class="size-5 text-amber-400" aria-hidden="true" />
-    <p class="mt-2 font-semibold text-foreground">{title}</p>
-    <p class="mt-1 text-sm text-pretty text-muted-foreground">{text}</p>
+{#snippet stepTitle(n: number, title: string)}
+  <div class="flex items-center gap-2.5">
+    <span
+      class="flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold text-foreground"
+      >{n}</span
+    >
+    <p class="font-semibold text-balance text-foreground">{title}</p>
   </div>
 {/snippet}
 
@@ -499,33 +497,40 @@
 
   <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing — one virtue is active at a time, and receiving or renewing a blessing sets 3 hours. -->
   <!-- Source: server-scripts/Player.cs:TickVirtuesServer — the time counts down only while you are connected. -->
-  <!-- Source: server-scripts/Skills.cs:OnDeath — death keeps buffs that remain after death, which every Blessing skill does. -->
-  <div class="grid gap-2 sm:gap-3 lg:grid-cols-2">
-    <div id="shrines" class="grid grid-cols-2 gap-2 sm:gap-3">
-      {@render fact(
-        Sparkles,
-        "One blessing at a time",
-        "A new blessing replaces the one you have.",
-      )}
-      {@render fact(
-        Clock,
-        "3 hours online",
-        "Only time online counts, and dying does not end it. Renewing starts the 3 hours again.",
-      )}
-    </div>
-    <div id="ranks-and-titles" class="grid grid-cols-2 gap-2 sm:gap-3">
-      {@render fact(
-        TrendingUp,
-        "Progress stays",
-        "Points and titles stay when a blessing ends or you switch virtues.",
-      )}
-      {@render fact(
-        Crown,
-        "A title for every rank",
-        "Show any title you have unlocked before your name, or none.",
-      )}
-    </div>
-  </div>
+  <!-- Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine — Sacrifice needs an offering below rank 5. -->
+  <section class="space-y-4">
+    <h2 class="text-2xl font-semibold">Getting started</h2>
+    <ol class="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
+      <li class="rounded-lg border bg-card p-4">
+        {@render stepTitle(1, "Choose a virtue")}
+        <p class="mt-2 text-sm text-pretty text-muted-foreground">
+          Each grows through its own deeds. Pick one below to see them.
+        </p>
+      </li>
+      <li id="shrines" class="rounded-lg border bg-card p-4">
+        {@render stepTitle(2, "Receive its blessing")}
+        <p class="mt-2 text-sm text-pretty text-muted-foreground">
+          Press <span class="font-medium text-foreground">Receive blessing</span
+          > at one of its two shrines. Sacrifice asks for an offering instead, until
+          rank 5.
+        </p>
+      </li>
+      <li class="rounded-lg border bg-card p-4">
+        {@render stepTitle(3, "Do its deeds")}
+        <p class="mt-2 text-sm text-pretty text-muted-foreground">
+          A blessing lasts 3 hours online, and receiving another replaces it.
+          Renew it at a shrine to keep earning.
+        </p>
+      </li>
+      <li id="ranks-and-titles" class="rounded-lg border bg-card p-4">
+        {@render stepTitle(4, "Rise in rank")}
+        <p class="mt-2 text-sm text-pretty text-muted-foreground">
+          Points and titles stay when you switch. Pick the title you show at
+          that virtue's shrine.
+        </p>
+      </li>
+    </ol>
+  </section>
 
   <section class="space-y-4">
     <h2 class="text-2xl font-semibold">Choose a virtue</h2>

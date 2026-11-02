@@ -53,3 +53,9 @@ Refusals, each leaving the active blessing unchanged:
 `VirtueEscortStats.TryForDungeon` returned, for every dungeon, the level and Health the zone pages show, for example Lizardmen's Den level 30 with 4,350 Health and Old Valorath level 57 with 29,925 Health. Trial of the Ancients has none. The game counts a monster by its `idZone`, and 155 Plague Rats, 61 Valorath Burrowers and other monsters standing in Old Valorath carry zone 0. The pages therefore select a dungeon's monsters by `monster_spawns.loot_zone_number`.
 
 `VirtueRules.HonorPoints` for the level 38 character gave Kyshf (level 35) 28 points and Gildrath (level 60) 108. The monster pages show points for a player at the monster's level, 28 and 54, which is the same formula with Gildrath's level bonus of 5 instead of 10 (`VirtueRules.CombatPoints`).
+
+## Points need the active blessing
+
+On game 0.10.2.2, HomeArt at level 38 with every virtue at 0 points killed a level 40 Mummy in Everfrost with no blessing and kept 0 Humility points. After Receive blessing at the Shrine of Humility, a level 41 Mummy gave 3 points, 2 plus 1 for being 3 levels above (`VirtueRules.CombatPoints`). `Player.AwardVirtuePoints` refuses points for a virtue whose blessing is not active, except Honesty returns and finished escorts.
+
+At 0 Sacrifice points, Receive blessing at a Shrine of Sacrifice left Humility active, and chat said "Make a worthy offering to receive this blessing." An offering of 2,500 gold gave 2 points and made Sacrifice the active blessing. Receive blessing at the Shrine of Valor named the quarry in the window, "Target: Troll King Grimlok / Region: Trolls Cave", and the button became Renew blessing.
