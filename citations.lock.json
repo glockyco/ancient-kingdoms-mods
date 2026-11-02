@@ -6203,6 +6203,9 @@
     "VirtueCombat.cs:HostileAction": {
       "span": 0
     },
+    "VirtueCombat.cs:IsHumilitySolo": {
+      "span": 0
+    },
     "VirtueCombat.cs:MonsterHit": {
       "span": 0
     },

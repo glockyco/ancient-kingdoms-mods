@@ -295,12 +295,12 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "virtues.honor": {
     href: "/mechanics/virtues#honor",
     reviewedBodySha256:
-      "8895d38dcc41b5088fcdcd251c89a0d367e55077b712b307a08e2fe69285e546",
+      "0d4a6cd69a135deaebad29657659fbfc5b44c5c0695339ad72896e297a29b5d1",
   },
   "virtues.humility": {
     href: "/mechanics/virtues#humility",
     reviewedBodySha256:
-      "c09fdbf8872c5fc5cc38341312f1ef3f31bbadf1c072fe4bbc42a261af8f1e9f",
+      "0cb4c1246e98cd526ebe1b204ffa31bbde85bc1bccd5e3ae62f962b5bfd9b42d",
   },
   "virtues.progression-titles": {
     href: "/mechanics/virtues#ranks-and-titles",

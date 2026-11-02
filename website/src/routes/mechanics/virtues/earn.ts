@@ -183,7 +183,11 @@ export function earnMethods(
             icon: ShieldOff,
             text: "Take the blessing, which halves your defenses at first",
           },
-          { icon: Swords, text: "Defeat monsters near your level or stronger" },
+          // Source: server-scripts/VirtueCombat.cs:IsHumilitySolo — no active mercenaries and no other player in the party.
+          {
+            icon: Swords,
+            text: "Defeat monsters near your level or stronger, without active mercenaries or other players in your party",
+          },
         ],
         rewards: [
           {
