@@ -16,6 +16,17 @@ from rich.console import Console
 
 console = Console()
 
+# The game's English epic.profession terms, which name the EpicProfession member, for the
+# profession ids the exporter maps those members to.
+EPIC_PROFESSION_TERMS = {
+    "alchemy": "Alchemy",
+    "herbalism": "Herbalism",
+    "mining": "Mining",
+    "fishing": "Fishing",
+    "cooking": "Cooking",
+    "hunter": "Hunting",
+}
+
 
 def _convert_unity_markup_to_html(text: str) -> str:
     """Convert Unity TextMeshPro markup tags to HTML."""
@@ -91,10 +102,13 @@ def _parse_quest_tooltip(
 
     generic_reward_items = []
     class_reward_items = []
+    choice_reward_items = []
     for reward in quest.get("reward_slots", ()):
         name = reward["item_name"] or "Unpublished item"
         if reward["slot_kind"] == "shared":
             generic_reward_items.append(name)
+        elif reward["slot_kind"] == "choice":
+            choice_reward_items.append(name)
         elif reward["class_name"] == player_class:
             class_reward_items.append(name)
     reward_item_text = "\n".join(generic_reward_items)
@@ -123,6 +137,12 @@ def _parse_quest_tooltip(
         STATUS3="",
         LOCATIONSTATUS="",
         ALCHEMYQUESTSTATUS="",
+        # EpicWeaponQuest.ReplaceChoices: one line per blank the player can choose.
+        EPICWEAPONCHOICES="\n".join(choice_reward_items),
+        # EpicGatherQuest.AdditionalRequirementsText: books to read and profession levels.
+        EPICREQUIREMENTS="\n".join(
+            f"- {line}" for line in quest.get("epic_requirements", ())
+        ),
     )
     if quest_type in {"kill", "gather"}:
         target_prefix, amount_prefix, progress_prefix = (
@@ -146,9 +166,21 @@ def _parse_quest_tooltip(
             replacements[progress_prefix + suffix] = (
                 "0" if objective is not None else ""
             )
+        # EpicWeaponQuest.ToolTip: the relic to gather, with no progress yet.
+        relic = by_ordinal.get(0)
+        replacements["EPICRELICSTATUS"] = (
+            f"{relic['target_name'] or 'Unpublished item'} (0/{relic['amount']})"
+            if quest_type == "gather" and relic is not None
+            else ""
+        )
     elif quest_type == "gather_inventory":
         replacements["GATHERSTATUS"] = "\n".join(
             f"Get {row['amount']} {row['target_name'] or 'Unpublished item'}"
+            for row in objectives
+        )
+        # EpicGatherQuest.ToolTip: each item to gather, with no progress yet.
+        replacements["EPICGATHERSTATUS"] = "\n".join(
+            f"- {row['target_name'] or 'Unpublished item'} (0/{row['amount']})"
             for row in objectives
         )
     elif quest_type == "equip_item":
@@ -242,6 +274,25 @@ def run(conn: sqlite3.Connection) -> None:
                 "target_name": item_name or monster_name or brew_name,
             }
         )
+    # EpicGatherQuest lists books first, then profession levels, each in its own order.
+    epic_requirements_by_quest: dict[str, list[str]] = {}
+    for quest_id, book_name in conn.execute("""
+        SELECT r.quest_id, i.name
+        FROM quest_book_requirements r
+        LEFT JOIN items i ON i.id = r.item_id
+        ORDER BY r.quest_id, r.ordinal
+    """):
+        epic_requirements_by_quest.setdefault(quest_id, []).append(
+            f"Read {book_name or 'Unpublished book'}"
+        )
+    for quest_id, profession_id, minimum_percent in conn.execute("""
+        SELECT quest_id, profession_id, minimum_percent
+        FROM quest_profession_requirements
+        ORDER BY quest_id, ordinal
+    """):
+        epic_requirements_by_quest.setdefault(quest_id, []).append(
+            f"{EPIC_PROFESSION_TERMS[profession_id]} (0/{minimum_percent}%)"
+        )
     player_classes = [
         row[0] for row in conn.execute("SELECT name FROM classes ORDER BY name")
     ]
@@ -254,6 +305,7 @@ def run(conn: sqlite3.Connection) -> None:
         quest = dict(zip(columns, row))
         quest["reward_slots"] = rewards_by_quest.get(quest["id"], ())
         quest["objectives"] = objectives_by_quest.get(quest["id"], ())
+        quest["epic_requirements"] = epic_requirements_by_quest.get(quest["id"], ())
 
         # Class placeholders need variants even when all rewards are shared.
         has_class_rewards = _has_class_specific_rewards(quest)

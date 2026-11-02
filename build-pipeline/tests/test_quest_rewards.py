@@ -139,6 +139,84 @@ def test_withheld_shared_reward_keeps_unknown_target_visible(conn):
     assert tooltips_for(conn) == ({"_default": "Unpublished item\n"},) * 2
 
 
+def add_objective(conn, quest_id, ordinal, item_id, amount, role):
+    conn.execute(
+        """INSERT INTO quest_objectives (id, quest_id, ordinal, kind, role, amount)
+        VALUES (?, ?, ?, 'item', ?, ?)""",
+        (f"{quest_id}:{ordinal}", quest_id, ordinal, role, amount),
+    )
+    conn.execute(
+        "INSERT INTO quest_objective_items (id, item_id) VALUES (?, ?)",
+        (f"{quest_id}:{ordinal}", item_id),
+    )
+
+
+def test_reward_choices_fill_their_own_placeholder_and_not_the_reward_item(conn):
+    add_classes(conn, ("Cleric",))
+    conn.executemany(
+        "INSERT INTO items (id, name, travel_zone_id) VALUES (?, ?, NULL)",
+        [("dawn", "Unpowered Dawn"), ("dusk", "Unpowered Dusk")],
+    )
+    add_quest(conn, quest_type="gather", tooltip="{REWARDITEM}|{EPICWEAPONCHOICES}")
+    for ordinal, item_id in enumerate(("dawn", "dusk")):
+        conn.execute(
+            """INSERT INTO quest_reward_slots
+            (id, quest_id, ordinal, slot_kind, item_id, amount)
+            VALUES (?, 'quest', ?, 'choice', ?, 1)""",
+            (f"reward:{ordinal}", ordinal, item_id),
+        )
+
+    tooltips.run(conn)
+
+    assert tooltips_for(conn) == ({"_default": "|Unpowered Dawn\nUnpowered Dusk"},) * 2
+
+
+def test_epic_placeholders_show_what_remains_with_no_progress(conn):
+    add_classes(conn, ("Cleric",))
+    conn.executemany(
+        "INSERT INTO items (id, name, travel_zone_id) VALUES (?, ?, NULL)",
+        [("relic", "Relic"), ("ore", "Ore"), ("tome", "Tome")],
+    )
+    conn.execute(
+        "INSERT INTO achievements (id, name, description, display_order) VALUES ('fisher', 'Fisher', '', 0)"
+    )
+    conn.execute(
+        """INSERT INTO professions (id, name, category, achievement_id, tracking_type)
+        VALUES ('fishing', 'Fishing', 'gathering', 'fisher', 'float_level')"""
+    )
+    conn.executemany(
+        """INSERT INTO quests (id, name, quest_type, reward_gold, reward_experience, tooltip, tooltip_complete)
+        VALUES (?, ?, ?, 0, 0, ?, ?)""",
+        [
+            ("weapon", "Weapon", "gather", "{EPICRELICSTATUS}", ""),
+            (
+                "gather",
+                "Gather",
+                "gather_inventory",
+                "{EPICGATHERSTATUS}|{EPICREQUIREMENTS}",
+                "",
+            ),
+        ],
+    )
+    add_objective(conn, "weapon", 0, "relic", 1, "gather_counter")
+    add_objective(conn, "gather", 0, "ore", 5, "inventory_primary")
+    conn.execute(
+        "INSERT INTO quest_book_requirements (id, quest_id, ordinal, item_id) VALUES ('book', 'gather', 0, 'tome')"
+    )
+    conn.execute(
+        """INSERT INTO quest_profession_requirements (id, quest_id, ordinal, profession_id, minimum_percent)
+        VALUES ('profession', 'gather', 0, 'fishing', 40)"""
+    )
+
+    tooltips.run(conn)
+
+    rendered = dict(conn.execute("SELECT id, tooltip_html FROM quests").fetchall())
+    assert json.loads(rendered["weapon"]) == {"_default": "Relic (0/1)"}
+    assert json.loads(rendered["gather"]) == {
+        "_default": "- Ore (0/5)|- Read Tome\n- Fishing (0/40%)"
+    }
+
+
 def test_empty_classes_cannot_render_quest_tooltips(conn):
     add_quest(conn)
     with pytest.raises(ValueError, match="requires playable classes"):

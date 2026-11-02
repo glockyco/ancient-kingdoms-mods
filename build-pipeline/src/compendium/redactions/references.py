@@ -122,7 +122,6 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
         ("portals", "need_monster_dead_spawn_id"),
         ("portals", "required_item_id"),
         ("professions", "achievement_id"),
-        ("quests", "alternative_ending_quest_id"),
         ("stat_fields", "stat_id"),
         ("stats", "pool_id"),
         ("treasure_locations", "required_map_id"),

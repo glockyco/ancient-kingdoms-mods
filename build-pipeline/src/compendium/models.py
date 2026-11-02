@@ -455,6 +455,7 @@ class ItemData(BaseModel):
     weapon_delay: int = 0
     weapon_proc_effect_probability: float = 0.0
     weapon_proc_on_spell_cast: bool = False
+    weapon_proc_on_direct_heal: bool = False
     fragment_amount_needed: int = 0
 
     # Equipment properties (continued)
@@ -710,6 +711,10 @@ class QuestRewardItem(BaseModel):
 
     item_id: str
     class_specific: str | None = None
+    # One of an epic weapon quest's reward choices: the player picks one on completion.
+    choice: bool = False
+    # For a choice, the weapon its unpowered blank becomes once crafted. Not stored.
+    choice_weapon_id: str | None = None
 
 
 class QuestRewards(BaseModel):
@@ -780,8 +785,6 @@ class QuestData(BaseModel):
     # Epic gather quests also need books read and profession levels.
     required_book_ids: list[str] = []
     profession_requirements: list[QuestProfessionRequirement] = []
-    # An epic weapon quest cannot be taken once its alternative is active or done.
-    alternative_ending_quest_id: str | None = None
     is_find_npc_quest: bool = False
     potions_amount: int = 0
     potion_item_id: str | None = None  # Potion brewing quest

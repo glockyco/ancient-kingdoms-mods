@@ -16,6 +16,15 @@ public class QuestRewardItem
 {
     public string item_id { get; set; }
     public string class_specific { get; set; }
+
+    /// <summary>
+    /// True for one of an epic weapon quest's reward choices: the player picks one on completion and
+    /// receives only its item (EpicWeaponQuest.TryGetReward). Every other reward comes with the quest.
+    /// </summary>
+    public bool choice { get; set; }
+
+    /// <summary>For a choice, the weapon its item, an unpowered blank, becomes once crafted, or null.</summary>
+    public string choice_weapon_id { get; set; }
 }
 
 public class QuestRewards
@@ -107,14 +116,6 @@ public class QuestData
     public List<string> required_book_ids { get; set; } = new();
     /// <summary>Profession levels the player must reach before the quest completes; empty for other quests.</summary>
     public List<QuestProfessionRequirement> profession_requirements { get; set; } = new();
-
-    // === EpicWeaponQuest fields (a gather quest that ends one of two exclusive paths) ===
-    /// <summary>
-    /// The exclusive alternative: the quest cannot be accepted or completed while it is active or
-    /// completed. Null for other quests.
-    /// </summary>
-    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
-    public string alternative_ending_quest_id { get; set; }
 
     // === LocationQuest fields (when quest_type = location) ===
     public string tracking_quest_location { get; set; }

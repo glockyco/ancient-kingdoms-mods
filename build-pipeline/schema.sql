@@ -489,6 +489,8 @@ CREATE TABLE items (
     weapon_proc_effect_id TEXT REFERENCES skills(id),
     weapon_proc_effect_name TEXT,
     weapon_proc_on_spell_cast INTEGER NOT NULL DEFAULT 0 CHECK (weapon_proc_on_spell_cast IN (0,1)),
+    -- With weapon_proc_on_spell_cast, the proc follows a direct heal instead of a damaging spell.
+    weapon_proc_on_direct_heal INTEGER NOT NULL DEFAULT 0 CHECK (weapon_proc_on_direct_heal IN (0,1)),
     weapon_delay INTEGER DEFAULT 0,
     weapon_required_ammo_id TEXT REFERENCES items(id),
     weapon_required_ammo_withheld INTEGER NOT NULL DEFAULT 0 CHECK (weapon_required_ammo_withheld IN (0,1)),
@@ -1021,10 +1023,7 @@ CREATE TABLE quests (
     -- Other quest flags
     remove_items_on_complete BOOLEAN DEFAULT 0,
     is_find_npc_quest BOOLEAN DEFAULT 0,
-    increase_alchemy_skill REAL DEFAULT 0.0,
-    -- An epic weapon quest cannot be taken once this alternative is active or completed.
-    alternative_ending_quest_id TEXT REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
-    alternative_ending_withheld INTEGER NOT NULL DEFAULT 0 CHECK (alternative_ending_withheld IN (0,1))
+    increase_alchemy_skill REAL DEFAULT 0.0
 );
 
 CREATE INDEX idx_quests_level ON quests(level_required);
@@ -2026,14 +2025,15 @@ CREATE TABLE quest_reward_slots (
     id TEXT PRIMARY KEY,
     quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
     ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
-    slot_kind TEXT NOT NULL CHECK (slot_kind IN ('shared','class')),
+    -- A choice slot is one of an epic weapon quest's rewards, of which the player picks one.
+    slot_kind TEXT NOT NULL CHECK (slot_kind IN ('shared','class','choice')),
     class_id TEXT REFERENCES classes(id) DEFERRABLE INITIALLY DEFERRED,
     item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
     class_withheld INTEGER NOT NULL DEFAULT 0 CHECK (class_withheld IN (0,1)),
     item_withheld INTEGER NOT NULL DEFAULT 0 CHECK (item_withheld IN (0,1)),
     amount INTEGER NOT NULL CHECK (amount > 0),
     UNIQUE (quest_id,ordinal),
-    CHECK ((slot_kind='shared' AND class_id IS NULL AND class_withheld=0) OR (slot_kind='class' AND (class_id IS NOT NULL OR class_withheld=1)))
+    CHECK ((slot_kind IN ('shared','choice') AND class_id IS NULL AND class_withheld=0) OR (slot_kind='class' AND (class_id IS NOT NULL OR class_withheld=1)))
 );
 CREATE TABLE quest_provided_items (
     id TEXT PRIMARY KEY,

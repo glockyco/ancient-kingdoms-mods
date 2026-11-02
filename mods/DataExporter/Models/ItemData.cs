@@ -117,6 +117,8 @@ public class ItemData
     public string weapon_proc_effect_id { get; set; }
     public float weapon_proc_effect_probability { get; set; }
     public bool weapon_proc_on_spell_cast { get; set; }
+    /// <summary>With weapon_proc_on_spell_cast, the proc follows a direct heal instead of a damaging spell (WeaponItem.procOnDirectHeal).</summary>
+    public bool weapon_proc_on_direct_heal { get; set; }
     public int weapon_delay { get; set; }
 
     // === AugmentItem fields (when item_type = augment) ===

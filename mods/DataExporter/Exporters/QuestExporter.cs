@@ -140,8 +140,14 @@ public class QuestExporter : BaseExporter
                 exp = (int)quest.rewardExperience
             };
 
-            // Add reward items
-            if (quest.rewardItem != null)
+            // Add reward items. An epic weapon quest with reward choices grants the chosen one
+            // instead of its reward item (EpicWeaponQuest.TryGetReward).
+            var epicWeapon = quest.TryCast<Il2Cpp.EpicWeaponQuest>();
+            if (epicWeapon != null && epicWeapon.HasRewardChoices)
+            {
+                AddRewardChoices(questData, epicWeapon);
+            }
+            else if (quest.rewardItem != null)
             {
                 questData.rewards.items.Add(new QuestRewardItem
                 {
@@ -188,7 +194,6 @@ public class QuestExporter : BaseExporter
             PopulateEquipItemQuestFields(quest, questData);
             PopulateAlchemyQuestFields(quest, questData);
             PopulateEpicGatherQuestFields(quest, questData);
-            PopulateEpicWeaponQuestFields(quest, questData);
 
             questList.Add(questData);
         }
@@ -345,14 +350,22 @@ public class QuestExporter : BaseExporter
         _ => throw new InvalidOperationException($"Quest {questId}: unknown epic profession {profession}.")
     };
 
-    private void PopulateEpicWeaponQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    private void AddRewardChoices(QuestData questData, Il2Cpp.EpicWeaponQuest quest)
     {
-        var epicQuest = quest.TryCast<Il2Cpp.EpicWeaponQuest>();
-        if (epicQuest == null) return;
+        foreach (var choice in quest.rewardChoices)
+        {
+            // TryGetReward refuses a choice without a blank, so the player could not pick it.
+            if (choice.blank == null)
+                throw new InvalidOperationException($"Quest {questData.id}: a reward choice has no blank.");
 
-        questData.alternative_ending_quest_id = epicQuest.alternativeEnding == null
-            ? null
-            : SanitizeId(epicQuest.alternativeEnding.name);
+            questData.rewards.items.Add(new QuestRewardItem
+            {
+                item_id = SanitizeId(choice.blank.name),
+                class_specific = null,
+                choice = true,
+                choice_weapon_id = choice.weapon == null ? null : SanitizeId(choice.weapon.name)
+            });
+        }
     }
 
     private void PopulateLocationQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData, Dictionary<string, QuestLocationTriggerInfo> questLocationTriggers)

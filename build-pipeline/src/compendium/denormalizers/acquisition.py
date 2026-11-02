@@ -655,7 +655,11 @@ class _Normalizer:
                         id=_key("quest_reward", quest_id, ordinal),
                         quest_id=quest_id,
                         ordinal=ordinal,
-                        slot_kind="class" if class_name else "shared",
+                        slot_kind="class"
+                        if class_name
+                        else "choice"
+                        if reward["choice"]
+                        else "shared",
                         class_id=self.classes[class_name] if class_name else None,
                         item_id=item,
                         class_withheld=0,

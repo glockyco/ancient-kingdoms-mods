@@ -88,7 +88,6 @@ WITHHOLD_TARGETS = {
     ("quest_class_requirements", "class_id"): "withheld",
     ("quest_race_requirements", "race_id"): "withheld",
     ("quest_book_requirements", "item_id"): "withheld",
-    ("quests", "alternative_ending_quest_id"): "alternative_ending_withheld",
     ("acquisition_recipe_details", "required_quest_id"): "required_quest_withheld",
     ("quest_faction_requirements", "faction_id"): "withheld",
     ("quest_reward_slots", "class_id"): "class_withheld",

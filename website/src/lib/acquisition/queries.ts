@@ -524,7 +524,6 @@ export async function queryAcquisitionRows(
     class_id: "classes",
     quest_id: "quests",
     predecessor_quest_id: "quests",
-    alternative_ending_quest_id: "quests",
     required_quest_id: "quests",
     profession_id: "professions",
     skill_id: "skills",
