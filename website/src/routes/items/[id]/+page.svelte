@@ -885,28 +885,31 @@
 })}
   {@const quest = row.original}
   {#if cell.column.id === "quest_name"}
-    <div class="flex items-center gap-1.5">
-      <a
-        href={resolve("/quests/[id]", { id: quest.quest_id })}
-        class={styles.link}>{quest.quest_name}</a
-      >
-      <!-- Few quests repeat, so a marker beside the name replaces a column of "Once". -->
-      {#if quest.is_repeatable}
-        <span class="inline-flex shrink-0 p-0.5" title="Repeatable">
-          <RefreshCw
-            class="h-4 w-4 text-green-700 dark:text-green-500"
-            aria-hidden="true"
-          />
-          <span class="sr-only">Repeatable</span>
-        </span>
+    <!-- One block, because the table cell lays out its children in a row. -->
+    <div>
+      <div class="flex items-center gap-1.5">
+        <a
+          href={resolve("/quests/[id]", { id: quest.quest_id })}
+          class={styles.link}>{quest.quest_name}</a
+        >
+        <!-- Few quests repeat, so a marker beside the name replaces a column of "Once". -->
+        {#if quest.is_repeatable}
+          <span class="inline-flex shrink-0 p-0.5" title="Repeatable">
+            <RefreshCw
+              class="h-4 w-4 text-green-700 dark:text-green-500"
+              aria-hidden="true"
+            />
+            <span class="sr-only">Repeatable</span>
+          </span>
+        {/if}
+        <SeasonIcons seasons={quest.seasons ?? []} />
+      </div>
+      {#if quest.completion_requirements?.length}
+        <p class="mt-1 text-sm text-muted-foreground">
+          {quest.completion_requirements.join(", ")}
+        </p>
       {/if}
-      <SeasonIcons seasons={quest.seasons ?? []} />
     </div>
-    {#if quest.completion_requirements?.length}
-      <p class="mt-1 text-sm text-muted-foreground">
-        {quest.completion_requirements.join(", ")}
-      </p>
-    {/if}
   {:else if cell.column.id === "need"}
     {[
       QUEST_ITEM_NEEDS[quest.purpose ?? ""] ?? quest.purpose,
