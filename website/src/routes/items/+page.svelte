@@ -1,6 +1,7 @@
 <script lang="ts">
   import Package from "@lucide/svelte/icons/package";
   import { onMount } from "svelte";
+  import { browser } from "$app/environment";
   import { createStatPanelState } from "$lib/utils/stat-panel-state.svelte";
   import {
     DataTable,
@@ -543,8 +544,17 @@
 {/snippet}
 
 <svelte:head>
-  <!-- Start the complete list while the page's scripts load. -->
-  <link rel="preload" href={ITEM_LIST_URL} as="fetch" crossorigin="anonymous" />
+  <!-- Start the complete list while the page's scripts load. Only the
+       prerendered HTML carries it: in the browser the load function has
+       already fetched the list, and a later preload would fetch it again. -->
+  {#if !browser}
+    <link
+      rel="preload"
+      href={ITEM_LIST_URL}
+      as="fetch"
+      crossorigin="anonymous"
+    />
+  {/if}
 </svelte:head>
 
 <Seo
