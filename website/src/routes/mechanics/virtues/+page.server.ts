@@ -2,6 +2,7 @@ import type { PageServerLoad } from "./$types";
 import { queryOne } from "$lib/db.server";
 import {
   loadDungeonEscorts,
+  loadOfferableItems,
   loadShrines,
   loadValorQuarries,
   loadVirtueRules,
@@ -21,6 +22,7 @@ export const load: PageServerLoad = () => {
     shrines: loadShrines(),
     quarries: loadValorQuarries(),
     escorts: loadDungeonEscorts(),
+    offerable: loadOfferableItems(),
     maxLevel: progression.max_level,
   };
 };

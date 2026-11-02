@@ -968,6 +968,11 @@ async function addMechanicsHashes(db, addHash, context) {
           monsters: tableRows(db, "monsters"),
           spawns: tableRows(db, "monster_spawns"),
           zones: tableRows(db, "zones"),
+          offerable: tableRows(
+            db,
+            "items",
+            "WHERE quality >= 1 AND sellable = 1 AND destroyable = 1 AND is_quest_item = 0 AND item_level > 0",
+          ),
         };
         break;
       default:

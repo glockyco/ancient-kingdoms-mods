@@ -39,6 +39,25 @@ export function loadVirtues(): VirtueView[] {
   }));
 }
 
+export interface OfferableItem {
+  id: string;
+  name: string;
+  quality: number;
+  item_level: number;
+  sell_price: number;
+}
+
+// Source: server-scripts/VirtueRules.cs:SacrificeItemLevel — equipment above common quality that can be sold and destroyed, and is no quest item.
+/** Every item an offering takes, with what it would sell for. */
+export function loadOfferableItems(): OfferableItem[] {
+  return query<OfferableItem>(
+    `SELECT id, name, quality, item_level, sell_price FROM items
+     WHERE quality >= 1 AND sellable = 1 AND destroyable = 1
+       AND is_quest_item = 0 AND item_level > 0
+     ORDER BY id`,
+  );
+}
+
 export function loadVirtueRules(): VirtueRules {
   const rules = queryOne<VirtueRules>(
     "SELECT rank_zero_label, escort_points, return_points FROM virtue_rules",

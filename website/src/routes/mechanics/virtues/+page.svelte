@@ -7,6 +7,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Calculation from "$lib/components/Calculation.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import OfferOrSell from "./OfferOrSell.svelte";
   import * as Card from "$lib/components/ui/card";
   import { Input } from "$lib/components/ui/input";
   import {
@@ -428,6 +429,10 @@
   <div id="offering" class="space-y-3 border-t pt-5">
     <h4 class="font-semibold text-foreground">What an offering gives</h4>
     <Calculation calculation={offering} />
+  </div>
+  <div id="offer-or-sell" class="space-y-3 border-t pt-5">
+    <h4 class="font-semibold text-foreground">Offer or sell?</h4>
+    <OfferOrSell items={data.offerable} />
   </div>
 {/snippet}
 
