@@ -100,12 +100,14 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                     throw new InvalidDataException($"Build did not produce {sourcePath}.");
 
                 File.Copy(sourcePath, Path.Combine(stagingDir, fileName));
+                var version = ReadVersion(sourcePath, fileName);
 
                 using var stream = File.OpenRead(sourcePath);
                 var sha256 = Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
                 artifacts.Add(new PublishedMod(
                     mod.Id,
                     mod.Name,
+                    version,
                     mod.Description,
                     fileName,
                     $"/mods/{fileName}",
@@ -147,6 +149,20 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
 
         return JsonSerializer.Deserialize<DownloadConfig>(File.ReadAllText(path), JsonOptions)
             ?? throw new InvalidDataException("Configuration is empty.");
+    }
+
+    // The website names the version a player sees in game, so it comes from the DLL itself.
+    private static string ReadVersion(string path, string fileName)
+    {
+        try
+        {
+            return MelonInfoReader.Version(path)
+                ?? throw new InvalidDataException($"{fileName} names no version in a MelonInfo attribute.");
+        }
+        catch (BadImageFormatException ex)
+        {
+            throw new InvalidDataException($"{fileName} is not a .NET assembly: {ex.Message}");
+        }
     }
 
     private static void ValidateConfig(DownloadConfig config)
@@ -222,6 +238,7 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
     private sealed record PublishedMod(
         string Id,
         string Name,
+        string Version,
         string Description,
         string FileName,
         string DownloadPath,

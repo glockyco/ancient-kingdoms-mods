@@ -16,7 +16,7 @@ public class PublishModsCommandTests
         try
         {
             WriteConfig(tempRoot, "BetterBestiary", "better-bestiary", "Better Bestiary");
-            var projectPath = CreateProjectAndArtifact(tempRoot, "BetterBestiary", "current-dll");
+            var projectPath = CreateProjectAndArtifact(tempRoot, "BetterBestiary");
             var stalePath = Path.Combine(
                 tempRoot,
                 "website",
@@ -45,7 +45,7 @@ public class PublishModsCommandTests
                 "static",
                 "mods",
                 "BetterBestiary.dll");
-            Assert.Equal("current-dll", File.ReadAllText(publishedDll));
+            Assert.Equal(File.ReadAllBytes(ThisAssembly), File.ReadAllBytes(publishedDll));
             Assert.False(File.Exists(stalePath));
 
             var manifestPath = Path.Combine(
@@ -59,6 +59,7 @@ public class PublishModsCommandTests
             var mod = Assert.Single(manifest.RootElement.GetProperty("mods").EnumerateArray());
             Assert.Equal("better-bestiary", mod.GetProperty("id").GetString());
             Assert.Equal("Better Bestiary", mod.GetProperty("name").GetString());
+            Assert.Equal("2.3.4", mod.GetProperty("version").GetString());
             Assert.Equal("BetterBestiary.dll", mod.GetProperty("fileName").GetString());
             Assert.Equal(
                 "/mods/BetterBestiary.dll",
@@ -79,7 +80,7 @@ public class PublishModsCommandTests
         try
         {
             WriteConfig(tempRoot, "BossTracker", "boss-tracker", "Boss Tracker");
-            CreateProjectAndArtifact(tempRoot, "BossTracker", "new-dll");
+            CreateProjectAndArtifact(tempRoot, "BossTracker");
             var currentPath = Path.Combine(
                 tempRoot,
                 "website",
@@ -91,6 +92,34 @@ public class PublishModsCommandTests
 
             var runner = new FakeProcessRunner();
             runner.Enqueue(new ProcessResult(1, "", "build failed", default));
+            var command = new PublishModsCommand(tempRoot, runner);
+
+            var result = await command.RunAsync(new PublishModsCommand.Settings(), TestContext.Current.CancellationToken);
+
+            Assert.NotEqual(0, result);
+            Assert.Equal("current-dll", File.ReadAllText(currentPath));
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task KeepsCurrentDownloadsWhenABuiltModNamesNoVersion()
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            WriteConfig(tempRoot, "BossTracker", "boss-tracker", "Boss Tracker");
+            var projectPath = CreateProjectAndArtifact(tempRoot, "BossTracker");
+            File.WriteAllText(Path.Combine(Path.GetDirectoryName(projectPath)!, "bin", "Release", "net6.0", "BossTracker.dll"), "not an assembly");
+            var currentPath = Path.Combine(tempRoot, "website", "static", "mods", "BossTracker.dll");
+            Directory.CreateDirectory(Path.GetDirectoryName(currentPath)!);
+            File.WriteAllText(currentPath, "current-dll");
+
+            var runner = new FakeProcessRunner();
+            runner.Enqueue(new ProcessResult(0, "", "", default));
             var command = new PublishModsCommand(tempRoot, runner);
 
             var result = await command.RunAsync(new PublishModsCommand.Settings(), TestContext.Current.CancellationToken);
@@ -125,7 +154,10 @@ public class PublishModsCommandTests
             """);
     }
 
-    private static string CreateProjectAndArtifact(string root, string project, string contents)
+    // This test assembly carries a MelonInfo attribute, so it stands in for a built mod.
+    private static string ThisAssembly => typeof(PublishModsCommandTests).Assembly.Location;
+
+    private static string CreateProjectAndArtifact(string root, string project)
     {
         var projectDir = Path.Combine(root, "mods", project);
         Directory.CreateDirectory(projectDir);
@@ -134,7 +166,7 @@ public class PublishModsCommandTests
 
         var outputDir = Path.Combine(projectDir, "bin", "Release", "net6.0");
         Directory.CreateDirectory(outputDir);
-        File.WriteAllText(Path.Combine(outputDir, $"{project}.dll"), contents);
+        File.Copy(ThisAssembly, Path.Combine(outputDir, $"{project}.dll"));
         return projectPath;
     }
 }

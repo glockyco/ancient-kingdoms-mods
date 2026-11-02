@@ -5,6 +5,8 @@
   import Download from "@lucide/svelte/icons/download";
   import BookOpen from "@lucide/svelte/icons/book-open";
 
+  let { data } = $props();
+
   const MELONLOADER =
     "https://github.com/glockyco/ancient-kingdoms-mods/releases/tag/melonloader-0.7.3-unity6000.6";
 
@@ -59,7 +61,11 @@
 
   <section class="space-y-6">
     <div class="space-y-3">
-      <h1 class="text-4xl font-bold">Pocket Compendium</h1>
+      <div class="flex flex-wrap items-baseline gap-x-3">
+        <h1 class="text-4xl font-bold">Pocket Compendium</h1>
+        <span class="text-lg text-muted-foreground">Version {data.version}</span
+        >
+      </div>
       <p class="text-lg text-pretty text-muted-foreground">
         A mod for Ancient Kingdoms that shows when bosses, elites, and fabled
         monsters spawn and where to find them. It also opens the full Bestiary
