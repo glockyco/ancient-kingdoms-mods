@@ -2,7 +2,7 @@
 
 ### Requirement: The header switches between the game compendiums
 
-The site header SHALL keep the compendium's logo and name as the link to its home page and SHALL offer a separate control that opens a panel. The panel SHALL list Afallon, Ancient Kingdoms, Erenshor and The Bloodline in the order compendiums.org lists them, each with its logo, SHALL mark Ancient Kingdoms as the current compendium and SHALL end with a link to About this Compendium. The panel SHALL stay within the screen at every width.
+The site header SHALL keep the compendium's logo and name as the link to its home page and SHALL offer a separate control, directly left of the Ko-fi link, that opens a panel. The panel SHALL list Afallon, Ancient Kingdoms, Erenshor and The Bloodline in the order compendiums.org lists them, each with its logo, SHALL mark Ancient Kingdoms as the current compendium and SHALL end with a link to About this Compendium. The panel SHALL stay within the screen at every width.
 
 #### Scenario: A visitor opens the switcher
 
@@ -17,7 +17,7 @@ The site header SHALL keep the compendium's logo and name as the link to its hom
 
 ### Requirement: Every page but the map ends with the shared footer
 
-Every page except the map SHALL end with a footer whose bands are This site, Project, Game & Community and Other Compendiums, followed by the version the data is updated for and the unofficial and artwork notices. Game & Community SHALL start with Ancient Kingdoms on Steam and Ancient Kingdoms Discord. Other Compendiums SHALL show Afallon, Erenshor and The Bloodline as equal cards with their logos.
+Every page except the map SHALL end with a footer whose bands are This Site, Project, Game & Community and Other Compendiums, followed by the version the data is updated for and the unofficial and artwork notices. Game & Community SHALL start with Ancient Kingdoms on Steam and Ancient Kingdoms Discord. Other Compendiums SHALL show Afallon, Erenshor and The Bloodline as equal cards with their logos.
 
 #### Scenario: A visitor reaches the end of a list page
 
@@ -28,6 +28,15 @@ Every page except the map SHALL end with a footer whose bands are This site, Pro
 
 - WHEN a visitor opens `/map`
 - THEN no footer is shown
+
+### Requirement: The home page introduces the game and the compendium
+
+Both home layouts SHALL end with a short introduction of the game, the compendium and the server monitor by Thero, above the footer.
+
+#### Scenario: A visitor reaches the end of the home page
+
+- WHEN a visitor scrolls to the end of either home layout
+- THEN the introduction of Ancient Kingdoms and the compendium precedes the footer
 
 ### Requirement: An About page describes the compendium
 
