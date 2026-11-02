@@ -195,6 +195,7 @@
 
 <Seo
   title="Traps - Ancient Kingdoms"
+  pagination={data.crawlable}
   description={`${formatNumber(trapCount)} traps by zone, with effects, teleport destinations, and map locations where an in-game map is available.`}
   path="/traps"
 />
@@ -221,6 +222,7 @@
   </p>
 
   <DataTable
+    crawlable={data.crawlable}
     data={data.traps}
     {columns}
     {columnLabels}

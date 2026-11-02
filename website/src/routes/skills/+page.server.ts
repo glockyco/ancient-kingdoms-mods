@@ -1,3 +1,4 @@
+import { createListPagination } from "$lib/server/list-pagination";
 import { query } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
 import type { SkillListView } from "$lib/types/skills";
@@ -16,7 +17,7 @@ export interface SkillsPageData {
   skills: SkillListView[];
 }
 
-export const load: PageServerLoad = (): SkillsPageData => {
+const loadData = (): SkillsPageData => {
   const rows = query<SkillListRow>(SKILLS_LIST_QUERY);
   const effects = skillEffectSummaries(rows.map((row) => row.id));
 
@@ -80,3 +81,11 @@ export const load: PageServerLoad = (): SkillsPageData => {
 
   return { skills };
 };
+
+export const _pagination = createListPagination(
+  "/skills",
+  20,
+  loadData,
+  (data) => data.skills.length,
+);
+export const load = _pagination.load satisfies PageServerLoad;

@@ -320,11 +320,14 @@
 
 <Seo
   title="NPCs - Ancient Kingdoms"
+  pagination={data.crawlable}
   description={`${formatNumber(data.npcs.length)} NPCs sortable by zone, faction, and role — merchants, quest givers, skill masters, faction vendors, bankers, and innkeepers.`}
   path="/npcs"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "NPCs" }]} />
@@ -332,6 +335,7 @@
   <h1 class="text-3xl font-bold">NPCs</h1>
 
   <DataTable
+    crawlable={data.crawlable}
     data={dataWithVirtual}
     {columns}
     {columnLabels}

@@ -12,6 +12,18 @@ const config = {
     // is prerendered at build time and served as a static asset, so it does
     // not consume Worker invocations.
     adapter: adapter({}),
+    prerender: {
+      // A list that fits on one page has no numbered pages to prerender. The
+      // list and its numbered pages count pages with one helper, so no page
+      // links to a numbered route that this lets through.
+      handleUnseenRoutes: ({ routes, message }) => {
+        if (
+          !routes.every((route) => /^\/[a-z-]+\/page\/\[page\]$/.test(route))
+        ) {
+          throw new Error(message);
+        }
+      },
+    },
   },
 };
 

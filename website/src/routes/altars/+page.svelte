@@ -194,17 +194,21 @@
 
 <Seo
   title="Altars - Ancient Kingdoms"
+  pagination={data.crawlable}
   description={`Find ${formatNumber(data.altars.length)} Forgotten and Avatar altars with wave counts, bosses, level requirements, and rewards from common to legendary.`}
   path="/altars"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Altars" }]} />
 
   <h1 class="text-3xl font-bold">Altars</h1>
   <DataTable
+    crawlable={data.crawlable}
     data={data.altars}
     {columns}
     {columnLabels}

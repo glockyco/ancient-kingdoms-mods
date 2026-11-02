@@ -217,11 +217,14 @@
 
 <Seo
   title="Skills - Ancient Kingdoms"
+  pagination={data.crawlable}
   description={`${formatNumber(data.skills.length)} skills covering every class, plus monster and pet abilities — damage spells, heals, buffs, debuffs, and summons, with mana costs and tiers.`}
   path="/skills"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Skills" }]} />
@@ -234,6 +237,7 @@
   <!-- A size container lets the Effect cell wrap at the column's width: the table sizes its columns to their content. -->
   <div class="@container">
     <DataTable
+      crawlable={data.crawlable}
       data={dataWithVirtual}
       {columns}
       {columnLabels}

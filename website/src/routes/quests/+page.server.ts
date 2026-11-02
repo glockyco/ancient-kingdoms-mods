@@ -1,3 +1,4 @@
+import { createListPagination } from "$lib/server/list-pagination";
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
@@ -7,7 +8,7 @@ import { projectQuestSeasons } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
-export const load: PageServerLoad = async (): Promise<QuestsPageData> => {
+const loadData = async (): Promise<QuestsPageData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
   const memberships = db
     .prepare(
@@ -64,3 +65,11 @@ export const load: PageServerLoad = async (): Promise<QuestsPageData> => {
   db.close();
   return { quests };
 };
+
+export const _pagination = createListPagination(
+  "/quests",
+  20,
+  loadData,
+  (data) => data.quests.length,
+);
+export const load = _pagination.load satisfies PageServerLoad;

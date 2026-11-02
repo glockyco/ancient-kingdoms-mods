@@ -361,11 +361,14 @@
 
 <Seo
   title="Monsters - Ancient Kingdoms"
+  pagination={data.crawlable}
   description={`${formatNumber(data.monsters.length)} monsters across Eratiath — bosses, elites, hunts, and regular spawns. Filter by level, type, or zone, then see drops, abilities, and respawn timers.`}
   path="/monsters"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Monsters" }]} />
@@ -373,6 +376,7 @@
   <h1 class="text-3xl font-bold">Monsters</h1>
 
   <DataTable
+    crawlable={data.crawlable}
     data={dataWithVirtual}
     {columns}
     {columnLabels}

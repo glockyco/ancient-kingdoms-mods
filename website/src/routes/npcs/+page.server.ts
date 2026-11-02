@@ -1,3 +1,4 @@
+import { createListPagination } from "$lib/server/list-pagination";
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
@@ -10,7 +11,7 @@ import type {
 
 export const prerender = true;
 
-export const load: PageServerLoad = (): NpcsPageData => {
+const loadData = (): NpcsPageData => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const npcsRaw = db
@@ -77,3 +78,11 @@ export const load: PageServerLoad = (): NpcsPageData => {
     npcZones,
   };
 };
+
+export const _pagination = createListPagination(
+  "/npcs",
+  20,
+  loadData,
+  (data) => data.npcs.length,
+);
+export const load = _pagination.load satisfies PageServerLoad;

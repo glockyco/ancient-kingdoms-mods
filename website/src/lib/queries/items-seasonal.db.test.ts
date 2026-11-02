@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { getItemListPayload } from "./items.server";
-import { firstPageCandidates, ITEMS_PAGE_SIZE } from "$lib/utils/item-list";
+import { pageItems, ITEMS_PAGE_SIZE } from "$lib/utils/item-list";
 
 const payload = await getItemListPayload();
 
@@ -25,15 +25,10 @@ describe("seasonal item overview", () => {
     );
   });
 
-  test("the initial payload preserves first-page rows and only their season metadata", () => {
-    const initial = firstPageCandidates(payload);
-    const sort = (
-      a: (typeof payload.items)[number],
-      b: (typeof payload.items)[number],
-    ) => b.item_level - a.item_level || a.name.localeCompare(b.name);
-    expect([...initial.items].sort(sort).slice(0, ITEMS_PAGE_SIZE)).toEqual(
-      [...payload.items].sort(sort).slice(0, ITEMS_PAGE_SIZE),
-    );
+  test("the first page holds the highest item levels and only their season metadata", () => {
+    const initial = pageItems(payload, 1);
+    expect(initial.items).toHaveLength(ITEMS_PAGE_SIZE);
+    const lowest = Math.min(...initial.items.map((item) => item.item_level));
     const initialIds = new Set(initial.items.map((item) => item.id));
     expect(initial.itemSeasons).toEqual(
       Object.fromEntries(
@@ -42,6 +37,10 @@ describe("seasonal item overview", () => {
         ),
       ),
     );
-    expect(initial.items.length).toBeLessThan(payload.items.length);
+    expect(
+      payload.items.filter(
+        (item) => !initialIds.has(item.id) && item.item_level > lowest,
+      ),
+    ).toEqual([]);
   });
 });

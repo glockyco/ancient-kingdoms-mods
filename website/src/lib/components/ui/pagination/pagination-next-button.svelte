@@ -3,13 +3,19 @@
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import { buttonVariants } from "$lib/components/ui/button/index.js";
   import { cn } from "$lib/utils.js";
+  import PaginationAnchor from "./pagination-anchor.svelte";
 
   let {
     ref = $bindable(null),
     class: className,
     children,
+    href,
+    enhanced = true,
     ...restProps
-  }: PaginationPrimitive.NextButtonProps = $props();
+  }: PaginationPrimitive.NextButtonProps & {
+    href?: string;
+    enhanced?: boolean;
+  } = $props();
 </script>
 
 {#snippet Fallback()}
@@ -30,4 +36,14 @@
   )}
   children={children || Fallback}
   {...restProps}
-/>
+>
+  {#snippet child({ props })}
+    {#if href}
+      <PaginationAnchor {props} {href} {enhanced}>
+        {@render (children || Fallback)()}
+      </PaginationAnchor>
+    {:else}
+      <button {...props}>{@render (children || Fallback)()}</button>
+    {/if}
+  {/snippet}
+</PaginationPrimitive.NextButton>

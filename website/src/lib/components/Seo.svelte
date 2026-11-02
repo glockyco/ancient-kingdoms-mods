@@ -1,5 +1,9 @@
 <script lang="ts">
   import {
+    listPageUrl,
+    type CrawlablePagination,
+  } from "$lib/components/ui/data-table/crawlable-pagination";
+  import {
     OG_IMAGE_ALT,
     OG_IMAGE_HEIGHT,
     OG_IMAGE_WIDTH,
@@ -16,11 +20,17 @@
     description: string;
     /** App-relative path used to compute the canonical and og:url. e.g. "/items". */
     path: string;
+    /** A list's page, so that each numbered page is its own canonical URL. */
+    pagination?: CrawlablePagination;
   }
 
-  const { title, description, path }: Props = $props();
+  const { title, description, path, pagination }: Props = $props();
 
-  const url = $derived(canonicalUrl(path));
+  const url = $derived(
+    canonicalUrl(
+      pagination ? listPageUrl(pagination.basePath, pagination.page) : path,
+    ),
+  );
   const image = $derived(ogImageUrl());
 </script>
 

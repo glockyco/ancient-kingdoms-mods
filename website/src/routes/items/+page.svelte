@@ -29,7 +29,12 @@
   } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
   import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
-  import { ITEMS_PAGE_SIZE, type ItemListPayload } from "$lib/utils/item-list";
+  import {
+    ITEMS_INITIAL_SORTING,
+    ITEMS_NAME_SORTING_FN,
+    ITEMS_PAGE_SIZE,
+    type ItemListPayload,
+  } from "$lib/utils/item-list";
   import { getItemTooltips } from "$lib/queries/items";
   import { formatStatField, statField, statFieldName } from "$lib/stats";
   import SeasonIcons from "$lib/components/SeasonIcons.svelte";
@@ -37,7 +42,7 @@
 
   let { data } = $props();
 
-  // The page ships only the first page's rows; the complete list follows after first paint.
+  // The page ships only its own rows. The complete list follows after first paint.
   let full = $state<ItemListPayload | null>(null);
   onMount(() => {
     fetch(`${base}/items/list.json`)
@@ -157,7 +162,7 @@
     ).sort() as string[],
   );
 
-  // Every class the complete list restricts to, sent with the first page so it is stable.
+  // Every class the complete list restricts to is sent with the initial payload.
   // Items with no restriction are stored as ["all"] and expand to every class.
   const allClasses = $derived(data.allClasses);
   const itemClassKeys = $derived.by(() => {
@@ -228,6 +233,7 @@
       accessorKey: "name",
       header: "Name",
       enableHiding: false,
+      sortingFn: ITEMS_NAME_SORTING_FN,
       minSize: 350,
     },
     // Each stat chosen in the Stats filter shows its values beside the name.
@@ -542,11 +548,14 @@
 
 <Seo
   title="Items - Ancient Kingdoms"
+  pagination={data.crawlable}
   description={`Browse ${formatNumber(data.total)} weapons, armor, consumables, and quest items by quality and level. Check each item's drop sources, vendors, and recipes.`}
   path="/items"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Items" }]} />
@@ -554,6 +563,7 @@
   <h1 class="text-3xl font-bold">Items</h1>
 
   <DataTable
+    crawlable={data.crawlable}
     data={dataWithVirtual}
     {columns}
     onColumnFiltersChange={(filters) => {
@@ -567,10 +577,7 @@
     {renderHeader}
     {renderToolbar}
     pageSize={ITEMS_PAGE_SIZE}
-    initialSorting={[
-      { id: "item_level", desc: true },
-      { id: "name", desc: false },
-    ]}
+    initialSorting={ITEMS_INITIAL_SORTING}
     initialColumnVisibility={{
       item_type: false,
       stats: false,

@@ -1,3 +1,4 @@
+import { createListPagination } from "$lib/server/list-pagination";
 import {
   getChestsList,
   getAllChestDrops,
@@ -6,8 +7,16 @@ import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
 
-export const load: PageServerLoad = async () => {
+const loadData = async () => {
   const chests = await getChestsList();
   const chestDrops = getAllChestDrops();
   return { chests, chestDrops };
 };
+
+export const _pagination = createListPagination(
+  "/chests",
+  20,
+  loadData,
+  (data) => data.chests.length,
+);
+export const load = _pagination.load satisfies PageServerLoad;

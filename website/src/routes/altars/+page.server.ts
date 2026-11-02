@@ -1,3 +1,4 @@
+import { createListPagination } from "$lib/server/list-pagination";
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
@@ -21,7 +22,7 @@ interface AltarRaw {
   waves: string | null;
 }
 
-export const load: PageServerLoad = (): AltarsPageData => {
+const loadData = (): AltarsPageData => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const altarsRaw = db
@@ -82,3 +83,11 @@ export const load: PageServerLoad = (): AltarsPageData => {
     altars,
   };
 };
+
+export const _pagination = createListPagination(
+  "/altars",
+  20,
+  loadData,
+  (data) => data.altars.length,
+);
+export const load = _pagination.load satisfies PageServerLoad;

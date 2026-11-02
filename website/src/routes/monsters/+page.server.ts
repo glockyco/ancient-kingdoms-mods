@@ -1,3 +1,4 @@
+import { createListPagination } from "$lib/server/list-pagination";
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
@@ -9,7 +10,7 @@ import type {
 
 export const prerender = true;
 
-export const load: PageServerLoad = (): MonstersPageData => {
+const loadData = (): MonstersPageData => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const monsters = db
@@ -82,3 +83,11 @@ export const load: PageServerLoad = (): MonstersPageData => {
     monsterZones,
   };
 };
+
+export const _pagination = createListPagination(
+  "/monsters",
+  20,
+  loadData,
+  (data) => data.monsters.length,
+);
+export const load = _pagination.load satisfies PageServerLoad;

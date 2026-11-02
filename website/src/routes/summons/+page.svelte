@@ -234,17 +234,21 @@
 
 <Seo
   title="Summons - Ancient Kingdoms"
+  pagination={data.crawlable}
   description="Compare companions, Necromancer undead summons, familiars, and whistle pets in Ancient Kingdoms, including their skills, veteran bonuses, and summoning rules."
   path="/summons"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Summons" }]} />
 
   <h1 class="text-3xl font-bold">Summons</h1>
   <DataTable
+    crawlable={data.crawlable}
     data={data.summons}
     {columns}
     {columnLabels}

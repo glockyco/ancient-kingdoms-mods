@@ -3,7 +3,14 @@
   import { afterNavigate } from "$app/navigation";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
   import { formatNumber } from "$lib/utils/format";
-  import { parseTableUrlState, serializeTableUrlState } from "./url-state";
+  import { parseTableUrlState } from "./url-state";
+  import {
+    isDefaultPaginationState,
+    listPageNumber,
+    listPageUrl,
+    tablePageUrl,
+    type CrawlablePagination,
+  } from "./crawlable-pagination";
   import {
     getCoreRowModel,
     getSortedRowModel,
@@ -58,7 +65,9 @@
     columnLabels?: Record<string, string>;
     zebraStripe?: boolean;
     paginateStaticHtml?: boolean;
-    /** False while `data` holds only the first page; keeps the static first-page view until the rest arrives. */
+    /** A list page with its own URL, and the list's total while only that page's rows are loaded. */
+    crawlable?: CrawlablePagination;
+    /** False while `data` holds only the requested page's rows, until the complete list arrives. */
     complete?: boolean;
     persistentScrollbar?: boolean;
     /** Id of the heading that names the table for assistive technology. */
@@ -85,6 +94,7 @@
     columnLabels = {},
     zebraStripe = false,
     paginateStaticHtml = false,
+    crawlable,
     complete = true,
     persistentScrollbar = false,
     labelledBy,
@@ -113,7 +123,7 @@
   let sorting = $state<SortingState>(untrack(() => initialSorting));
   let pagination = $state<PaginationState>(
     untrack(() => ({
-      pageIndex: 0,
+      pageIndex: (crawlable?.page ?? 1) - 1,
       pageSize,
     })),
   );
@@ -147,7 +157,7 @@
   // Reset pagination when data changes (e.g., navigating to a different detail page)
   // Skip on initial mount to allow URL restoration to set the page
   $effect(() => {
-    if (data && previousData !== null && data !== previousData) {
+    if (data && previousData !== null && data !== previousData && !crawlable) {
       pagination = { pageIndex: 0, pageSize };
     }
     previousData = data;
@@ -275,6 +285,14 @@
     return null;
   }
 
+  const defaultPagination = $derived(
+    isDefaultPaginationState(
+      { search: globalFilter, filters: columnFilters, sorting, pagination },
+      initialSorting,
+      pageSize,
+    ),
+  );
+
   // URL-based state persistence using {urlKey}.{key} format
   function syncStateToUrl() {
     if (!urlKey || !isHydrated) return;
@@ -282,8 +300,8 @@
     // Also save to localStorage
     saveToStorage();
 
-    const queryString = serializeTableUrlState(
-      new URL(window.location.href).searchParams,
+    const newUrl = tablePageUrl(
+      new URL(window.location.href),
       urlKey,
       {
         search: globalFilter,
@@ -292,12 +310,13 @@
         pagination,
         sorting,
       },
-      initialColumnVisibility,
-      initialSorting,
+      {
+        visibility: initialColumnVisibility,
+        sorting: initialSorting,
+        pageSize,
+      },
+      crawlable,
     );
-    const newUrl = queryString
-      ? `${window.location.pathname}?${queryString}`
-      : window.location.pathname;
     window.history.replaceState(history.state, "", newUrl);
   }
 
@@ -317,7 +336,14 @@
     globalFilter = state.search ?? "";
     columnFilters = state.filters;
     columnVisibility = { ...initialColumnVisibility, ...state.visibility };
-    pagination = { ...pagination, pageIndex: state.page ?? 0 };
+    pagination = {
+      ...pagination,
+      pageIndex:
+        state.page ??
+        (crawlable
+          ? listPageNumber(crawlable.basePath, window.location.pathname) - 1
+          : 0),
+    };
     sorting = state.sorting ?? initialSorting;
   });
 
@@ -353,8 +379,11 @@
         if (restoredSorting !== null) {
           sorting = restoredSorting;
         }
-      } else {
-        // No URL state, try localStorage
+        if (crawlable && restoredPage === null && !defaultPagination) {
+          pagination = { ...pagination, pageIndex: 0 };
+        }
+      } else if (!crawlable || crawlable.page === 1) {
+        // Numbered routes take precedence over saved filters and pages.
         const stored = loadFromStorage();
         if (stored) {
           restoredFromStorage = true;
@@ -388,8 +417,8 @@
         localStorage.setItem("table-state-last-cleanup", String(now));
       }
 
-      // Sync URL after setting isHydrated if we restored from localStorage
-      if (restoredFromStorage) {
+      // Normalize numbered routes and restored preferences after hydration.
+      if (restoredFromStorage || crawlable) {
         isHydrated = true;
         syncStateToUrl();
         return;
@@ -452,7 +481,12 @@
   const headerGroups = $derived(table.getHeaderGroups());
   const rowModel = $derived(table.getRowModel());
   const allRowModel = $derived(table.getPrePaginationRowModel());
-  const pageCount = $derived(table.getPageCount());
+  const paginationCount = $derived(
+    crawlable && defaultPagination
+      ? crawlable.total
+      : table.getFilteredRowModel().rows.length,
+  );
+  const pageCount = $derived(Math.ceil(paginationCount / pagination.pageSize));
   const allColumns = $derived(table.getAllColumns());
   const identifierColumnId = $derived(
     table
@@ -476,15 +510,15 @@
   );
   const hasActiveFilters = $derived(
     globalFilter !== "" ||
-      columnFilters.some((f) => {
-        // Stat filters with no selected stats are not active
+      columnFilters.some((filter) => {
+        // An empty stat selection does not change the rows.
         if (
-          typeof f.value === "object" &&
-          f.value !== null &&
-          !Array.isArray(f.value) &&
-          "stats" in f.value &&
-          Array.isArray((f.value as { stats: unknown[] }).stats) &&
-          (f.value as { stats: unknown[] }).stats.length === 0
+          typeof filter.value === "object" &&
+          filter.value !== null &&
+          !Array.isArray(filter.value) &&
+          "stats" in filter.value &&
+          Array.isArray((filter.value as { stats: unknown[] }).stats) &&
+          (filter.value as { stats: unknown[] }).stats.length === 0
         ) {
           return false;
         }
@@ -512,20 +546,26 @@
     syncStateToUrl();
   }
 
-  // Controls and paging need every row; until then show the static first page.
+  // Controls can enhance links once every row is available.
   const ready = $derived(isHydrated && complete);
-  // The first-page rows only answer the default view; a restored filter, sort or page waits for every row.
   const waitingForRows = $derived(
-    !complete && (hasActiveFilters || pagination.pageIndex > 0),
+    !complete &&
+      (hasActiveFilters || pagination.pageIndex !== (crawlable?.page ?? 1) - 1),
   );
 
-  // For no-JS support: render all rows by default, or just first page if paginateStaticHtml is true
+  // Until the complete list arrives, `data` is the requested page. Detail
+  // tables render every row without JS, and list pages render their page.
   const displayRows = $derived(
     ready
       ? rowModel.rows
-      : paginateStaticHtml
-        ? allRowModel.rows.slice(0, pageSize)
-        : allRowModel.rows,
+      : !complete
+        ? allRowModel.rows
+        : paginateStaticHtml
+          ? allRowModel.rows.slice(
+              ((crawlable?.page ?? 1) - 1) * pageSize,
+              (crawlable?.page ?? 1) * pageSize,
+            )
+          : allRowModel.rows,
   );
 
   // Notify parent when visible rows change (for lazy loading)
@@ -852,19 +892,27 @@
     </Table.Root>
   </div>
 
-  {#if isHydrated && showPagination && (!complete || data.length > pageSize)}
-    <!-- Reserves the paging row's height before it renders: 16px gap plus the 36px buttons. -->
+  {#if showPagination && (crawlable ? crawlable.total > pageSize : isHydrated && (!complete || data.length > pageSize))}
+    <!-- Keep the controls' existing 16px gap and 36px height. -->
     <div class="h-13 pt-4">
-      {#if ready && pageCount > 1}
+      {#if (ready || (crawlable && defaultPagination)) && pageCount > 1}
         <Pagination.Root
-          count={table.getFilteredRowModel().rows.length}
-          perPage={pageSize}
+          count={paginationCount}
+          perPage={pagination.pageSize}
           bind:page={() => pagination.pageIndex + 1, changePage}
         >
           {#snippet children({ pages })}
             <Pagination.Content>
               <Pagination.Item>
-                <Pagination.PrevButton />
+                <Pagination.PrevButton
+                  href={crawlable && defaultPagination
+                    ? listPageUrl(
+                        crawlable.basePath,
+                        Math.max(1, pagination.pageIndex),
+                      )
+                    : undefined}
+                  enhanced={ready}
+                />
               </Pagination.Item>
               {#each pages as page (page.key)}
                 {#if page.type === "ellipsis"}
@@ -875,13 +923,22 @@
                   <Pagination.Item>
                     <Pagination.Link
                       {page}
+                      href={crawlable && defaultPagination
+                        ? listPageUrl(crawlable.basePath, page.value)
+                        : undefined}
+                      enhanced={ready}
                       isActive={pagination.pageIndex + 1 === page.value}
                     />
                   </Pagination.Item>
                 {/if}
               {/each}
               <Pagination.Item>
-                <Pagination.NextButton />
+                <Pagination.NextButton
+                  href={crawlable && defaultPagination
+                    ? listPageUrl(crawlable.basePath, pagination.pageIndex + 2)
+                    : undefined}
+                  enhanced={ready}
+                />
               </Pagination.Item>
             </Pagination.Content>
           {/snippet}

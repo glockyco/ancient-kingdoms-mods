@@ -1,3 +1,4 @@
+import { createListPagination } from "$lib/server/list-pagination";
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
@@ -6,7 +7,7 @@ import { getRecipeDefinitions } from "$lib/server/obtainability";
 
 export const prerender = true;
 
-export const load: PageServerLoad = async (): Promise<RecipesPageData> => {
+const loadData = async (): Promise<RecipesPageData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
   try {
     const routes = db
@@ -61,3 +62,11 @@ export const load: PageServerLoad = async (): Promise<RecipesPageData> => {
     db.close();
   }
 };
+
+export const _pagination = createListPagination(
+  "/recipes",
+  20,
+  loadData,
+  (data) => data.recipes.length,
+);
+export const load = _pagination.load satisfies PageServerLoad;

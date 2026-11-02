@@ -297,11 +297,14 @@
 
 <Seo
   title="Recipes - Ancient Kingdoms"
+  pagination={data.crawlable}
   description={`Find ${formatNumber(data.recipes.length)} crafting, alchemy, cooking, and scribing recipes with ingredients, stations, tiers, and results.`}
   path="/recipes"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb
@@ -311,6 +314,7 @@
   <h1 class="text-3xl font-bold">Crafting Recipes</h1>
 
   <DataTable
+    crawlable={data.crawlable}
     data={dataWithVirtual}
     {columns}
     {columnLabels}

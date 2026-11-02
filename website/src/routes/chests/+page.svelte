@@ -305,11 +305,14 @@
 
 <Seo
   title="Chests - Ancient Kingdoms"
+  pagination={data.crawlable}
   description={`Find ${formatNumber(data.chests.length)} chests on the world map, with required keys, gold ranges, item rewards, and respawn times.`}
   path="/chests"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Chests" }]} />
@@ -320,6 +323,7 @@
   </h1>
 
   <DataTable
+    crawlable={data.crawlable}
     data={chestsWithDrops}
     {columns}
     {columnLabels}

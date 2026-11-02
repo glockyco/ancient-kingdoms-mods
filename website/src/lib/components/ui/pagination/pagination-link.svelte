@@ -6,6 +6,7 @@
     type Props,
     buttonVariants,
   } from "$lib/components/ui/button/index.js";
+  import PaginationAnchor from "./pagination-anchor.svelte";
 
   let {
     ref = $bindable(null),
@@ -14,10 +15,14 @@
     isActive,
     page,
     children,
+    href,
+    enhanced = true,
     ...restProps
   }: PaginationPrimitive.PageProps &
-    Props & {
+    Omit<Props, "href"> & {
       isActive: boolean;
+      href?: string;
+      enhanced?: boolean;
     } = $props();
 </script>
 
@@ -40,4 +45,14 @@
   )}
   children={children || Fallback}
   {...restProps}
-/>
+>
+  {#snippet child({ props })}
+    {#if href}
+      <PaginationAnchor {props} {href} {enhanced}>
+        {@render (children || Fallback)()}
+      </PaginationAnchor>
+    {:else}
+      <button {...props}>{@render (children || Fallback)()}</button>
+    {/if}
+  {/snippet}
+</PaginationPrimitive.Page>

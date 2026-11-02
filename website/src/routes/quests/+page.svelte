@@ -325,17 +325,21 @@
 
 <Seo
   title="Quests - Ancient Kingdoms"
+  pagination={data.crawlable}
   description={`${formatNumber(data.quests.length)} quests — main story, epic, adventurer, and repeatable. Browse objectives, level gates, rewards, and prerequisite chains.`}
   path="/quests"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Quests" }]} />
 
   <h1 class="text-3xl font-bold">Quests</h1>
   <DataTable
+    crawlable={data.crawlable}
     data={dataWithVirtual}
     {columns}
     {columnLabels}

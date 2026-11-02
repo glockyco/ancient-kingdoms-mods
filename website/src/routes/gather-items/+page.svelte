@@ -322,11 +322,14 @@
 
 <Seo
   title="Gathering Resources - Ancient Kingdoms"
+  pagination={data.crawlable}
   description="Find plants, minerals, fishing spots, and radiant sparks across Eratiath by tier, gathering XP, spawn zone, and rewards."
   path="/gather-items"
 />
 
-<JsonLd node={collectionNode} />
+{#if data.crawlable.page === 1}
+  <JsonLd node={collectionNode} />
+{/if}
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb
@@ -338,6 +341,7 @@
   </h1>
 
   <DataTable
+    crawlable={data.crawlable}
     data={resourcesWithZonesAndDrops}
     {columns}
     {columnLabels}
