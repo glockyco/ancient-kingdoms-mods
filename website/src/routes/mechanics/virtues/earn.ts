@@ -308,7 +308,8 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       items: [
         // Source: server-scripts/VirtueEncounters.cs:LostItemsPerSearch,BeginHonestySearch — 10 belongings, 3 hours apart.
         "A search hides 10 belongings. The next can start 3 hours later.",
-        "Returns count even after the blessing ends, but you must return everything before taking Honesty again.",
+        // Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine — the shrine refuses Honesty while belongings are out, unless Honesty is at rank 5.
+        "Returns count even after the blessing ends, but below rank 5 you must return everything before taking Honesty again.",
         "The bank and house chests do not take belongings.",
       ],
     },

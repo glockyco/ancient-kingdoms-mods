@@ -315,7 +315,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "virtues.shrines": {
     href: "/mechanics/virtues#shrines",
     reviewedBodySha256:
-      "c631628b131f9dcd3d8e05758ded10dac1454d3ec781e593b3390b3cda3a953e",
+      "3933deeb346b58c51259164e71e4c3af5a61e07807a8358c6d68f3829f34a589",
   },
   "virtues.valor": {
     href: "/mechanics/virtues#valor",

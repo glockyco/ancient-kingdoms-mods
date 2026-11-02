@@ -495,7 +495,7 @@
     </p>
   </header>
 
-  <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing — one virtue is active at a time, and receiving or renewing a blessing sets 3 hours. -->
+  <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing,IsVirtueMastered — one virtue below rank 5 is active at a time, a rank 5 blessing keeps its own timer beside it, and receiving or renewing a blessing sets 3 hours. -->
   <!-- Source: server-scripts/Player.cs:TickVirtuesServer — the time counts down only while you are connected. -->
   <!-- Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine — Sacrifice needs an offering below rank 5. -->
   <section class="space-y-4">
@@ -518,8 +518,9 @@
       <li class="rounded-lg border bg-card p-4">
         {@render stepTitle(3, "Do its deeds")}
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
-          A blessing lasts 3 hours online, and receiving another replaces it.
-          Renew it at a shrine to keep earning.
+          A blessing lasts 3 hours online. Receiving another replaces it, but
+          rank 5 blessings stay alongside the others. Renew it at a shrine to
+          keep earning.
         </p>
       </li>
       <li id="ranks-and-titles" class="rounded-lg border bg-card p-4">
