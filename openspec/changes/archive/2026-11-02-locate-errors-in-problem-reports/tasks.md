@@ -16,7 +16,7 @@
 
 ## 4. Wording
 
-- [ ] 4.1 Choose how an error's circumstances and the error list read through a comparison (compare-options) on the details of a real failure, and apply the answer. Verify that the answer is recorded in the vault's Ancient Kingdoms Compendium note.
+- [x] 4.1 Choose how an error's circumstances and the error list read through a comparison (compare-options) on the details of a real failure, and apply the answer. Verify that the answer is recorded in the vault's Ancient Kingdoms Compendium note.
 
 ## Workflow follow-up
 

@@ -114,3 +114,92 @@ Every place in the repository that offers the Pocket Compendium download SHALL t
 
 - **WHEN** a player reads the Pocket Compendium entry in the front page's download table
 - **THEN** the entry tells them to remove the three old DLLs first
+
+### Requirement: The mods page names the version it offers
+
+The website's mods page SHALL name the version of the Pocket Compendium DLL it offers for download, as that DLL names itself to MelonLoader and on its About page in game. A build that cannot read the version SHALL NOT publish the download.
+
+#### Scenario: Comparing with the installed version
+
+- **WHEN** a player who runs Pocket Compendium 1.0.0 opens the mods page after 1.0.1 is published
+- **THEN** the page names version 1.0.1
+- **AND** the About page of the downloaded DLL names 1.0.1 too
+
+#### Scenario: A DLL without a version
+
+- **WHEN** a published mod's DLL carries no `MelonInfo` version
+- **THEN** the publish fails and the downloads published before stay in place
+
+### Requirement: The home page leads to the mod
+
+The home page SHALL link to the mods page from its first screen in both layouts.
+
+#### Scenario: The title-screen layout
+
+- **WHEN** a player opens the home page in its title-screen layout
+- **THEN** a button to the mods page sits beside the buttons to the map and the items, on a phone too
+
+#### Scenario: The classic layout
+
+- **WHEN** a player opens the home page in its classic layout
+- **THEN** a Pocket Compendium card leads to the mods page beside the Interactive World Map card on wide screens
+
+### Requirement: The mods page leads with what players install the mod for
+
+The mods page SHALL name respawn timers, spawn locations and boss skill cooldowns in its introduction and SHALL list the Boss list, World markers and Boss skills features before the others. It SHALL show the settings window after the install step that tells players to open it.
+
+#### Scenario: A player skims the page
+
+- **WHEN** a player reads only the introduction and the first row of features
+- **THEN** they learn that the mod times respawns, marks spawn points and counts down boss skills
+
+#### Scenario: A player installs the mod
+
+- **WHEN** a player reaches the step that says to press F8 for the settings
+- **THEN** a picture of the settings window follows it
+
+### Requirement: An install guide holds the whole install
+
+The site SHALL give every step of installing the fixed MelonLoader and Pocket Compendium on an install page that the mods page links, with direct downloads of both. The steps SHALL come from one file in the repository that also becomes the README.txt of the MelonLoader zip.
+
+#### Scenario: A player replaces an older MelonLoader
+
+- **WHEN** a player with an older MelonLoader follows the steps in order
+- **THEN** they delete its MelonLoader folder and version.dll before they copy the new files
+
+### Requirement: The install page shows the reader's system
+
+The install page SHALL let the reader choose Windows, Mac with CrossOver, or Steam Deck or Linux, SHALL preselect the reader's system from the browser, and SHALL show only the chosen system's lines.
+
+#### Scenario: A Mac player installs
+
+- **WHEN** a player on a Mac with CrossOver opens the install page
+- **THEN** Mac with CrossOver is chosen, and the steps give the CrossOver route to the game folder and the Wine library setting, without the other systems' lines
+
+### Requirement: The website offers only released mods
+
+The website SHALL publish each downloadable mod as built from the newest git tag of its releases, `<id>-v<version>`, and SHALL NOT publish a build of uncommitted or untagged code. A publish SHALL fail, keeping the current downloads, when a mod has no release tag or when the DLL built from the tag names another version.
+
+#### Scenario: A deploy while mod work is unreleased
+
+- **WHEN** the working tree holds Pocket Compendium changes after the `pocket-compendium-v1.0.1` tag and the site is deployed
+- **THEN** the site offers the DLL built from `pocket-compendium-v1.0.1`, which names version 1.0.1
+
+#### Scenario: A mod without a release
+
+- **WHEN** a mod in the download list has no release tag
+- **THEN** the publish fails and the downloads published before stay in place
+
+#### Scenario: A tag on the wrong commit
+
+- **WHEN** the DLL built from `pocket-compendium-v1.0.2` names version 1.0.1
+- **THEN** the publish fails and the downloads published before stay in place
+
+### Requirement: A release publishes the same file on every deploy
+
+Building a mod from the same release tag SHALL produce the same DLL wherever the build runs, and the DLL SHALL hold no path of the machine that built it.
+
+#### Scenario: A deploy without a new release
+
+- **WHEN** the site is deployed twice while `pocket-compendium-v1.0.1` is the newest release
+- **THEN** both deploys publish the same DLL, so the mod's update notice stays quiet

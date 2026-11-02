@@ -14,4 +14,4 @@
 
 ## 3. Record
 
-- [ ] 3.1 Record the chosen placements in the vault's Ancient Kingdoms Compendium note.
+- [x] 3.1 Record the chosen placements in the vault's Ancient Kingdoms Compendium note.

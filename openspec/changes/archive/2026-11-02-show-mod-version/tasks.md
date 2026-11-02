@@ -7,4 +7,4 @@
 ## 2. Page
 
 - [x] 2.1 Load the manifest at build time on the mods page and show the version beside the mod's name. Verify in a browser at 1280 and 390 pixels wide that the page names the manifest's version without breaking the layout.
-- [ ] 2.2 Choose where and how the page names the version through a comparison (compare-options) with screenshots at both widths, and apply the answer. Verify that the answer is recorded in the vault's Ancient Kingdoms Compendium note.
+- [x] 2.2 Choose where and how the page names the version through a comparison (compare-options) with screenshots at both widths, and apply the answer. Verify that the answer is recorded in the vault's Ancient Kingdoms Compendium note.

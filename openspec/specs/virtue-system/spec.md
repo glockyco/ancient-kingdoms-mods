@@ -25,12 +25,17 @@ The site SHALL publish a Virtues mechanics page with a section on shrines and bl
 
 ### Requirement: The page states how blessings work
 
-The Shrines section SHALL state that one blessing is active at a time, that it lasts three hours counting only time online, that renewing it restarts the time instead of adding to it, that it lasts through death, and the conditions under which a shrine refuses a blessing.
+The Shrines section SHALL state that a blessing lasts three hours counting only time online, that renewing it restarts the time instead of adding to it, that it lasts through death, that a rank 5 virtue's blessing stays alongside the blessings of other shrines, and the conditions under which a shrine refuses a blessing.
 
 #### Scenario: A player asks whether blessings stack
 
 - **WHEN** a player reads the Shrines section
-- **THEN** it states that receiving another blessing replaces the active one
+- **THEN** it states that a rank 5 blessing stays alongside the others
+
+#### Scenario: A shrine refuses a blessing
+
+- **WHEN** a player below rank 5 in Honesty still has belongings out, or no Valor quarry fits their level
+- **THEN** the page states that the shrine refuses Honesty or Valor below rank 5
 
 ### Requirement: Each virtue's section states how it earns points
 
