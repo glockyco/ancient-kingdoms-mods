@@ -1,8 +1,6 @@
 <script lang="ts">
   import Package from "@lucide/svelte/icons/package";
   import { onMount } from "svelte";
-  import { base } from "$app/paths";
-  import { SvelteMap } from "svelte/reactivity";
   import { createStatPanelState } from "$lib/utils/stat-panel-state.svelte";
   import {
     DataTable,
@@ -28,7 +26,7 @@
     formatNumber,
   } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
-  import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
+  import type { ItemListViewClient } from "$lib/types/items";
   import {
     ITEMS_INITIAL_SORTING,
     ITEMS_NAME_SORTING_FN,
@@ -36,22 +34,24 @@
     type ItemListPayload,
   } from "$lib/utils/item-list";
   import { getItemTooltips } from "$lib/queries/items";
+  import {
+    ITEM_LIST_URL,
+    loadItemList,
+    loadedItemList,
+  } from "$lib/utils/item-list-client";
   import { formatStatField, statField, statFieldName } from "$lib/stats";
   import SeasonIcons from "$lib/components/SeasonIcons.svelte";
   import { SEASONS } from "$lib/data/seasonal-events";
 
   let { data } = $props();
 
-  // The page ships only its own rows. The complete list follows after first paint.
-  let full = $state<ItemListPayload | null>(null);
+  // The page ships only its own rows. The complete list follows after first
+  // paint, or is already in memory from a hovered link or an earlier visit.
+  // It stays raw because a deep reactive proxy over every item made reading
+  // the rows, which every column, filter and sort does, slow.
+  let full = $state.raw<ItemListPayload | null>(loadedItemList);
   onMount(() => {
-    fetch(`${base}/items/list.json`)
-      .then((response) => {
-        if (!response.ok)
-          throw new Error(`Item list returned ${response.status}`);
-        return response.json() as Promise<ItemListPayload>;
-      })
-      .then((payload) => (full = payload));
+    if (!full) loadItemList().then((payload) => (full = payload));
   });
   const list = $derived(full ?? data.initial);
 
@@ -176,16 +176,14 @@
     return expanded;
   });
 
-  // Build zone lookup for each item (computed once)
-  const itemZoneMap = $derived.by(() => {
-    const map = new SvelteMap<string, ItemZoneInfo[]>();
-    for (const iz of list.itemZones) {
-      if (!map.has(iz.item_id)) {
-        map.set(iz.item_id, []);
-      }
-      map.get(iz.item_id)!.push(iz);
+  // Each item's zones, deduplicated, for the zone filter.
+  const itemZoneIds = $derived.by(() => {
+    const zoneIds: Record<string, string[]> = {};
+    for (const { item_id, zone_id } of list.itemZones) {
+      const ids = (zoneIds[item_id] ??= []);
+      if (!ids.includes(zone_id)) ids.push(zone_id);
     }
-    return map;
+    return zoneIds;
   });
 
   // Get unique zones for filter options
@@ -200,9 +198,7 @@
     list.items.map((item) => ({
       ...item,
       seasons: list.itemSeasons[item.id] ?? [],
-      zone_ids: Array.from(
-        new Set((itemZoneMap.get(item.id) ?? []).map((z) => z.zone_id)),
-      ),
+      zone_ids: itemZoneIds[item.id] ?? [],
     })),
   );
 
@@ -545,6 +541,11 @@
     {/if}
   </div>
 {/snippet}
+
+<svelte:head>
+  <!-- Start the complete list while the page's scripts load. -->
+  <link rel="preload" href={ITEM_LIST_URL} as="fetch" crossorigin="anonymous" />
+</svelte:head>
 
 <Seo
   title="Items - Ancient Kingdoms"
