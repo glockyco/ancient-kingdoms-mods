@@ -32,7 +32,7 @@ export const HOME_COUNTS: HomeCounts = {
   mercenaries: 8,
   summons: 23,
   zones: 26,
-  quests: 275,
+  quests: 273,
   altars: 7,
   achievements: 38,
   professions: 13,
