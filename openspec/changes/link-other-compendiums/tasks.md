@@ -8,4 +8,4 @@
 
 - [x] 2.1 Run strict OpenSpec validation, the website checks and tests, and a production build.
 - [x] 2.2 Check the header, the footer and the About page in the browser at 1440 and 390 pixels wide and at the widths where their layouts change.
-- [ ] 2.3 Check that both home layouts end with their last section and the footer on the live site.
+- [x] 2.3 Check that both home layouts end with their last section and the footer on the live site.
