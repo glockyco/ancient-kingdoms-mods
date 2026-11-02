@@ -81,9 +81,9 @@ int num3 = (int)Math.Round((float)baseMana.Get(level.current) * multiplierMana);
 ```
 
 `multiplierEnergy` is declared at `server-scripts/Energy.cs:multiplierEnergy` and written in eight places: the
-hire roll at `server-scripts/Player.cs:11720`, the veteran accumulation at `Player.cs:11739`, the four
-level-up paths at `Player.cs:5159`, `5205`, `5251` and `5299`, and the reload at `Player.cs:11923` and
-`11943`. Outside the generated network plumbing in `Energy.cs`, nothing reads it.
+hire roll and the veteran accumulation in `CmdBuyMercenary`, the four level-up paths in
+`Player.cs:LevelUpMercenaries`, and the reload and its veteran accumulation in `CmdReloadMercenary`.
+Outside the generated network plumbing in `Energy.cs`, nothing reads it.
 
 ## Evidence
 
