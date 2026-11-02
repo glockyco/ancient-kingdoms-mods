@@ -48,7 +48,7 @@ public class PublishModsCommandTests
             var build = runner.Calls[2];
             Assert.Equal("dotnet", build.Program);
             Assert.Equal(
-                new[] { "build", Path.Combine(worktree, "mods", "BetterBestiary", "BetterBestiary.csproj"), "-c", "Release", "--no-incremental" },
+                new[] { "build", Path.Combine(worktree, "mods", "BetterBestiary", "BetterBestiary.csproj"), "-c", "Release", "--no-incremental", "-p:ContinuousIntegrationBuild=true" },
                 build.Arguments);
             Assert.Equal(new[] { "worktree", "remove", "--force", worktree }, runner.Calls[3].Arguments);
 

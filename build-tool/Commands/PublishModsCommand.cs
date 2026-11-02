@@ -70,7 +70,9 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                 // A deploy runs this, so each mod comes from the newest tag of its releases and never from
                 // unreleased work in the working tree.
                 var release = await NewestReleaseAsync(mod.Id, cancellationToken);
-                var worktree = Path.Combine(Path.GetTempPath(), $"publish-{mod.Id}-{Guid.NewGuid():N}");
+                // Inside the repository rather than the system temporary folder, which is a symlink on macOS
+                // that keeps the compiler from mapping source paths to /_/.
+                var worktree = Path.Combine(_repoRoot, ".local", "tmp", "publish", $"{mod.Id}-{Guid.NewGuid():N}");
                 await RunGitAsync(new[] { "worktree", "add", "--detach", worktree, release.Tag }, cancellationToken);
                 try
                 {
@@ -87,7 +89,9 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                     var result = await _runner.RunAsync(
                         new ProcessRequest(
                             Program: "dotnet",
-                            Arguments: new[] { "build", projectPath, "-c", "Release", "--no-incremental" }),
+                            // Mapping source paths keeps the build folder out of the DLL, so a tag always
+                            // builds the same file and the update notice only fires for a new release.
+                            Arguments: new[] { "build", projectPath, "-c", "Release", "--no-incremental", "-p:ContinuousIntegrationBuild=true" }),
                         cancellationToken);
                     if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                         Console.WriteLine(result.StandardOutput);

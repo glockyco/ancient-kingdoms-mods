@@ -5,7 +5,7 @@
 - [x] 1.1 Build each mod in `publish-mods` from the newest `<id>-v<version>` tag in a temporary worktree that gets the local `Local.props`, check that the DLL names the tag's version, and remove the worktree afterwards. Cover the newest tag, a missing tag, a version mismatch and a failed build with tests in `tests/BuildTool.Tests/PublishModsCommandTests.cs`. Verify with `dotnet test tests/BuildTool.Tests`.
 - [x] 1.2 Describe in `CONTRIBUTING.md` that publish-mods builds the released tags and how to release a mod.
 
-- [ ] 1.3 Build in a worktree under the repository's `.local/tmp/` with source paths mapped to `/_/`, because a symlinked temporary folder defeats the mapping. Verify that two publishes give the same SHA-256 and that the DLL holds no `/Users/`, `/tmp/` or `/var/` path.
+- [x] 1.3 Build in a worktree under the repository's `.local/tmp/` with source paths mapped to `/_/`, because a symlinked temporary folder defeats the mapping. Verify that two publishes give the same SHA-256 and that the DLL holds no `/Users/`, `/tmp/` or `/var/` path.
 
 ## 2. Release
 
