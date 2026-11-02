@@ -16,7 +16,7 @@ public sealed class RenewalNoticeTests
     [InlineData(" has been renewed!")]
     [InlineData("Xylevis has spawned in Crescent Coast.")]
     [InlineData("The dungeon cannot be reset while someone is still inside")]
-    public void Other_messages_name_no_dungeon(string message)
+    public void Other_messages_name_no_dungeon(string? message)
     {
         Assert.Null(RenewalNotice.ZoneName(message));
     }

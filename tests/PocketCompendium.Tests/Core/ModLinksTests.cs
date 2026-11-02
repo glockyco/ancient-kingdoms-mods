@@ -29,9 +29,9 @@ public sealed class ModLinksTests
     [Fact]
     public void The_about_page_links_what_the_website_links()
     {
-        Assert.Equal(WebsiteConstant("website/src/lib/seo/site.ts", "SITE_URL"), ModLinks.Site);
-        Assert.Equal(WebsiteConstant("website/src/lib/constants/links.ts", "DISCORD_URL"), ModLinks.Discord);
-        Assert.Equal(WebsiteConstant("website/src/lib/constants/links.ts", "KOFI_URL"), ModLinks.KoFi);
+        Assert.Equal(ModLinks.Site, WebsiteConstant("website/src/lib/seo/site.ts", "SITE_URL"));
+        Assert.Equal(ModLinks.Discord, WebsiteConstant("website/src/lib/constants/links.ts", "DISCORD_URL"));
+        Assert.Equal(ModLinks.KoFi, WebsiteConstant("website/src/lib/constants/links.ts", "KOFI_URL"));
     }
 
     [Fact]
