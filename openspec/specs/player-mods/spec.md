@@ -99,12 +99,17 @@ Pocket Compendium SHALL write its version, the commit it was built from and whic
 
 ### Requirement: One player download
 
-The player features SHALL ship as one DLL, Pocket Compendium, in place of BossTracker, BossSkillTracker and BetterBestiary. FieldDefaultValueHookFix SHALL stay a separate download.
+The player features SHALL ship as one DLL, Pocket Compendium, in place of BossTracker, BossSkillTracker and BetterBestiary. FieldDefaultValueHookFix SHALL stay a separate download. Pocket Compendium's updater SHALL come inside Pocket Compendium, which writes it into the game's `Plugins` folder itself, so installing the mod never needs a second file.
 
 #### Scenario: Download tables
 
 - **WHEN** a player reads the download table on the front page or in the mod catalogue
 - **THEN** it lists Pocket Compendium and FieldDefaultValueHookFix, and no BossTracker, BossSkillTracker or BetterBestiary
+
+#### Scenario: Installing with updates
+
+- **WHEN** a player installs only `PocketCompendium.dll` and answers "Install updates for me"
+- **THEN** Pocket Compendium puts its updater into `Plugins` without the player copying a file
 
 ### Requirement: Downloads warn about the old DLLs
 
@@ -203,3 +208,45 @@ Building a mod from the same release tag SHALL produce the same DLL wherever the
 
 - **WHEN** the site is deployed twice while `pocket-compendium-v1.0.1` is the newest release
 - **THEN** both deploys publish the same DLL, so the mod's update notice stays quiet
+
+### Requirement: The mod list names each release's changes
+
+The published mod list SHALL carry, for each release a mod lists in the repository's mod registry, its version and the list of its changes, and SHALL keep the fields it carries today. Once a mod lists releases, a publish SHALL fail, keeping the current downloads, when its newest tagged version has no release with at least one change.
+
+#### Scenario: A release with its changes
+
+- **WHEN** the registry lists 1.0.3 with the change "Fixes the stutter while walking."
+- **THEN** the published list names that change under 1.0.3
+
+#### Scenario: A release without changes
+
+- **WHEN** the registry lists releases for Pocket Compendium, the newest tag is 1.0.3 and no release names 1.0.3
+- **THEN** the publish fails and the downloads published before stay in place
+
+### Requirement: A deploy publishes a signed mod list
+
+A deploy SHALL publish the mod list together with a signature made with the release key, and SHALL fail without a valid one. A local build without the key SHALL still build, with an unsigned list.
+
+#### Scenario: A deploy without the key
+
+- **WHEN** a deploy runs and no release key is given
+- **THEN** the deploy stops before anything is uploaded
+
+#### Scenario: A development server
+
+- **WHEN** `pnpm dev` runs without the key
+- **THEN** the site builds, and the mod list it serves has no signature
+
+### Requirement: The website shows Pocket Compendium's changelog
+
+The mods page SHALL link a changelog page beside the version it names. That page SHALL list every release of Pocket Compendium in the mod list, newest first, each with its version, its date and its changes, in the words the mod shows. A publish SHALL fail, keeping the current downloads, when a listed release has no date or is dated after a newer one.
+
+#### Scenario: Reading the changelog
+
+- **WHEN** a player follows "Changelog" beside "Version 1.1.0" on the mods page
+- **THEN** the page lists 1.1.0, 1.0.2, 1.0.1 and 1.0.0 with their dates and changes, 1.1.0 first
+
+#### Scenario: A release without a date
+
+- **WHEN** a release in the registry has no date
+- **THEN** the publish fails and the downloads published before stay in place
