@@ -33,4 +33,26 @@ public class DeployCommandTests
         Assert.Equal("data", File.ReadAllText(Path.Combine(modsPath, "DataExporter.dll")));
         Directory.Delete(tempRoot, recursive: true);
     }
+
+    [Fact]
+    public void LeavesThePocketCompendiumUpdaterOutOfMods()
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        foreach (var (project, file) in new[]
+        {
+            ("PocketCompendium", "PocketCompendium.dll"),
+            ("PocketCompendiumUpdater", "PocketCompendiumUpdater.dll"),
+            ("PocketCompendiumUpdateCore", "PocketCompendium.UpdateCore.dll"),
+        })
+        {
+            var dir = Path.Combine(tempRoot, "mods", project, "bin", "Release", "net6.0");
+            Directory.CreateDirectory(dir);
+            File.WriteAllText(Path.Combine(dir, file), "dll");
+        }
+
+        var deployed = DeployCommand.GetDeployableModDlls(Path.Combine(tempRoot, "mods"));
+
+        Assert.Equal("PocketCompendium.dll", Path.GetFileName(Assert.Single(deployed)));
+        Directory.Delete(tempRoot, recursive: true);
+    }
 }

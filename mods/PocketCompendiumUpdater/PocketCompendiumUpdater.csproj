@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The plugin Pocket Compendium writes into the game's Plugins folder. It never changes, see UpdaterPlugin. -->
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>PocketCompendiumUpdater</AssemblyName>
+    <RootNamespace>PocketCompendiumUpdater</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <DebugType>embedded</DebugType>
+    <PathMap>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '..', '..'))=/_/</PathMap>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MelonLoader"><HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+</Project>

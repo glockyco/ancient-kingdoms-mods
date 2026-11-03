@@ -20,7 +20,7 @@ The player features SHALL ship as one DLL, Pocket Compendium, in place of BossTr
 
 ### Requirement: The mod list names each release's changes
 
-The published mod list SHALL carry, for each release of Pocket Compendium, its version and the list of its changes from the repository's mod registry, and SHALL keep the fields it carries today. A publish SHALL fail, keeping the current downloads, when the newest release of Pocket Compendium lists no change.
+The published mod list SHALL carry, for each release a mod lists in the repository's mod registry, its version and the list of its changes, and SHALL keep the fields it carries today. Once a mod lists releases, a publish SHALL fail, keeping the current downloads, when its newest tagged version has no release with at least one change.
 
 #### Scenario: A release with its changes
 
@@ -29,7 +29,7 @@ The published mod list SHALL carry, for each release of Pocket Compendium, its v
 
 #### Scenario: A release without changes
 
-- **WHEN** the newest Pocket Compendium tag is 1.0.3 and the registry lists no change for it
+- **WHEN** the registry lists releases for Pocket Compendium, the newest tag is 1.0.3 and no release names 1.0.3
 - **THEN** the publish fails and the downloads published before stay in place
 
 ### Requirement: A deploy publishes a signed mod list

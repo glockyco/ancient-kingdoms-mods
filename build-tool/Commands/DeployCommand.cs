@@ -85,10 +85,15 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
         return Task.FromResult(ExitCodes.Success);
     }
 
+    // Pocket Compendium carries its updater and writes it into the game itself. In Mods, MelonLoader
+    // would load the plugin as a mod.
+    private static readonly string[] CarriedByPocketCompendium = { "PocketCompendiumUpdater.dll", "PocketCompendium.UpdateCore.dll" };
+
     internal static List<string> GetDeployableModDlls(string modsDir)
     {
         return Directory.GetFiles(modsDir, "*.dll", SearchOption.AllDirectories)
             .Where(f => f.Contains(Path.Combine("bin", "Release", "net6.0"), StringComparison.Ordinal))
+            .Where(f => !CarriedByPocketCompendium.Contains(Path.GetFileName(f), StringComparer.Ordinal))
             .OrderBy(f => f, StringComparer.Ordinal)
             .ToList();
     }

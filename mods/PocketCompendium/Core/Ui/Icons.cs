@@ -21,6 +21,9 @@ public static class Icons
     public static Sprite Arrow => Get("arrow");
     public static Sprite Bell => Get("bell");
     public static Sprite Check => Get("check");
+    public static Sprite CircleAlert => Get("circle-alert");
+    public static Sprite CircleArrowDown => Get("circle-arrow-down");
+    public static Sprite CircleCheck => Get("circle-check");
     public static Sprite Clover => Get("clover");
     public static Sprite BookOpen => Get("book-open");
     public static Sprite ChevronsDownUp => Get("chevrons-down-up");
@@ -44,8 +47,10 @@ public static class Icons
     public static Sprite Moon => Get("moon");
     public static Sprite Move => Get("move");
     public static Sprite Pin => Get("pin");
+    public static Sprite RefreshCw => Get("refresh-cw");
     public static Sprite Shield => Get("shield");
     public static Sprite Skull => Get("skull");
+    public static Sprite Sparkles => Get("sparkles");
     public static Sprite Sliders => Get("sliders-horizontal");
     public static Sprite Sun => Get("sun");
     public static Sprite Swords => Get("swords");

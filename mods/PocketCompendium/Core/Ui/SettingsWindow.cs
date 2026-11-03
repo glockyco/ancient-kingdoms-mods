@@ -403,6 +403,7 @@ public sealed class SettingsWindow
     private void Refresh()
     {
         var page = _pages[_selected];
+        if (page.Content != null && page.Content.Stale) BuildRows(page);
         if (page.Feature != null)
         {
             _headerSwitch?.Set(page.Feature.Switch.Value && !page.Feature.Failed, enabled: !page.Feature.Failed);

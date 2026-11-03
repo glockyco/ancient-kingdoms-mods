@@ -32,6 +32,7 @@ public static class CommandCatalog
         new("build", "Build all mods.", Command<BuildCommand>()),
         new("publish-mods", "Build and publish configured website mod downloads.",
             Command<PublishModsCommand>()),
+        new("update-key", "Create the RSA key pair for signed mod updates.", Command<UpdateKeyCommand>()),
         new("deploy", "Copy built mods to the game Mods directory.", Command<DeployCommand>()),
         new("deploy-host", "Build and deploy HotRepl host.", Command<DeployHostCommand>()),
         new("launch", "Launch Ancient Kingdoms.", Command<LaunchCommand>()),

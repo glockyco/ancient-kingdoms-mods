@@ -4,9 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using AncientKingdomsMods.Shared;
 using BuildTool.Abstractions;
 using BuildTool.Output;
 using Spectre.Console.Cli;
@@ -15,7 +17,8 @@ namespace BuildTool.Commands;
 
 public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand.Settings>
 {
-    private const int ManifestSchemaVersion = 1;
+    private const int RegistrySchemaVersion = 1;
+    private const int ManifestSchemaVersion = 2;
     private readonly string _repoRoot;
     private readonly IProcessRunner _runner;
     private readonly CommandResultStore _resultStore;
@@ -47,7 +50,6 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
         try
         {
             config = LoadConfig(configPath);
-            ValidateConfig(config);
         }
         catch (Exception ex) when (ex is IOException or JsonException or InvalidDataException)
         {
@@ -70,6 +72,7 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                 // A deploy runs this, so each mod comes from the newest tag of its releases and never from
                 // unreleased work in the working tree.
                 var release = await NewestReleaseAsync(mod.Id, cancellationToken);
+                var releases = SelectReleases(mod, release.Version);
                 // Inside the repository rather than the system temporary folder, which is a symlink on macOS
                 // that keeps the compiler from mapping source paths to /_/.
                 var worktree = Path.Combine(_repoRoot, ".local", "tmp", "publish", $"{mod.Id}-{Guid.NewGuid():N}");
@@ -130,7 +133,8 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                         fileName,
                         $"/mods/{fileName}",
                         stream.Length,
-                        sha256));
+                        sha256,
+                        releases));
                 }
                 finally
                 {
@@ -138,12 +142,14 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                 }
             }
 
-            var manifest = new DownloadManifest(ManifestSchemaVersion, artifacts);
-            var manifestJson = JsonSerializer.Serialize(manifest, JsonOptions) + Environment.NewLine;
-            File.WriteAllText(Path.Combine(stagingDir, "manifest.json"), manifestJson);
+            WriteManifest(
+                stagingDir,
+                artifacts,
+                Environment.GetEnvironmentVariable("UPDATE_SIGNING_KEY"),
+                Path.Combine(_repoRoot, "mods", "Shared", "Updates", "release-key.txt"));
             ReplaceDirectory(stagingDir, targetDir);
         }
-        catch (Exception ex) when (ex is IOException or InvalidDataException)
+        catch (Exception ex) when (ex is IOException or InvalidDataException or CryptographicException or ArgumentException or UnauthorizedAccessException)
         {
             Console.Error.WriteLine($"Could not publish mod downloads: {ex.Message}");
             _resultStore.SetErrorDetails(new { configPath, targetDir, message = ex.Message });
@@ -170,8 +176,64 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
         if (!File.Exists(path))
             throw new InvalidDataException($"Configuration file not found at {path}.");
 
-        return JsonSerializer.Deserialize<DownloadConfig>(File.ReadAllText(path), JsonOptions)
+        return ParseConfig(File.ReadAllText(path));
+    }
+
+    internal static DownloadConfig ParseConfig(string json)
+    {
+        var config = JsonSerializer.Deserialize<DownloadConfig>(json, JsonOptions)
             ?? throw new InvalidDataException("Configuration is empty.");
+        ValidateConfig(config);
+        return config;
+    }
+
+    internal static List<RegistryRelease>? SelectReleases(DownloadMod mod, string publishedVersion)
+    {
+        if (mod.Releases is null)
+            return null;
+
+        var version = ParseReleaseVersion(publishedVersion);
+        if (!mod.Releases.Any(release => release.Version == publishedVersion))
+            throw new InvalidDataException(
+                $"Mod '{mod.Id}' has no release changes for newest tagged version {publishedVersion}. Add it to website/mod-downloads.json.");
+
+        return mod.Releases.Where(release => ParseReleaseVersion(release.Version) <= version).ToList();
+    }
+
+    internal static string SerializeManifest(List<PublishedMod> artifacts) =>
+        JsonSerializer.Serialize(new DownloadManifest(ManifestSchemaVersion, artifacts), JsonOptions) + Environment.NewLine;
+
+    internal static void WriteManifest(
+        string stagingDir,
+        List<PublishedMod> artifacts,
+        string? signingKeyPath,
+        string publicKeyPath)
+    {
+        var manifestPath = Path.Combine(stagingDir, "manifest.json");
+        File.WriteAllText(manifestPath, SerializeManifest(artifacts));
+        if (string.IsNullOrEmpty(signingKeyPath))
+        {
+            Console.WriteLine("Mod list is unsigned because UPDATE_SIGNING_KEY is not set.");
+            return;
+        }
+
+        if (!File.Exists(publicKeyPath))
+            throw new InvalidDataException($"Release public key is missing at {publicKeyPath}. Run build-tool update-key --private <path> first.");
+
+        var pem = File.ReadAllText(signingKeyPath);
+        if (!PemEncoding.TryFind(pem, out var fields) || !pem.AsSpan()[fields.Label].SequenceEqual("PRIVATE KEY"))
+            throw new InvalidDataException($"UPDATE_SIGNING_KEY must name an RSA private key in PKCS#8 PEM format: {signingKeyPath}.");
+
+        using var key = RSA.Create();
+        key.ImportFromPem(pem);
+        if (!string.Equals(
+                Convert.ToBase64String(key.ExportSubjectPublicKeyInfo()),
+                File.ReadAllText(publicKeyPath).Trim(),
+                StringComparison.Ordinal))
+            throw new InvalidDataException($"UPDATE_SIGNING_KEY does not match the release public key at {publicKeyPath}.");
+
+        var signature = key.SignData(File.ReadAllBytes(manifestPath), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        File.WriteAllText(Path.Combine(stagingDir, "manifest.json.sig"), Convert.ToBase64String(signature));
     }
 
     // The website names the version a player sees in game, so it comes from the DLL itself.
@@ -237,7 +299,7 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
 
     private static void ValidateConfig(DownloadConfig config)
     {
-        if (config.SchemaVersion != ManifestSchemaVersion)
+        if (config.SchemaVersion != RegistrySchemaVersion)
             throw new InvalidDataException($"Unsupported schemaVersion {config.SchemaVersion}.");
         if (config.Mods is not { Count: > 0 })
             throw new InvalidDataException("At least one mod must be configured.");
@@ -262,7 +324,29 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                 throw new InvalidDataException($"Duplicate mod id '{mod.Id}'.");
             if (!projects.Add(mod.Project))
                 throw new InvalidDataException($"Duplicate project '{mod.Project}'.");
+            if (mod.Releases is not null)
+            {
+                Version? previous = null;
+                foreach (var release in mod.Releases)
+                {
+                    if (release is null)
+                        throw new InvalidDataException($"Mod '{mod.Id}' has a null release.");
+                    var version = ParseReleaseVersion(release.Version);
+                    if (previous is not null && version >= previous)
+                        throw new InvalidDataException($"Mod '{mod.Id}' releases must have unique versions in descending order.");
+                    if (release.Changes is not { Count: > 0 } || release.Changes.Any(string.IsNullOrWhiteSpace))
+                        throw new InvalidDataException($"Mod '{mod.Id}' release {release.Version} needs at least one non-blank change.");
+                    previous = version;
+                }
+            }
         }
+    }
+
+    private static Version ParseReleaseVersion(string version)
+    {
+        if (version is null || !ReleaseVersionPattern().IsMatch(version) || !Version.TryParse(version, out var parsed))
+            throw new InvalidDataException($"Release version '{version}' must be major.minor.patch.");
+        return parsed;
     }
 
     private static void ReplaceDirectory(string stagingDir, string targetDir)
@@ -299,15 +383,25 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
     [GeneratedRegex("^[a-z0-9]+(?:-[a-z0-9]+)*$", RegexOptions.CultureInvariant)]
     private static partial Regex DownloadIdPattern();
 
-    private sealed record DownloadConfig(int SchemaVersion, List<DownloadMod> Mods);
+    [GeneratedRegex(@"\A(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\z", RegexOptions.CultureInvariant)]
+    private static partial Regex ReleaseVersionPattern();
 
-    private sealed record DownloadMod(string Id, string Project, string Name, string Description);
+    internal sealed record DownloadConfig(int SchemaVersion, List<DownloadMod> Mods);
+
+    internal sealed record DownloadMod(
+        string Id,
+        string Project,
+        string Name,
+        string Description,
+        List<RegistryRelease>? Releases = null);
+
+    internal sealed record RegistryRelease(string Version, List<string> Changes);
 
     private sealed record Release(string Tag, string Version);
 
     private sealed record DownloadManifest(int SchemaVersion, List<PublishedMod> Mods);
 
-    private sealed record PublishedMod(
+    internal sealed record PublishedMod(
         string Id,
         string Name,
         string Version,
@@ -315,5 +409,6 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
         string FileName,
         string DownloadPath,
         long SizeBytes,
-        string Sha256);
+        string Sha256,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] List<RegistryRelease>? Releases = null);
 }

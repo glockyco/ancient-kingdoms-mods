@@ -12,6 +12,9 @@ public interface ISettingsContent
     /// <summary>Builds the content below the page title and returns its height.</summary>
     float Build(RectTransform parent, float x, float y, float width);
 
+    /// <summary>Whether what the page shows changed since it was built, so the window builds it again.</summary>
+    bool Stale { get; }
+
     /// <summary>Handles the pointer while it is over the page.</summary>
     void HandleInput();
 

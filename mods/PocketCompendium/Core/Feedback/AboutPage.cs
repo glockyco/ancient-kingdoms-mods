@@ -28,7 +28,6 @@ public sealed class AboutPage : ISettingsContent
     private ButtonView _report;
     private ButtonView _idea;
     private ButtonView _logFolder;
-    private ButtonView _download;
     private Label _help;
     private Label _reported;
 
@@ -45,6 +44,8 @@ public sealed class AboutPage : ISettingsContent
 
     public Sprite Icon => Icons.Info;
 
+    public bool Stale => false;
+
     public float Build(RectTransform parent, float x, float y, float width)
     {
         float top = y;
@@ -53,16 +54,6 @@ public sealed class AboutPage : ISettingsContent
         version.Value = $"Version {_version}, build {_build}, by WoW_Much";
         y += 20f;
         y += Wrapped("fanMade", parent, "A fan-made mod. Please report its problems here, not to the game's developers.", x, y, width, 12.5f, Theme.Muted).Rect.sizeDelta.y + 12f;
-
-        if (UpdateCheck.NewerVersionOut)
-        {
-            var update = HudFactory.Label("update", parent, 12.5f, Theme.Gold, Align.Left);
-            HudFactory.TopLeft(update.Rect, x, y + 4f, width - 130f, 20f);
-            update.Value = "A new version is out.";
-            _download = new ButtonView(parent, "Download", ButtonStyle.Primary, 120f, 28f);
-            HudFactory.TopLeft(_download.Rect, x + width - 120f, y, 120f, 28f);
-            y += 40f;
-        }
 
         var divider = HudFactory.Box("divider", parent, Theme.Line);
         HudFactory.TopLeft(divider, x, y, width, 1f);
@@ -105,7 +96,6 @@ public sealed class AboutPage : ISettingsContent
         if (_report.Update()) Report();
         if (_idea.Update()) Application.OpenURL(ModLinks.IdeasForm);
         if (_logFolder.Rect.gameObject.activeSelf && _logFolder.Update()) OpenLogFolder();
-        if (_download != null && _download.Update()) Application.OpenURL(UpdateCheck.DownloadUrl);
     }
 
     public void Clear()
@@ -114,7 +104,6 @@ public sealed class AboutPage : ISettingsContent
         _report = null;
         _idea = null;
         _logFolder = null;
-        _download = null;
         _help = null;
         _reported = null;
     }

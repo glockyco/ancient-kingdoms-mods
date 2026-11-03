@@ -1,0 +1,20 @@
+<Project>
+  <!--
+    Pocket Compendium and its update code verify the website's mod list with the release key in
+    release-key.txt. A test build, made with -p:UpdateTest=true -p:UpdateKeyFile=<test key>, carries a
+    test key instead and reads the website's address from POCKET_COMPENDIUM_TEST_SITE.
+  -->
+  <PropertyGroup>
+    <UpdateKeyFile Condition="'$(UpdateKeyFile)' == '' And '$(UpdateTest)' != 'true'">$(MSBuildThisFileDirectory)release-key.txt</UpdateKeyFile>
+    <DefineConstants Condition="'$(UpdateTest)' == 'true'">$(DefineConstants);UPDATE_TEST</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(UpdateKeyFile)" LogicalName="AncientKingdomsMods.Updates.ReleaseKey" />
+    <Compile Include="$(MSBuildThisFileDirectory)*.cs" Link="Linked\Updates\%(Filename)%(Extension)" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\MelonInfoReader.cs" Link="Linked\MelonInfoReader.cs" />
+  </ItemGroup>
+  <Target Name="RequireUpdateKey" BeforeTargets="BeforeBuild">
+    <Error Condition="'$(UpdateTest)' == 'true' And '$(UpdateKeyFile)' == ''" Text="A test build needs its test key: -p:UpdateKeyFile=(public key file)." />
+    <Error Condition="!Exists('$(UpdateKeyFile)')" Text="The update key file $(UpdateKeyFile) is missing." />
+  </Target>
+</Project>

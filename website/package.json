@@ -27,7 +27,7 @@
     "gen:skill-effect-parity": "tsx scripts/gen-skill-effect-parity.ts",
     "gen:drop-chance-parity": "tsx scripts/gen-drop-chance-parity.ts",
     "gen:mod-icons": "node scripts/generate-mod-icons.mjs",
-    "cf-deploy": "pnpm build && wrangler deploy",
+    "cf-deploy": "pnpm build && node scripts/check-mod-signature.mjs && wrangler deploy",
     "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml",
     "cf-deploy:demo": "pnpm build && wrangler deploy --env demo"
   },

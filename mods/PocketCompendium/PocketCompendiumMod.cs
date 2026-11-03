@@ -8,6 +8,7 @@ using PocketCompendium.Core.Game;
 using PocketCompendium.Core.Text;
 using PocketCompendium.Core.Tracking;
 using PocketCompendium.Core.Ui;
+using PocketCompendium.Core.Updates;
 using PocketCompendium.Features.Alerts;
 using PocketCompendium.Features.BestiaryCountdown;
 using PocketCompendium.Features.BestiaryPages;
@@ -31,6 +32,8 @@ public sealed class PocketCompendiumMod : MelonMod
     private SettingsWindow _settings;
     private LayoutSettings _layout;
     private Tracker _tracker;
+    private UpdateService _updates;
+    private StartScreen _startScreen;
     private bool _worldLogged;
 
     public override void OnInitializeMelon()
@@ -54,10 +57,11 @@ public sealed class PocketCompendiumMod : MelonMod
 
         string build = ModBuild.Commit(typeof(PocketCompendiumMod).Assembly);
         _layout = new LayoutSettings();
-        _settings = new SettingsWindow(_features.Features, _layout, new AboutPage(Info.Version, build, _features.Features));
+        _updates = new UpdateService(Info.Version);
+        _startScreen = new StartScreen(_updates, _layout);
+        _settings = new SettingsWindow(_features.Features, _layout, new UpdatesPage(_updates), new AboutPage(Info.Version, build, _features.Features));
 
         LoggerInstance.Msg($"Pocket Compendium {Info.Version}, build {build}. Switched on: {_features.SwitchedOn()}. {_layout.SettingsKey.Value} opens the settings.");
-        UpdateCheck.Start();
     }
 
     public override void OnUpdate()
@@ -65,6 +69,8 @@ public sealed class PocketCompendiumMod : MelonMod
         // Errors logged in this frame carry its world.
         SessionRecord.Observe(GameAccess.NetworkActive);
         Overlay.Update();
+        _updates.Update();
+        _startScreen.Update();
 
         // The window updates first, so a click on it never reaches a panel below.
         _settings.Update();
@@ -76,7 +82,6 @@ public sealed class PocketCompendiumMod : MelonMod
         {
             LogWorldEntry();
             ShowStoppedNotices();
-            UpdateCheck.Update(GameAccess.LocalPlayer);
         }
     }
 
@@ -114,6 +119,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _features.StopAll();
         _tracker.EndSession();
         _settings.Destroy();
+        _startScreen.Destroy();
         Overlay.Dispose();
         Icons.Dispose();
         Shapes.Dispose();

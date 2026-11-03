@@ -6,7 +6,8 @@ namespace PocketCompendium.Core.Feedback;
 /// </summary>
 public static class ModLinks
 {
-    public const string Site = "https://ancient-kingdoms.compendiums.org";
+    // The address updates come from too, so the test below covers both.
+    public const string Site = AncientKingdomsMods.Shared.Updates.UpdateSite.Default;
     public const string Source = "https://github.com/glockyco/ancient-kingdoms-mods/tree/main/mods/PocketCompendium";
     public const string Discord = "https://discord.gg/8MkSWjXwab";
     public const string KoFi = "https://ko-fi.com/wowmuch";

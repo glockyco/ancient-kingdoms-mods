@@ -24,6 +24,7 @@ public class CommandRegistrationTests
                 "publish-mods",
                 "setup",
                 "update",
+                "update-key",
             },
             CommandCatalog.All.Select(e => e.Verb).OrderBy(v => v).ToArray());
 
@@ -67,6 +68,7 @@ public class CommandRegistrationTests
     [InlineData("publish-mods")]
     [InlineData("setup")]
     [InlineData("update")]
+    [InlineData("update-key")]
     public void AKnownVerbIsAcceptedByTheConfiguredApplication(string verb)
     {
         var app = new CommandApp();

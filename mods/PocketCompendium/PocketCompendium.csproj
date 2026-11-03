@@ -35,4 +35,12 @@
     <Compile Include="..\DataExporter\Skills\SkillClassification.cs" Link="Linked\SkillClassification.cs" />
     <Compile Include="..\Shared\ModBuild.cs" Link="Linked\ModBuild.cs" />
   </ItemGroup>
+  <Import Project="..\Shared\Updates\Updates.props" />
+  <ItemGroup>
+    <!-- Pocket Compendium writes its updater into the game itself, so the download stays one file. -->
+    <ProjectReference Include="..\PocketCompendiumUpdater\PocketCompendiumUpdater.csproj" ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="..\PocketCompendiumUpdateCore\PocketCompendiumUpdateCore.csproj" ReferenceOutputAssembly="false" Private="false" />
+    <EmbeddedResource Include="..\PocketCompendiumUpdater\bin\$(Configuration)\net6.0\PocketCompendiumUpdater.dll" LogicalName="PocketCompendium.Updater.Plugin" />
+    <EmbeddedResource Include="..\PocketCompendiumUpdateCore\bin\$(Configuration)\net6.0\PocketCompendium.UpdateCore.dll" LogicalName="PocketCompendium.Updater.Code" />
+  </ItemGroup>
 </Project>

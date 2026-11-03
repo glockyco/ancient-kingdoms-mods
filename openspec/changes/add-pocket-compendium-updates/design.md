@@ -28,17 +28,17 @@ Facts measured in the game under CrossOver on 2026-11-03:
 
 ### The updater is a fixed plugin that loads current code
 
-`PocketCompendiumUpdater.dll` in `Plugins` is a small MelonLoader plugin that never changes. At `OnPreInitialization` it reads `UserData/PocketCompendium/Updater/PocketCompendium.Updater.dll`, loads those bytes with `Assembly.Load(byte[])`, and calls its `Start()`. At `OnPreModsLoaded` it calls `BeforeMods()`. It catches every exception and does nothing when the file is missing. Pocket Compendium embeds both DLLs, writes the plugin when the player chooses "Install updates for me" or clicks Install, and rewrites the update code whenever its own copy differs.
+`PocketCompendiumUpdater.dll` in `Plugins` is a small MelonLoader plugin that never changes. At `OnPreInitialization` it reads `UserData/PocketCompendium/Updates/PocketCompendium.UpdateCore.dll`, loads those bytes with `Assembly.Load(byte[])`, and calls `PocketCompendium.UpdateCore.Startup.Start()`. At `OnPreModsLoaded` it calls `BeforeMods()`. It catches every exception and does nothing when the file is missing. Pocket Compendium embeds both DLLs, writes the plugin when the player chooses "Install updates for me" or clicks Install, and rewrites the update code whenever its own copy differs. `build-tool deploy` leaves both out of `Mods`, where MelonLoader would load the plugin as a mod.
 
 A loaded plugin's file is locked like the mod's, so a plugin that held the update code could never get a new key, list format or fix. Loading bytes leaves the file free for Pocket Compendium to replace. Alternatives: a single plugin, frozen at its first version, splitting Pocket Compendium into a loader and the rest, which moves Harmony and the Il2Cpp type injection into an assembly loaded from bytes, and a process that swaps the file after the game quits, which is fragile and looks like malware to virus scanners.
 
 ### The update code runs while MelonLoader prepares the game
 
-`Start()` reads the player's answer and, with "Install updates for me", begins the download on a background task. `BeforeMods()` waits for it at most 10 seconds, verifies the file, and moves it over `Mods/PocketCompendium.dll` before MelonLoader loads mods. MelonLoader 0.7.3 invokes `OnPreModsLoaded` and only then loads mods, so this wait holds the start without a race. A download still running finishes in the background and is put in place at the next start. A file put in place by an earlier Install click is moved the same way with any answer, because the player asked for it.
+`Start()` reads the player's answer and, with "Install updates for me", begins the download on a background task. `BeforeMods()` waits for it at most 10 seconds, verifies the file, and moves it over `Mods/PocketCompendium.dll` before MelonLoader loads mods. MelonLoader 0.7.3 invokes `OnPreModsLoaded` and only then loads mods, so this wait holds the start without a race. A download still running finishes in the background, because a request may take two minutes, and is put in place at the next start. A file put in place by an earlier Install click is moved the same way with any answer, because the player asked for it. A staged file whose SHA-256 changed, which names no higher version, or with no installed mod to replace, is deleted instead.
 
 ### Shared update logic without game types
 
-The list model and parser, the signature check, the version comparison, the change lines and the state file live in game-free sources under `mods/Shared/Updates/`. Pocket Compendium, the update code and `tests/PocketCompendium.Tests` compile them by link, as `ModBuild.cs` is shared today.
+The list model and parser, the signature check, the version comparison, the change lines, the stored answer, the staging and the handoff live in game-free sources under `mods/Shared/Updates/`, with `mods/Shared/MelonInfoReader.cs`, which also serves `publish-mods`. `Updates.props` compiles them by link into Pocket Compendium and the update code and embeds the public key, and `tests/PocketCompendium.Tests` links them too. The files are nullable-oblivious, because Pocket Compendium's game references hide the compiler's nullable attributes.
 
 ### RSA signs the list
 
@@ -54,19 +54,19 @@ Each mod in `website/mod-downloads.json` may list `releases`, newest first, each
 
 ### The updater leaves its result for the mod
 
-The update code writes `UserData/PocketCompendium/Update/state.json` with the verified list and the outcome of this start: up to date, installed with the version it replaced, downloading, or failed with a reason. Pocket Compendium reads it at start, shows the matching card or status, and downloads the list itself only when the update code did not run this start, such as at the first start or with "Only tell me about updates".
+The update code and Pocket Compendium run in one game process, so the update code publishes its outcome with `AppDomain.SetData`: up to date, installed, still downloading, downloaded, or failed with a reason, together with the verified list. The two assemblies each compile the shared code, so the report travels as framework types. Pocket Compendium reads it at start and every frame, which catches a download that finishes after mods loaded. It downloads the list itself only when the update code didn't check this start, such as at the first start, with "Only tell me about updates", or after the update code only moved a staged file.
 
-### One answer in the preferences
+### The answer in a file the updater can read
 
-The category `PocketCompendium_Updates` holds `Answer` (`Install`, `Tell` or `Off`), `Asked` and `LastVersion`, all hidden from the generic rows. `AnnouncedChecksum` and the chat line go. The update code reads `Answer` through MelonPreferences, which MelonLoader loads before plugins. If an entry created by a plugin conflicts with the mod creating it later, the mod copies the answer into `state.json` instead.
+`UserData/PocketCompendium/Updates/settings.json` holds the answer (`install`, `tell` or `off`) and the version that ran last, which decides the card after an update. A file rather than MelonPreferences, because the update code runs before MelonLoader loads the mod that would create the entries. No answer, or an unreadable file, brings the question back. 1.0.2's `PocketCompendium_Updates` entry `AnnouncedChecksum` is deleted from `MelonPreferences.cfg` at start, and the chat line is gone.
 
 ### The start screen and the Updates page
 
-The card and the question live on `Overlay.Windows` and show only while the `Start` scene's menu is open, so neither shows in character selection or the world. The question dims the menu behind it and takes the pointer, and it reads the arrow keys, the gamepad's directional buttons, Enter and the gamepad's confirm button through the Input System. Its line on changing the answer later names the settings key from Layout, not always F8. The Updates page is an `ISettingsContent` page between Layout and About with the status line, its Install or Download button and the three answers as rows, so the window's header switch, which only features have, stays as it is. About drops its update row. New icons come through `generate-mod-icons.mjs`: `refresh-cw` for the page, `circle-arrow-down`, `circle-check`, `sparkles` and `circle-alert` for the cards.
+The card and the question live on `Overlay.Windows` and show only while the `Start` scene's menu is open, so neither shows in character selection or the world. The question lays a layer over the menu that takes the pointer, turns off the game's own keyboard and gamepad navigation while it is open, and reads the arrow keys, the gamepad's directional buttons, Enter and the gamepad's confirm button through the Input System. Its line on changing the answer later names the settings key from Layout, not always F8. The Updates page is an `ISettingsContent` page between Layout and About with the status line, its Install or Download button and the three answers as rows, so the window's header switch, which only features have, stays as it is. About drops its update row. New icons come through `generate-mod-icons.mjs`: `refresh-cw` for the page, `circle-arrow-down`, `circle-check`, `sparkles` and `circle-alert` for the cards.
 
 ### Testing without the release key
 
-A build with `-p:UpdateTestKey=true` compiles a test public key and reads the website's address from `POCKET_COMPENDIUM_TEST_SITE`. In the game it runs against a local server that serves a list signed with the test key. Release builds have neither, so their address can't be redirected.
+A build with `-p:UpdateTest=true -p:UpdateKeyFile=<public key file>` compiles that test key and reads the website's address from `POCKET_COMPENDIUM_TEST_SITE`. In the game it runs against a local server that serves a list signed with the test key. Release builds have neither, so their address can't be redirected, and a test build without its key fails to build.
 
 ## Risks / Trade-offs
 

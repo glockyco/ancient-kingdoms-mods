@@ -58,7 +58,7 @@ public class PublishModsCommandTests
 
             var manifestPath = Path.Combine(tempRoot, "website", "static", "mods", "manifest.json");
             using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
-            Assert.Equal(1, manifest.RootElement.GetProperty("schemaVersion").GetInt32());
+            Assert.Equal(2, manifest.RootElement.GetProperty("schemaVersion").GetInt32());
             var mod = Assert.Single(manifest.RootElement.GetProperty("mods").EnumerateArray());
             Assert.Equal("better-bestiary", mod.GetProperty("id").GetString());
             Assert.Equal("Better Bestiary", mod.GetProperty("name").GetString());
@@ -67,6 +67,7 @@ public class PublishModsCommandTests
             Assert.Equal("/mods/BetterBestiary.dll", mod.GetProperty("downloadPath").GetString());
             Assert.Equal(new FileInfo(publishedDll).Length, mod.GetProperty("sizeBytes").GetInt64());
             Assert.Matches("^[0-9a-f]{64}$", mod.GetProperty("sha256").GetString());
+            Assert.False(mod.TryGetProperty("releases", out _));
         }
         finally
         {
@@ -186,7 +187,37 @@ public class PublishModsCommandTests
         }
     }
 
-    private static void WriteConfig(string root, string project, string id, string name)
+    [Fact]
+    public async Task KeepsCurrentDownloadsWhenNewestTagHasNoReleaseChanges()
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            WriteConfig(
+                tempRoot,
+                "BossTracker",
+                "boss-tracker",
+                "Boss Tracker",
+                """[{"version":"2.3.3","changes":["A change."]}]""");
+            var currentPath = WriteCurrentDownload(tempRoot, "BossTracker");
+            var runner = new FakeProcessRunner();
+            runner.Enqueue(new ProcessResult(0, "boss-tracker-v2.3.4\n", "", default));
+
+            var result = await new PublishModsCommand(tempRoot, runner)
+                .RunAsync(new PublishModsCommand.Settings(), TestContext.Current.CancellationToken);
+
+            Assert.NotEqual(0, result);
+            Assert.Single(runner.Calls);
+            Assert.Equal("current-dll", File.ReadAllText(currentPath));
+            Assert.Empty(Directory.GetDirectories(Path.Combine(tempRoot, "website", "static"), ".mods-*"));
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, recursive: true);
+        }
+    }
+
+    private static void WriteConfig(string root, string project, string id, string name, string releasesJson = "null")
     {
         var websiteDir = Path.Combine(root, "website");
         Directory.CreateDirectory(websiteDir);
@@ -200,7 +231,8 @@ public class PublishModsCommandTests
                   "id": "{{id}}",
                   "project": "{{project}}",
                   "name": "{{name}}",
-                  "description": "Test description."
+                  "description": "Test description.",
+                  "releases": {{releasesJson}}
                 }
               ]
             }

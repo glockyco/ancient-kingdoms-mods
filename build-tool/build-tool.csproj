@@ -21,6 +21,9 @@
       <_Parameter1>BuildTool.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
-
+  <ItemGroup>
+    <!-- The updater reads a staged DLL's version the same way publish-mods checks a tag's build. -->
+    <Compile Include="..\mods\Shared\MelonInfoReader.cs" Link="Linked\MelonInfoReader.cs" />
+  </ItemGroup>
 
 </Project>

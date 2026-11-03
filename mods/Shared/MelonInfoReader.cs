@@ -1,9 +1,11 @@
+// Oblivious, because Pocket Compendium's game references hide the compiler's nullable attributes.
+#nullable disable
 using System;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 
-namespace BuildTool.Commands;
+namespace AncientKingdomsMods.Shared;
 
 /// <summary>
 /// Reads the version a MelonLoader mod names in its <c>MelonInfo</c> attribute, which is the
@@ -14,7 +16,7 @@ internal static class MelonInfoReader
     // MelonInfoAttribute(Type type, string name, string version, string author, string downloadLink = null)
     private const int VersionArgument = 2;
 
-    public static string? Version(string path)
+    public static string Version(string path)
     {
         using var stream = File.OpenRead(path);
         using var pe = new PEReader(stream);
