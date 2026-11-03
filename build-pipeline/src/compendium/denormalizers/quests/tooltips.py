@@ -265,6 +265,9 @@ def run(conn: sqlite3.Connection) -> None:
         LEFT JOIN monsters m ON m.id = om.monster_id
         LEFT JOIN quest_objective_brews ob ON ob.id = o.id
         LEFT JOIN items b ON b.id = ob.item_id
+        -- A location objective is a map marker or a place to visit, which the
+        -- game's status placeholders never list.
+        WHERE o.kind IN ('item', 'monster', 'brew')
         ORDER BY o.quest_id, o.ordinal
     """):
         objectives_by_quest.setdefault(quest_id, []).append(

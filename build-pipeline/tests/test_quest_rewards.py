@@ -217,6 +217,23 @@ def test_epic_placeholders_show_what_remains_with_no_progress(conn):
     }
 
 
+def test_tracked_map_markers_do_not_become_items_to_get(conn):
+    add_classes(conn, ("Wizard",))
+    conn.execute(
+        "INSERT INTO items (id, name, travel_zone_id) VALUES ('ore', 'Iron Ore', NULL)"
+    )
+    add_quest(conn, quest_type="gather_inventory", tooltip="{GATHERSTATUS}")
+    add_objective(conn, "quest", 0, "ore", 3, "inventory_primary")
+    conn.execute(
+        """INSERT INTO quest_objectives (id, quest_id, ordinal, kind, role, amount)
+        VALUES ('marker', 'quest', 1, 'location', 'tracking_location', NULL)"""
+    )
+
+    tooltips.run(conn)
+
+    assert tooltips_for(conn) == ({"_default": "Get 3 Iron Ore"},) * 2
+
+
 def test_empty_classes_cannot_render_quest_tooltips(conn):
     add_quest(conn)
     with pytest.raises(ValueError, match="requires playable classes"):
