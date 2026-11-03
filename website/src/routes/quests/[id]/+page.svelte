@@ -28,6 +28,12 @@
 
   let { data } = $props();
 
+  // A label with its value in a column of its own, so a value that wraps on a
+  // phone continues under its first line instead of under the label.
+  const FACT_ROW = "grid grid-cols-[4rem_minmax(0,1fr)] items-baseline gap-x-2";
+  const FACT_LABEL = "text-sm text-muted-foreground";
+  const FACT_VALUE = "flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1";
+
   // Check if quest has any requirements (start conditions)
   const hasRequirements = $derived(
     data.quest.race_requirements.length > 0 ||
@@ -273,9 +279,9 @@
           </h2>
           <div class="bg-muted/30 rounded-md border p-4 space-y-3">
             {#if data.quest.race_requirements.length > 0}
-              <div class="flex items-center gap-2">
-                <span class="text-sm text-muted-foreground w-16">Race:</span>
-                <span class="flex flex-wrap gap-1">
+              <div class={FACT_ROW}>
+                <span class={FACT_LABEL}>Race:</span>
+                <span class={FACT_VALUE}>
                   {#each data.quest.race_requirements as race (race)}
                     <span
                       class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
@@ -287,35 +293,35 @@
               </div>
             {/if}
             {#if data.quest.class_requirements.length > 0}
-              <div class="flex items-center gap-2">
-                <span class="text-sm text-muted-foreground w-16">Class:</span>
-                <ClassPills classes={data.quest.class_requirements} />
+              <div class={FACT_ROW}>
+                <span class={FACT_LABEL}>Class:</span>
+                <span class={FACT_VALUE}>
+                  <ClassPills classes={data.quest.class_requirements} />
+                </span>
               </div>
             {/if}
             {#if data.quest.faction_requirements.length > 0}
               {#each data.quest.faction_requirements as faction (faction.faction)}
-                <div class="flex items-center gap-2">
-                  <span class="text-sm text-muted-foreground w-16"
-                    >Faction:</span
-                  >
-                  <span
-                    ><FactionLink
+                <div class={FACT_ROW}>
+                  <span class={FACT_LABEL}>Faction:</span>
+                  <span class={FACT_VALUE}>
+                    <FactionLink
                       name={faction.faction}
                       id={data.factionIds[faction.faction]}
-                    /></span
-                  >
-                  {#if faction.tier_name}
-                    <span class="text-purple-600 dark:text-purple-400">
-                      {faction.tier_name}
-                      <span class="text-muted-foreground font-normal"
+                    />
+                    {#if faction.tier_name}
+                      <span class="text-purple-600 dark:text-purple-400">
+                        {faction.tier_name}
+                        <span class="text-muted-foreground font-normal"
+                          >({formatNumber(faction.faction_value)})</span
+                        >
+                      </span>
+                    {:else}
+                      <span class="text-muted-foreground"
                         >({formatNumber(faction.faction_value)})</span
                       >
-                    </span>
-                  {:else}
-                    <span class="text-muted-foreground"
-                      >({formatNumber(faction.faction_value)})</span
-                    >
-                  {/if}
+                    {/if}
+                  </span>
                 </div>
               {/each}
             {/if}
@@ -331,52 +337,56 @@
             NPCs
           </h2>
           <div class="bg-muted/30 rounded-md border p-4 space-y-3">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="text-sm text-muted-foreground w-16">Start:</span>
-              <a
-                href="/npcs/{data.startNpc.id}"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                {data.startNpc.name}
-              </a>
-              {#if data.npcSeasons[data.startNpc.id]}
-                <SeasonLabel season={data.npcSeasons[data.startNpc.id]!} />
-              {/if}
-              {#if data.startNpc.zone_name}
-                <span class="text-muted-foreground">
-                  in
-                  <a
-                    href="/zones/{data.startNpc.zone_id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {data.startNpc.zone_name}
-                  </a>
-                </span>
-              {/if}
-            </div>
-            {#if data.endNpc}
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="text-sm text-muted-foreground w-16">End:</span>
+            <div class={FACT_ROW}>
+              <span class={FACT_LABEL}>Start:</span>
+              <span class={FACT_VALUE}>
                 <a
-                  href="/npcs/{data.endNpc.id}"
+                  href="/npcs/{data.startNpc.id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  {data.endNpc.name}
+                  {data.startNpc.name}
                 </a>
-                {#if data.npcSeasons[data.endNpc.id]}
-                  <SeasonLabel season={data.npcSeasons[data.endNpc.id]!} />
+                {#if data.npcSeasons[data.startNpc.id]}
+                  <SeasonLabel season={data.npcSeasons[data.startNpc.id]!} />
                 {/if}
-                {#if data.endNpc.zone_name}
+                {#if data.startNpc.zone_name}
                   <span class="text-muted-foreground">
                     in
                     <a
-                      href="/zones/{data.endNpc.zone_id}"
+                      href="/zones/{data.startNpc.zone_id}"
                       class="text-blue-600 dark:text-blue-400 hover:underline"
                     >
-                      {data.endNpc.zone_name}
+                      {data.startNpc.zone_name}
                     </a>
                   </span>
                 {/if}
+              </span>
+            </div>
+            {#if data.endNpc}
+              <div class={FACT_ROW}>
+                <span class={FACT_LABEL}>End:</span>
+                <span class={FACT_VALUE}>
+                  <a
+                    href="/npcs/{data.endNpc.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {data.endNpc.name}
+                  </a>
+                  {#if data.npcSeasons[data.endNpc.id]}
+                    <SeasonLabel season={data.npcSeasons[data.endNpc.id]!} />
+                  {/if}
+                  {#if data.endNpc.zone_name}
+                    <span class="text-muted-foreground">
+                      in
+                      <a
+                        href="/zones/{data.endNpc.zone_id}"
+                        class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        {data.endNpc.zone_name}
+                      </a>
+                    </span>
+                  {/if}
+                </span>
               </div>
             {/if}
           </div>
