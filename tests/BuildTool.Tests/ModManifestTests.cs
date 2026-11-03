@@ -15,19 +15,23 @@ public sealed class ModManifestTests : IDisposable
     private readonly string _root = Directory.CreateTempSubdirectory().FullName;
 
     [Theory]
-    [InlineData("""[{"version":"1.2","changes":["Fix."]}]""")]
-    [InlineData("""[{"version":"1.2.3-rc","changes":["Fix."]}]""")]
-    [InlineData("""[{"version":"01.2.3","changes":["Fix."]}]""")]
-    [InlineData("""[{"version":"1.2.3.4","changes":["Fix."]}]""")]
-    [InlineData("""[{"version":"1.2.3","changes":["Fix."]},{"version":"1.2.10","changes":["Fix."]}]""")]
-    [InlineData("""[{"version":"1.2.3","changes":["Fix."]},{"version":"1.2.3","changes":["Fix."]}]""")]
-    [InlineData("""[{"version":"1.2.3","changes":[]}]""")]
-    [InlineData("""[{"version":"1.2.3","changes":[""]}]""")]
-    [InlineData("""[{"version":"1.2.3","changes":["  "]}]""")]
-    [InlineData("""[{"version":"1.2.3","changes":[null]}]""")]
-    [InlineData("""[{"version":"1.2.3","changes":null}]""")]
-    [InlineData("""[{"version":null,"changes":["Fix."]}]""")]
+    [InlineData("""[{"version":"1.2","changes":["Fix."],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"1.2.3-rc","changes":["Fix."],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"01.2.3","changes":["Fix."],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"1.2.3.4","changes":["Fix."],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":["Fix."],"date":"2026-01-01"},{"version":"1.2.10","changes":["Fix."],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":["Fix."],"date":"2026-01-01"},{"version":"1.2.3","changes":["Fix."],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":[],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":[""],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":["  "],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":[null],"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":null,"date":"2026-01-01"}]""")]
+    [InlineData("""[{"version":null,"changes":["Fix."],"date":"2026-01-01"}]""")]
     [InlineData("[null]")]
+    [InlineData("""[{"version":"1.2.3","changes":["Fix."]}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":["Fix."],"date":"3 November 2026"}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":["Fix."],"date":"2026-02-30"}]""")]
+    [InlineData("""[{"version":"1.2.3","changes":["Fix."],"date":"2026-01-01"},{"version":"1.2.2","changes":["Fix."],"date":"2026-01-02"}]""")]
     public void RejectsInvalidRegistryReleases(string releases)
     {
         Assert.Throws<InvalidDataException>(() => ParseConfig(Registry(releases)));
@@ -38,9 +42,9 @@ public sealed class ModManifestTests : IDisposable
     {
         var mod = Assert.Single(ParseConfig(Registry("""
             [
-              {"version":"2.3.10","changes":["Future change."]},
-              {"version":"2.3.4","changes":["First fix.","Second fix."]},
-              {"version":"2.2.0","changes":["Older fix."]}
+              {"version":"2.3.10","changes":["Future change."],"date":"2026-01-01"},
+              {"version":"2.3.4","changes":["First fix.","Second fix."],"date":"2026-01-01"},
+              {"version":"2.2.0","changes":["Older fix."],"date":"2026-01-01"}
             ]
             """)).Mods);
         var releases = SelectReleases(mod, "2.3.4");
@@ -64,7 +68,7 @@ public sealed class ModManifestTests : IDisposable
         var publishedReleases = entry.GetProperty("releases").EnumerateArray().ToArray();
         Assert.Equal(new[] { "2.3.4", "2.2.0" }, publishedReleases.Select(release => release.GetProperty("version").GetString()).ToArray());
         Assert.Equal(new[] { "First fix.", "Second fix." }, publishedReleases[0].GetProperty("changes").EnumerateArray().Select(change => change.GetString()).ToArray());
-        Assert.Equal(new[] { "version", "changes" }, publishedReleases[0].EnumerateObject().Select(property => property.Name).ToArray());
+        Assert.Equal(new[] { "version", "changes", "date" }, publishedReleases[0].EnumerateObject().Select(property => property.Name).ToArray());
     }
 
     [Fact]
@@ -84,7 +88,7 @@ public sealed class ModManifestTests : IDisposable
 
     [Theory]
     [InlineData("[]")]
-    [InlineData("""[{"version":"1.0.0","changes":["A fix."]}]""")]
+    [InlineData("""[{"version":"1.0.0","changes":["A fix."],"date":"2026-01-01"}]""")]
     public void RequiresChangesForTheNewestTagOnceReleasesAreListed(string releases)
     {
         var mod = Assert.Single(ParseConfig(Registry(releases)).Mods);

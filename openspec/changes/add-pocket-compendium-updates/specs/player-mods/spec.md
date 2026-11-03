@@ -45,3 +45,18 @@ A deploy SHALL publish the mod list together with a signature made with the rele
 
 - **WHEN** `pnpm dev` runs without the key
 - **THEN** the site builds, and the mod list it serves has no signature
+
+### Requirement: The website shows Pocket Compendium's changelog
+
+The mods page SHALL link a changelog page beside the version it names. That page SHALL list every release of Pocket Compendium in the mod list, newest first, each with its version, its date and its changes, in the words the mod shows. A publish SHALL fail, keeping the current downloads, when a listed release has no date or is dated after a newer one.
+
+#### Scenario: Reading the changelog
+
+- **WHEN** a player follows "Changelog" beside "Version 1.1.0" on the mods page
+- **THEN** the page lists 1.1.0, 1.0.2, 1.0.1 and 1.0.0 with their dates and changes, 1.1.0 first
+
+#### Scenario: A release without a date
+
+- **WHEN** a release in the registry has no date
+- **THEN** the publish fails and the downloads published before stay in place
+

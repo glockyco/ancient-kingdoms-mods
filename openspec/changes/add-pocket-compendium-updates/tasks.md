@@ -40,6 +40,12 @@
 - [x] 6.3 Ask for the Windows desktop to be started, check over Tailscale and SSH that it has the game with MelonLoader and a signed-in desktop to start it in, then run the steps of 3.2 there with a test-key build, and record the results in the change
   - Windows 10 desktop, MelonLoader 0.7.3 from the release zip: with "Install updates for me", 1.0.2 wrote the plugin and update code, and at the next start the update code downloaded 1.0.3, verified it with RSA and moved it into place before "Loading Mods...", so the game ran 1.0.3. A list changed after signing installed nothing and requested no DLL.
 
+## 7. Changelog on the website
+
+- [x] 7.1 Require a date for each release in the registry and copy it into the mod list, and verify with BuildTool tests for a missing, malformed, impossible and out-of-order date
+- [x] 7.2 Add the changelog page linked beside the version on the mods page, read from the mod list, with the releases before 1.1.0, and verify on the dev server at desktop and phone width that the link opens the page and every release shows with its date
+- [x] 7.3 Add the page to the sitemap and the date to the release steps in `CONTRIBUTING.md`, and verify that the documentation check passes
+
 ## Workflow follow-up
 
 - Release the first version with updates after approval: create the key and store it in Bitwarden, set the version, add its changes to the registry, tag it, deploy with the key, and check the live list's signature.

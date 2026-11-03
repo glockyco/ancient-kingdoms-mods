@@ -198,7 +198,7 @@ public class PublishModsCommandTests
                 "BossTracker",
                 "boss-tracker",
                 "Boss Tracker",
-                """[{"version":"2.3.3","changes":["A change."]}]""");
+                """[{"version":"2.3.3","changes":["A change."],"date":"2026-01-01"}]""");
             var currentPath = WriteCurrentDownload(tempRoot, "BossTracker");
             var runner = new FakeProcessRunner();
             runner.Enqueue(new ProcessResult(0, "boss-tracker-v2.3.4\n", "", default));

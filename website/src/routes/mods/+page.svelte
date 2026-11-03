@@ -64,7 +64,12 @@
         <h1 class="text-3xl font-bold sm:text-4xl lg:text-3xl">
           Pocket Compendium
         </h1>
-        <p class="text-lg text-muted-foreground">Version {data.version}</p>
+        <p class="text-lg text-muted-foreground">
+          Version {data.version}<span class="mx-2" aria-hidden="true">·</span><a
+            href="/mods/changelog"
+            class="font-medium text-brand-gold hover:underline">Changelog</a
+          >
+        </p>
         <p class="text-lg text-pretty text-muted-foreground">
           A mod for Ancient Kingdoms that shows when bosses, elites, and fabled
           monsters spawn, where to find them, and their skill cooldowns in a

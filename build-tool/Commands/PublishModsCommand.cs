@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -327,6 +328,7 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
             if (mod.Releases is not null)
             {
                 Version? previous = null;
+                DateOnly? previousDate = null;
                 foreach (var release in mod.Releases)
                 {
                     if (release is null)
@@ -336,7 +338,13 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                         throw new InvalidDataException($"Mod '{mod.Id}' releases must have unique versions in descending order.");
                     if (release.Changes is not { Count: > 0 } || release.Changes.Any(string.IsNullOrWhiteSpace))
                         throw new InvalidDataException($"Mod '{mod.Id}' release {release.Version} needs at least one non-blank change.");
+                    // The website's changelog shows the date, so a newer release can't be dated before an older one.
+                    if (release.Date is null || !DateOnly.TryParseExact(release.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                        throw new InvalidDataException($"Mod '{mod.Id}' release {release.Version} needs a date as YYYY-MM-DD.");
+                    if (previousDate is not null && date > previousDate)
+                        throw new InvalidDataException($"Mod '{mod.Id}' release {release.Version} is dated after the newer release above it.");
                     previous = version;
+                    previousDate = date;
                 }
             }
         }
@@ -395,7 +403,7 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
         string Description,
         List<RegistryRelease>? Releases = null);
 
-    internal sealed record RegistryRelease(string Version, List<string> Changes);
+    internal sealed record RegistryRelease(string Version, List<string> Changes, string? Date = null);
 
     private sealed record Release(string Tag, string Version);
 

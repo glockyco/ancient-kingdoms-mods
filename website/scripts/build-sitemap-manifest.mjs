@@ -691,6 +691,10 @@ export async function computeHashes() {
       source: fileHash("src/routes/mods/install/+page.svelte"),
       steps: fileHash("../mods/INSTALL.md"),
     });
+    addHash("/mods/changelog", {
+      source: fileHash("src/routes/mods/changelog/+page.svelte"),
+      releases: fileHash("mod-downloads.json"),
+    });
     addHash("/about", {
       source: fileHash("src/routes/about/+page.svelte"),
     });

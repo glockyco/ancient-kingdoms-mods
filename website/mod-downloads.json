@@ -15,9 +15,31 @@
       "releases": [
         {
           "version": "1.1.0",
+          "date": "2026-11-03",
           "changes": [
             "Asks at first start whether to install new versions by itself.",
             "Shows new versions on the start screen instead of in chat."
+          ]
+        },
+        {
+          "version": "1.0.2",
+          "date": "2026-11-03",
+          "changes": ["Fixes the stutter while walking."]
+        },
+        {
+          "version": "1.0.1",
+          "date": "2026-11-02",
+          "changes": [
+            "Fixes Map pins and the Bestiary countdown stopping with an error after you return to the main menu and enter a world again.",
+            "Fixes the Skills window no longer opening with Bestiary pages after you return to the main menu.",
+            "Problem reports include every error, with where in the mod it happened."
+          ]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-11-01",
+          "changes": [
+            "First release. It replaces BossTracker, BossSkillTracker and BetterBestiary."
           ]
         }
       ]
