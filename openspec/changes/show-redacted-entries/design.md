@@ -26,7 +26,7 @@
 
 ### One placeholder component
 
-`RedactedEntry` renders a dashed 28 px slot, the label "Redacted <kind>" in the muted colour and the hover text "Deliberately left out of the compendium." through `title`, as `SeasonLabel` and `MonsterTypeIcon` give their hover text. The slot keeps a placeholder's name aligned with item names in tables. The kind is the entity kind the reference points at: item, book, monster, recipe, quest, class, skill, race, faction or location. A key is an item. Server code that builds text, such as a game tooltip or a search description, uses the same label.
+`RedactedEntry` renders a dashed 28 px slot, the label "Redacted <kind>" in the muted colour and the hover text "Left out of the compendium at the developers' request." through `title`, as `SeasonLabel` and `MonsterTypeIcon` give their hover text. The slot keeps a placeholder's name aligned with item names in tables. The kind is the entity kind the reference points at: item, book, monster, recipe, quest, class, skill, race, faction or location. A key is an item. Server code that builds text, such as a game tooltip or a search description, uses the same label.
 
 Alternatives: the game's black square and "???", which needs a second name for the same thing in text; a grey bar, which reads as a table that is still loading; the word alone, which breaks the name column in tables.
 

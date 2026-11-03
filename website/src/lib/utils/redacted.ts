@@ -14,7 +14,8 @@ export type RedactedKind =
   | "faction"
   | "location";
 
-export const REDACTED_HOVER = "Deliberately left out of the compendium.";
+export const REDACTED_HOVER =
+  "Left out of the compendium at the developers' request.";
 
 export function redactedLabel(kind: RedactedKind): string {
   return `Redacted ${kind}`;

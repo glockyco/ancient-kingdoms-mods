@@ -6,7 +6,7 @@ The compendium removes items the game flags `ignore_journal`, recipes the develo
 
 ## What Changes
 
-- Every entry that refers to redacted content stays on the page as a placeholder: a dashed empty icon slot and the grey label "Redacted item", "Redacted monster", "Redacted recipe" and so on, with the hover text "Deliberately left out of the compendium." The label replaces every "Unpublished" label on the site and in game tooltips.
+- Every entry that refers to redacted content stays on the page as a placeholder: a dashed empty icon slot and the grey label "Redacted item", "Redacted monster", "Redacted recipe" and so on, with the hover text "Left out of the compendium at the developers' request." The label replaces every "Unpublished" label on the site and in game tooltips.
 - A quest lists a redacted objective with its kind and amount, in its Objectives, its search description and its map popup.
 - A monster's loot table lists a redacted drop with its chance, and a redacted drop no longer makes the monster's other chances unknown.
 - An item whose recipe is redacted says it is crafted from a redacted recipe, and its mold and materials say they are used in a redacted recipe, without the product or the amounts.

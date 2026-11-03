@@ -45,7 +45,7 @@ A published entry that refers to redacted content SHALL stay on its page as a pl
 
 ### Requirement: A placeholder names the kind of redacted content
 
-A placeholder SHALL read "Redacted" followed by the kind of content, such as "Redacted item", "Redacted monster" or "Redacted recipe". On a page it SHALL show a dashed empty slot where an icon would stand and carry the hover text "Deliberately left out of the compendium." Text without room for the slot, such as a game tooltip or a search description, SHALL use the same words.
+A placeholder SHALL read "Redacted" followed by the kind of content, such as "Redacted item", "Redacted monster" or "Redacted recipe". On a page it SHALL show a dashed empty slot where an icon would stand and carry the hover text "Left out of the compendium at the developers' request." Text without room for the slot, such as a game tooltip or a search description, SHALL use the same words.
 
 #### Scenario: A loot row and a tooltip line
 
