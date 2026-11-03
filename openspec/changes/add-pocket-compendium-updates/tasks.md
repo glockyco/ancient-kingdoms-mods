@@ -36,7 +36,8 @@
 
 - [x] 6.1 Show every new text in the built interface in Plannotator, apply the answers, and verify the applied texts in the game
 - [x] 6.2 Run every test project and the website's checks, and verify that they pass
-- [ ] 6.3 Ask for the Windows desktop to be started, check over Tailscale and SSH that it has the game with MelonLoader and a signed-in desktop to start it in, then run the steps of 3.2 there with a test-key build, and record the results in the change
+- [x] 6.3 Ask for the Windows desktop to be started, check over Tailscale and SSH that it has the game with MelonLoader and a signed-in desktop to start it in, then run the steps of 3.2 there with a test-key build, and record the results in the change
+  - Windows 10 desktop, MelonLoader 0.7.3 from the release zip: with "Install updates for me", 1.0.2 wrote the plugin and update code, and at the next start the update code downloaded 1.0.3, verified it with RSA and moved it into place before "Loading Mods...", so the game ran 1.0.3. A list changed after signing installed nothing and requested no DLL.
 
 ## Workflow follow-up
 
