@@ -22,7 +22,7 @@ Copy PocketCompendium.dll into the Mods folder. The zip already put FieldDefault
 
 ## Start the game
 
-The first start takes about a minute longer, and so does the first start after a game update. A MelonLoader window opens next to the game. In the world, the boss list appears on its own, and F8 opens Pocket Compendium's settings.
+The first start takes about a minute longer, and so does the first start after a game update. A MelonLoader window opens next to the game. On the start screen, Pocket Compendium asks once whether to install its updates for you. In the world, the boss list appears on its own, and F8 opens Pocket Compendium's settings.
 
 ---
 

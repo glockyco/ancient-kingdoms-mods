@@ -30,11 +30,11 @@
 
 ## 5. Player documentation
 
-- [ ] 5.1 Update the player documentation that describes installing or removing Pocket Compendium for the question at first start and the updater in `Plugins`, with wording chosen in a comparison, and verify that the documentation check passes
+- [x] 5.1 Update the player documentation that describes installing or removing Pocket Compendium for the question at first start and the updater in `Plugins`, with wording chosen in a comparison, and verify that the documentation check passes
 
 ## 6. Integration
 
-- [ ] 6.1 Show every new text in the built interface in Plannotator, apply the answers, and verify the applied texts in the game
+- [x] 6.1 Show every new text in the built interface in Plannotator, apply the answers, and verify the applied texts in the game
 - [x] 6.2 Run every test project and the website's checks, and verify that they pass
 - [ ] 6.3 Ask for the Windows desktop to be started, check over Tailscale and SSH that it has the game with MelonLoader and a signed-in desktop to start it in, then run the steps of 3.2 there with a test-key build, and record the results in the change
 
