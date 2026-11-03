@@ -21,7 +21,6 @@ namespace PocketCompendium.Core.Tracking;
 public sealed class Tracker
 {
     private const float RefreshSeconds = 0.5f;
-    private const float CloneScanSeconds = 1f;
     private const float SaveSeconds = 10f;
 
     // A client learns the server's clock offset shortly after its player spawns. A server whose
@@ -40,7 +39,6 @@ public sealed class Tracker
     private bool _memoryChanged;
     private float _sessionStart;
     private float _nextRefresh;
-    private float _nextCloneScan;
     private float _nextSave;
     private bool _patched;
 
@@ -145,6 +143,14 @@ public sealed class Tracker
         Ready = false;
     }
 
+    /// <summary>Notes an altar or placeholder spawn that the game started.</summary>
+    internal void OnMonsterStarted(Monster monster)
+    {
+        if (_world == null) return;
+        var tracked = Find(Catalogue.KeyOf(monster));
+        if (tracked != null && tracked.Placed == null) tracked.AddSpawn(monster);
+    }
+
     /// <summary>Records a dedicated server's info message if it is a kill notice.</summary>
     internal void OnInfoMessage(string message)
     {
@@ -179,6 +185,7 @@ public sealed class Tracker
         {
             Patching.Apply(typeof(KillNoticePatch));
             Patching.Apply(typeof(RenewalNoticePatch));
+            Patching.Apply(typeof(MonsterStartPatch));
             _patched = true;
         }
 
@@ -189,11 +196,11 @@ public sealed class Tracker
         _memoryChanged = false;
         _sessionStart = Time.unscaledTime;
         _nextRefresh = 0f;
-        _nextCloneScan = 0f;
         _nextSave = Time.unscaledTime + SaveSeconds;
 
         _monsters.AddRange(Catalogue.Build());
         foreach (var monster in _monsters) _byKey[monster.Key] = monster;
+        FindRunningSpawns();
     }
 
     private void Refresh(float time)
@@ -206,14 +213,11 @@ public sealed class Tracker
         Now = GameAccess.ServerTime(network);
         Ready = true;
 
-        if (time >= _nextCloneScan)
-        {
-            _nextCloneScan = time + CloneScanSeconds;
-            ScanClones();
-        }
-
         foreach (var monster in _monsters)
+        {
+            if (monster.Placed == null) monster.PickLive();
             monster.State = _host ? ResolveHost(monster, Now) : ResolveClient(monster, Now);
+        }
 
         Version++;
     }
@@ -324,21 +328,15 @@ public sealed class Tracker
                 alive++;
     }
 
-    // Altar and placeholder spawns are new objects each time, found among the active monsters.
-    private void ScanClones()
+    // Spawns that the game started before this session, such as a living altar boss on a server the
+    // player joins, are searched for once. Later ones arrive through MonsterStartPatch, because the
+    // search stalls the game for a frame.
+    private void FindRunningSpawns()
     {
-        foreach (var monster in _monsters)
-            if (monster.Placed == null)
-                monster.Live = null;
-
-        foreach (var found in UnityEngine.Object.FindObjectsOfType(Il2CppType.Of<Monster>()))
+        foreach (var found in UnityEngine.Object.FindObjectsByType(Il2CppType.Of<Monster>(), FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            var live = found.TryCast<Monster>();
-            if (live == null) continue;
-
-            var monster = Find(Catalogue.KeyOf(live));
-            if (monster == null || monster.Placed != null) continue;
-            if (monster.Live == null || live.health.current > 0) monster.Live = live;
+            var monster = found.TryCast<Monster>();
+            if (monster != null) OnMonsterStarted(monster);
         }
     }
 

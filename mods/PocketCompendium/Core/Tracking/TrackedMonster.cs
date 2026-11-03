@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Il2Cpp;
 using PocketCompendium.Core.Game;
 using UnityEngine;
@@ -70,7 +71,32 @@ public sealed class TrackedMonster
     internal Monster[] Guards { get; }
 
     /// <summary>A running altar or placeholder spawn of this monster.</summary>
-    internal Monster Live { get; set; }
+    internal Monster Live { get; private set; }
+
+    // Altar and placeholder spawns of this monster that the game started and has not destroyed.
+    private readonly List<Monster> _spawns = new();
+
+    internal void AddSpawn(Monster spawn)
+    {
+        if (!_spawns.Contains(spawn)) _spawns.Add(spawn);
+    }
+
+    /// <summary>
+    /// Picks the spawn the tracker reads: the last living one in the scene, otherwise the first one
+    /// in the scene. Spawns the game destroyed are dropped.
+    /// </summary>
+    internal void PickLive()
+    {
+        Live = null;
+        for (int index = _spawns.Count - 1; index >= 0; index--)
+            if (_spawns[index] == null) _spawns.RemoveAt(index);
+
+        foreach (var spawn in _spawns)
+        {
+            if (!spawn.gameObject.activeInHierarchy) continue;
+            if (Live == null || spawn.health.current > 0) Live = spawn;
+        }
+    }
 
     // What the host saw at its last refresh, to notice kills and failed rolls.
     internal bool WasAlive { get; set; }
