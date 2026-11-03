@@ -502,6 +502,8 @@ export type Repeatability =
     };
 export type ProbabilityTarget =
   | { kind: "item"; itemId: string; delivery: Delivery }
+  /** A drop whose item is redacted, named by its first entry's ordinal in the pool. */
+  | { kind: "withheld_item"; ordinal: number; delivery: Delivery }
   | { kind: "gold"; delivery: "inventory" | "corpse" };
 export interface ProbabilityAssumptions {
   readonly scenario: "baseline" | "entered";

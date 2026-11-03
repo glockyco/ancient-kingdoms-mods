@@ -2920,6 +2920,81 @@ describe("remaining canonical method and definition families", () => {
       f.db.close();
     }
   });
+
+  it("keeps every chance of a pool with a withheld quest drop and gives the drop its own", async () => {
+    const f = fixture();
+    try {
+      const pool = addKill(f, "boss", { is_boss: 1 });
+      f.db
+        .prepare(
+          "UPDATE acquisition_methods SET rule_id='boss_loot' WHERE id='boss'",
+        )
+        .run();
+      poolEntry(f, pool, 0, "iron", {
+        probability: 0.2,
+        cap: 1,
+        counts_equipment: 1,
+        guaranteed_equipment_candidate: 1,
+      });
+      poolEntry(f, pool, 1, "copper", {
+        probability: 0.1,
+        cap: 1,
+        quest_gate: "public_need",
+      });
+      for (const [ordinal, item] of ["iron", "copper"].entries())
+        f.output(`boss-${item}`, "boss", item, 1, {
+          ordinal,
+          yield_rule: "pool",
+          amount_min: null,
+          amount_max: null,
+          delivery: "corpse",
+        });
+      const scenario = {
+        assumptions: {
+          ...BASELINE_ASSUMPTIONS,
+          questNeed: "specified" as const,
+        },
+        neededQuestItemIds: new Set(["iron"]),
+      };
+      const chances = async () => {
+        const model = await f.model({ kind: "items", itemIds: ["iron"] });
+        return calculateMethodProbabilities(
+          model.rows,
+          model.methods.get("boss")!,
+          model.methodViews.get("boss")!.detail,
+          scenario,
+        );
+      };
+      const iron = (await chances()).find(
+        (result) =>
+          result.target.kind === "item" && result.target.itemId === "iron",
+      )!.probability;
+      expect(iron).toBeGreaterThan(0.2);
+      f.db
+        .prepare(
+          "UPDATE loot_pool_entries SET item_id=NULL,withheld=1,quest_gate='withheld_need' WHERE pool_id=? AND ordinal=1",
+        )
+        .run(pool);
+      f.db
+        .prepare("DELETE FROM acquisition_outputs WHERE id='boss-copper'")
+        .run();
+      const results = await chances();
+      expect(
+        results.find(
+          (result) =>
+            result.target.kind === "item" && result.target.itemId === "iron",
+        )!.probability,
+      ).toEqual(iron);
+      expect(
+        results.find((result) => result.target.kind === "withheld_item"),
+      ).toMatchObject({
+        target: { kind: "withheld_item", ordinal: 1 },
+        probability: expect.closeTo(0.1, 12),
+      });
+    } finally {
+      f.db.close();
+    }
+  });
 });
 
 describe("method-local gather primary control flow", () => {

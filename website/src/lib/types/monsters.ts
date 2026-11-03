@@ -22,6 +22,8 @@ export interface MonsterDrop {
   note: string | null;
   altar_id?: string;
   altar_reward_tier?: AltarRewardTier;
+  /** The item is redacted. The row keeps its chance and shows a placeholder. */
+  redacted?: true;
 }
 
 /**

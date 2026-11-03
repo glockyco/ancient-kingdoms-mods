@@ -139,8 +139,10 @@ export const load: PageServerLoad = async ({
       const bossDrops: AltarBossDrop[] = [
         ...new Map(
           dropsRaw
+            // The altar page lists no boss drops, only their icons.
             .filter(
               (drop) =>
+                !drop.redacted &&
                 !rewardTiers.some(
                   (tier) => altarRaw[`reward_${tier}_id`] === drop.item_id,
                 ),

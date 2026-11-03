@@ -14,6 +14,7 @@
   import EntityCombatSummary from "$lib/components/EntityCombatSummary.svelte";
   import { distinctSubzoneName } from "$lib/utils/format";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import RedactedEntry from "$lib/components/RedactedEntry.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import AchievementReward from "$lib/components/AchievementReward.svelte";
@@ -576,16 +577,20 @@
       <BookOpen class="h-4 w-4 text-amber-500" />
     {/if}
   {:else if cell.column.id === "item_name"}
-    <ItemLink
-      itemId={row.original.item_id}
-      itemName={row.original.item_name}
-      quality={row.original.quality}
-      tooltipHtml={row.original.tooltip_html}
-      imageAvailable={row.original.visual_public_path}
-      fallback={Package}
-      variant={row.original.visual_public_path ? "reference" : "text"}
-      imageKind="icon"
-    />
+    {#if row.original.redacted}
+      <RedactedEntry kind="item" />
+    {:else}
+      <ItemLink
+        itemId={row.original.item_id}
+        itemName={row.original.item_name}
+        quality={row.original.quality}
+        tooltipHtml={row.original.tooltip_html}
+        imageAvailable={row.original.visual_public_path}
+        fallback={Package}
+        variant={row.original.visual_public_path ? "reference" : "text"}
+        imageKind="icon"
+      />
+    {/if}
   {:else if cell.column.id === "note"}
     <span class="text-muted-foreground">{row.original.note ?? ""}</span>
   {:else if cell.column.id === "rate"}

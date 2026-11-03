@@ -908,7 +908,7 @@ export const load: PageServerLoad = async ({
       : null;
   const summonSpawn = spawns.summon[0] ?? null;
   const metadataDrops = drops.filter((drop) => !drop.altar_id);
-  const topMetadataDrop = metadataDrops[0];
+  const topMetadataDrop = metadataDrops.find((drop) => !drop.redacted);
   const metadataItemCount = new Set(metadataDrops.map((drop) => drop.item_id))
     .size;
 

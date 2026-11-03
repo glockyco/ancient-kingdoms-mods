@@ -380,7 +380,9 @@ export function calculateMethodProbabilities(
     const outcomeKey =
       target.kind === "item"
         ? `item:${target.itemId}:${target.delivery}`
-        : `gold:${target.delivery}`;
+        : target.kind === "withheld_item"
+          ? `withheld:${target.ordinal}:${target.delivery}`
+          : `gold:${target.delivery}`;
     const previousIndex = results.findIndex(
       (result) =>
         result.outcomeKey === outcomeKey && result.event === namedEvent,
@@ -468,12 +470,12 @@ export function calculateMethodProbabilities(
         scenario.neededQuestItemIds!.has(entry.item_id ?? ""))
     );
   }
+  // A withheld entry keeps its probability, gate and equipment role, so it takes
+  // part in the calculation like a published one and leaves the others known.
   function questUnknown(entries: readonly PoolEntry[]): boolean {
     return (
-      (assumptions.questNeed === "unknown" &&
-        entries.some((entry) => entry.quest_gate !== "none")) ||
-      (assumptions.questNeed !== "none" &&
-        entries.some((entry) => entry.quest_gate === "withheld_need"))
+      assumptions.questNeed === "unknown" &&
+      entries.some((entry) => entry.quest_gate !== "none")
     );
   }
   function outerSuccess(): number | null {
@@ -710,6 +712,47 @@ export function calculateMethodProbabilities(
         null,
       );
     }
+    // Each withheld item's own chance, under the page's assumption that a quest
+    // item is still needed. The target names the item's first entry in the pool,
+    // because the item's identity is gone and pool keys are opaque.
+    const withheldGroups = new Map<number, PoolEntry[]>();
+    for (const entry of entries)
+      if (entry.withheld && entry.resolution === "direct")
+        withheldGroups.set(entry.duplicate_group, [
+          ...(withheldGroups.get(entry.duplicate_group) ?? []),
+          entry,
+        ]);
+    for (const [group, members] of withheldGroups) {
+      const anonymous = `anonymous:${group}`;
+      let chance: number;
+      if (isBoss) {
+        chance = calculateBossLootChance(drops, anonymous, {
+          fatecharm: assumptions.fatecharm,
+          neededQuestItemIds: new Set([anonymous]),
+        });
+      } else {
+        let miss = 1;
+        for (const entry of members) {
+          const raw =
+            entry.probability +
+            (detail.is_hunt && Number(entry.quality) > 0
+              ? (assumptions.huntingFraction ?? 0) / 2
+              : 0);
+          miss *= 1 - Math.min(1, raw);
+        }
+        chance = 1 - miss;
+      }
+      emit(
+        {
+          kind: "withheld_item",
+          ordinal: Math.min(...members.map((entry) => entry.ordinal)),
+          delivery: "corpse",
+        },
+        event,
+        questUnknown(entries) ? null : chance,
+        null,
+      );
+    }
     const zone = index.entities.get("zones")?.get(String(detail.loot_zone_id));
     const fragment = index.luckTokens.get(String(detail.loot_zone_id));
     if (
@@ -877,7 +920,7 @@ export function calculateMethodProbabilities(
   const existing = new Set(results.map((result) => result.outcomeKey));
   for (const output of outputs) {
     if (output.withheld || output.yield_rule === "pool") continue;
-    const target: ProbabilityTarget | null =
+    const target: Extract<ProbabilityTarget, { kind: "gold" | "item" }> | null =
       output.resource_kind === "gold"
         ? {
             kind: "gold",

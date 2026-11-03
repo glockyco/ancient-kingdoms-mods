@@ -11,6 +11,7 @@ import {
   type AltarThresholds,
 } from "$lib/calculation/altar";
 import { monsterFatecharm } from "$lib/utils/fatecharm";
+import { redactedLabel } from "$lib/utils/redacted";
 
 export function contextualMonsterDrops(
   db: Database.Database,
@@ -156,6 +157,51 @@ export function contextualMonsterDrops(
         ...(typeof method.detail.altar_id === "string"
           ? { altar_id: method.detail.altar_id }
           : {}),
+      });
+    }
+    // A redacted drop keeps its row and its chance, without its item.
+    const row = model.methods.get(method.methodId);
+    if (!row) throw new Error(`Missing acquisition method ${method.methodId}`);
+    const scenario = {
+      assumptions: {
+        ...BASELINE_ASSUMPTIONS,
+        scenario: "entered" as const,
+        questNeed: "specified" as const,
+      },
+      neededQuestItemIds: new Set<string>(),
+    };
+    const boostedResults = hasFatecharm
+      ? calculateMethodProbabilities(model.rows, row, method.detail, {
+          ...scenario,
+          assumptions: { ...scenario.assumptions, fatecharm: true },
+        })
+      : [];
+    for (const result of calculateMethodProbabilities(
+      model.rows,
+      row,
+      method.detail,
+      scenario,
+    )) {
+      if (result.target.kind !== "withheld_item") continue;
+      const boosted = boostedResults.find(
+        (value) => value.outcomeKey === result.outcomeKey,
+      )?.probability;
+      drops.push({
+        item_id: `redacted:${method.methodId}:${result.target.ordinal}`,
+        item_name: redactedLabel("item"),
+        redacted: true,
+        quality: 0,
+        tooltip_html: null,
+        visual_public_path: null,
+        note: `${method.ruleId} (${result.event.replaceAll("_", " ")})`,
+        is_bestiary: false,
+        rate: result.probability,
+        ...(result.probability === null
+          ? {}
+          : { per_kill_chance: result.probability }),
+        ...(boosted == null ? {} : { per_kill_chance_with_fatecharm: boosted }),
+        chance_event: result.event,
+        method_id: method.methodId,
       });
     }
   }

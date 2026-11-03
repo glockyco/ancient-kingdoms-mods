@@ -49,8 +49,8 @@ for (const entry of entries) {
   byPool.set(entry.pool_id, pool);
 }
 
-// A withheld entry hides a drop the game still rolls, so the site states the
-// pool's chances as unknown and there is no figure for the mod to match.
+// A withheld entry hides which item drops, while the mod reads the real item,
+// so the corpus has no identity to match the mod's row against.
 const withheldPools = new Set(
   entries.filter((entry) => entry.withheld).map((entry) => entry.pool_id),
 );
