@@ -124,6 +124,7 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
         ("professions", "achievement_id"),
         ("stat_fields", "stat_id"),
         ("stats", "pool_id"),
+        ("redacted_recipe_items", "item_id"),
         ("treasure_locations", "required_map_id"),
         ("treasure_locations", "reward_id"),
         ("virtue_ranks", "rank"),

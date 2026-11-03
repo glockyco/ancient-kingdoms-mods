@@ -1,12 +1,14 @@
 # Items carrying ignore_journal=true are always excluded, together with every
-# entity left with no other source. The game marks them as internal, so there is
-# no configuration to switch this off.
+# entity left with no other source. The game's journal skips recipes for these
+# items (UIJournal.cs), and the compendium leaves the items out entirely, so
+# there is no configuration to switch this off. A published entry that still
+# needs one, such as a quest objective or a drop, shows a redacted placeholder
+# instead of the item.
 
-# Items where crafting information should be hidden.
-# The item itself remains visible, but:
-# - crafted_from field is cleared
-# - used_in_recipes entries for recipes producing this item are removed
-# - Materials don't show "used to craft X" for these recipes
+# Items whose recipes are left out. The item stays published and every recipe
+# that makes it is removed. The item's page and the pages of the recipe's
+# materials say that a redacted recipe makes or uses them, without naming the
+# recipe's other items or amounts.
 [items.hide_crafting]
 ids = [
     "divine_essence",
@@ -48,9 +50,9 @@ zone_ids = []
 # relics_of_the_ancient_faith and the_lost_warden: quests that must not appear
 # in any listing or relationship. Naming a quest also removes what only that
 # quest gives. relics_of_the_ancient_faith is the only source of
-# key_to_the_north_wing, so the key goes with it, and the portal it opens inside
-# Temple of Valaark is published without a stated requirement. That is intended:
-# no player can obtain a key whose only source is hidden.
+# key_to_the_north_wing, so the key goes with it. The portal the key opens
+# inside Temple of Valaark still needs it, so the map shows that portal's key
+# as redacted.
 #
 # valaarks_corrupted_seal: the Corrupted Valaark used to drop it, and its drop
 # table no longer names it. Nothing else gives or uses it, so no player can

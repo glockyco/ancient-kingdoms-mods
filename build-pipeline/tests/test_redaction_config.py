@@ -104,6 +104,16 @@ class HiddenCraftingTests(unittest.TestCase):
     def test_the_removal_is_counted_for_the_ledger(self):
         self.assertEqual(self.removed, {"secret_blade": 3})
 
+    def test_the_pages_learn_which_items_a_hidden_recipe_makes_and_uses(self):
+        self.assertEqual(
+            sorted(
+                self.conn.execute(
+                    "SELECT item_id, role, recipes FROM redacted_recipe_items"
+                )
+            ),
+            [("plain_blade", "material", 3), ("secret_blade", "result", 3)],
+        )
+
     def test_scanning_the_identifier_would_report_the_surviving_item(self):
         """Why the verification subject holds no identifier for this mechanism.
 

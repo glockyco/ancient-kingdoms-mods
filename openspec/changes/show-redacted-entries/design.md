@@ -26,7 +26,7 @@
 
 ### One placeholder component
 
-`RedactedEntry` renders a dashed 28 px slot, the label "Redacted <kind>" in the muted colour and the hover text "Deliberately left out of the compendium." through `title`, as `SeasonLabel` and `MonsterTypeIcon` give their hover text. The slot keeps a placeholder's name aligned with item names in tables. The kind is the entity kind the reference points at: item, monster, recipe, quest, class, skill, race, faction or location. A key and a book are items. Server code that builds text, such as a game tooltip or a search description, uses the same label.
+`RedactedEntry` renders a dashed 28 px slot, the label "Redacted <kind>" in the muted colour and the hover text "Deliberately left out of the compendium." through `title`, as `SeasonLabel` and `MonsterTypeIcon` give their hover text. The slot keeps a placeholder's name aligned with item names in tables. The kind is the entity kind the reference points at: item, book, monster, recipe, quest, class, skill, race, faction or location. A key is an item. Server code that builds text, such as a game tooltip or a search description, uses the same label.
 
 Alternatives: the game's black square and "???", which needs a second name for the same thing in text; a grey bar, which reads as a table that is still loading; the word alone, which breaks the name column in tables.
 
@@ -36,11 +36,11 @@ Queries that inner-join a withheld target read it with a left join and pass `wit
 
 ### Loot rules emit a target for each withheld entry
 
-`calculateMethodProbabilities` treats a withheld quest gate like a published one, so a withheld entry no longer makes the other chances unknown. For each direct withheld entry of a kill pool it emits a result whose target is the withheld entry, computed as if the entry were needed, which is the page's assumption for quest items. `contextualMonsterDrops` turns those results into placeholder rows with the chance and the Fatecharm chance. `ProbabilityTarget` gains the kind `withheld_item`, which every existing reader already skips because it selects `item` targets.
+`calculateMethodProbabilities` treats a withheld quest gate like a published one, so a withheld entry no longer makes the other chances unknown. For each withheld item of a kill pool it emits a result computed as if the item were needed, which is the page's assumption for quest items. Entries of one withheld item share a duplicate group, and the target names the group by its first entry's ordinal, because pool keys are opaque and the item's identity is gone. `contextualMonsterDrops` turns those results into placeholder rows with the chance and the Fatecharm chance. `ProbabilityTarget` gains the kind `withheld_item`, which every existing reader already skips because it selects `item` targets.
 
 ### Hidden recipes record their items before they go
 
-Before the hidden-crafting redaction deletes a recipe, it writes one row per item the recipe makes and per item it consumes into `redacted_recipe_items` (`item_id`, `role`, `recipes`), counting recipes. The table refers to `items`, so the closure deletes the rows of items it removes, such as the three Temple of Valaark materials. The item page reads the table: a `result` row shows Crafted from Recipe with the placeholder and counts as a known source, and a `material` row adds one placeholder row to Used in Recipes, with the count when it is above one and without amount or product.
+Before the hidden-crafting redaction deletes a recipe, it writes one row per item the recipe makes and per item it consumes into `redacted_recipe_items` (`item_id`, `role`, `recipes`), counting recipes. The table refers to `items`, so the closure deletes the rows of items it removes, such as the three `ignore_journal` products whose recipes are also hidden. The item page reads the table: a `result` row shows Crafted from Recipe with the placeholder and counts as a known source, and a `material` row adds one placeholder row to Used in Recipes, with the count when it is above one and without amount or product. The table's title counts every recipe the placeholder stands for.
 
 Alternatives: keeping the recipe as a method with withheld inputs and output. The product page then lists the amounts, and the material pages would have to withhold the product but not the material, which no existing flag expresses.
 

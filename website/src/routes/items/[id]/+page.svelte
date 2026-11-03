@@ -9,6 +9,8 @@
   import SeasonIcons from "$lib/components/SeasonIcons.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import RedactedEntry from "$lib/components/RedactedEntry.svelte";
+  import type { RecipeUsage } from "$lib/types/item-sources";
   import MapLink from "$lib/components/MapLink.svelte";
   import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -374,7 +376,26 @@
 
       opensChests: data.usages.chests || [],
 
-      usedInRecipes: data.usages.recipes || [],
+      // A recipe hidden by configuration keeps one row that names neither its
+      // product nor the amount.
+      usedInRecipes: [
+        ...(data.usages.recipes || []),
+        ...(data.redactedRecipes.material > 0
+          ? [
+              {
+                item_id: data.item.id,
+                recipe_id: "",
+                recipe_type: "crafting",
+                amount: 0,
+                result_item_id: "",
+                result_item_name: "",
+                result_amount: 0,
+                tier: 0,
+                redacted: data.redactedRecipes.material,
+              } satisfies RecipeUsage & { redacted: number },
+            ]
+          : []),
+      ] as Array<RecipeUsage & { redacted?: number }>,
 
       neededForQuests:
         data.usages.quests?.map((q) => ({
@@ -1049,7 +1070,11 @@
   row: Row<RecipeUseRow>;
 })}
   {@const recipe = row.original}
-  {#if cell.column.id === "result_item_name"}
+  {#if recipe.redacted}
+    {#if cell.column.id === "result_item_name"}
+      <RedactedEntry kind="recipe" count={recipe.redacted} />
+    {/if}
+  {:else if cell.column.id === "result_item_name"}
     <a
       href={resolve("/items/[id]", { id: recipe.result_item_id })}
       class={styles.link}>{recipe.result_item_name}</a
@@ -2312,6 +2337,16 @@
       </Card.Content>
     </Card.Root>
   {/if}
+  {#if data.redactedRecipes.result > 0 && !computed.craftedFrom?.length}
+    <Card.Root class="@container bg-muted/30">
+      <Card.Header>
+        <Card.Title level={2}>Crafted from Recipe</Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <RedactedEntry kind="recipe" count={data.redactedRecipes.result} />
+      </Card.Content>
+    </Card.Root>
+  {/if}
   {#if data.item.taught_by_recipe_id && data.item.taught_by_recipe_name && computed.craftedFrom.length > 0}
     <!-- Crafted by -->
     <Card.Root class="@container bg-muted/30">
@@ -2509,6 +2544,7 @@
     <RelationTable
       title="Used in Recipes"
       rows={computed.usedInRecipes}
+      count={(data.usages.recipes?.length ?? 0) + data.redactedRecipes.material}
       columns={recipeUseColumns}
       cell={renderRecipeUseCell}
       urlKey="item-{data.item.id}-recipes"

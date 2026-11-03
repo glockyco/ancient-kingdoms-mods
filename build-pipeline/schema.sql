@@ -2067,6 +2067,14 @@ CREATE TABLE item_class_requirements (
     withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
     UNIQUE (item_id,ordinal)
 );
+-- Items that a recipe hidden by configuration makes or consumes, counted in
+-- recipes. The recipes themselves are removed, so this is all a page says.
+CREATE TABLE redacted_recipe_items (
+    item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    role TEXT NOT NULL CHECK (role IN ('result','material')),
+    recipes INTEGER NOT NULL CHECK (recipes > 0),
+    PRIMARY KEY (item_id,role)
+);
 CREATE TABLE skill_predecessors (
     id TEXT PRIMARY KEY,
     skill_id TEXT NOT NULL REFERENCES skills(id) DEFERRABLE INITIALLY DEFERRED,

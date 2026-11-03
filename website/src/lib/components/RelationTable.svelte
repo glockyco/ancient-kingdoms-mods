@@ -31,6 +31,7 @@
     rightAligned = [],
     description,
     mapTarget,
+    count,
   }: {
     title: string;
     rows: TData[];
@@ -45,6 +46,8 @@
     description?: Snippet;
     /** Where a row's entity is on the map, or null when the map cannot show it. */
     mapTarget?: (row: TData) => MapTarget | null;
+    /** How many entries the relation has, when one row stands for several. */
+    count?: number;
   } = $props();
 
   // The Map column closes each row, and appears only when some row has a place on the map.
@@ -86,7 +89,7 @@
 
 <section class="space-y-3">
   <h2 id="{urlKey}-title" class="font-semibold leading-none">
-    {title} ({formatNumber(rows.length)})
+    {title} ({formatNumber(count ?? rows.length)})
   </h2>
   {#if description}
     <div class="text-sm text-muted-foreground">{@render description()}</div>

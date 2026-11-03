@@ -80,6 +80,8 @@ export const load: PageServerLoad = async ({
     consumableBuffEffect: string | null;
     /** Cooking requests the item counts for as a dish, or feeds as meat. */
     regionalCooking: ItemRegionalCooking[];
+    /** Recipes hidden by configuration that make or use this item. */
+    redactedRecipes: { result: number; material: number };
   }
 > => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
@@ -202,12 +204,21 @@ export const load: PageServerLoad = async ({
     );
   }
   const sourceView = projectItemSources(model, params.id);
+  const redactedRecipes = { result: 0, material: 0 };
+  for (const row of db
+    .prepare(
+      "SELECT role, recipes FROM redacted_recipe_items WHERE item_id = ?",
+    )
+    .all(params.id) as Array<{ role: "result" | "material"; recipes: number }>)
+    redactedRecipes[row.role] = row.recipes;
   // A distribution item or a pack is never delivered itself, but the page lists the
-  // awards that roll it and the vendors and recipes that offer it.
+  // awards that roll it and the vendors and recipes that offer it. A redacted
+  // recipe is a source the page names without its content.
   const hasKnownSource =
     sourceView.hasKnownSource ||
     sourceView.inspection.parentAwards.length > 0 ||
-    sourceView.inspection.offeredAssets.some((method) => method.rooted);
+    sourceView.inspection.offeredAssets.some((method) => method.rooted) ||
+    redactedRecipes.result > 0;
   const hasMapLocation =
     (await getItemMapBounds(
       params.id,
@@ -525,6 +536,7 @@ export const load: PageServerLoad = async ({
     sources,
     usages,
     hasKnownSource,
+    redactedRecipes,
     acquisitionNotes,
     foodBuffUsesTavernSpirit,
     blockedDuringSeasons,
