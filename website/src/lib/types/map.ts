@@ -159,6 +159,8 @@ export interface PortalMapEntity extends MapEntity {
   isClosed: boolean;
   requiredItemId: string | null;
   requiredItemName: string | null;
+  /** The key is redacted, so the portal names no key but still needs one. */
+  requiredItemRedacted: boolean;
   /** Source: server-scripts/Portal.cs:68 — each player needs their own key when true; otherwise any online party member's key admits the player. */
   requiresEveryoneKey: boolean;
   requiredLevel: number;

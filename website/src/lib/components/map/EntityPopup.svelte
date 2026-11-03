@@ -3,6 +3,7 @@
   import PopupCard from "$lib/components/map/PopupCard.svelte";
   import DropChance from "$lib/components/DropChance.svelte";
   import MapItemLink from "$lib/components/map/MapItemLink.svelte";
+  import RedactedEntry from "$lib/components/RedactedEntry.svelte";
   import MapEntityLink from "$lib/components/map/MapEntityLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
@@ -1043,6 +1044,7 @@
         portal.requiredLevel > 0 ||
         portal.requiredItemLevel > 0 ||
         portal.requiredItemName ||
+        portal.requiredItemRedacted ||
         portal.needMonsterDeadName}
       {#if hasRequirements}
         <div class="border-t pt-2">
@@ -1062,14 +1064,16 @@
                 <span>{portal.requiredItemLevel}+</span>
               </div>
             {/if}
-            {#if portal.requiredItemName}
+            {#if portal.requiredItemName || portal.requiredItemRedacted}
               <div class="flex justify-between gap-4">
                 <span class="text-muted-foreground">Key</span>
                 <div class="text-right">
-                  {#if portal.requiredItemId}
+                  {#if portal.requiredItemRedacted}
+                    <RedactedEntry kind="item" slot={false} />
+                  {:else if portal.requiredItemId}
                     <MapItemLink
                       itemId={portal.requiredItemId}
-                      itemName={portal.requiredItemName}
+                      itemName={portal.requiredItemName!}
                       tooltipHtml={null}
                       onSelect={onSelectItem}
                     />

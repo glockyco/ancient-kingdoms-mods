@@ -11,6 +11,7 @@
     CraftingMapEntity,
   } from "$lib/types/map";
   import { toRomanNumeral } from "$lib/utils/format";
+  import { redactedLabel } from "$lib/utils/redacted";
   import {
     calculateTooltipPosition,
     getNpcRoles,
@@ -180,10 +181,12 @@
     {#if portal.isClosed}
       <div class="text-xs text-red-400">Closed</div>
     {:else}
-      {#if portal.requiredItemName}
+      {#if portal.requiredItemName || portal.requiredItemRedacted}
         <!-- Source: server-scripts/Portal.cs:68 — requiresEveryoneKey checks the interacting player's own key; otherwise any online party member can supply the key. -->
         <div class="text-sm text-amber-400">
-          Key: {portal.requiredItemName}{portal.requiresEveryoneKey
+          Key: {portal.requiredItemRedacted
+            ? redactedLabel("item")
+            : portal.requiredItemName}{portal.requiresEveryoneKey
             ? " (each player needs their own)"
             : " (any online party member's key)"}
         </div>

@@ -283,6 +283,7 @@ describe("marker registry", () => {
       isClosed: false,
       requiredItemId: null,
       requiredItemName: null,
+      requiredItemRedacted: false,
       requiresEveryoneKey: false,
       requiredLevel: 0,
       requiredItemLevel: 0,

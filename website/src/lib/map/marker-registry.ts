@@ -545,7 +545,10 @@ export const markerRegistry = {
       ...(row.destination
         ? [{ id: `${markerId}:destination`, kind: "arc" as const }]
         : []),
-      ...(row.requiredItemId || row.requiredLevel > 0 || row.needMonsterDeadId
+      ...(row.requiredItemId ||
+      row.requiredItemRedacted ||
+      row.requiredLevel > 0 ||
+      row.needMonsterDeadId
         ? [{ id: `${markerId}:requirements`, kind: "radius" as const }]
         : []),
     ],

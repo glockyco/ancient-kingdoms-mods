@@ -745,6 +745,7 @@ interface PortalRow {
   is_closed: number;
   required_item_id: string | null;
   required_item_name: string | null;
+  required_item_withheld: number;
   requires_everyone_key: number;
   required_level: number;
   required_item_level: number;
@@ -772,6 +773,7 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       p.is_closed,
       CASE WHEN p.required_item_withheld=0 THEN p.required_item_id END AS required_item_id,
       CASE WHEN p.required_item_withheld=0 THEN i.name END as required_item_name,
+      p.required_item_withheld,
       p.requires_everyone_key,
       COALESCE(p.level_required, 0) as required_level,
       COALESCE(p.item_level_required, 0) as required_item_level,
@@ -820,6 +822,7 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       isClosed,
       requiredItemId: r.required_item_id,
       requiredItemName: r.required_item_name,
+      requiredItemRedacted: Boolean(r.required_item_withheld),
       requiresEveryoneKey: Boolean(r.requires_everyone_key),
       requiredLevel: r.required_level,
       requiredItemLevel: r.required_item_level,
