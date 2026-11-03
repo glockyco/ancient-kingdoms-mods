@@ -11,7 +11,16 @@
       "id": "pocket-compendium",
       "project": "PocketCompendium",
       "name": "Pocket Compendium",
-      "description": "Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster."
+      "description": "Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster.",
+      "releases": [
+        {
+          "version": "1.1.0",
+          "changes": [
+            "Asks at first start whether to install new versions by itself.",
+            "Shows new versions on the start screen instead of in chat."
+          ]
+        }
+      ]
     }
   ]
 }
