@@ -7,4 +7,4 @@
 
 ## 2. Release
 
-- [ ] 2.1 Release Pocket Compendium 1.0.2 as `CONTRIBUTING.md` describes, once a push and deploy are approved, so players get the fix through the update notice.
+- [x] 2.1 Release Pocket Compendium 1.0.2 as `CONTRIBUTING.md` describes, once a push and deploy are approved, so players get the fix through the update notice.
