@@ -69,7 +69,7 @@ function otherRewardChoices(
     .filter((slot) => slot.item_id !== itemId)
     .map((slot) =>
       slot.item_withheld
-        ? "an unpublished item"
+        ? "a redacted item"
         : str(sourceEntity(model, "items", slot.item_id), "name"),
     );
   return others.length ? [`Choose instead of ${others.join(" or ")}`] : [];
@@ -318,7 +318,7 @@ export function itemSourcesFromModel(
         currency_item_id: currency?.item_id ?? null,
         currency_item_name: currency
           ? currency.withheld
-            ? "Unpublished currency"
+            ? "Redacted item"
             : str(sourceEntity(model, "items", currency.item_id), "name")
           : null,
         required_faction:
@@ -343,7 +343,7 @@ export function itemSourcesFromModel(
               slot.slot_kind === "class",
           )
           .map((slot) =>
-            slot.class_withheld ? "unpublished class" : String(slot.class_id),
+            slot.class_withheld ? "redacted class" : String(slot.class_id),
           ) ?? [];
       result.quests.push({
         item_id: itemId,
@@ -365,7 +365,7 @@ export function itemSourcesFromModel(
                   .filter((row) => row.quest_id === quest.id)
                   .map((row) =>
                     row.withheld
-                      ? "Read an unpublished book"
+                      ? "Read a redacted book"
                       : `Read ${str(sourceEntity(model, "items", row.item_id), "name")}`,
                   ),
                 ...(model.rows.facts.quest_profession_requirements ?? [])
@@ -398,7 +398,7 @@ export function itemSourcesFromModel(
         tier: num(detail, "tier"),
         variant_id: method.methodId,
         required_quest: detail.required_quest_withheld
-          ? { id: null, name: "an unpublished quest", withheld: true }
+          ? { id: null, name: "a redacted quest", withheld: true }
           : typeof detail.required_quest_id === "string"
             ? {
                 id: detail.required_quest_id,
@@ -412,7 +412,7 @@ export function itemSourcesFromModel(
         materials: inputs.map((input) => ({
           item_id: input.item_id ?? "",
           item_name: input.withheld
-            ? "Unpublished ingredient"
+            ? "Redacted item"
             : input.resource_kind === "gold"
               ? "Gold"
               : str(sourceEntity(model, "items", input.item_id), "name"),
@@ -604,7 +604,7 @@ export function itemSourcesFromModel(
         component_item_ids: components.map((input) => input.item_id ?? ""),
         component_item_names: components.map((input) =>
           input.withheld
-            ? "Unpublished component"
+            ? "Redacted item"
             : str(sourceEntity(model, "items", input.item_id), "name"),
         ),
       });

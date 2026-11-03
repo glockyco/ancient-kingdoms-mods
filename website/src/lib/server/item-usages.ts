@@ -60,8 +60,7 @@ export function itemUsagesFromModel(
       const classes =
         model.rows.facts.quest_class_requirements
           ?.filter((row) => row.quest_id === id)
-          .map((row) => (row.withheld ? "unpublished class" : row.class_id)) ??
-        [];
+          .map((row) => (row.withheld ? "redacted class" : row.class_id)) ?? [];
       const purpose =
         use.role === "book_read"
           ? "read"
@@ -169,7 +168,7 @@ export function itemUsagesFromModel(
               .map((input) => ({
                 item_id: input.item_id ?? "",
                 item_name: input.withheld
-                  ? "Unpublished component"
+                  ? "Redacted item"
                   : name("items", input.item_id),
               })),
           });

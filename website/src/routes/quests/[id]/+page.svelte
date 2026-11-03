@@ -3,6 +3,8 @@
   import { formatNumber } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import RedactedEntry from "$lib/components/RedactedEntry.svelte";
+  import type { QuestItemTarget, RedactedQuestTarget } from "$lib/types/quests";
   import MapLink from "$lib/components/MapLink.svelte";
   import AchievementReward from "$lib/components/AchievementReward.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -122,6 +124,22 @@
     return data.quest.tooltip_complete_html[selectedTooltipClass] || null;
   });
 </script>
+
+{#snippet objectiveItem(item: QuestItemTarget | RedactedQuestTarget)}
+  {#if "withheld" in item}
+    <RedactedEntry kind="item" />
+  {:else}
+    <ItemLink
+      variant="reference"
+      fallback={Package}
+      itemId={item.id}
+      itemName={item.name}
+      quality={item.quality}
+      tooltipHtml={item.tooltip_html}
+      imageAvailable={data.itemIconPaths[item.id]}
+    />
+  {/if}
+{/snippet}
 
 <Seo
   title={`${data.quest.name} - Ancient Kingdoms`}
@@ -431,15 +449,7 @@
             Given on Start
           </h2>
           <div class="bg-muted/30 rounded-md border p-4">
-            <ItemLink
-              variant="reference"
-              fallback={Package}
-              itemId={data.givenItemOnStart.id}
-              itemName={data.givenItemOnStart.name}
-              quality={data.givenItemOnStart.quality}
-              tooltipHtml={data.givenItemOnStart.tooltip_html}
-              imageAvailable={data.itemIconPaths[data.givenItemOnStart.id]}
-            />
+            {@render objectiveItem(data.givenItemOnStart)}
           </div>
         </section>
       {/if}
@@ -460,17 +470,21 @@
                 >
                   Kill
                 </span>
-                <MonsterTypeIcon
-                  isBoss={target.is_boss}
-                  isFabled={target.is_fabled}
-                  isElite={target.is_elite}
-                />
-                <a
-                  href="/monsters/{target.id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {target.name}
-                </a>
+                {#if "withheld" in target}
+                  <RedactedEntry kind="monster" />
+                {:else}
+                  <MonsterTypeIcon
+                    isBoss={target.is_boss}
+                    isFabled={target.is_fabled}
+                    isElite={target.is_elite}
+                  />
+                  <a
+                    href="/monsters/{target.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {target.name}
+                  </a>
+                {/if}
                 <span class="text-muted-foreground"
                   >x{formatNumber(target.amount)}</span
                 >
@@ -485,15 +499,7 @@
                 >
                   Gather
                 </span>
-                <ItemLink
-                  variant="reference"
-                  fallback={Package}
-                  itemId={item.id}
-                  itemName={item.name}
-                  quality={item.quality}
-                  tooltipHtml={item.tooltip_html}
-                  imageAvailable={data.itemIconPaths[item.id]}
-                />
+                {@render objectiveItem(item)}
                 <span class="text-muted-foreground"
                   >x{formatNumber(item.amount)}</span
                 >
@@ -517,15 +523,7 @@
                     Have
                   </span>
                 {/if}
-                <ItemLink
-                  variant="reference"
-                  fallback={Package}
-                  itemId={item.id}
-                  itemName={item.name}
-                  quality={item.quality}
-                  tooltipHtml={item.tooltip_html}
-                  imageAvailable={data.itemIconPaths[item.id]}
-                />
+                {@render objectiveItem(item)}
                 <span class="text-muted-foreground"
                   >x{formatNumber(item.amount)}</span
                 >
@@ -540,15 +538,7 @@
                 >
                   {data.quest.remove_items_on_complete ? "Deliver" : "Have"}
                 </span>
-                <ItemLink
-                  variant="reference"
-                  fallback={Package}
-                  itemId={item.id}
-                  itemName={item.name}
-                  quality={item.quality}
-                  tooltipHtml={item.tooltip_html}
-                  imageAvailable={data.itemIconPaths[item.id]}
-                />
+                {@render objectiveItem(item)}
                 {#if item.amount > 1}
                   <span class="text-muted-foreground"
                     >x{formatNumber(item.amount)}</span
@@ -565,15 +555,7 @@
                 >
                   Equip
                 </span>
-                <ItemLink
-                  variant="reference"
-                  fallback={Package}
-                  itemId={item.id}
-                  itemName={item.name}
-                  quality={item.quality}
-                  tooltipHtml={item.tooltip_html}
-                  imageAvailable={data.itemIconPaths[item.id]}
-                />
+                {@render objectiveItem(item)}
               </div>
             {/each}
 
@@ -586,7 +568,7 @@
                   Read
                 </span>
                 {#if book.withheld || !book.item_id}
-                  <span class="text-muted-foreground">An unpublished book</span>
+                  <RedactedEntry kind="book" />
                 {:else}
                   <ItemLink
                     variant="reference"
@@ -627,15 +609,7 @@
                 >
                   Brew
                 </span>
-                <ItemLink
-                  variant="reference"
-                  fallback={Package}
-                  itemId={data.potionItem.id}
-                  itemName={data.potionItem.name}
-                  quality={data.potionItem.quality}
-                  tooltipHtml={data.potionItem.tooltip_html}
-                  imageAvailable={data.itemIconPaths[data.potionItem.id]}
-                />
+                {@render objectiveItem(data.potionItem)}
                 <span class="text-muted-foreground"
                   >x{formatNumber(data.potionItem.amount)}</span
                 >
@@ -792,15 +766,19 @@
                       {#if item.class_specific}
                         <ClassPills classes={[item.class_specific]} />
                       {/if}
-                      <ItemLink
-                        variant="reference"
-                        fallback={Package}
-                        itemId={item.item_id}
-                        itemName={item.item_name}
-                        quality={item.quality}
-                        tooltipHtml={item.tooltip_html}
-                        imageAvailable={data.itemIconPaths[item.item_id]}
-                      />
+                      {#if item.withheld}
+                        <RedactedEntry kind="item" />
+                      {:else}
+                        <ItemLink
+                          variant="reference"
+                          fallback={Package}
+                          itemId={item.item_id}
+                          itemName={item.item_name}
+                          quality={item.quality}
+                          tooltipHtml={item.tooltip_html}
+                          imageAvailable={data.itemIconPaths[item.item_id]}
+                        />
+                      {/if}
                       {#if item.amount && item.amount > 1}
                         <span class="text-muted-foreground"
                           >×{formatNumber(item.amount)}</span

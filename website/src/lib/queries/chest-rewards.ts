@@ -22,7 +22,7 @@ export const CHEST_REWARDS_QUERY = `
          rule.num_items AS chest_num_items,
          COALESCE(entry.item_id, 'anonymous:' || entry.id) AS item_id,
          'group:' || entry.duplicate_group AS item_name,
-         COALESCE(i.name, 'Unpublished reward') AS display_name,
+         COALESCE(i.name, 'Redacted item') AS display_name,
          i.quality, i.tooltip_html, i.item_type,
          i.relic_buff_id, i.relic_buff_name,
          entry.ordinal AS roll_order, entry.probability AS roll_chance,

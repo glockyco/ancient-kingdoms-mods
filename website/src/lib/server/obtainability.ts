@@ -91,7 +91,7 @@ function materials(
       const item = input.item_id ? itemData(db, input.item_id) : undefined;
       return {
         item_id: item?.id ?? "",
-        item_name: item?.name ?? "Unpublished item",
+        item_name: item?.name ?? "Redacted item",
         visual_public_path: item?.visual_public_path ?? null,
         amount: input.amount,
         quality: item?.quality ?? 0,
@@ -146,7 +146,7 @@ export async function getRecipeDefinitions(
               : undefined;
             return {
               item_id: delivered?.id ?? "",
-              item_name: delivered?.name ?? "Unpublished item",
+              item_name: delivered?.name ?? "Redacted item",
               visual_public_path: delivered?.visual_public_path ?? null,
               tooltip_html: delivered?.tooltip_html ?? null,
               amount:
@@ -363,7 +363,7 @@ async function buildTree(
     const shown: Record<string, number> = {};
     const base: ObtainabilityNode = {
       item_id: id,
-      item_name: item?.name ?? (id || "Unpublished item"),
+      item_name: item?.name ?? (id || "Redacted item"),
       tooltip_html: item?.tooltip_html ?? null,
       visual_public_path: item?.visual_public_path ?? null,
       quality: item?.quality ?? 0,

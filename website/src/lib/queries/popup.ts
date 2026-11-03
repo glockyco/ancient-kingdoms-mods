@@ -34,6 +34,7 @@ import {
 } from "$lib/utils/fishing";
 import type { Season } from "$lib/data/seasonal-events";
 import { shareRewardsGivenToEveryClass } from "$lib/utils/quests";
+import { redactedLabel, type RedactedKind } from "$lib/utils/redacted";
 
 const itemIconPathCache = new Map<string, string | null>();
 export async function loadMapItemIconPaths(
@@ -338,6 +339,8 @@ export interface QuestObjective {
   /** Outline of the area that completes a discovery, in map coordinates. */
   area?: [number, number][];
   zoneName?: string | null;
+  /** Set when the target is redacted. The objective keeps its verb and amount. */
+  redacted?: RedactedKind;
 }
 
 export interface QuestPopupDetails {
@@ -1416,7 +1419,7 @@ export async function loadQuestPopupDetailsBatch(
     const kind = String(objective.kind);
     // Source: server-scripts/UIQuestTracking.cs:LateUpdate — questLocation and finishQuestLocation only place the tracker mark and arrow in the player's zone, so they are not quest steps.
     if (objective.role === "tracking_location") continue;
-    if (objective.withheld || kind === "brew") continue;
+    if (kind === "brew") continue;
     const child = children[kind]?.get(objective.id);
     if (!child)
       throw new Error(`Missing quest objective detail ${objective.id}`);
@@ -1448,6 +1451,23 @@ export async function loadQuestPopupDetailsBatch(
                 ? "deliver"
                 : "have";
     const objectives = objectivesByQuest.get(String(objective.quest_id)) ?? [];
+    if (objective.withheld) {
+      const redacted: RedactedKind =
+        kind === "monster"
+          ? "monster"
+          : kind === "location"
+            ? "location"
+            : "item";
+      objectives.push({
+        type,
+        targetId: null,
+        targetName: redactedLabel(redacted),
+        amount: objective.amount === null ? 1 : Number(objective.amount),
+        redacted,
+      });
+      objectivesByQuest.set(String(objective.quest_id), objectives);
+      continue;
+    }
     objectives.push({
       type,
       targetId,
@@ -1467,7 +1487,7 @@ export async function loadQuestPopupDetailsBatch(
         subZone && subZone.name !== zone?.name
           ? String(zone?.name ?? "")
           : null,
-      area: objective.withheld ? undefined : triggerAreaRing(child),
+      area: triggerAreaRing(child),
     });
     objectivesByQuest.set(String(objective.quest_id), objectives);
   }

@@ -97,7 +97,7 @@
       classes.length > 0 &&
       classes.length < ALL_CLASS_IDS.length &&
       !classes.includes("all") &&
-      !classes.some((id) => id === "withheld" || id === "unpublished class"),
+      !classes.some((id) => id === "withheld" || id === "redacted class"),
     );
   }
 

@@ -8,6 +8,7 @@ import type {
   QuestNpc,
   QuestMonsterTarget,
   QuestItemTarget,
+  RedactedQuestTarget,
   QuestRewards,
   QuestFactionRequirement,
   QuestRewardItem,
@@ -146,26 +147,40 @@ export const load: PageServerLoad = async ({
       }
     }
     for (const output of method.outputs) {
-      if (output.resource_kind !== "item" || !output.item_id || output.withheld)
+      if (output.resource_kind !== "item") continue;
+      const slot = rewardSlots.find(
+        (slot) => slot.ordinal === output.condition_slot,
+      );
+      const placement = {
+        class_specific: slot?.class_withheld
+          ? "Redacted class"
+          : (slot?.class_specific ?? null),
+        choice: slot?.slot_kind === "choice",
+        amount: output.quantity.kind === "exact" ? output.quantity.value : null,
+      };
+      if (output.withheld) {
+        rewardItems.push({
+          item_id: "",
+          item_name: "",
+          quality: 0,
+          tooltip_html: null,
+          withheld: true,
+          ...placement,
+        });
         continue;
+      }
+      if (!output.item_id) continue;
       const item = acquisitionItems[output.item_id];
       if (!item)
         throw new Error(
           `Missing quest reward ${output.item_id} for ${params.id}`,
         );
-      const slot = rewardSlots.find(
-        (slot) => slot.ordinal === output.condition_slot,
-      );
       rewardItems.push({
         item_id: output.item_id,
         item_name: item.name,
         quality: item.quality,
         tooltip_html: item.tooltip_html,
-        class_specific: slot?.class_withheld
-          ? "Unpublished class"
-          : (slot?.class_specific ?? null),
-        choice: slot?.slot_kind === "choice",
-        amount: output.quantity.kind === "exact" ? output.quantity.value : null,
+        ...placement,
       });
     }
   }
@@ -321,55 +336,104 @@ export const load: PageServerLoad = async ({
     )
     .all(params.id) as { id: string; name: string; quest_type: string }[];
 
-  const killTargets = db
-    .prepare(
-      `
-    SELECT m.id, m.name, o.amount, m.is_boss, m.is_fabled, m.is_elite
-    FROM quest_objectives o JOIN quest_objective_monsters t ON t.id = o.id
-    JOIN monsters m ON m.id = t.monster_id WHERE o.quest_id = ? ORDER BY o.ordinal
-  `,
-    )
-    .all(params.id) as QuestMonsterTarget[];
-  const itemObjectives = db
-    .prepare(
-      `
-    SELECT i.id, i.name, i.quality, i.tooltip_html, o.amount, o.role FROM quest_objectives o
-    JOIN quest_objective_items t ON t.id = o.id JOIN items i ON i.id = t.item_id
-    WHERE o.quest_id = ? ORDER BY o.ordinal
-  `,
-    )
-    .all(params.id) as Array<QuestItemTarget & { role: string }>;
-  const gatherItems = itemObjectives.filter(
-    (item) => item.role === "gather_counter",
-  );
-  const gatherInventoryItems = itemObjectives.filter(
-    (item) => item.role === "inventory_primary",
-  );
-  const requiredItems = itemObjectives.filter(
-    (item) => item.role === "inventory_secondary",
-  );
-  const equipItems = itemObjectives.filter((item) => item.role === "equipped");
-  const givenItemsOnStart = db
-    .prepare(
-      `
-    SELECT i.id, i.name, i.quality, i.tooltip_html, p.amount FROM quest_provided_items p
-    JOIN items i ON i.id = p.item_id WHERE p.quest_id = ? ORDER BY p.ordinal
-  `,
-    )
-    .all(params.id) as QuestItemTarget[];
-  const potionItem =
-    (db
+  // A redacted target keeps its objective with the amount, so the page can show
+  // that something is asked for without naming it.
+  const redacted = (amount: number): RedactedQuestTarget => ({
+    withheld: true,
+    amount,
+  });
+  const itemTarget = (
+    row: QuestItemTarget & { withheld: number },
+  ): QuestItemTarget | RedactedQuestTarget =>
+    row.withheld
+      ? redacted(row.amount)
+      : {
+          id: row.id,
+          name: row.name,
+          quality: row.quality,
+          tooltip_html: row.tooltip_html,
+          amount: row.amount,
+        };
+  const killTargets = (
+    db
       .prepare(
         `
-    SELECT i.id, i.name, i.quality, i.tooltip_html, o.amount FROM quest_objectives o
-    JOIN quest_objective_brews b ON b.id = o.id JOIN items i ON i.id = b.item_id
+    SELECT m.id, m.name, o.amount, m.is_boss, m.is_fabled, m.is_elite, o.withheld
+    FROM quest_objectives o JOIN quest_objective_monsters t ON t.id = o.id
+    LEFT JOIN monsters m ON m.id = t.monster_id WHERE o.quest_id = ? ORDER BY o.ordinal
+  `,
+      )
+      .all(params.id) as Array<QuestMonsterTarget & { withheld: number }>
+  ).map((row): QuestMonsterTarget | RedactedQuestTarget =>
+    row.withheld
+      ? redacted(row.amount)
+      : {
+          id: row.id,
+          name: row.name,
+          amount: row.amount,
+          is_boss: row.is_boss,
+          is_fabled: row.is_fabled,
+          is_elite: row.is_elite,
+        },
+  );
+  const itemObjectives = (
+    db
+      .prepare(
+        `
+    SELECT i.id, i.name, i.quality, i.tooltip_html, o.amount, o.role, o.withheld
+    FROM quest_objectives o JOIN quest_objective_items t ON t.id = o.id
+    LEFT JOIN items i ON i.id = t.item_id
     WHERE o.quest_id = ? ORDER BY o.ordinal
   `,
       )
-      .get(params.id) as QuestItemTarget | undefined) ?? null;
+      .all(params.id) as Array<
+      QuestItemTarget & { role: string; withheld: number }
+    >
+  ).map((row) => ({ role: row.role, target: itemTarget(row) }));
+  const objectivesWithRole = (role: string) =>
+    itemObjectives
+      .filter((objective) => objective.role === role)
+      .map((objective) => objective.target);
+  const gatherItems = objectivesWithRole("gather_counter");
+  const gatherInventoryItems = objectivesWithRole("inventory_primary");
+  const requiredItems = objectivesWithRole("inventory_secondary");
+  const equipItems = objectivesWithRole("equipped");
+  const givenItemsOnStart = (
+    db
+      .prepare(
+        `
+    SELECT i.id, i.name, i.quality, i.tooltip_html, p.amount, p.withheld
+    FROM quest_provided_items p LEFT JOIN items i ON i.id = p.item_id
+    WHERE p.quest_id = ? ORDER BY p.ordinal
+  `,
+      )
+      .all(params.id) as Array<QuestItemTarget & { withheld: number }>
+  ).map(itemTarget);
+  const potionRow = db
+    .prepare(
+      `
+    SELECT i.id, i.name, i.quality, i.tooltip_html, o.amount, o.withheld
+    FROM quest_objectives o JOIN quest_objective_brews b ON b.id = o.id
+    LEFT JOIN items i ON i.id = b.item_id
+    WHERE o.quest_id = ? ORDER BY o.ordinal
+  `,
+    )
+    .get(params.id) as (QuestItemTarget & { withheld: number }) | undefined;
+  const potionItem = potionRow ? itemTarget(potionRow) : null;
+  const publishedItems = (
+    targets: ReadonlyArray<QuestItemTarget | RedactedQuestTarget>,
+  ) =>
+    targets.filter(
+      (target): target is QuestItemTarget => !("withheld" in target),
+    );
 
   const itemObtainabilityTrees = await Promise.all(
-    [...gatherItems, ...gatherInventoryItems, ...requiredItems, ...equipItems]
+    publishedItems([
+      ...gatherItems,
+      ...gatherInventoryItems,
+      ...requiredItems,
+      ...equipItems,
+    ])
       .filter(
         (item, index, items) =>
           items.findIndex((other) => other.id === item.id) === index,
@@ -399,33 +463,47 @@ export const load: PageServerLoad = async ({
     zone_name?: string | null;
   }> = [];
 
+  // Search descriptions name a redacted target as "a redacted item", or
+  // "redacted item x3" when the list adds an amount.
+  const objectiveName = (
+    target: QuestItemTarget | QuestMonsterTarget | RedactedQuestTarget,
+    kind: "item" | "monster",
+  ) =>
+    "withheld" in target
+      ? `${target.amount > 1 ? "" : "a "}redacted ${kind}`
+      : target.name;
   for (const target of killTargets) {
-    objectives.push({ type: "kill", name: target.name, amount: target.amount });
+    objectives.push({
+      type: "kill",
+      name: objectiveName(target, "monster"),
+      amount: target.amount,
+    });
   }
   for (const item of gatherItems) {
-    objectives.push({ type: "gather", name: item.name, amount: item.amount });
-  }
-  for (const item of gatherInventoryItems) {
     objectives.push({
-      type: quest.remove_items_on_complete ? "deliver" : "have",
-      name: item.name,
+      type: "gather",
+      name: objectiveName(item, "item"),
       amount: item.amount,
     });
   }
-  for (const item of requiredItems) {
+  for (const item of [...gatherInventoryItems, ...requiredItems]) {
     objectives.push({
       type: quest.remove_items_on_complete ? "deliver" : "have",
-      name: item.name,
+      name: objectiveName(item, "item"),
       amount: item.amount,
     });
   }
   for (const item of equipItems) {
-    objectives.push({ type: "equip", name: item.name, amount: item.amount });
+    objectives.push({
+      type: "equip",
+      name: objectiveName(item, "item"),
+      amount: item.amount,
+    });
   }
   if (potionItem) {
     objectives.push({
       type: "brew",
-      name: potionItem.name,
+      name: objectiveName(potionItem, "item"),
       amount: potionItem.amount,
     });
   }
@@ -434,7 +512,7 @@ export const load: PageServerLoad = async ({
     objectives.push({
       type: "discover",
       name: target.withheld
-        ? "an unpublished location"
+        ? "a redacted location"
         : distinctSubzoneName(target.zone_name, target.sub_zone_name) ||
           target.tracking_quest_location ||
           target.zone_name ||
@@ -483,13 +561,15 @@ export const load: PageServerLoad = async ({
   );
 
   const itemIconPaths = getItemIconPaths(db, [
-    ...rewards.items.map((item) => item.item_id),
-    ...gatherItems.map((item) => item.id),
-    ...gatherInventoryItems.map((item) => item.id),
-    ...requiredItems.map((item) => item.id),
-    ...equipItems.map((item) => item.id),
-    ...(potionItem ? [potionItem.id] : []),
-    ...givenItemsOnStart.map((item) => item.id),
+    ...rewards.items.flatMap((item) => (item.withheld ? [] : [item.item_id])),
+    ...publishedItems([
+      ...gatherItems,
+      ...gatherInventoryItems,
+      ...requiredItems,
+      ...equipItems,
+      ...(potionItem ? [potionItem] : []),
+      ...givenItemsOnStart,
+    ]).map((item) => item.id),
     ...quest.book_requirements.flatMap((book) =>
       book.withheld || !book.item_id ? [] : [book.item_id],
     ),

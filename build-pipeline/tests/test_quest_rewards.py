@@ -136,7 +136,7 @@ def test_withheld_shared_reward_keeps_unknown_target_visible(conn):
 
     tooltips.run(conn)
 
-    assert tooltips_for(conn) == ({"_default": "Unpublished item\n"},) * 2
+    assert tooltips_for(conn) == ({"_default": "Redacted item\n"},) * 2
 
 
 def add_objective(conn, quest_id, ordinal, item_id, amount, role):

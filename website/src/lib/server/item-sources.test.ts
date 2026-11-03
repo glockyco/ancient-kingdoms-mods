@@ -625,7 +625,7 @@ test("merge sources and reverse uses retain every component including a withheld
     expect((await getItemSources(f.db, "key")).merges).toMatchObject([
       {
         component_item_ids: ["shard", "emblem", ""],
-        component_item_names: ["shard", "emblem", "Unpublished component"],
+        component_item_names: ["shard", "emblem", "Redacted item"],
       },
     ]);
     expect(
@@ -633,7 +633,7 @@ test("merge sources and reverse uses retain every component including a withheld
     ).toEqual([
       { item_id: "shard", item_name: "shard" },
       { item_id: "emblem", item_name: "emblem" },
-      { item_id: "", item_name: "Unpublished component" },
+      { item_id: "", item_name: "Redacted item" },
     ]);
   } finally {
     f.db.close();

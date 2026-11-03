@@ -348,7 +348,7 @@ const builders: Record<SearchableEntityId, Builder> = {
           p.id,
           COALESCE(NULLIF(fs.name, ''), NULLIF(fz.name, ''), 'Unknown origin')
             || ' → ' ||
-          CASE WHEN p.destination_withheld = 1 THEN 'Unpublished destination'
+          CASE WHEN p.destination_withheld = 1 THEN 'Redacted location'
             ELSE COALESCE(NULLIF(ts.name, ''), NULLIF(tz.name, ''), 'Unknown destination')
           END AS name,
           p.keywords,

@@ -4,6 +4,7 @@
   import MapItemLink from "./MapItemLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
   import SeasonLabel from "$lib/components/SeasonLabel.svelte";
+  import RedactedEntry from "$lib/components/RedactedEntry.svelte";
   import {
     loadQuestPopupDetails,
     loadMapItemIconPaths,
@@ -218,7 +219,13 @@
           {#each details.objectives as obj, i (i)}
             <!-- Baseline alignment keeps the dotted-underline item links level with the verb and amount. -->
             <div class="flex items-baseline gap-1">
-              {#if obj.type === "kill"}
+              {#if obj.redacted}
+                <span class="text-muted-foreground capitalize">{obj.type}</span>
+                {#if obj.type !== "equip" && obj.type !== "discover"}
+                  <span>{formatNumber(obj.amount)}×</span>
+                {/if}
+                <RedactedEntry kind={obj.redacted} slot={false} />
+              {:else if obj.type === "kill"}
                 <span class="text-muted-foreground">Kill</span>
                 <span>{formatNumber(obj.amount)}×</span>
                 {#if obj.targetId}

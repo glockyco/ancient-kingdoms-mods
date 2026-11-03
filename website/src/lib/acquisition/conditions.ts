@@ -619,7 +619,7 @@ function describePredicate(
   validatePredicate(p);
   switch (p.kind) {
     case "withheld":
-      return "An unpublished requirement applies";
+      return "A redacted requirement applies";
     case "metric_at_least": {
       switch (p.metric) {
         case "level":

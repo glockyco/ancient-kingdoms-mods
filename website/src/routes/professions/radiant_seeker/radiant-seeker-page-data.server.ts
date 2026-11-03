@@ -153,7 +153,7 @@ export async function getRadiantSeekerPageData(
     resource: {
       ...rawResource,
       reward_item_id: rewardId,
-      reward_item_name: reward?.name ?? "Unpublished reward",
+      reward_item_name: reward?.name ?? "Redacted item",
       reward_quality: reward.quality,
       reward_tooltip_html: reward?.tooltip_html ?? null,
       reward_visual_public_path: rewardVisual?.public_path ?? null,

@@ -122,15 +122,15 @@ export const load: PageServerLoad = async () => {
     }
     questRows.forEach(visit);
     const objectiveItems = db.prepare(`SELECT COALESCE(i.id,'') AS item_id,
-      COALESCE(i.name,'Unpublished item') AS item_name, i.tooltip_html, i.quality, o.amount
+      COALESCE(i.name,'Redacted item') AS item_name, i.tooltip_html, i.quality, o.amount
       FROM quest_objectives o JOIN quest_objective_items t ON t.id=o.id
       LEFT JOIN items i ON i.id=t.item_id WHERE o.quest_id=? ORDER BY o.ordinal`);
     const brewItems = db.prepare(`SELECT COALESCE(i.id,'') AS item_id,
-      COALESCE(i.name,'Unpublished item') AS item_name, i.tooltip_html, i.quality, o.amount
+      COALESCE(i.name,'Redacted item') AS item_name, i.tooltip_html, i.quality, o.amount
       FROM quest_objectives o JOIN quest_objective_brews t ON t.id=o.id
       LEFT JOIN items i ON i.id=t.item_id WHERE o.quest_id=? ORDER BY o.ordinal`);
     const rewardItems = db.prepare(`SELECT COALESCE(i.id,'') AS item_id,
-      COALESCE(i.name,'Unpublished item') AS item_name, i.tooltip_html, i.quality, r.amount
+      COALESCE(i.name,'Redacted item') AS item_name, i.tooltip_html, i.quality, r.amount
       FROM quest_reward_slots r LEFT JOIN items i ON i.id=r.item_id
       WHERE r.quest_id=? ORDER BY r.ordinal`);
     const completionNpcs = db.prepare(`SELECT n.id AS npc_id, n.name AS npc_name

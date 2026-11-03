@@ -173,7 +173,7 @@ export function getClassSkills(classId: string): ClassSkill[] {
     prerequisite_skill_name:
       prerequisitesBySkill.get(row.id)?.[0]?.name ??
       (prerequisitesBySkill.get(row.id)?.[0]?.withheld
-        ? "Unpublished skill"
+        ? "Redacted skill"
         : null),
     prerequisite_level: prerequisitesBySkill.get(row.id)?.[0]?.rank ?? 0,
     prerequisite2_skill_id:
@@ -181,7 +181,7 @@ export function getClassSkills(classId: string): ClassSkill[] {
     prerequisite2_skill_name:
       prerequisitesBySkill.get(row.id)?.[1]?.name ??
       (prerequisitesBySkill.get(row.id)?.[1]?.withheld
-        ? "Unpublished skill"
+        ? "Redacted skill"
         : null),
     prerequisite2_level: prerequisitesBySkill.get(row.id)?.[1]?.rank ?? 0,
   }));

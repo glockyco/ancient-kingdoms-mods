@@ -12,6 +12,8 @@ export interface QuestRewardItem {
   choice: boolean;
   tooltip_html: string | null;
   amount: number | null;
+  /** The reward item is redacted, so only its slot and amount are published. */
+  withheld?: true;
 }
 
 // Quest rewards container
@@ -89,6 +91,12 @@ export interface QuestItemTarget {
   quality: number;
   amount: number;
   tooltip_html: string | null;
+}
+
+// An objective or given item whose target is redacted. Only its amount stays.
+export interface RedactedQuestTarget {
+  withheld: true;
+  amount: number;
 }
 
 // Zone reference
@@ -171,13 +179,13 @@ export interface QuestDetailPageData {
   chainGraph: QuestChainGraph | null;
   predecessors: QuestChainQuest[];
   successors: QuestChainQuest[];
-  killTargets: QuestMonsterTarget[];
-  gatherItems: QuestItemTarget[];
-  gatherInventoryItems: QuestItemTarget[];
-  requiredItems: QuestItemTarget[];
-  equipItems: QuestItemTarget[];
-  potionItem: QuestItemTarget | null;
-  givenItemOnStart: QuestItemTarget | null;
+  killTargets: Array<QuestMonsterTarget | RedactedQuestTarget>;
+  gatherItems: Array<QuestItemTarget | RedactedQuestTarget>;
+  gatherInventoryItems: Array<QuestItemTarget | RedactedQuestTarget>;
+  requiredItems: Array<QuestItemTarget | RedactedQuestTarget>;
+  equipItems: Array<QuestItemTarget | RedactedQuestTarget>;
+  potionItem: QuestItemTarget | RedactedQuestTarget | null;
+  givenItemOnStart: QuestItemTarget | RedactedQuestTarget | null;
   itemIconPaths: Record<string, string | null>;
   itemObtainabilityTrees: ObtainabilityNode[];
 }

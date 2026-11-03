@@ -16,6 +16,10 @@ from rich.console import Console
 
 console = Console()
 
+# The website's placeholder label for a target the redaction withheld, so the
+# game text and the page name it the same way.
+REDACTED_ITEM = "Redacted item"
+
 # The game's English epic.profession terms, which name the EpicProfession member, for the
 # profession ids the exporter maps those members to.
 EPIC_PROFESSION_TERMS = {
@@ -104,7 +108,7 @@ def _parse_quest_tooltip(
     class_reward_items = []
     choice_reward_items = []
     for reward in quest.get("reward_slots", ()):
-        name = reward["item_name"] or "Unpublished item"
+        name = reward["item_name"] or REDACTED_ITEM
         if reward["slot_kind"] == "shared":
             generic_reward_items.append(name)
         elif reward["slot_kind"] == "choice":
@@ -156,7 +160,8 @@ def _parse_quest_tooltip(
             suffix = "" if ordinal == 0 else str(ordinal + 1)
             objective = by_ordinal.get(ordinal)
             replacements[target_prefix + suffix] = (
-                objective["target_name"] or "Unpublished target"
+                objective["target_name"]
+                or ("Redacted monster" if quest_type == "kill" else REDACTED_ITEM)
                 if objective is not None
                 else ""
             )
@@ -169,27 +174,27 @@ def _parse_quest_tooltip(
         # EpicWeaponQuest.ToolTip: the relic to gather, with no progress yet.
         relic = by_ordinal.get(0)
         replacements["EPICRELICSTATUS"] = (
-            f"{relic['target_name'] or 'Unpublished item'} (0/{relic['amount']})"
+            f"{relic['target_name'] or REDACTED_ITEM} (0/{relic['amount']})"
             if quest_type == "gather" and relic is not None
             else ""
         )
     elif quest_type == "gather_inventory":
         replacements["GATHERSTATUS"] = "\n".join(
-            f"Get {row['amount']} {row['target_name'] or 'Unpublished item'}"
+            f"Get {row['amount']} {row['target_name'] or REDACTED_ITEM}"
             for row in objectives
         )
         # EpicGatherQuest.ToolTip: each item to gather, with no progress yet.
         replacements["EPICGATHERSTATUS"] = "\n".join(
-            f"- {row['target_name'] or 'Unpublished item'} (0/{row['amount']})"
+            f"- {row['target_name'] or REDACTED_ITEM} (0/{row['amount']})"
             for row in objectives
         )
     elif quest_type == "equip_item":
         replacements["EQUIPSTATUS"] = "\n".join(
-            f"Equip {row['target_name'] or 'Unpublished item'}" for row in objectives
+            f"Equip {row['target_name'] or REDACTED_ITEM}" for row in objectives
         )
     elif quest_type == "alchemy":
         replacements["POTIONITEM"] = "\n".join(
-            row["target_name"] or "Unpublished item" for row in objectives
+            row["target_name"] or REDACTED_ITEM for row in objectives
         )
         replacements["REWARDALCHEMYSKILL"] = (
             f"{quest['increase_alchemy_skill'] * 100:.1f}"
@@ -286,7 +291,7 @@ def run(conn: sqlite3.Connection) -> None:
         ORDER BY r.quest_id, r.ordinal
     """):
         epic_requirements_by_quest.setdefault(quest_id, []).append(
-            f"Read {book_name or 'Unpublished book'}"
+            f"Read {book_name or 'Redacted book'}"
         )
     for quest_id, profession_id, minimum_percent in conn.execute("""
         SELECT quest_id, profession_id, minimum_percent
