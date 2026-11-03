@@ -125,6 +125,8 @@ export interface NpcQuestOffered {
   race_requirements?: string[];
   class_requirements?: string[];
   faction_requirements?: NpcQuestFactionRequirement[];
+  /** A placeholder row for this many redacted quests, which it does not name. */
+  redacted?: number;
 }
 
 export interface NpcItemSold {
@@ -176,6 +178,8 @@ export interface NpcDetailPageData {
   description: string;
   questsOffered: NpcQuestOffered[];
   questsCompletedHere: NpcQuestOffered[];
+  /** Redacted quests the NPC offers and completes, which the page counts without naming. */
+  redactedQuests: { offer: number; complete: number };
   itemsSold: NpcItemSold[];
   seasonalStock: { season: Season; items: NpcItemSold[] }[];
   spawns: NpcSpawnLocation[];

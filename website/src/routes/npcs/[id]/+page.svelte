@@ -25,6 +25,7 @@
   import { npcKillReputation } from "$lib/utils/killReputation";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import RedactedEntry from "$lib/components/RedactedEntry.svelte";
   import type {
     NpcQuestOffered,
     NpcItemSold,
@@ -183,6 +184,35 @@
         q.is_adventurer_quest ||
         q.is_repeatable,
     ),
+  );
+
+  // One row stands for the NPC's redacted quests, without naming any.
+  function withRedactedQuests(
+    quests: NpcQuestOffered[],
+    count: number,
+  ): NpcQuestOffered[] {
+    if (count === 0) return quests;
+    return [
+      ...quests,
+      {
+        id: "",
+        name: "",
+        level_required: 0,
+        level_recommended: 0,
+        is_adventurer_quest: false,
+        is_main_quest: false,
+        is_epic_quest: false,
+        is_repeatable: false,
+        display_type: "",
+        redacted: count,
+      },
+    ];
+  }
+  const questsOfferedRows = $derived(
+    withRedactedQuests(data.questsOffered, data.redactedQuests.offer),
+  );
+  const questsCompletedRows = $derived(
+    withRedactedQuests(data.questsCompletedHere, data.redactedQuests.complete),
   );
 
   // Quest columns
@@ -377,7 +407,13 @@
   cell: Cell<NpcQuestOffered, unknown>;
   row: Row<NpcQuestOffered>;
 })}
-  {#if cell.column.id === "type"}
+  {#if row.original.redacted}
+    {#if cell.column.id === "name"}
+      <RedactedEntry kind="quest" slot={false} count={row.original.redacted} />
+    {:else if cell.column.id === "level_required" || cell.column.id === "level_recommended"}
+      <span class="ml-auto">-</span>
+    {/if}
+  {:else if cell.column.id === "type"}
     <QuestTypeBadge type={row.original.display_type} />
   {:else if cell.column.id === "flags"}
     <QuestFlagBadges quest={row.original} />
@@ -977,14 +1013,16 @@
   {/if}
 
   <!-- Quests Section -->
-  {#if data.questsOffered.length > 0}
+  {#if questsOfferedRows.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Scroll class="h-5 w-5 text-orange-500" />
-        Quests ({formatNumber(data.questsOffered.length)})
+        Quests ({formatNumber(
+          data.questsOffered.length + data.redactedQuests.offer,
+        )})
       </h2>
       <DataTable
-        data={data.questsOffered}
+        data={questsOfferedRows}
         columns={questColumns}
         renderCell={renderQuestCell}
         renderHeader={renderQuestHeader}
@@ -999,14 +1037,16 @@
       />
     </section>
   {/if}
-  {#if data.questsCompletedHere.length > 0}
+  {#if questsCompletedRows.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Scroll class="h-5 w-5 text-orange-500" />
-        Quests Completed Here ({formatNumber(data.questsCompletedHere.length)})
+        Quests Completed Here ({formatNumber(
+          data.questsCompletedHere.length + data.redactedQuests.complete,
+        )})
       </h2>
       <DataTable
-        data={data.questsCompletedHere}
+        data={questsCompletedRows}
         columns={questColumns}
         renderCell={renderQuestCell}
         renderHeader={renderQuestHeader}

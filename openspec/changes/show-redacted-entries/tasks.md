@@ -23,6 +23,11 @@
 - [x] 5.1 Pass a withheld portal key to the map and show the placeholder as the key in the portal popup and tooltip.
 - [x] 5.2 Rewrite the `redactions.toml` comments that describe `ignore_journal` and the door to the Northern Halls to state what the build publishes.
 
-## 6. Release checks
+## 6. Quests named for exclusion
 
-- [x] 6.1 Rebuild the database, run the website and pipeline tests, `compendium redactions verify` and `pnpm check`, and look at the changed pages in a browser.
+- [x] 6.1 Count the published NPCs, items and factions of each removed quest in `redacted_quest_npcs`, `redacted_quest_items` and `redacted_quest_factions` before the closure deletes the quest, and rewrite the `redactions.toml` comment on the two quests.
+- [x] 6.2 Show one placeholder row in an NPC's quest lists, an item's Required for Quests and a faction's Quests, counted in the heading and the meta description. Verify Vaerion Shadeborn, Draconium Wyrmguard and Ancient Gods.
+
+## 7. Release checks
+
+- [x] 7.1 Rebuild the database, run the website and pipeline tests, `compendium redactions verify` and `pnpm check`, and look at the changed pages in a browser.

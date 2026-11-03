@@ -109,6 +109,11 @@ export const load: PageServerLoad = async ({
   const questsCompletedHere = questMemberships.filter(
     (row) => row.role === "complete",
   );
+  const redactedQuests = { offer: 0, complete: 0 };
+  for (const row of db
+    .prepare("SELECT role, quests FROM redacted_quest_npcs WHERE npc_id = ?")
+    .all(params.id) as Array<{ role: "offer" | "complete"; quests: number }>)
+    redactedQuests[row.role] = row.quests;
   const execute = async (
     sql: string,
     values: readonly (string | number | null)[],
@@ -438,7 +443,7 @@ export const load: PageServerLoad = async ({
       season: npc.season,
       faction: npc.faction,
       roles,
-      questCount: questsOffered.length,
+      questCount: questsOffered.length + redactedQuests.offer,
       level: npc.level,
       sub_zone_name: spawns.length === 1 ? spawns[0].sub_zone_name : null,
       kill_reputation_summary: npcKillReputation(npc)
@@ -457,6 +462,7 @@ export const load: PageServerLoad = async ({
     description,
     questsOffered,
     questsCompletedHere,
+    redactedQuests,
     itemsSold,
     seasonalStock,
     drops: [],

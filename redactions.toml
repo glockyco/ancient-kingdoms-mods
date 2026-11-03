@@ -47,12 +47,14 @@ zone_ids = []
 # Name an entity here when nothing in the data distinguishes it from content
 # that is deliberately published, so no rule over the references can select it.
 #
-# relics_of_the_ancient_faith and the_lost_warden: quests that must not appear
-# in any listing or relationship. Naming a quest also removes what only that
-# quest gives. relics_of_the_ancient_faith is the only source of
-# key_to_the_north_wing, so the key goes with it. The portal the key opens
-# inside Temple of Valaark still needs it, so the map shows that portal's key
-# as redacted.
+# relics_of_the_ancient_faith and the_lost_warden: Vaerion Shadeborn's quests
+# for wearers of the Draconium Armor, left out at the developers' request. No
+# listing or search names them. Vaerion's page, the Draconium Armor pages and
+# the Ancient Gods page show them as redacted quests. Naming a quest also
+# removes what only that quest gives. relics_of_the_ancient_faith is the only
+# source of key_to_the_north_wing, so the key goes with it. The portal the key
+# opens inside Temple of Valaark still needs it, so the map shows that portal's
+# key as redacted.
 #
 # valaarks_corrupted_seal: the Corrupted Valaark used to drop it, and its drop
 # table no longer names it. Nothing else gives or uses it, so no player can

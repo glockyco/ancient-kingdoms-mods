@@ -45,7 +45,8 @@ export const load: PageServerLoad = ({ params }) => {
     unlock_count:
       faction.gatedItems.length +
       faction.houses.length +
-      faction.questRequirements.length,
+      faction.questRequirements.length +
+      faction.redactedQuestRequirements,
     top_requirement: topRequirement,
     top_requirement_tier:
       topRequirement > 0 ? reputationTierName(tiers, topRequirement) : null,

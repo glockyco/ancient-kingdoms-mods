@@ -397,15 +397,30 @@
           : []),
       ] as Array<RecipeUsage & { redacted?: number }>,
 
-      neededForQuests:
-        data.usages.quests?.map((q) => ({
+      // One row stands for the redacted quests that need the item, without
+      // naming any or saying what they need.
+      neededForQuests: [
+        ...(data.usages.quests?.map((q) => ({
           ...q,
           level_recommended: q.quest_level_recommended,
           level_required: q.quest_level_required,
           class_restrictions: q.class_restrictions
             ? JSON.parse(q.class_restrictions)
             : null,
-        })) || [],
+        })) || []),
+        ...(data.redactedQuests > 0
+          ? [
+              {
+                quest_id: "",
+                quest_name: "",
+                level_recommended: 0,
+                class_restrictions: null,
+                is_repeatable: false,
+                redacted: data.redactedQuests,
+              },
+            ]
+          : []),
+      ],
 
       usedAsCurrencyFor: Object.values(
         (data.usages.currency || []).reduce(
@@ -607,6 +622,8 @@
     purpose?: string;
     amount?: number;
     completion_requirements?: string[];
+    /** A placeholder row for this many redacted quests, which it does not name. */
+    redacted?: number;
   };
   const questColumns = (rows: QuestRow[], withNeed: boolean) =>
     [
@@ -905,7 +922,11 @@
   row: Row<QuestRow>;
 })}
   {@const quest = row.original}
-  {#if cell.column.id === "quest_name"}
+  {#if quest.redacted}
+    {#if cell.column.id === "quest_name"}
+      <RedactedEntry kind="quest" slot={false} count={quest.redacted} />
+    {/if}
+  {:else if cell.column.id === "quest_name"}
     <!-- One block, because the table cell lays out its children in a row. -->
     <div>
       <div class="flex items-center gap-1.5">
@@ -1072,7 +1093,7 @@
   {@const recipe = row.original}
   {#if recipe.redacted}
     {#if cell.column.id === "result_item_name"}
-      <RedactedEntry kind="recipe" count={recipe.redacted} />
+      <RedactedEntry kind="recipe" slot={false} count={recipe.redacted} />
     {/if}
   {:else if cell.column.id === "result_item_name"}
     <a
@@ -2592,8 +2613,11 @@
     <RelationTable
       title="Required for Quests"
       mapTarget={(quest) =>
-        mapTarget("quest")(quest.quest_id, quest.quest_name)}
+        quest.redacted
+          ? null
+          : mapTarget("quest")(quest.quest_id, quest.quest_name)}
       rows={computed.neededForQuests as QuestRow[]}
+      count={(data.usages.quests?.length ?? 0) + data.redactedQuests}
       columns={questColumns(computed.neededForQuests as QuestRow[], true)}
       cell={renderQuestCell}
       urlKey="item-{data.item.id}-quest-needs"

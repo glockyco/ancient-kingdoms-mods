@@ -84,8 +84,12 @@ DERIVED_TABLES = frozenset(
         "npc_skills",
         "item_class_requirements",
         "skill_predecessors",
-        # The hidden-crafting redaction fills it before it removes the recipes.
+        # The redaction fills them before it removes the recipes and quests
+        # they count.
         "redacted_recipe_items",
+        "redacted_quest_npcs",
+        "redacted_quest_items",
+        "redacted_quest_factions",
     }
 )
 

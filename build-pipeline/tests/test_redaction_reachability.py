@@ -216,6 +216,68 @@ class UnconnectedContentTests(ReachabilityTestCase):
         self.assertTrue(self._present("skills", "unused"))
 
 
+class RemovedQuestTests(ReachabilityTestCase):
+    """A removed quest leaves a count on each published page that listed it."""
+
+    def setUp(self):
+        super().setUp()
+        self.conn.execute("INSERT INTO npcs (id, name) VALUES ('warden', 'Warden')")
+        self.conn.execute(
+            "INSERT INTO factions (id, name) VALUES ('gods', 'Ancient Gods')"
+        )
+        self._item("armour")
+        self._dropped_by("armour", "guard", PUBLISHED)
+        self._item("relic")
+        self.conn.executemany(
+            "INSERT INTO quests (id, name, quest_type) VALUES (?, ?, ?)",
+            [("secret", "Secret", "equip_item"), ("public", "Public", "kill")],
+        )
+        self.conn.executemany(
+            "INSERT INTO npc_quest_memberships (id, npc_id, quest_id, role, ordinal) "
+            "VALUES (?, 'warden', ?, ?, ?)",
+            [
+                ("offer_secret", "secret", "offer", 0),
+                ("complete_secret", "secret", "complete", 0),
+                ("offer_public", "public", "offer", 1),
+            ],
+        )
+        for ordinal, item, role in (
+            (0, "armour", "equipped"),
+            (1, "relic", "gather_counter"),
+        ):
+            self.conn.execute(
+                "INSERT INTO quest_objectives (id, quest_id, ordinal, kind, role, amount) "
+                "VALUES (?, 'secret', ?, 'item', ?, 1)",
+                (f"secret_{ordinal}", ordinal, role),
+            )
+            self.conn.execute(
+                "INSERT INTO quest_objective_items (id, item_id) VALUES (?, ?)",
+                (f"secret_{ordinal}", item),
+            )
+        self.conn.execute(
+            "INSERT INTO quest_faction_requirements (id, quest_id, ordinal, faction_id, standing) "
+            "VALUES ('secret_standing', 'secret', 0, 'gods', 721000)"
+        )
+        self.conn.commit()
+        self._run(exclude_zone_ids=set(), exclude_entity_ids={"secret", "relic"})
+
+    def _counts(self, table):
+        return sorted(self.conn.execute(f"SELECT * FROM {table}"))
+
+    def test_the_npc_counts_the_removed_quest_it_offers_and_completes(self):
+        self.assertFalse(self._present("quests", "secret"))
+        self.assertEqual(
+            self._counts("redacted_quest_npcs"),
+            [("warden", "complete", 1), ("warden", "offer", 1)],
+        )
+
+    def test_an_item_counts_the_removed_quest_unless_it_is_removed_too(self):
+        self.assertEqual(self._counts("redacted_quest_items"), [("armour", 1)])
+
+    def test_the_faction_counts_the_removed_quest_that_needs_its_standing(self):
+        self.assertEqual(self._counts("redacted_quest_factions"), [("gods", 1)])
+
+
 class ReferenceKindTests(ReachabilityTestCase):
     """Reachability considers every kind of reference, not monster use alone."""
 

@@ -2075,6 +2075,25 @@ CREATE TABLE redacted_recipe_items (
     recipes INTEGER NOT NULL CHECK (recipes > 0),
     PRIMARY KEY (item_id,role)
 );
+-- Published NPCs that offer or complete a quest the redaction removes, counted
+-- in quests. The quests themselves are removed, so this is all a page says.
+CREATE TABLE redacted_quest_npcs (
+    npc_id TEXT NOT NULL REFERENCES npcs(id) DEFERRABLE INITIALLY DEFERRED,
+    role TEXT NOT NULL CHECK (role IN ('offer','complete')),
+    quests INTEGER NOT NULL CHECK (quests > 0),
+    PRIMARY KEY (npc_id,role)
+);
+-- Published items that a removed quest asks a player to have, deliver, equip,
+-- brew or read, counted in quests.
+CREATE TABLE redacted_quest_items (
+    item_id TEXT NOT NULL PRIMARY KEY REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    quests INTEGER NOT NULL CHECK (quests > 0)
+);
+-- Published factions whose standing a removed quest requires, counted in quests.
+CREATE TABLE redacted_quest_factions (
+    faction_id TEXT NOT NULL PRIMARY KEY REFERENCES factions(id) DEFERRABLE INITIALLY DEFERRED,
+    quests INTEGER NOT NULL CHECK (quests > 0)
+);
 CREATE TABLE skill_predecessors (
     id TEXT PRIMARY KEY,
     skill_id TEXT NOT NULL REFERENCES skills(id) DEFERRABLE INITIALLY DEFERRED,

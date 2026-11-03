@@ -38,10 +38,13 @@ A published entry that refers to redacted content SHALL stay on its page as a pl
 - **WHEN** a quest's game text names a redacted item
 - **THEN** the text stays as the game wrote it
 
-#### Scenario: A quest named for exclusion
+#### Scenario: An NPC offers quests named for exclusion
 
-- **WHEN** an NPC gives a quest that the configuration names for exclusion
-- **THEN** the NPC's page shows no entry for that quest, because a named quest must not appear in any listing or relationship
+- **WHEN** an NPC offers and completes two quests that the configuration names for exclusion
+- **THEN** the NPC's Quests and Quests Completed Here each list the placeholder "2 redacted quests" and count both quests in the heading
+- **AND** an item a quest needs lists the placeholder "Redacted quest" under Required for Quests, and a faction whose standing a quest requires lists it under Quests
+- **AND** no placeholder states the quests' levels, needs or required standing
+- **AND** no list, search result or page names the quests
 
 ### Requirement: A placeholder names the kind of redacted content
 

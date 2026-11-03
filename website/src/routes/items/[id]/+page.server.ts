@@ -82,6 +82,8 @@ export const load: PageServerLoad = async ({
     regionalCooking: ItemRegionalCooking[];
     /** Recipes hidden by configuration that make or use this item. */
     redactedRecipes: { result: number; material: number };
+    /** Redacted quests that need this item. */
+    redactedQuests: number;
   }
 > => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
@@ -211,6 +213,12 @@ export const load: PageServerLoad = async ({
     )
     .all(params.id) as Array<{ role: "result" | "material"; recipes: number }>)
     redactedRecipes[row.role] = row.recipes;
+  const redactedQuests =
+    (
+      db
+        .prepare("SELECT quests FROM redacted_quest_items WHERE item_id = ?")
+        .get(params.id) as { quests: number } | undefined
+    )?.quests ?? 0;
   // A distribution item or a pack is never delivered itself, but the page lists the
   // awards that roll it and the vendors and recipes that offer it. A redacted
   // recipe is a source the page names without its content.
@@ -506,6 +514,10 @@ export const load: PageServerLoad = async ({
 
   const description = itemDescription(item, {
     usages,
+    redactedUses: {
+      recipes: redactedRecipes.material,
+      quests: redactedQuests,
+    },
     packContents,
     randomOutcomes: hasWithheldRandomOutcomes ? undefined : randomOutcomes,
     chestKeyOpens,
@@ -537,6 +549,7 @@ export const load: PageServerLoad = async ({
     usages,
     hasKnownSource,
     redactedRecipes,
+    redactedQuests,
     acquisitionNotes,
     foodBuffUsesTavernSpirit,
     blockedDuringSeasons,

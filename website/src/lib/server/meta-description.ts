@@ -48,6 +48,8 @@ import { seasonInSentence, type Season } from "$lib/data/seasonal-events";
 export interface ItemMetaContext {
   /** Aggregated usages from getItemUsages(). Used for general-item routing. */
   usages?: ItemUsages;
+  /** Redacted recipes and quests that use the item, which the usage counts include. */
+  redactedUses?: { recipes: number; quests: number };
   /** Pack contents pre-joined with item names. */
   packContents?: Array<{ item_name: string; amount: number }>;
   /** Random-container outcomes pre-joined with item names. */
@@ -730,8 +732,14 @@ function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
     return `${q} item.${sell}${sourcePhrase(ctx)}`;
   }
   const counts: Array<{ category: string; count: number }> = [
-    { category: "recipe", count: usages.recipes.length },
-    { category: "quest", count: usages.quests.length },
+    {
+      category: "recipe",
+      count: usages.recipes.length + (ctx.redactedUses?.recipes ?? 0),
+    },
+    {
+      category: "quest",
+      count: usages.quests.length + (ctx.redactedUses?.quests ?? 0),
+    },
     {
       category: "exchange",
       count: new Set(usages.currency.map((c) => c.purchasable_item_id)).size,

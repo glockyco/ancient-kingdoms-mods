@@ -97,6 +97,8 @@ export interface FactionQuestRequirementRow {
   giver_id: string | null;
   giver_name: string | null;
   givers: { id: string; name: string }[];
+  /** A placeholder row for this many redacted quests, which it does not name. */
+  redacted?: number;
 }
 
 export interface FactionDetail {
@@ -113,6 +115,8 @@ export interface FactionDetail {
   gatedItems: FactionGatedItemRow[];
   houses: FactionHouseRow[];
   questRequirements: FactionQuestRequirementRow[];
+  /** Redacted quests that require standing with the faction, counted without names. */
+  redactedQuestRequirements: number;
 }
 
 /**
@@ -387,6 +391,11 @@ export function getFactionDetail(id: string): FactionDetail | null {
     requirementsByQuest.set(key, requirement);
   }
   const questRequirements = [...requirementsByQuest.values()];
+  const redactedQuestRequirements =
+    query<{ quests: number }>(
+      "SELECT quests FROM redacted_quest_factions WHERE faction_id = ?",
+      [faction.id],
+    )[0]?.quests ?? 0;
 
   return {
     id: faction.id,
@@ -402,5 +411,6 @@ export function getFactionDetail(id: string): FactionDetail | null {
     gatedItems,
     houses,
     questRequirements,
+    redactedQuestRequirements,
   };
 }

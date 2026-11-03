@@ -12,6 +12,7 @@
   import EntityLink from "$lib/components/EntityLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import RedactedEntry from "$lib/components/RedactedEntry.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import {
@@ -55,8 +56,28 @@
     data.faction.vendors.length > 0 ||
       data.faction.gatedItems.length > 0 ||
       data.faction.houses.length > 0 ||
-      data.faction.questRequirements.length > 0,
+      data.faction.questRequirements.length > 0 ||
+      data.faction.redactedQuestRequirements > 0,
   );
+
+  // One row stands for the redacted quests that need standing, without naming
+  // any or saying how much they need.
+  const questRequirementRows = $derived<FactionQuestRequirementRow[]>([
+    ...data.faction.questRequirements,
+    ...(data.faction.redactedQuestRequirements > 0
+      ? [
+          {
+            id: "",
+            name: "",
+            required_value: 0,
+            giver_id: null,
+            giver_name: null,
+            givers: [],
+            redacted: data.faction.redactedQuestRequirements,
+          },
+        ]
+      : []),
+  ]);
 
   /**
    * Magnitude the kill applies to *this* faction. The shared helpers group
@@ -552,7 +573,13 @@
   cell: Cell<FactionQuestRequirementRow, unknown>;
   row: Row<FactionQuestRequirementRow>;
 })}
-  {#if cell.column.id === "name"}
+  {#if row.original.redacted}
+    {#if cell.column.id === "name"}
+      <RedactedEntry kind="quest" slot={false} count={row.original.redacted} />
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "name"}
     <a
       href="/quests/{row.original.id}"
       class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -699,13 +726,16 @@
         </div>
       {/if}
 
-      {#if data.faction.questRequirements.length > 0}
+      {#if questRequirementRows.length > 0}
         <div>
           <h3 class="mb-3 text-lg font-medium">
-            Quests ({formatNumber(data.faction.questRequirements.length)})
+            Quests ({formatNumber(
+              data.faction.questRequirements.length +
+                data.faction.redactedQuestRequirements,
+            )})
           </h3>
           <DataTable
-            data={data.faction.questRequirements}
+            data={questRequirementRows}
             columns={questRequirementColumns}
             renderCell={renderQuestRequirementCell}
             initialSorting={[
