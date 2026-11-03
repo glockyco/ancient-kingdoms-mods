@@ -23,7 +23,8 @@
 ## 4. Interface in the game
 
 - [x] 4.1 Replace `AnnouncedChecksum` with the answer file, remove the chat line and About's update row, and verify in the game that a 1.0.2 preferences file loses the old entry and About shows version, links and feedback only
-- [ ] 4.2 Add the first-start question with keyboard and gamepad control, and verify in the game with the mouse, with the arrow keys and Enter, and with a gamepad, and that the local server sees no request before the answer
+- [x] 4.2 Add the first-start question with keyboard and gamepad control, and verify in the game with the mouse, with the arrow keys and Enter, and with a gamepad, and that the local server sees no request before the answer
+  - No gamepad was available, so a virtual one from the Input System stood in under CrossOver: the d-pad moved the highlight, the south button chose "Only tell me about updates", the game's menu behind the window stayed put, and its own navigation came back once the window closed. The mouse and the arrow keys with Enter ran too, and no request reached the test site before the answer.
 - [x] 4.3 Add the start-screen card in every state with its change lines, and verify each state in the game with a screenshot, and that the card hides in character selection and in the world
 - [x] 4.4 Add the Updates page with its status lines and the three answers, and verify each state in the game with a screenshot
 - [x] 4.5 Add the icons through `generate-mod-icons.mjs` and `Icons.cs`, and verify that the card, the question and the page show them in the game
