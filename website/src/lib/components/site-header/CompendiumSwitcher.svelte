@@ -94,6 +94,7 @@
   .toggle {
     display: grid;
     place-items: center;
+    cursor: pointer;
     width: 2.25rem;
     height: 2.25rem;
     border-radius: calc(var(--radius) - 2px);
