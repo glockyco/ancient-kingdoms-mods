@@ -600,8 +600,11 @@
       </h2>
       <div class="bg-muted/30 rounded-md border p-4 space-y-4">
         <div class="space-y-3">
-          <div class="flex items-center gap-4">
-            <label for="skill-slider" class="w-40 shrink-0">
+          <!-- On phones the label takes its own line, so the slider and its value fit. -->
+          <div
+            class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 sm:flex sm:gap-4"
+          >
+            <label for="skill-slider" class="col-span-2 sm:w-40 sm:shrink-0">
               {skillName} Skill:
             </label>
             <input
@@ -611,14 +614,19 @@
               max="100"
               step="1"
               bind:value={skillLevel}
-              class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+              class="h-2 w-full min-w-0 flex-1 cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
             />
             <span class="font-mono w-24 text-right">{skillLevel}%</span>
           </div>
 
           {#if resource.is_mineral}
-            <div class="flex items-center gap-4">
-              <label for="pickaxe-slider" class="w-40 shrink-0">
+            <div
+              class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 sm:flex sm:gap-4"
+            >
+              <label
+                for="pickaxe-slider"
+                class="col-span-2 sm:w-40 sm:shrink-0"
+              >
                 Pickaxe Quality:
               </label>
               <input
@@ -628,7 +636,7 @@
                 max="4"
                 step="1"
                 bind:value={pickaxeQuality}
-                class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                class="h-2 w-full min-w-0 flex-1 cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
               />
               <span class="font-mono w-24 text-right">
                 {QUALITY_NAMES[pickaxeQuality]}
