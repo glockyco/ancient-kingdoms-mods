@@ -7,6 +7,7 @@
 <script lang="ts">
   import { afterNavigate } from "$app/navigation";
   import { page } from "$app/state";
+  import { tick } from "svelte";
   import EntityGlyph from "$lib/components/EntityGlyph.svelte";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import SteamIcon from "$lib/components/SteamIcon.svelte";
@@ -56,6 +57,15 @@
 
   function closeBrowse(): void {
     if (browse) browse.open = false;
+  }
+
+  // Opening a column closes the one above it, which moves this heading up and
+  // can take it out of the scrolled panel's view.
+  async function toggleGroup(id: string, event: MouseEvent) {
+    const heading = event.currentTarget as HTMLElement;
+    expanded = expanded === id ? null : id;
+    await tick();
+    heading.scrollIntoView({ block: "nearest" });
   }
 
   function onToggle(): void {
@@ -148,8 +158,7 @@
                     type="button"
                     class="mobile-heading"
                     aria-expanded={expanded === group.id}
-                    onclick={() =>
-                      (expanded = expanded === group.id ? null : group.id)}
+                    onclick={(event) => toggleGroup(group.id, event)}
                     >{group.label}</button
                   >
                 </h2>
