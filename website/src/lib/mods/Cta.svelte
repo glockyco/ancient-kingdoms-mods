@@ -16,7 +16,13 @@
   } = $props();
 </script>
 
-<a class="cta {variant} {className}" {href} download={download || undefined}>
+<!-- An empty download attribute keeps the file's own name. download="true"
+     made browsers save PocketCompendium.dll as a file called "true". -->
+<a
+  class="cta {variant} {className}"
+  {href}
+  download={download ? "" : undefined}
+>
   {@render children()}
 </a>
 
