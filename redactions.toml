@@ -10,16 +10,7 @@
 # materials say that a redacted recipe makes or uses them, without naming the
 # recipe's other items or amounts.
 [items.hide_crafting]
-ids = [
-    "divine_essence",
-    "draconium_wyrmguard",
-    "draconium_scaleplate",
-    "draconium_crownhelm",
-    "draconium_wyrmtreads",
-    "draconium_scalegrasp",
-    "steel_of_ancient_dragons",
-    "valaark_ancient_coin",
-]
+ids = []
 
 # Zones whose positions the compendium leaves out at the developers' request.
 # Every entity of the zone stays published. Map geometry and position fields in
@@ -32,7 +23,7 @@ ids = [
 # Temple of Valaark: the game also keeps its layout from players. The client
 # closes the live map and substitutes a static illustration, disables the
 # player marker, refuses teleport items, and returns a player who enters to
-# their bind point.
+# their bind point. The rest of the temple's content is published.
 [zones.suppress_positions]
 zone_ids = ["temple_of_valaark"]
 
@@ -46,15 +37,6 @@ zone_ids = []
 #
 # Name an entity here when nothing in the data distinguishes it from content
 # that is deliberately published, so no rule over the references can select it.
-#
-# relics_of_the_ancient_faith and the_lost_warden: Vaerion Shadeborn's quests
-# for wearers of the Draconium Armor, left out at the developers' request. No
-# listing or search names them. Vaerion's page, the Draconium Armor pages and
-# the Ancient Gods page show them as redacted quests. Naming a quest also
-# removes what only that quest gives. relics_of_the_ancient_faith is the only
-# source of key_to_the_north_wing, so the key goes with it. The portal the key
-# opens inside Temple of Valaark still needs it, so the map shows that portal's
-# key as redacted.
 #
 # valaarks_corrupted_seal: the Corrupted Valaark used to drop it, and its drop
 # table no longer names it. Nothing else gives or uses it, so no player can
@@ -73,8 +55,6 @@ zone_ids = []
 # placement.
 [entities.exclude]
 ids = [
-    "relics_of_the_ancient_faith",
-    "the_lost_warden",
     "new_skill_placeholder",
     "compassion_escort",
     "valaarks_corrupted_seal",

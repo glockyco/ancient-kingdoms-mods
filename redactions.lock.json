@@ -1,117 +1,404 @@
 {
-  "hidden_crafting": {
-    "divine_essence": 1,
-    "draconium_crownhelm": 1,
-    "draconium_scalegrasp": 1,
-    "draconium_scaleplate": 1,
-    "draconium_wyrmguard": 1,
-    "draconium_wyrmtreads": 1,
-    "steel_of_ancient_dragons": 1,
-    "valaark_ancient_coin": 1
-  },
+  "hidden_crafting": {},
   "removed": {
-    "acquisition_methods:[\"method\",\"quest_accept\",\"relics_of_the_ancient_faith\"]": {
+    "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"attempt\",\"always\"]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "acquisition_quest_details:[\"method\",\"quest_accept\",\"relics_of_the_ancient_faith\"]"
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
       ]
     },
-    "acquisition_methods:[\"method\",\"quest_accept\",\"the_lost_warden\"]": {
+    "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"attempt\",\"always\"]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "acquisition_quest_details:[\"method\",\"quest_accept\",\"the_lost_warden\"]"
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
       ]
     },
-    "acquisition_methods:[\"method\",\"quest_complete\",\"relics_of_the_ancient_faith\"]": {
+    "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"attempt\",\"always\"]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "acquisition_quest_details:[\"method\",\"quest_complete\",\"relics_of_the_ancient_faith\"]"
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
       ]
     },
-    "acquisition_methods:[\"method\",\"quest_complete\",\"the_lost_warden\"]": {
+    "acquisition_home_providers:[\"home\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"craft_station\",\":0\",47]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "acquisition_quest_details:[\"method\",\"quest_complete\",\"the_lost_warden\"]"
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
       ]
     },
-    "acquisition_outputs:[\"output\",\"[\\\"method\\\",\\\"quest_complete\\\",\\\"relics_of_the_ancient_faith\\\"]\",0]": {
+    "acquisition_home_providers:[\"home\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"craft_station\",\":0\",48]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "acquisition_methods:[\"method\",\"quest_complete\",\"relics_of_the_ancient_faith\"]"
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
       ]
     },
-    "acquisition_providers_npcs:[\"provider\",\"npcs\",\"[\\\"method\\\",\\\"quest_accept\\\",\\\"relics_of_the_ancient_faith\\\"]\",\"vaerion_shadeborn\",null]": {
+    "acquisition_home_providers:[\"home\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"craft_station\",\":0\",49]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "acquisition_methods:[\"method\",\"quest_accept\",\"relics_of_the_ancient_faith\"]"
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
       ]
     },
-    "acquisition_providers_npcs:[\"provider\",\"npcs\",\"[\\\"method\\\",\\\"quest_accept\\\",\\\"the_lost_warden\\\"]\",\"vaerion_shadeborn\",null]": {
+    "acquisition_inputs:[\"input\",\"[\\\"cost\\\",\\\"[\\\\\\\"method\\\\\\\",\\\\\\\"recipe\\\\\\\",\\\\\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\\\\\"]\\\",\\\"attempt\\\",\\\"always\\\"]\",0]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "acquisition_methods:[\"method\",\"quest_accept\",\"the_lost_warden\"]"
+        "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"attempt\",\"always\"]"
       ]
     },
-    "acquisition_providers_npcs:[\"provider\",\"npcs\",\"[\\\"method\\\",\\\"quest_complete\\\",\\\"relics_of_the_ancient_faith\\\"]\",\"vaerion_shadeborn\",null]": {
+    "acquisition_inputs:[\"input\",\"[\\\"cost\\\",\\\"[\\\\\\\"method\\\\\\\",\\\\\\\"recipe\\\\\\\",\\\\\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\\\\\"]\\\",\\\"attempt\\\",\\\"always\\\"]\",1]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "acquisition_methods:[\"method\",\"quest_complete\",\"relics_of_the_ancient_faith\"]"
+        "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"attempt\",\"always\"]"
       ]
     },
-    "acquisition_providers_npcs:[\"provider\",\"npcs\",\"[\\\"method\\\",\\\"quest_complete\\\",\\\"the_lost_warden\\\"]\",\"vaerion_shadeborn\",null]": {
+    "acquisition_inputs:[\"input\",\"[\\\"cost\\\",\\\"[\\\\\\\"method\\\\\\\",\\\\\\\"recipe\\\\\\\",\\\\\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\\\\\"]\\\",\\\"attempt\\\",\\\"always\\\"]\",2]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "acquisition_methods:[\"method\",\"quest_complete\",\"the_lost_warden\"]"
+        "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"attempt\",\"always\"]"
       ]
     },
-    "acquisition_quest_details:[\"method\",\"quest_accept\",\"relics_of_the_ancient_faith\"]": {
+    "acquisition_inputs:[\"input\",\"[\\\"cost\\\",\\\"[\\\\\\\"method\\\\\\\",\\\\\\\"recipe\\\\\\\",\\\\\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\\\\\"]\\\",\\\"attempt\\\",\\\"always\\\"]\",0]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "quests:relics_of_the_ancient_faith"
+        "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"attempt\",\"always\"]"
       ]
     },
-    "acquisition_quest_details:[\"method\",\"quest_accept\",\"the_lost_warden\"]": {
+    "acquisition_inputs:[\"input\",\"[\\\"cost\\\",\\\"[\\\\\\\"method\\\\\\\",\\\\\\\"recipe\\\\\\\",\\\\\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\\\\\"]\\\",\\\"attempt\\\",\\\"always\\\"]\",1]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "quests:the_lost_warden"
+        "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"attempt\",\"always\"]"
       ]
     },
-    "acquisition_quest_details:[\"method\",\"quest_complete\",\"relics_of_the_ancient_faith\"]": {
+    "acquisition_inputs:[\"input\",\"[\\\"cost\\\",\\\"[\\\\\\\"method\\\\\\\",\\\\\\\"recipe\\\\\\\",\\\\\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\\\\\"]\\\",\\\"attempt\\\",\\\"always\\\"]\",0]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "quests:relics_of_the_ancient_faith"
+        "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"attempt\",\"always\"]"
       ]
     },
-    "acquisition_quest_details:[\"method\",\"quest_complete\",\"the_lost_warden\"]": {
+    "acquisition_inputs:[\"input\",\"[\\\"cost\\\",\\\"[\\\\\\\"method\\\\\\\",\\\\\\\"recipe\\\\\\\",\\\\\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\\\\\"]\\\",\\\"attempt\\\",\\\"always\\\"]\",1]": {
       "mechanism": "cascade",
       "pass": 0,
       "reason": "required definition parent was removed",
       "via": [
-        "quests:the_lost_warden"
+        "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"attempt\",\"always\"]"
+      ]
+    },
+    "acquisition_inputs:[\"input\",\"[\\\"cost\\\",\\\"[\\\\\\\"method\\\\\\\",\\\\\\\"recipe\\\\\\\",\\\\\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\\\\\"]\\\",\\\"attempt\\\",\\\"always\\\"]\",2]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_cost_groups:[\"cost\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"attempt\",\"always\"]"
+      ]
+    },
+    "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_recipe_details:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_recipe_details:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_recipe_details:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_outputs:[\"output\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",0]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_outputs:[\"output\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",0]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_outputs:[\"output\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",0]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"craft_station_crescent_coast_478_333\",47]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"craft_station_everfrost_185_674\",47]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"craft_station_molten_sanctuary_-693_692\",47]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"craft_station_northern_wastes_347_1326\",47]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"craft_station_the_lone-lands_200_465\",47]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"craft_station_the_molten_summit_638_727\",47]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"craft_station_twilight_forest_3_30\",47]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\\\"]\",\"craft_station_urord_nog_fortress_650_212\",47]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"craft_station_crescent_coast_478_333\",48]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"craft_station_everfrost_185_674\",48]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"craft_station_molten_sanctuary_-693_692\",48]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"craft_station_northern_wastes_347_1326\",48]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"craft_station_the_lone-lands_200_465\",48]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"craft_station_the_molten_summit_638_727\",48]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"craft_station_twilight_forest_3_30\",48]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\\\"]\",\"craft_station_urord_nog_fortress_650_212\",48]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"craft_station_crescent_coast_478_333\",49]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"craft_station_everfrost_185_674\",49]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"craft_station_molten_sanctuary_-693_692\",49]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"craft_station_northern_wastes_347_1326\",49]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"craft_station_the_lone-lands_200_465\",49]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"craft_station_the_molten_summit_638_727\",49]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"craft_station_twilight_forest_3_30\",49]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_providers_crafting_stations:[\"provider\",\"crafting_stations\",\"[\\\"method\\\",\\\"recipe\\\",\\\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\\\"]\",\"craft_station_urord_nog_fortress_650_212\",49]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "acquisition_methods:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]"
+      ]
+    },
+    "acquisition_recipe_details:[\"method\",\"recipe\",\"29547cc1ce85e48af1d6a15ed9ef72811f3212786b76e7c8e089f117cc03f34d\"]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "items:valaark_ancient_coin"
+      ]
+    },
+    "acquisition_recipe_details:[\"method\",\"recipe\",\"3596f92407ab1085888a81dda2a092465fb100d45669d023bf8c931892cd7781\"]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "items:steel_of_ancient_dragons"
+      ]
+    },
+    "acquisition_recipe_details:[\"method\",\"recipe\",\"665f1029cc89813401173e837be3544ba5a357c6841575d566b69b3e279eeaf8\"]": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "items:divine_essence"
+      ]
+    },
+    "crafting_recipes:divine_essence": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "items:divine_essence"
+      ]
+    },
+    "crafting_recipes:steel_of_ancient_dragons": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "items:steel_of_ancient_dragons"
+      ]
+    },
+    "crafting_recipes:valaark_ancient_coin": {
+      "mechanism": "cascade",
+      "pass": 0,
+      "reason": "required definition parent was removed",
+      "via": [
+        "items:valaark_ancient_coin"
       ]
     },
     "item_class_requirements:[\"item_class\",\"deathcallers_phylactery\",0]": {
@@ -189,14 +476,6 @@
     "items:imperial_marshals_seal": {
       "mechanism": "ignore_journal",
       "reason": "the game marks the item ignore_journal"
-    },
-    "items:key_to_the_north_wing": {
-      "mechanism": "cascade",
-      "pass": 0,
-      "reason": "required definition parent was removed",
-      "via": [
-        "acquisition_outputs:[\"output\",\"[\\\"method\\\",\\\"quest_complete\\\",\\\"relics_of_the_ancient_faith\\\"]\",0]"
-      ]
     },
     "items:last_minstrels_resonance": {
       "mechanism": "ignore_journal",
@@ -278,207 +557,7 @@
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
     },
-    "npc_quest_memberships:[\"quest_member\",\"vaerion_shadeborn\",\"complete\",0]": {
-      "mechanism": "cascade",
-      "pass": 0,
-      "reason": "required definition parent was removed",
-      "via": [
-        "quests:the_lost_warden"
-      ]
-    },
-    "npc_quest_memberships:[\"quest_member\",\"vaerion_shadeborn\",\"complete\",1]": {
-      "mechanism": "cascade",
-      "pass": 0,
-      "reason": "required definition parent was removed",
-      "via": [
-        "quests:relics_of_the_ancient_faith"
-      ]
-    },
-    "npc_quest_memberships:[\"quest_member\",\"vaerion_shadeborn\",\"offer\",0]": {
-      "mechanism": "cascade",
-      "pass": 0,
-      "reason": "required definition parent was removed",
-      "via": [
-        "quests:the_lost_warden"
-      ]
-    },
-    "npc_quest_memberships:[\"quest_member\",\"vaerion_shadeborn\",\"offer\",1]": {
-      "mechanism": "cascade",
-      "pass": 0,
-      "reason": "required definition parent was removed",
-      "via": [
-        "quests:relics_of_the_ancient_faith"
-      ]
-    },
     "npcs:compassion_escort": {
-      "mechanism": "manual",
-      "reason": "named in the manual exclusion list"
-    },
-    "quest_faction_requirements:[\"quest_faction\",\"relics_of_the_ancient_faith\",0]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:relics_of_the_ancient_faith"
-      ]
-    },
-    "quest_faction_requirements:[\"quest_faction\",\"the_lost_warden\",0]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:the_lost_warden"
-      ]
-    },
-    "quest_objective_items:[\"objective\",\"relics_of_the_ancient_faith\",0]": {
-      "mechanism": "cascade",
-      "pass": 6,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quest_objectives:[\"objective\",\"relics_of_the_ancient_faith\",0]"
-      ]
-    },
-    "quest_objective_items:[\"objective\",\"relics_of_the_ancient_faith\",1]": {
-      "mechanism": "cascade",
-      "pass": 6,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quest_objectives:[\"objective\",\"relics_of_the_ancient_faith\",1]"
-      ]
-    },
-    "quest_objective_items:[\"objective\",\"relics_of_the_ancient_faith\",2]": {
-      "mechanism": "cascade",
-      "pass": 6,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quest_objectives:[\"objective\",\"relics_of_the_ancient_faith\",2]"
-      ]
-    },
-    "quest_objective_items:[\"objective\",\"the_lost_warden\",0]": {
-      "mechanism": "cascade",
-      "pass": 6,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quest_objectives:[\"objective\",\"the_lost_warden\",0]"
-      ]
-    },
-    "quest_objective_items:[\"objective\",\"the_lost_warden\",1]": {
-      "mechanism": "cascade",
-      "pass": 6,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quest_objectives:[\"objective\",\"the_lost_warden\",1]"
-      ]
-    },
-    "quest_objective_items:[\"objective\",\"the_lost_warden\",2]": {
-      "mechanism": "cascade",
-      "pass": 6,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quest_objectives:[\"objective\",\"the_lost_warden\",2]"
-      ]
-    },
-    "quest_objective_items:[\"objective\",\"the_lost_warden\",3]": {
-      "mechanism": "cascade",
-      "pass": 6,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quest_objectives:[\"objective\",\"the_lost_warden\",3]"
-      ]
-    },
-    "quest_objective_items:[\"objective\",\"the_lost_warden\",4]": {
-      "mechanism": "cascade",
-      "pass": 6,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quest_objectives:[\"objective\",\"the_lost_warden\",4]"
-      ]
-    },
-    "quest_objectives:[\"objective\",\"relics_of_the_ancient_faith\",0]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:relics_of_the_ancient_faith"
-      ]
-    },
-    "quest_objectives:[\"objective\",\"relics_of_the_ancient_faith\",1]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:relics_of_the_ancient_faith"
-      ]
-    },
-    "quest_objectives:[\"objective\",\"relics_of_the_ancient_faith\",2]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:relics_of_the_ancient_faith"
-      ]
-    },
-    "quest_objectives:[\"objective\",\"the_lost_warden\",0]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:the_lost_warden"
-      ]
-    },
-    "quest_objectives:[\"objective\",\"the_lost_warden\",1]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:the_lost_warden"
-      ]
-    },
-    "quest_objectives:[\"objective\",\"the_lost_warden\",2]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:the_lost_warden"
-      ]
-    },
-    "quest_objectives:[\"objective\",\"the_lost_warden\",3]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:the_lost_warden"
-      ]
-    },
-    "quest_objectives:[\"objective\",\"the_lost_warden\",4]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:the_lost_warden"
-      ]
-    },
-    "quest_predecessors:[\"quest_fact\",\"predecessors\",\"relics_of_the_ancient_faith\",0]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:relics_of_the_ancient_faith"
-      ]
-    },
-    "quest_reward_slots:[\"quest_reward\",\"relics_of_the_ancient_faith\",0]": {
-      "mechanism": "cascade",
-      "pass": 5,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "quests:relics_of_the_ancient_faith"
-      ]
-    },
-    "quests:relics_of_the_ancient_faith": {
-      "mechanism": "manual",
-      "reason": "named in the manual exclusion list"
-    },
-    "quests:the_lost_warden": {
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
     },
