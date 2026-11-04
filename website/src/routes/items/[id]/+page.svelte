@@ -786,10 +786,10 @@
   <ul class="space-y-1">
     {#each materials as material (material.item_id)}
       <li>
+        <!-- The no-break space keeps the amount with the name's last word. -->
         <a href="/items/{material.item_id}" class={styles.link}
           >{material.item_name}</a
-        >
-        <span class="tabular-nums text-muted-foreground"
+        >&nbsp;<span class="tabular-nums text-muted-foreground"
           >×{formatNumber(material.amount)}</span
         >
       </li>
@@ -2332,7 +2332,8 @@
       </Card.Header>
       <Card.Content>
         <dl class={styles.factList}>
-          <div class={styles.fact}>
+          <!-- The only fact takes the card's width, so names do not wrap in a third of it. -->
+          <div class="{styles.fact} @2xl:col-span-3">
             <dt class={styles.label}>Materials</dt>
             <dd>{@render materialList(computed.craftedFrom[0].materials)}</dd>
           </div>
