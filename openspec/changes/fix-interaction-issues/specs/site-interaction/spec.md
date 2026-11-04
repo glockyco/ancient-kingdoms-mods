@@ -45,3 +45,21 @@ When the Browse menu shows one group at a time, opening a group SHALL keep the g
 
 - **WHEN** a reader scrolls the menu to the end of Character and opens Mechanics
 - **THEN** the Mechanics heading is at the top of the visible menu
+
+### Requirement: Controls name what they act on
+
+A link or button that repeats in every row SHALL include the row's name in its accessible name. An expand button SHALL name what it opens and state whether it is open.
+
+#### Scenario: A screen reader user reaches an ingredient's sources
+
+- **WHEN** a screen reader user reaches the expand button of Lily Essence in a recipe's ingredient tree
+- **THEN** it is announced as "Lily Essence sources" and as expanded or collapsed
+
+### Requirement: Pages fit a phone screen
+
+A page SHALL NOT be wider than a 360px screen, apart from tables that scroll sideways inside their own frame.
+
+#### Scenario: A reader opens a mineral's page on a phone
+
+- **WHEN** a reader opens Iron Ore's gathering page at 390px
+- **THEN** the page is 390px wide and the Mining Skill and Pickaxe Quality values are visible

@@ -13,8 +13,9 @@ Players report that the search fields are close to unusable on phones. Opening t
 - A tap or click on a link in a table that scrolls sideways no longer scrolls the table. Keyboard focus still scrolls the focused control into view.
 - Opening a group in the Browse menu keeps its heading in view.
 - A quick second tap no longer zooms the page. Pinch zoom keeps working.
-- Each link in the recipe list's details column is named after its recipe.
+- Each link in the recipe list's details column is named after its recipe, and each expand button in ingredient and source trees is named after what it opens and states whether it is open.
 - A search result that lists places counts a sub-zone that differs from its zone only in letter case as the zone.
+- The gathering sliders on a resource page fit a phone screen instead of widening the page.
 
 ## Capabilities
 

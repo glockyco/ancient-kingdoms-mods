@@ -8,6 +8,8 @@
 - [x] 1.4 Keep an opened Browse group's heading in view.
 - [x] 1.5 Name each recipe details link after its recipe.
 - [x] 1.6 Compare sub-zone and zone names without letter case in search details.
+- [x] 1.7 Name each expand button after what it opens and give it `aria-expanded`.
+- [x] 1.8 Put the gathering slider labels on their own line on phones.
 
 ## 2. Search on touch screens
 
