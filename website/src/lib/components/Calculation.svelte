@@ -182,7 +182,7 @@
               >
               {#if input.options || input.choices}
                 <select
-                  class="border-input dark:bg-input/30 h-9 w-full rounded-md border bg-transparent px-2 text-sm"
+                  class="border-input dark:bg-input/30 field-text h-9 w-full rounded-md border bg-transparent px-2"
                   value={values[input.key]}
                   onchange={(event) =>
                     update(

@@ -1212,7 +1212,7 @@
                 id="spawn-combat-stats-variant"
                 bind:value={selectedSpawnCombatStatIndex}
                 aria-label="Spawn combat stats variant"
-                class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                class="field-text h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
                 {#each data.spawnCombatStats as stats, index (`variant-${stats.level}-${index}`)}
                   <option value={index}>

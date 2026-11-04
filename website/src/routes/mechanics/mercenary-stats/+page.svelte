@@ -1049,7 +1049,7 @@
   select,
   .num-in {
     font: inherit;
-    font-size: 0.875rem;
+    font-size: var(--field-text-size);
     color: var(--foreground);
     background: var(--card);
     border: 1px solid var(--border);

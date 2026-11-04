@@ -191,9 +191,31 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* A quick second tap, such as on a pagination button, otherwise zooms the
+     page on phones. Pinch zoom keeps working. */
+  html {
+    touch-action: manipulation;
+  }
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Text in fields that take typing or a choice. iOS zooms the page into a
+   focused field whose text is smaller than 16px, so fields keep 16px text
+   unless a mouse is the main pointer on a wide screen. Scoped styles read
+   the size from --field-text-size. */
+:root {
+  --field-text-size: var(--text-base);
+  --field-text-leading: var(--text-base--line-height);
+  @media (width >= 48rem) and (pointer: fine) {
+    --field-text-size: var(--text-sm);
+    --field-text-leading: var(--text-sm--line-height);
+  }
+}
+@utility field-text {
+  font-size: var(--field-text-size);
+  line-height: var(--tw-leading, var(--field-text-leading));
 }
 
 /* Quality color utilities (must be explicit for dynamic Svelte classes) */

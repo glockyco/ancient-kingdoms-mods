@@ -558,7 +558,7 @@
               id="fishing-spot-selection"
               bind:value={selectedSpotId}
               aria-label="Fishing spot"
-              class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              class="field-text h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               {#each data.spots as spot, index (spot.id)}
                 <option value={spot.id}>
@@ -607,7 +607,7 @@
               <select
                 bind:value={selectedRodId}
                 aria-label="Fishing rod"
-                class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                class="field-text h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
                 {#each data.rods as rod (rod.item_id)}
                   <option value={rod.item_id}>

@@ -148,7 +148,7 @@
               type="search"
               bind:value={query}
               placeholder="Search names, conditions, bosses, or professions"
-              class="h-10 w-full rounded-md border bg-background pl-9 pr-10 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              class="field-text h-10 w-full rounded-md border bg-background pl-9 pr-10 outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
             />
             {#if query}
               <button

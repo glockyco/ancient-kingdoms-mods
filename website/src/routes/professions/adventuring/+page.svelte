@@ -502,7 +502,7 @@
               type="date"
               bind:value={selectedDate}
               onchange={() => (selectedSort = "queue")}
-              class="rounded-md border bg-background px-3 py-1.5 text-sm"
+              class="field-text rounded-md border bg-background px-3 py-1.5"
             />
           </div>
 
@@ -510,7 +510,7 @@
             <span class="text-muted-foreground">Sort</span>
             <select
               bind:value={selectedSort}
-              class="rounded-md border bg-background px-2 py-1"
+              class="field-text rounded-md border bg-background px-2 py-1"
             >
               <option value="queue">Selected Queue Order</option>
               <option value="level">Level</option>
@@ -523,7 +523,7 @@
             <span class="text-muted-foreground">Type</span>
             <select
               bind:value={selectedType}
-              class="rounded-md border bg-background px-2 py-1"
+              class="field-text rounded-md border bg-background px-2 py-1"
             >
               {#each typeOptions as type (type)}
                 <option value={type}>{type}</option>
@@ -661,7 +661,7 @@
         <span class="text-muted-foreground">Requirement</span>
         <select
           bind:value={selectedUnlockRequirement}
-          class="rounded-md border bg-background px-2 py-1"
+          class="field-text rounded-md border bg-background px-2 py-1"
         >
           {#each unlockRequirementOptions as requirement (requirement)}
             <option value={requirement}>{requirement}</option>

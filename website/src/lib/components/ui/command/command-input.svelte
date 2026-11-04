@@ -22,7 +22,7 @@
   <CommandPrimitive.Input
     data-slot="command-input"
     class={cn(
-      "placeholder:text-muted-foreground outline-hidden flex h-10 w-full rounded-md bg-transparent py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50",
+      "placeholder:text-muted-foreground outline-hidden field-text flex h-10 w-full rounded-md bg-transparent py-3 disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
     bind:ref
