@@ -93,7 +93,8 @@
       <button
         onclick={() => (isExpanded = !isExpanded)}
         class="p-0.5 rounded hover:bg-muted transition-colors"
-        aria-label={isExpanded ? "Collapse" : "Expand"}
+        aria-label="{node.item_name} sources"
+        aria-expanded={isExpanded}
       >
         {#if isExpanded}
           <ChevronDown class="h-4 w-4 text-muted-foreground" />
@@ -154,7 +155,8 @@
               <button
                 onclick={() => (isServiceExpanded = !isServiceExpanded)}
                 class="p-0.5 rounded hover:bg-muted transition-colors"
-                aria-label={isServiceExpanded ? "Collapse" : "Expand"}
+                aria-label="{node.item_name}: {config.label}"
+                aria-expanded={isServiceExpanded}
               >
                 {#if isServiceExpanded}
                   <ChevronDown class="h-4 w-4 text-muted-foreground" />

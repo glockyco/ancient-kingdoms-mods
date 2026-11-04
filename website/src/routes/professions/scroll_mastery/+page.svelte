@@ -355,9 +355,8 @@
                       <button
                         type="button"
                         class="rounded p-0.5 transition-colors hover:bg-muted"
-                        aria-label={isExpanded
-                          ? "Collapse ingredients"
-                          : "Expand ingredients"}
+                        aria-label="{recipe.item_name} ingredients"
+                        aria-expanded={isExpanded}
                         onclick={(e) => {
                           e.stopPropagation();
                           toggleRecipe(recipe.recipe_id);

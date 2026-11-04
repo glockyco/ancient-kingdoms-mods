@@ -166,7 +166,8 @@
               <td class="p-3">
                 <button
                   class="p-0.5 rounded hover:bg-muted transition-colors"
-                  aria-label={isExpanded ? "Collapse" : "Expand"}
+                  aria-label="{book.name} details"
+                  aria-expanded={isExpanded}
                 >
                   {#if isExpanded}
                     <ChevronDown class="h-4 w-4 text-muted-foreground" />

@@ -496,7 +496,8 @@
               {#if canExpand}
                 <button
                   class="p-0.5 rounded hover:bg-muted transition-colors"
-                  aria-label={isExpanded ? "Collapse" : "Expand"}
+                  aria-label="{recipe.result_item_name} ingredients"
+                  aria-expanded={isExpanded}
                 >
                   {#if isExpanded}
                     <ChevronDown class="h-4 w-4 text-muted-foreground" />
