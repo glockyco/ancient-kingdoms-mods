@@ -16,7 +16,7 @@
 - [x] 2.1 Focus the search field during the opening tap for the site search and the map search.
 - [x] 2.2 Make the command dialog fill the visual viewport on phones and open near the top on wider screens, and drop the phone drawers.
 - [x] 2.3 Keep the keyboard closed for filter and zone lists that a finger opens.
-- [ ] 2.4 Confirm the dialog layout in a comparison before it ships.
+- [x] 2.4 Confirm the dialog layout in a comparison before it ships.
 
 ## 3. Release checks
 
