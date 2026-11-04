@@ -5,13 +5,19 @@ export const FADE_WIDTH = "2.5rem";
  * hidden past it, which shows that the element scrolls. The fade disappears
  * once the element is scrolled to its end. A mask fades the content itself,
  * so it suits any background.
- * Focused controls scroll clear of the fade so keyboard users can read them.
+ * Controls that keyboard focus reaches scroll clear of the fade so keyboard
+ * users can read them. A tap or click focuses its target too, and scrolling
+ * then would move the content under the finger before the click lands.
  */
 export function fadeHiddenOverflow(node: HTMLElement) {
   const originalScrollPadding = node.style.scrollPaddingInlineEnd;
   node.style.scrollPaddingInlineEnd = FADE_WIDTH;
   const revealFocus = (event: FocusEvent) => {
-    if (event.target instanceof HTMLElement && event.target !== node) {
+    if (
+      event.target instanceof HTMLElement &&
+      event.target !== node &&
+      event.target.matches(":focus-visible")
+    ) {
       event.target.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
   };
