@@ -33,8 +33,10 @@ type Builder = (db: Database.Database) => EntityText[] | Promise<EntityText[]>;
 
 const tableColumnsCache = new Map<string, Set<string>>();
 
+// The game names some sub-zones like their zone in other letter case, such as
+// The Lone-Lands in The Lone-lands, so the comparison ignores case.
 const LOCATION_SQL =
-  "CASE WHEN t.name IS NOT NULL AND t.name != z.name THEN t.name || ', ' ELSE '' END || z.name";
+  "CASE WHEN t.name IS NOT NULL AND lower(t.name) != lower(z.name) THEN t.name || ', ' ELSE '' END || z.name";
 
 function tableColumns(db: Database.Database, table: string): Set<string> {
   const cached = tableColumnsCache.get(table);
