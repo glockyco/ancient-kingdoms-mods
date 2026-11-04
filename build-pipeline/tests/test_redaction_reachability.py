@@ -278,6 +278,44 @@ class RemovedQuestTests(ReachabilityTestCase):
         self.assertEqual(self._counts("redacted_quest_factions"), [("gods", 1)])
 
 
+class RemovedRecipeTests(ReachabilityTestCase):
+    """A recipe removed with its product leaves a count on its materials."""
+
+    def setUp(self):
+        super().setUp()
+        self._item("ore")
+        self._dropped_by("ore", "miner", PUBLISHED)
+        self._item("relic", ignore_journal=1)
+        self.conn.execute(
+            "INSERT INTO crafting_recipes (id, result_item_id) VALUES ('relic', 'relic')"
+        )
+        self.conn.execute(
+            "INSERT INTO acquisition_methods(id,kind,rule_id) VALUES ('make_relic','recipe','crafting')"
+        )
+        self.conn.execute(
+            "INSERT INTO acquisition_recipe_details(id,crafting_recipe_id,declared_result_item_id,result_amount,tier,display_kind) "
+            "VALUES ('make_relic','relic','relic',1,0,'crafting')"
+        )
+        self.conn.execute(
+            "INSERT INTO acquisition_cost_groups(id,method_id,phase,quantity_rule,consumption_rule) "
+            "VALUES ('make_relic_cost','make_relic','attempt','fixed','on_success')"
+        )
+        self.conn.execute(
+            "INSERT INTO acquisition_inputs(id,cost_group_id,ordinal,resource_kind,item_id,amount,role) "
+            "VALUES ('make_relic_input','make_relic_cost',0,'item','ore',2,'material')"
+        )
+        self.conn.commit()
+        self._run(exclude_zone_ids=set())
+
+    def test_the_material_counts_the_removed_recipe(self):
+        self.assertFalse(self._present("items", "relic"))
+        self.assertFalse(self._present("acquisition_methods", "make_relic"))
+        self.assertEqual(
+            sorted(self.conn.execute("SELECT * FROM redacted_recipe_items")),
+            [("ore", "material", 1)],
+        )
+
+
 class ReferenceKindTests(ReachabilityTestCase):
     """Reachability considers every kind of reference, not monster use alone."""
 

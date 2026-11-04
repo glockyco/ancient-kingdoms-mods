@@ -27,7 +27,7 @@ from typing import Any
 
 from rich.console import Console
 
-from compendium.redactions import quests
+from compendium.redactions import traces
 from compendium.redactions.config import RedactionConfig
 from compendium.redactions.discovery import (
     ZONE_TABLE,
@@ -472,7 +472,7 @@ def apply(
     _expand_dependencies(conn, removals, references)
     removed_nodes = {(removal.table, removal.entity_id) for removal in removals}
     apply_semantic_withholding(conn, removed_nodes)
-    quests.record(conn, removed_nodes)
+    traces.record(conn, removed_nodes)
     by_table: dict[str, set[str]] = {}
     for removal in removals:
         by_table.setdefault(removal.table, set()).add(removal.entity_id)
