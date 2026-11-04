@@ -190,6 +190,7 @@
       href="/recipes/{row.original.id}"
       class="inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
       title="View recipe details"
+      aria-label="{row.original.result_item_name} recipe details"
     >
       <ExternalLink class="h-4 w-4" />
     </a>
