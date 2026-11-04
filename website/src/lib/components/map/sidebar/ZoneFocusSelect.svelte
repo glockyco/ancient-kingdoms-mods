@@ -3,6 +3,7 @@
   import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
   import * as Command from "$lib/components/ui/command";
   import * as Popover from "$lib/components/ui/popover";
+  import { keepKeyboardClosedAfterTouch } from "$lib/components/ui/popover/touch-auto-focus";
   import { Button } from "$lib/components/ui/button";
   import { cn } from "$lib/utils.js";
   import type { ZoneListItem } from "$lib/types/map";
@@ -52,7 +53,11 @@
         </Button>
       {/snippet}
     </Popover.Trigger>
-    <Popover.Content class="w-[240px] p-0" align="start">
+    <Popover.Content
+      class="w-[240px] p-0"
+      align="start"
+      onOpenAutoFocus={keepKeyboardClosedAfterTouch}
+    >
       <Command.Root>
         <Command.Input placeholder="Search zones..." />
         <Command.List>

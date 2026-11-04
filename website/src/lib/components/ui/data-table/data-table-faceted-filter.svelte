@@ -6,6 +6,7 @@
   import { SvelteSet } from "svelte/reactivity";
   import * as Command from "$lib/components/ui/command";
   import * as Popover from "$lib/components/ui/popover";
+  import { keepKeyboardClosedAfterTouch } from "$lib/components/ui/popover/touch-auto-focus";
   import { Button } from "$lib/components/ui/button";
   import { cn } from "$lib/utils.js";
   import { Separator } from "$lib/components/ui/separator";
@@ -76,7 +77,11 @@
         </Button>
       {/snippet}
     </Popover.Trigger>
-    <Popover.Content class="w-[250px] p-0" align="start">
+    <Popover.Content
+      class="w-[250px] p-0"
+      align="start"
+      onOpenAutoFocus={keepKeyboardClosedAfterTouch}
+    >
       <Command.Root>
         <Command.Input
           placeholder="Search {title.toLowerCase()} options"
