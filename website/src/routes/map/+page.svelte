@@ -272,6 +272,7 @@
 
   // Search state
   let searchOpen = $state(false);
+  let mapSearch = $state<ReturnType<typeof MapSearch>>();
 
   // Map state (initialized in onMount from URL or defaults)
   let layerVisibility = $state<LayerVisibility>(getDefaultLayerVisibility());
@@ -694,7 +695,7 @@
   function handleKeydown(e: KeyboardEvent) {
     if ((e.metaKey || e.ctrlKey) && e.key === "k") {
       e.preventDefault();
-      searchOpen = true;
+      mapSearch?.show();
     } else if (
       e.key === "Escape" &&
       !e.defaultPrevented &&
@@ -1227,7 +1228,7 @@
       {levelFilter}
       onLevelFilterChange={handleLevelFilterChange}
       levelRanges={entityData.levelRanges}
-      onSearchClick={() => (searchOpen = true)}
+      onSearchClick={() => mapSearch?.show()}
       zones={zoneList}
       {focusedZoneId}
       onZoneFocusChange={handleZoneFocusChange}
@@ -1478,7 +1479,11 @@
       {/if}
     {/if}
 
-    <MapSearch bind:open={searchOpen} onselect={handleSearchSelect} />
+    <MapSearch
+      bind:this={mapSearch}
+      bind:open={searchOpen}
+      onselect={handleSearchSelect}
+    />
   {/if}
 </div>
 

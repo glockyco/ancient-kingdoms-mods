@@ -4,9 +4,11 @@
   import * as Command from "$lib/components/ui/command";
   import { linkActiveDescendant } from "$lib/components/ui/command/link-active-descendant";
   import { scrollSelectedIntoView } from "$lib/components/ui/command/scroll-selected-into-view";
-  import * as Drawer from "$lib/components/ui/drawer";
   import { entityRegistry, type EntityId } from "$lib/entities/registry";
-  import { searchPalette } from "$lib/search/palette-state.svelte";
+  import {
+    searchPalette,
+    setSearchPaletteInput,
+  } from "$lib/search/palette-state.svelte";
   import {
     loadRecentSearches,
     rememberSearch,
@@ -25,14 +27,10 @@
   let loading = $state(false);
   let failed = $state(false);
   let recent = $state<string[]>([]);
-  let isMobile = $state(false);
+  let input = $state<HTMLInputElement | null>(null);
 
   $effect(() => {
-    const mql = window.matchMedia("(max-width: 640px)");
-    isMobile = mql.matches;
-    const handler = (e: MediaQueryListEvent) => (isMobile = e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
+    setSearchPaletteInput(input);
   });
 
   $effect(() => {
@@ -102,14 +100,17 @@
   <div class="contents" use:linkActiveDescendant>
     <Command.Input
       bind:value={query}
+      bind:ref={input}
       placeholder="Search items, monsters, mechanics..."
       autofocus
     />
     <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">
       {announcement}
     </div>
-    <div class="min-h-0 overflow-hidden" use:scrollSelectedIntoView>
-      <Command.List class="max-h-[min(300px,calc(85dvh-6rem))]">
+    <div class="min-h-0 flex-1 overflow-hidden" use:scrollSelectedIntoView>
+      <Command.List
+        class="max-h-[min(300px,calc(85dvh-6rem))] max-sm:max-h-full"
+      >
         {#if query.trim().length < 2}
           {#if recent.length > 0}
             <Command.Group heading="Recent searches">
@@ -188,27 +189,11 @@
   </div>
 {/snippet}
 
-{#if isMobile}
-  <Drawer.Root bind:open={searchPalette.open}>
-    <Drawer.Content class="max-h-[85dvh] overflow-hidden">
-      <Drawer.Header class="sr-only">
-        <Drawer.Title>Search the compendium</Drawer.Title>
-      </Drawer.Header>
-      <Command.Root
-        shouldFilter={false}
-        class="min-h-0 rounded-t-lg border-none bg-background"
-      >
-        {@render searchContent()}
-      </Command.Root>
-    </Drawer.Content>
-  </Drawer.Root>
-{:else}
-  <Command.Dialog
-    bind:open={searchPalette.open}
-    title="Search the compendium"
-    description="Search items, monsters, NPCs, zones, mechanics, and lists such as Rings or Merchants"
-    shouldFilter={false}
-  >
-    {@render searchContent()}
-  </Command.Dialog>
-{/if}
+<Command.Dialog
+  bind:open={searchPalette.open}
+  title="Search the compendium"
+  description="Search items, monsters, NPCs, zones, mechanics, and lists such as Rings or Merchants"
+  shouldFilter={false}
+>
+  {@render searchContent()}
+</Command.Dialog>

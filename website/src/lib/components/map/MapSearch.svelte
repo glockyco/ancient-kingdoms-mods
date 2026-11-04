@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Command from "$lib/components/ui/command";
-  import * as Drawer from "$lib/components/ui/drawer";
+  import { openFocused } from "$lib/components/ui/command/open-focused";
   import {
     searchMapEntities,
     type MapSearchCategory,
@@ -21,15 +21,15 @@
   let loading = $state(false);
   let failed = $state(false);
 
-  // Responsive detection
-  let isMobile = $state(false);
-  $effect(() => {
-    const mql = window.matchMedia("(max-width: 640px)");
-    isMobile = mql.matches;
-    const handler = (e: MediaQueryListEvent) => (isMobile = e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  });
+  let input = $state<HTMLInputElement | null>(null);
+
+  /** Opens the search with its field focused, for a button that opens it. */
+  export function show() {
+    openFocused(
+      () => (open = true),
+      () => input,
+    );
+  }
 
   // Debounced search
   let searchTimeout: ReturnType<typeof setTimeout>;
@@ -115,11 +115,12 @@
   <div class="contents" use:linkActiveDescendant>
     <Command.Input
       bind:value={query}
+      bind:ref={input}
       placeholder="Search monsters, NPCs, zones..."
       autofocus
     />
-    <div use:scrollSelectedIntoView>
-      <Command.List>
+    <div class="min-h-0 flex-1" use:scrollSelectedIntoView>
+      <Command.List class="max-sm:max-h-full">
         {#if loading}
           <Command.Loading>
             <div class="py-6 text-center text-sm text-muted-foreground">
@@ -163,27 +164,11 @@
   </div>
 {/snippet}
 
-{#if isMobile}
-  <Drawer.Root bind:open>
-    <Drawer.Content class="max-h-[85vh]">
-      <Drawer.Header class="sr-only">
-        <Drawer.Title>Search Map</Drawer.Title>
-      </Drawer.Header>
-      <Command.Root
-        shouldFilter={false}
-        class="rounded-t-lg border-none bg-background"
-      >
-        {@render searchContent()}
-      </Command.Root>
-    </Drawer.Content>
-  </Drawer.Root>
-{:else}
-  <Command.Dialog
-    bind:open
-    title="Search Map"
-    description="Search for monsters, NPCs, zones, and more"
-    shouldFilter={false}
-  >
-    {@render searchContent()}
-  </Command.Dialog>
-{/if}
+<Command.Dialog
+  bind:open
+  title="Search Map"
+  description="Search for monsters, NPCs, zones, and more"
+  shouldFilter={false}
+>
+  {@render searchContent()}
+</Command.Dialog>

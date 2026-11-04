@@ -10,7 +10,10 @@
   import { beforeNavigate } from "$app/navigation";
   import { page } from "$app/state";
   import SearchPalette from "$lib/components/search/SearchPalette.svelte";
-  import { searchPalette } from "$lib/search/palette-state.svelte";
+  import {
+    openSearchPalette,
+    searchPalette,
+  } from "$lib/search/palette-state.svelte";
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
   import { onMount } from "svelte";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
@@ -60,7 +63,8 @@
       return;
     }
     event.preventDefault();
-    searchPalette.open = !searchPalette.open;
+    if (searchPalette.open) searchPalette.open = false;
+    else openSearchPalette();
   }
 
   // Auto-update service worker on navigation
