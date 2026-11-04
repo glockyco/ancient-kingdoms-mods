@@ -1178,7 +1178,12 @@
   path="/map"
 />
 
-<div class="dark relative h-screen w-full bg-background text-foreground">
+<!-- 100vh on phones includes the space behind the browser toolbar, so the
+     map would scroll and its bottom panel would slide under the floating
+     buttons. dvh is the height the visitor actually sees. -->
+<div
+  class="dark relative h-dvh w-full overflow-hidden bg-background text-foreground"
+>
   <h1 class="sr-only">Ancient Kingdoms Interactive Map</h1>
   <p id="map-keyboard-help" class="sr-only">
     Use arrow keys to pan and plus or minus to zoom. Open Markers in view to

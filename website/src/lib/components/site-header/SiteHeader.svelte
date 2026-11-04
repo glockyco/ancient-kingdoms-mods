@@ -390,7 +390,7 @@
     top: calc(100% + 0.35rem);
     right: 2rem;
     left: 2rem;
-    max-height: calc(100vh - 5.5rem);
+    max-height: calc(100dvh - 5.5rem);
     overflow-y: auto;
     border: 1px solid var(--border);
     border-radius: var(--radius);

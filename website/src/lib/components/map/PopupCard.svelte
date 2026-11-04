@@ -98,7 +98,7 @@
   </Card.Header>
 
   <Card.Content
-    class="max-h-[calc(100vh-10rem)] space-y-1.5 overflow-y-auto py-2 text-sm"
+    class="max-h-[calc(100dvh-10rem)] space-y-1.5 overflow-y-auto py-2 text-sm"
   >
     {@render children()}
   </Card.Content>
