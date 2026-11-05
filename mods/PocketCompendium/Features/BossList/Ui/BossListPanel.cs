@@ -87,7 +87,7 @@ internal sealed class BossListPanel
         _footer.Text.enableWordWrapping = true;
         _footer.Value = "~ marks an estimate. This server does not send respawn times.";
 
-        BuildHeader(root);
+        BuildHeader();
         _dragHandles.Clear();
         _dragHandles.Add(_header);
     }
@@ -283,7 +283,7 @@ internal sealed class BossListPanel
         Host.Update(_dragHandles);
     }
 
-    private void BuildHeader(RectTransform root)
+    private void BuildHeader()
     {
         // The chrome built the header first. It goes above the rows, which come later.
         _header = _chrome.Header;
