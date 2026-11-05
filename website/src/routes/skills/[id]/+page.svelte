@@ -814,7 +814,7 @@
           {/if}
           {#if skill.aggro}
             <div>
-              <dt class="text-muted-foreground">Aggro</dt>
+              <dt class="text-muted-foreground">Threat</dt>
               <dd class="font-medium">{formatLinear(skill.aggro)}</dd>
             </div>
           {/if}
