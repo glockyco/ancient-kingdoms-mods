@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using Il2Cpp;
 using PocketCompendium.Core;
 using PocketCompendium.Core.Features;
-using PocketCompendium.Core.Ui;
 using PocketCompendium.Core.Settings;
+using PocketCompendium.Core.Tracking;
+using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.BestiaryPages.Patches;
 using PocketCompendium.Features.BestiaryPages.Ui;
 
@@ -36,11 +37,8 @@ public sealed class BestiaryPagesFeature : Feature
             true,
             "Drop chances",
             "Shows each item's chance to drop when you kill the monster. A Fatecharm in your main inventory raises the chances shown.");
-        UndiscoveredMonsters = Settings.Toggle(
-            "UndiscoveredMonsters",
-            true,
-            "Undiscovered monsters",
-            "Shows the name, level, zone, stats and lore of monsters you haven't discovered yet, where the game shows ???.");
+        // Undiscovered monsters lived here before it applied everywhere. General starts from it.
+        _earlierUndiscovered = Settings.Stored("UndiscoveredMonsters", true);
         UndiscoveredDrops = Settings.Toggle(
             "UndiscoveredDrops",
             true,
@@ -52,10 +50,13 @@ public sealed class BestiaryPagesFeature : Feature
 
     public ToggleSetting SkillsButton { get; }
     public ToggleSetting DropChances { get; }
-    public ToggleSetting UndiscoveredMonsters { get; }
     public ToggleSetting UndiscoveredDrops { get; }
 
     private readonly MelonLoader.MelonPreferences_Entry<bool> _skillsOpen;
+    private readonly MelonLoader.MelonPreferences_Entry<bool> _earlierUndiscovered;
+
+    /// <summary>The value this page saved for Undiscovered monsters, which General starts from.</summary>
+    public bool EarlierUndiscoveredMonsters => _earlierUndiscovered.Value;
 
     /// <summary>Whether the Skills window opens with a page, until the player closes it.</summary>
     internal static bool SkillsWindowOpen
@@ -120,14 +121,7 @@ public sealed class BestiaryPagesFeature : Feature
     /// </summary>
     internal static bool Draws(Monster monster) =>
         Active && monster != null && !FailedMonsters.Contains(monster.nameEntity ?? string.Empty) &&
-        (_instance.UndiscoveredMonsters.Value || Discovered(monster));
-
-    // Source: UIBestiaryDetail.cs:91. The game shows ??? until the monster has a Bestiary entry.
-    private static bool Discovered(Monster monster)
-    {
-        var player = Player.localPlayer;
-        return player != null && player.bossesKilled.ContainsKey(monster.nameEntity);
-    }
+        Discovery.Shown(monster.nameEntity);
 
     internal static void ReportPageFailure(Monster monster, Exception ex)
     {

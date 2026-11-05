@@ -4,6 +4,7 @@ using MelonLoader;
 using PocketCompendium.Core;
 using PocketCompendium.Core.Feedback;
 using PocketCompendium.Core.Features;
+using PocketCompendium.Core.Settings;
 using PocketCompendium.Core.Game;
 using PocketCompendium.Core.Text;
 using PocketCompendium.Core.Tracking;
@@ -44,22 +45,40 @@ public sealed class PocketCompendiumMod : MelonMod
         _tracker = new Tracker();
         _ = new Watchlist();
         _features = new FeatureRegistry();
-        _features.Add(new BossListFeature());
-        _features.Add(new WorldMarkersFeature());
-        _features.Add(new MapPinsFeature());
-        _features.Add(new BestiaryCountdownFeature());
-        _features.Add(new AlertsFeature());
-        _features.Add(new BossSkillsFeature());
-        _features.Add(new BestiaryPagesFeature());
-        _features.Add(new FatecharmsFeature());
-        _features.Add(new SharingFeature());
+        var bossList = new BossListFeature();
+        var worldMarkers = new WorldMarkersFeature();
+        var mapPins = new MapPinsFeature();
+        var bestiaryCountdown = new BestiaryCountdownFeature();
+        var alerts = new AlertsFeature();
+        var bossSkills = new BossSkillsFeature();
+        var bestiaryPages = new BestiaryPagesFeature();
+        var fatecharms = new FatecharmsFeature();
+        var sharing = new SharingFeature();
+        _features.Add(bossList);
+        _features.Add(worldMarkers);
+        _features.Add(mapPins);
+        _features.Add(bestiaryCountdown);
+        _features.Add(alerts);
+        _features.Add(bossSkills);
+        _features.Add(bestiaryPages);
+        _features.Add(fatecharms);
+        _features.Add(sharing);
         _features.StoppedAfterError += _stoppedNotices.Enqueue;
 
         string build = ModBuild.Commit(typeof(PocketCompendiumMod).Assembly);
+        var general = new GeneralSettings(bestiaryPages.EarlierUndiscoveredMonsters);
         _layout = new LayoutSettings();
         _updates = new UpdateService(Info.Version);
         _startScreen = new StartScreen(_updates, _layout);
-        _settings = new SettingsWindow(_features.Features, _layout, new UpdatesPage(_updates), new AboutPage(Info.Version, build, _features.Features));
+        _settings = new SettingsWindow(new[]
+        {
+            SettingsGroup.Shared(general.Page.Title, Icons.Sliders, general.Page, _layout.Page),
+            SettingsGroup.Of("Respawns", Icons.Timer, bossList, mapPins, worldMarkers, alerts, sharing),
+            SettingsGroup.Of("Bestiary", Icons.BookOpen, bestiaryPages, bestiaryCountdown),
+            SettingsGroup.Of("Combat", Icons.Swords, bossSkills, fatecharms),
+            SettingsGroup.Drawn(new UpdatesPage(_updates)),
+            SettingsGroup.Drawn(new AboutPage(Info.Version, build, _features.Features)),
+        }, _layout);
 
         LoggerInstance.Msg($"Pocket Compendium {Info.Version}, build {build}. Switched on: {_features.SwitchedOn()}. {_layout.SettingsKey.Value} opens the settings.");
     }

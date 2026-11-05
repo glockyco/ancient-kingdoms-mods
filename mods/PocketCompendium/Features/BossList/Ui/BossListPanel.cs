@@ -131,7 +131,7 @@ internal sealed class BossListPanel
                 Level = monster.Level,
                 State = monster.State,
                 Watched = watchlist.Contains(monster.Key),
-                Discovered = MonsterTooltip.Discovered(monster.Key),
+                Discovered = Discovery.Known(monster.Key),
                 Distance = here ? Vector2.Distance(position, monster.Position) : float.NaN,
             });
             _monsters.Add(monster);
@@ -395,7 +395,7 @@ internal sealed class BossListPanel
         {
             Monster = monster,
             Entry = entry,
-            Silhouette = !entry.Discovered && _filter.Undiscovered == UndiscoveredFilter.Silhouette,
+            Silhouette = !Discovery.Shown(monster.Key),
             ShowDistance = direction && monster.Zone == zone,
             Offset = monster.Position - position,
             Now = now,

@@ -38,9 +38,11 @@ public sealed class SettingsPage
     public void Action(string label, string button, string help, Action run) =>
         _rows.Add(new ActionRow(label, button, help, run));
 
-    public ToggleSetting Toggle(string key, bool defaultValue, string label, string help = null, bool shown = true)
+    /// <param name="initial">The value a player without a saved one starts with, when it differs
+    /// from <paramref name="defaultValue"/>, such as a value carried over from an older key.</param>
+    public ToggleSetting Toggle(string key, bool defaultValue, string label, string help = null, bool shown = true, bool? initial = null)
     {
-        var setting = new ToggleSetting(this, _category.CreateEntry(key, defaultValue, label), label, help, defaultValue);
+        var setting = new ToggleSetting(this, _category.CreateEntry(key, initial ?? defaultValue, label), label, help, defaultValue);
         if (shown) _rows.Add(setting);
         return setting;
     }

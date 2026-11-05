@@ -26,9 +26,9 @@ public enum ZoneFilter
     AllZones,
 }
 
+/// <summary>Whether the list leaves out monsters the player has not discovered. How they look follows the General setting.</summary>
 public enum UndiscoveredFilter
 {
-    Silhouette,
     Show,
     Hide,
 }

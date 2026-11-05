@@ -108,7 +108,7 @@ public sealed class WorldMarkersFeature : Feature
         views.ShowsMarker = true;
 
         var state = monster.State;
-        bool named = MonsterTooltip.Discovered(monster.Key);
+        bool named = Discovery.Shown(monster.Key);
         var tier = GameAccess.TierColor(monster.Tier);
         float remaining = StateText.Remaining(state, monster.Rules, now);
         bool counting = state.State is SpawnState.Respawns or SpawnState.Estimated or SpawnState.Chance;
@@ -148,7 +148,7 @@ public sealed class WorldMarkersFeature : Feature
         views.Version = version;
         views.ShowsMarker = false;
 
-        bool named = MonsterTooltip.Discovered(monster.Key);
+        bool named = Discovery.Shown(monster.Key);
         var tier = GameAccess.TierColor(monster.Tier);
         float distance = Vector2.Distance(player, where);
         views.Arrow.Show(GameAccess.Portrait(monster.Definition), tier, Theme.Readable(tier),

@@ -173,7 +173,7 @@ internal sealed class PinView
     public void Show(TrackedMonster monster, double now, bool watched)
     {
         var state = monster.State;
-        bool named = MonsterTooltip.Discovered(monster.Key);
+        bool named = Discovery.Shown(monster.Key);
         _portrait.Set(GameAccess.Portrait(monster.Definition), GameAccess.TierColor(monster.Tier), !state.IsUp, !named,
             StateText.Remaining(state, monster.Rules, now));
         _portrait.SetGlow(state.IsUp);

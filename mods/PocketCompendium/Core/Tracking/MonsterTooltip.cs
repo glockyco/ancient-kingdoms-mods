@@ -56,13 +56,6 @@ internal static class MonsterTooltip
         return Text.ToString();
     }
 
-    /// <summary>Whether the player's Bestiary has an entry for the monster.</summary>
-    public static bool Discovered(string key)
-    {
-        var player = Player.localPlayer;
-        return player != null && player.bossesKilled != null && player.bossesKilled.ContainsKey(key);
-    }
-
     private static int Kills(string key)
     {
         var player = Player.localPlayer;

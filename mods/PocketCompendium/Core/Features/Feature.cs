@@ -38,6 +38,12 @@ public abstract class Feature
     /// <summary>Whether the feature reads the respawn tracker, which runs while any such feature runs.</summary>
     public virtual bool UsesTracker => false;
 
+    /// <summary>
+    /// Whether the settings window gives the feature a page of its own, for more settings than fit
+    /// under its row in its group.
+    /// </summary>
+    public virtual bool OwnPage => false;
+
     internal Exception Failure { get; set; }
 
     /// <summary>Starts the feature. Views can be created lazily once the world is loaded.</summary>

@@ -67,9 +67,11 @@ public sealed class AlertsFeature : Feature
             or SpawnState.Window or SpawnState.Guards or SpawnState.Altar;
 
     // The game adds the chat line's full stop. A host saw the spawn happen, a client saw it up.
+    // While Undiscovered monsters is off, a watched monster the player has not discovered stays
+    // ??? here too.
     private static void Announce(Player player, TrackedMonster monster, bool exact)
     {
-        string name = GameText.EntityName(monster.Key);
+        string name = Discovery.Shown(monster.Key) ? GameText.EntityName(monster.Key) : "???";
         string zone = GameText.ZoneName("", monster.Zone);
         string where = string.IsNullOrEmpty(zone) ? "" : " in " + zone;
         player.ShowImportantMessage(name + (exact ? " has spawned" : " is up") + where, Il2Cpp.Utils.colorImportantGolden, showChat: true);

@@ -29,6 +29,9 @@ public sealed class BossListFeature : Feature
 
     public override bool UsesTracker => true;
 
+    // The list's look, filters and order are too many for its row in Respawns.
+    public override bool OwnPage => true;
+
     protected internal override void Enable()
     {
         _panel = new BossListPanel(_settings, this);

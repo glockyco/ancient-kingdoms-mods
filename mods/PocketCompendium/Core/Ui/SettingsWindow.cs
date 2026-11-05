@@ -7,9 +7,11 @@ using UnityEngine.UI;
 namespace PocketCompendium.Core.Ui;
 
 /// <summary>
-/// Pocket Compendium's settings window: one page per feature, each starting with that feature's
-/// switch, a Layout page, and pages that draw their own content, such as About. Feature and
-/// Layout pages are built from the settings each declares.
+/// Pocket Compendium's settings window. The sidebar lists a few groups. A group shows settings
+/// that apply across features, or its features one after another, each as a row with its switch,
+/// its one sentence and its small settings below it. A feature with more settings than fit there
+/// has a page of its own, reached from the gear on its row and from its panel's settings button.
+/// Groups such as About draw their own content.
 /// </summary>
 public sealed class SettingsWindow
 {
@@ -24,6 +26,9 @@ public sealed class SettingsWindow
     private const float LabelWidth = 165f;
     private const float ControlHeight = 26f;
     private const float HelpGap = 5f;
+    // A feature's own settings sit indented under its row.
+    private const float FeatureIndent = 16f;
+    private const float GearSize = 26f;
 
     // Opaque, because the game blends its interface in linear colour space, where even a 2%
     // translucent dark background lets a bright world show through clearly.
@@ -32,10 +37,10 @@ public sealed class SettingsWindow
     private static readonly Color NavSelected = new(0.906f, 0.698f, 0.290f, 0.06f);
     private static readonly Color NavHover = new(1f, 1f, 1f, 0.04f);
 
-    private readonly IReadOnlyList<Feature> _features;
+    private readonly IReadOnlyList<SettingsGroup> _groups;
     private readonly LayoutSettings _layout;
-    private readonly List<Page> _pages = new();
     private readonly List<NavItem> _nav = new();
+    private readonly List<FeatureRow> _featureRows = new();
     private readonly List<ToggleRow> _toggles = new();
     private readonly List<ChoiceRow> _choices = new();
     private readonly List<ActionRowView> _actions = new();
@@ -47,27 +52,22 @@ public sealed class SettingsWindow
     private RectTransform _bar;
     private RectTransform _viewport;
     private RectTransform _content;
-    private CanvasGroup _rowsGroup;
     private IconButton _close;
     private ButtonView _reset;
     private ButtonView _done;
-    private SwitchView _headerSwitch;
-    private Label _failedNote;
+    private RectTransform _back;
+    private Label _backLabel;
     private int _selected;
+    private Feature _open;
     private float _contentHeight;
     private float _scroll;
     private bool _dragging;
     private Vector2 _grab;
 
-    public SettingsWindow(IReadOnlyList<Feature> features, LayoutSettings layout, params ISettingsContent[] contentPages)
+    public SettingsWindow(IReadOnlyList<SettingsGroup> groups, LayoutSettings layout)
     {
-        _features = features;
+        _groups = groups;
         _layout = layout;
-        foreach (var feature in features)
-            _pages.Add(new Page(feature.Title, feature.Icon, feature.Settings, feature, null));
-        _pages.Add(new Page(layout.Page.Title, Icons.Move, layout.Page, null, null));
-        foreach (var content in contentPages)
-            _pages.Add(new Page(content.Title, content.Icon, null, null, content));
         Current = this;
     }
 
@@ -88,18 +88,25 @@ public sealed class SettingsWindow
         _root.SetActive(true);
     }
 
-    /// <summary>Opens the window on <paramref name="feature"/>'s page.</summary>
-    public void Open(Feature feature) => Open(feature.Settings);
-
-    /// <summary>Opens the window on the Layout page.</summary>
-    public void OpenLayout() => Open(_layout.Page);
-
-    private void Open(SettingsPage settings)
+    /// <summary>Opens the window where <paramref name="feature"/>'s settings are: its own page, or its group.</summary>
+    public void Open(Feature feature)
     {
         Open();
-        for (int index = 0; index < _pages.Count; index++)
-            if (_pages[index].Settings == settings)
-                Select(index);
+        for (int index = 0; index < _groups.Count; index++)
+        {
+            if (!Contains(_groups[index].Features, feature)) continue;
+            Show(index, feature.OwnPage ? feature : null);
+            return;
+        }
+    }
+
+    /// <summary>Opens the window on the group that holds the panel settings.</summary>
+    public void OpenLayout()
+    {
+        Open();
+        for (int index = 0; index < _groups.Count; index++)
+            if (Contains(_groups[index].Pages, _layout.Page))
+                Show(index, null);
     }
 
     public void Close()
@@ -125,6 +132,14 @@ public sealed class SettingsWindow
         _root = null;
         _nav.Clear();
         ClearRows();
+    }
+
+    private static bool Contains<T>(IReadOnlyList<T> list, T item) where T : class
+    {
+        foreach (var each in list)
+            if (each == item)
+                return true;
+        return false;
     }
 
     private void Build()
@@ -154,7 +169,7 @@ public sealed class SettingsWindow
         BuildNav();
         BuildPane();
         BuildFooter();
-        Select(_selected);
+        Show(_selected, _open);
     }
 
     private void BuildBar()
@@ -183,8 +198,8 @@ public sealed class SettingsWindow
         var navLine = HudFactory.Box("navLine", _window, Theme.Line);
         HudFactory.TopLeft(navLine, NavWidth, top, 1f, WindowHeight - top - FooterHeight);
 
-        for (int index = 0; index < _pages.Count; index++)
-            _nav.Add(new NavItem(nav.rectTransform, _pages[index], 10f + index * NavItemHeight));
+        for (int index = 0; index < _groups.Count; index++)
+            _nav.Add(new NavItem(nav.rectTransform, _groups[index], 10f + index * NavItemHeight));
     }
 
     private void BuildPane()
@@ -210,65 +225,142 @@ public sealed class SettingsWindow
         HudFactory.TopLeft(_done.Rect, WindowWidth - 96f - 16f, WindowHeight - FooterHeight + 11f, 96f, 32f);
     }
 
-    private void Select(int index)
+    // Shows a group, or with a feature the feature's own page in that group.
+    private void Show(int index, Feature open)
     {
         _selected = index;
+        _open = open;
+        if (_root == null) return;
         for (int item = 0; item < _nav.Count; item++)
             _nav[item].SetSelected(item == index);
-        // Content pages hold no settings to reset.
-        _reset.Rect.gameObject.SetActive(_pages[index].Settings != null);
-        BuildRows(_pages[index]);
+        // Groups that draw themselves hold no settings to reset.
+        _reset.Rect.gameObject.SetActive(_groups[index].Content == null);
+        BuildRows();
     }
 
     private void ClearRows()
     {
-        foreach (var page in _pages) page.Content?.Clear();
+        foreach (var group in _groups) group.Content?.Clear();
+        _featureRows.Clear();
         _toggles.Clear();
         _choices.Clear();
         _actions.Clear();
         _chips.Clear();
         _ranges.Clear();
-        _headerSwitch = null;
-        _failedNote = null;
-        _rowsGroup = null;
+        _back = null;
+        _backLabel = null;
         if (_content == null) return;
         for (int child = _content.childCount - 1; child >= 0; child--)
             Object.Destroy(_content.GetChild(child).gameObject);
     }
 
-    private void BuildRows(Page page)
+    private void BuildRows()
     {
         ClearRows();
         _scroll = 0f;
         float width = _content.sizeDelta.x - 2f * Pad;
+        float y = _open != null ? OwnPage(_open, width) : GroupPage(_groups[_selected], width);
+        _contentHeight = y + 16f;
+        _content.sizeDelta = new Vector2(_content.sizeDelta.x, _contentHeight);
+        _content.anchoredPosition = Vector2.zero;
+    }
+
+    private float GroupPage(SettingsGroup group, float width)
+    {
         float y = 18f;
+        var title = HudFactory.Label("pageTitle", _content, 17f, Theme.Text, Align.Left, bold: true);
+        HudFactory.TopLeft(title.Rect, Pad, y, width, 24f);
+        title.Value = group.Title;
+        y += 26f;
+
+        // A group that draws itself draws everything below its title.
+        if (group.Content != null)
+            return y + group.Content.Build(_content, Pad, y, width);
+
+        y += 8f;
+        // The shared pages read as one list, so a line separates the last row of one from the next.
+        bool afterSetting = false;
+        foreach (var page in group.Pages)
+            y = Rows(page.Rows, _content, y, width, 0f, ref afterSetting);
+        foreach (var feature in group.Features)
+            y = FeatureBlock(feature, y, width);
+        return y;
+    }
+
+    // A feature's row: its name, sentence and switch, a gear to its own page if it has one, and
+    // otherwise its settings indented below.
+    private float FeatureBlock(Feature feature, float y, float width)
+    {
+        var divider = HudFactory.Box("divider", _content, Theme.Line);
+        HudFactory.TopLeft(divider, Pad, y, width, 1f);
+        y += 14f;
+
+        float controls = SwitchView.Width + (feature.OwnPage ? GearSize + 8f : 0f) + 12f;
+        var name = HudFactory.Label("feature", _content, 14.5f, Theme.Text, Align.Left, bold: true);
+        HudFactory.TopLeft(name.Rect, Pad, y, width - controls, 22f);
+        name.Value = feature.Title;
+
+        var toggle = new SwitchView(_content);
+        HudFactory.TopLeft(toggle.Rect, Pad + width - SwitchView.Width, y + (22f - SwitchView.Height) / 2f, SwitchView.Width, SwitchView.Height);
+
+        IconButton gear = null;
+        if (feature.OwnPage)
+        {
+            gear = new IconButton(_content, Icons.Sliders, GearSize, 15f);
+            HudFactory.TopLeft(gear.Rect, Pad + width - SwitchView.Width - 8f - GearSize, y + (22f - GearSize) / 2f, GearSize, GearSize);
+        }
+
+        y += 24f;
+        y += WrappedText("summary", feature.Summary, Pad, y, width - controls, 12.5f, Theme.Muted, out _) + 4f;
+        float failedHeight = WrappedText("failed", "Stopped after an error. Please report it on the About page.", Pad, y, width, 12.5f, Theme.Cast, out var failed);
+        y += feature.Failed ? failedHeight + 2f : 0f;
+        failed.SetActive(feature.Failed);
+
+        CanvasGroup rowsGroup = null;
+        if (!feature.OwnPage && feature.Settings.Rows.Count > 0)
+        {
+            var rows = HudFactory.Rect("rows", _content);
+            var rowsRect = HudFactory.TopLeft(rows.GetComponent<RectTransform>(), 0f, y + 6f, _content.sizeDelta.x, 0f);
+            rowsGroup = rows.AddComponent<CanvasGroup>();
+            float height = Rows(feature.Settings.Rows, rowsRect, 0f, width, FeatureIndent);
+            rowsRect.sizeDelta = new Vector2(_content.sizeDelta.x, height);
+            y += 6f + height;
+        }
+
+        _featureRows.Add(new FeatureRow(feature, toggle, gear, failed, rowsGroup));
+        return y + 10f;
+    }
+
+    // A feature's own page: the way back to its group, then its name, sentence, switch and settings.
+    private float OwnPage(Feature feature, float width)
+    {
+        float y = 14f;
+        var back = HudFactory.Box("back", _content, Color.clear);
+        back.raycastTarget = true;
+        _back = HudFactory.TopLeft(back, Pad - 4f, y, 220f, 22f);
+        var arrow = HudFactory.Tinted("arrow", _back, Icons.Arrow, Theme.Muted);
+        HudFactory.TopLeft(arrow, 4f, 5f, 12f, 12f);
+        // The arrow points up. A quarter turn about its middle points it back, to the left.
+        arrow.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        arrow.rectTransform.anchoredPosition = new Vector2(10f, -11f);
+        arrow.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+        _backLabel = HudFactory.Label("label", _back, 12.5f, Theme.Muted, Align.Left);
+        HudFactory.TopLeft(_backLabel.Rect, 22f, 0f, 190f, 22f);
+        _backLabel.Value = _groups[_selected].Title;
+        y += 28f;
 
         var title = HudFactory.Label("pageTitle", _content, 17f, Theme.Text, Align.Left, bold: true);
         HudFactory.TopLeft(title.Rect, Pad, y, width - SwitchView.Width - 12f, 24f);
-        title.Value = page.Title;
+        title.Value = feature.Title;
+        var toggle = new SwitchView(_content);
+        HudFactory.TopLeft(toggle.Rect, Pad + width - SwitchView.Width, y + 3f, SwitchView.Width, SwitchView.Height);
         y += 26f;
 
-        if (page.Feature != null)
-        {
-            _headerSwitch = new SwitchView(_content);
-            HudFactory.TopLeft(_headerSwitch.Rect, Pad + width - SwitchView.Width, 21f, SwitchView.Width, SwitchView.Height);
-
-            y += WrappedText("summary", page.Feature.Summary, Pad, y, width - SwitchView.Width - 12f, 12.5f, Theme.Muted, out _) + 4f;
-
-            // The note wraps, because one line runs out of the window.
-            float failedHeight = WrappedText("failed", "Stopped after an error. Please report it on the About page.", Pad, y, width, 12.5f, Theme.Cast, out _failedNote);
-            y += page.Feature.Failed ? failedHeight + 2f : 0f;
-            _failedNote.SetActive(page.Feature.Failed);
-        }
-
-        // A content page draws everything below its title itself.
-        if (page.Content != null)
-        {
-            _contentHeight = y + page.Content.Build(_content, Pad, y, width) + 16f;
-            _content.sizeDelta = new Vector2(_content.sizeDelta.x, _contentHeight);
-            _content.anchoredPosition = Vector2.zero;
-            return;
-        }
+        y += WrappedText("summary", feature.Summary, Pad, y, width - SwitchView.Width - 12f, 12.5f, Theme.Muted, out _) + 4f;
+        // The note wraps, because one line runs out of the window.
+        float failedHeight = WrappedText("failed", "Stopped after an error. Please report it on the About page.", Pad, y, width, 12.5f, Theme.Cast, out var failed);
+        y += feature.Failed ? failedHeight + 2f : 0f;
+        failed.SetActive(feature.Failed);
 
         y += 10f;
         var divider = HudFactory.Box("divider", _content, Theme.Line);
@@ -277,106 +369,117 @@ public sealed class SettingsWindow
 
         var rows = HudFactory.Rect("rows", _content);
         var rowsRect = HudFactory.TopLeft(rows.GetComponent<RectTransform>(), 0f, y, _content.sizeDelta.x, 0f);
-        _rowsGroup = rows.AddComponent<CanvasGroup>();
+        var rowsGroup = rows.AddComponent<CanvasGroup>();
+        float height = Rows(feature.Settings.Rows, rowsRect, 0f, width, 0f);
+        rowsRect.sizeDelta = new Vector2(_content.sizeDelta.x, height);
 
-        float rowY = 0f;
-        bool previousWasSetting = false;
-        foreach (var row in page.Settings.Rows)
+        _featureRows.Add(new FeatureRow(feature, toggle, null, failed, rowsGroup));
+        return y + height;
+    }
+
+    // Builds the rows of settings in order and returns the y below them. Labels start
+    // <paramref name="indent"/> to the right, and controls keep one column on every page.
+    private float Rows(IReadOnlyList<SettingRow> rows, RectTransform parent, float rowY, float width, float indent)
+    {
+        bool afterSetting = false;
+        return Rows(rows, parent, rowY, width, indent, ref afterSetting);
+    }
+
+    private float Rows(IReadOnlyList<SettingRow> rows, RectTransform parent, float rowY, float width, float indent, ref bool previousWasSetting)
+    {
+        foreach (var row in rows)
         {
             switch (row)
             {
                 case SectionRow section:
                     rowY += previousWasSetting ? 14f : 6f;
-                    var sectionLabel = HudFactory.Label("section", rowsRect, 10.5f, Theme.GroupTitle, Align.Left);
+                    var sectionLabel = HudFactory.Label("section", parent, 10.5f, Theme.GroupTitle, Align.Left);
                     sectionLabel.Text.characterSpacing = 14f;
-                    HudFactory.TopLeft(sectionLabel.Rect, Pad, rowY, width, 16f);
+                    HudFactory.TopLeft(sectionLabel.Rect, Pad + indent, rowY, width - indent, 16f);
                     sectionLabel.Value = section.Title.ToUpperInvariant();
                     rowY += 22f;
                     previousWasSetting = false;
                     break;
                 case NoteRow note:
-                    rowY += WrappedText("note", note.Text, Pad + LabelWidth, rowY + 2f, width - LabelWidth, 12f, Theme.Dim, out _, rowsRect) + 10f;
+                    rowY += WrappedText("note", note.Text, Pad + LabelWidth, rowY + 2f, width - LabelWidth, 12f, Theme.Dim, out _, parent) + 10f;
                     previousWasSetting = false;
                     break;
                 case ToggleSetting toggle:
-                    rowY = AddSeparator(rowsRect, rowY, width, previousWasSetting);
-                    RowLabel(rowsRect, toggle.Label, rowY, width);
-                    var switchView = new SwitchView(rowsRect);
+                    rowY = AddSeparator(parent, rowY, width, indent, previousWasSetting);
+                    RowLabel(parent, toggle.Label, rowY, indent);
+                    var switchView = new SwitchView(parent);
                     HudFactory.TopLeft(switchView.Rect, Pad + LabelWidth, rowY + (ControlHeight - SwitchView.Height) / 2f, SwitchView.Width, SwitchView.Height);
                     _toggles.Add(new ToggleRow(toggle, switchView));
-                    rowY += ControlHeight + HelpBelow(rowsRect, toggle.Help, rowY + ControlHeight, width) + 8f;
+                    rowY += ControlHeight + HelpBelow(parent, toggle.Help, rowY + ControlHeight, width) + 8f;
                     previousWasSetting = true;
                     break;
                 case IChoiceSetting choice:
-                    rowY = AddSeparator(rowsRect, rowY, width, previousWasSetting);
-                    RowLabel(rowsRect, choice.Label, rowY, width);
+                    rowY = AddSeparator(parent, rowY, width, indent, previousWasSetting);
+                    RowLabel(parent, choice.Label, rowY, indent);
                     var labels = new string[choice.OptionCount];
                     for (int option = 0; option < labels.Length; option++) labels[option] = choice.OptionLabel(option);
-                    var picker = new SegmentedView(rowsRect, width - LabelWidth, labels);
+                    var picker = new SegmentedView(parent, width - LabelWidth, labels);
                     HudFactory.TopLeft(picker.Rect, Pad + LabelWidth, rowY, width - LabelWidth, SegmentedView.Height);
                     _choices.Add(new ChoiceRow(choice, picker));
-                    rowY += ControlHeight + HelpBelow(rowsRect, choice.Help, rowY + ControlHeight, width) + 8f;
+                    rowY += ControlHeight + HelpBelow(parent, choice.Help, rowY + ControlHeight, width) + 8f;
                     previousWasSetting = true;
                     break;
                 case ActionRow action:
-                    rowY = AddSeparator(rowsRect, rowY, width, previousWasSetting);
-                    RowLabel(rowsRect, action.Label, rowY, width);
-                    var button = new ButtonView(rowsRect, action.Button, ButtonStyle.Secondary, 110f, ControlHeight);
+                    rowY = AddSeparator(parent, rowY, width, indent, previousWasSetting);
+                    RowLabel(parent, action.Label, rowY, indent);
+                    var button = new ButtonView(parent, action.Button, ButtonStyle.Secondary, 110f, ControlHeight);
                     HudFactory.TopLeft(button.Rect, Pad + LabelWidth, rowY, 110f, ControlHeight);
                     _actions.Add(new ActionRowView(action, button));
-                    rowY += ControlHeight + HelpBelow(rowsRect, action.Help, rowY + ControlHeight, width) + 8f;
+                    rowY += ControlHeight + HelpBelow(parent, action.Help, rowY + ControlHeight, width) + 8f;
                     previousWasSetting = true;
                     break;
                 case ChipsSetting chips:
-                    rowY = AddSeparator(rowsRect, rowY, width, previousWasSetting);
-                    RowLabel(rowsRect, chips.Label, rowY, width);
+                    rowY = AddSeparator(parent, rowY, width, indent, previousWasSetting);
+                    RowLabel(parent, chips.Label, rowY, indent);
                     float chipX = Pad + LabelWidth;
                     var views = new ChipView[chips.Chips.Count];
                     for (int index = 0; index < views.Length; index++)
                     {
-                        views[index] = new ChipView(rowsRect, chips.Chips[index].Label);
+                        views[index] = new ChipView(parent, chips.Chips[index].Label);
                         HudFactory.TopLeft(views[index].Rect, chipX, rowY + (ControlHeight - ChipView.Height) / 2f, views[index].Width, ChipView.Height);
                         chipX += views[index].Width + 6f;
                     }
                     _chips.Add(new ChipsRow(chips, views));
-                    rowY += ControlHeight + HelpBelow(rowsRect, chips.Help, rowY + ControlHeight, width) + 8f;
+                    rowY += ControlHeight + HelpBelow(parent, chips.Help, rowY + ControlHeight, width) + 8f;
                     previousWasSetting = true;
                     break;
                 case RangeSetting range:
-                    rowY = AddSeparator(rowsRect, rowY, width, previousWasSetting);
-                    RowLabel(rowsRect, range.Label, rowY, width);
-                    var from = new StepperView(rowsRect);
+                    rowY = AddSeparator(parent, rowY, width, indent, previousWasSetting);
+                    RowLabel(parent, range.Label, rowY, indent);
+                    var from = new StepperView(parent);
                     HudFactory.TopLeft(from.Rect, Pad + LabelWidth, rowY, StepperView.Width, StepperView.Height);
-                    var to = HudFactory.Label("to", rowsRect, 12.5f, Theme.Muted, Align.Center);
+                    var to = HudFactory.Label("to", parent, 12.5f, Theme.Muted, Align.Center);
                     HudFactory.TopLeft(to.Rect, Pad + LabelWidth + StepperView.Width, rowY, 30f, ControlHeight);
                     to.Value = "to";
-                    var upper = new StepperView(rowsRect);
+                    var upper = new StepperView(parent);
                     HudFactory.TopLeft(upper.Rect, Pad + LabelWidth + StepperView.Width + 30f, rowY, StepperView.Width, StepperView.Height);
                     _ranges.Add(new RangeRow(range, from, upper, to));
-                    rowY += ControlHeight + HelpBelow(rowsRect, range.Help, rowY + ControlHeight, width) + 8f;
+                    rowY += ControlHeight + HelpBelow(parent, range.Help, rowY + ControlHeight, width) + 8f;
                     previousWasSetting = true;
                     break;
             }
         }
 
-        rowsRect.sizeDelta = new Vector2(_content.sizeDelta.x, rowY);
-        _contentHeight = y + rowY + 16f;
-        _content.sizeDelta = new Vector2(_content.sizeDelta.x, _contentHeight);
-        _content.anchoredPosition = Vector2.zero;
+        return rowY;
     }
 
-    private float AddSeparator(RectTransform parent, float y, float width, bool afterSetting)
+    private static float AddSeparator(RectTransform parent, float y, float width, float indent, bool afterSetting)
     {
         if (!afterSetting) return y;
         var line = HudFactory.Box("rowLine", parent, Theme.RowLine);
-        HudFactory.TopLeft(line, Pad, y, width, 1f);
+        HudFactory.TopLeft(line, Pad + indent, y, width - indent, 1f);
         return y + 8f;
     }
 
-    private static void RowLabel(RectTransform parent, string text, float y, float width)
+    private static void RowLabel(RectTransform parent, string text, float y, float indent)
     {
         var label = HudFactory.Label("label", parent, 13.5f, Theme.Text, Align.Left);
-        HudFactory.TopLeft(label.Rect, Pad, y, LabelWidth - 10f, ControlHeight);
+        HudFactory.TopLeft(label.Rect, Pad + indent, y, LabelWidth - indent - 10f, ControlHeight);
         label.Value = text;
     }
 
@@ -402,15 +505,17 @@ public sealed class SettingsWindow
 
     private void Refresh()
     {
-        var page = _pages[_selected];
-        if (page.Content != null && page.Content.Stale) BuildRows(page);
-        if (page.Feature != null)
+        var group = _groups[_selected];
+        if (group.Content != null && group.Content.Stale) BuildRows();
+        foreach (var row in _featureRows)
         {
-            _headerSwitch?.Set(page.Feature.Switch.Value && !page.Feature.Failed, enabled: !page.Feature.Failed);
-            _failedNote?.SetActive(page.Feature.Failed);
-            if (_rowsGroup != null) _rowsGroup.alpha = page.Feature.Switch.Value && !page.Feature.Failed ? 1f : 0.5f;
+            bool on = row.Feature.Switch.Value && !row.Feature.Failed;
+            row.Switch.Set(on, enabled: !row.Feature.Failed);
+            row.Failed.SetActive(row.Feature.Failed);
+            if (row.Rows != null) row.Rows.alpha = on ? 1f : 0.5f;
         }
 
+        if (_backLabel != null) _backLabel.Color = Pointer.Over(_back) ? Theme.Text : Theme.Muted;
         foreach (var toggle in _toggles) toggle.View.Set(toggle.Setting.Value);
         foreach (var choice in _choices) choice.View.Set(choice.Setting.SelectedIndex);
         foreach (var chips in _chips)
@@ -436,23 +541,37 @@ public sealed class SettingsWindow
             return;
         }
 
-        if (_pages[_selected].Settings != null && _reset.Update()) _pages[_selected].Settings.ResetShown();
+        var group = _groups[_selected];
+        if (group.Content == null && _reset.Update()) ResetShown(group);
 
         for (int index = 0; index < _nav.Count; index++)
         {
             if (!Pointer.Clicked(_nav[index].Rect)) continue;
-            Select(index);
+            Show(index, null);
             return;
         }
-
-        var feature = _pages[_selected].Feature;
-        if (_headerSwitch != null && feature != null && !feature.Failed && Pointer.Clicked(_headerSwitch.Rect))
-            feature.Switch.Value = !feature.Switch.Value;
 
         bool insideViewport = Pointer.Over(_viewport);
         if (insideViewport)
         {
-            _pages[_selected].Content?.HandleInput();
+            if (_back != null && Pointer.Clicked(_back))
+            {
+                Show(_selected, null);
+                return;
+            }
+
+            foreach (var row in _featureRows)
+            {
+                if (!row.Feature.Failed && Pointer.Clicked(row.Switch.Rect))
+                    row.Feature.Switch.Value = !row.Feature.Switch.Value;
+                if (row.Gear != null && row.Gear.Update())
+                {
+                    Show(_selected, row.Feature);
+                    return;
+                }
+            }
+
+            group.Content?.HandleInput();
 
             foreach (var toggle in _toggles)
                 if (Pointer.Clicked(toggle.View.Rect))
@@ -491,6 +610,22 @@ public sealed class SettingsWindow
         if (Pointer.Pressed && Pointer.Over(_window)) Pointer.Claim();
     }
 
+    // Returns what the page shows to its defaults: a feature's own page, or a group's shared
+    // settings and the settings under its features' rows. Feature switches keep their state.
+    private void ResetShown(SettingsGroup group)
+    {
+        if (_open != null)
+        {
+            _open.Settings.ResetShown();
+            return;
+        }
+
+        foreach (var page in group.Pages) page.ResetShown();
+        foreach (var feature in group.Features)
+            if (!feature.OwnPage)
+                feature.Settings.ResetShown();
+    }
+
     private void Scroll()
     {
         float overflow = Mathf.Max(0f, _contentHeight - _viewport.sizeDelta.y);
@@ -519,35 +654,17 @@ public sealed class SettingsWindow
         _grab = Pointer.Position;
     }
 
-    private sealed class Page
-    {
-        public Page(string title, Sprite icon, SettingsPage settings, Feature feature, ISettingsContent content)
-        {
-            Title = title;
-            Icon = icon;
-            Settings = settings;
-            Feature = feature;
-            Content = content;
-        }
-
-        public string Title { get; }
-        public Sprite Icon { get; }
-        public SettingsPage Settings { get; }
-        public Feature Feature { get; }
-        public ISettingsContent Content { get; }
-    }
-
     private sealed class NavItem
     {
-        private readonly Page _page;
+        private readonly SettingsGroup _group;
         private readonly Image _background;
         private readonly Image _bar;
         private readonly Image _icon;
         private readonly Label _label;
 
-        public NavItem(RectTransform parent, Page page, float y)
+        public NavItem(RectTransform parent, SettingsGroup group, float y)
         {
-            _page = page;
+            _group = group;
             _background = HudFactory.Box("navItem", parent, Color.clear);
             _background.raycastTarget = true;
             Rect = HudFactory.TopLeft(_background, 0f, y, NavWidth, NavItemHeight);
@@ -555,12 +672,12 @@ public sealed class SettingsWindow
             _bar = HudFactory.Box("bar", Rect, Theme.Ready);
             HudFactory.TopLeft(_bar, 0f, 0f, 2f, NavItemHeight);
 
-            _icon = HudFactory.Tinted("icon", Rect, page.Icon, Theme.Control);
+            _icon = HudFactory.Tinted("icon", Rect, group.Icon, Theme.Control);
             HudFactory.TopLeft(_icon, 16f, (NavItemHeight - 16f) / 2f, 16f, 16f);
 
             _label = HudFactory.Label("label", Rect, 13.5f, Theme.Muted, Align.Left);
             HudFactory.TopLeft(_label.Rect, 42f, 0f, NavWidth - 50f, NavItemHeight);
-            _label.Value = page.Title;
+            _label.Value = group.Title;
         }
 
         public RectTransform Rect { get; }
@@ -570,13 +687,33 @@ public sealed class SettingsWindow
         public void Refresh(bool selected)
         {
             bool hovered = !selected && Pointer.Over(Rect);
-            bool failed = _page.Feature != null && _page.Feature.Failed;
-            bool off = _page.Feature != null && !_page.Feature.Switch.Value;
+            bool failed = false;
+            foreach (var feature in _group.Features) failed |= feature.Failed;
             _background.color = selected ? NavSelected : hovered ? NavHover : Color.clear;
             _bar.enabled = selected;
             _icon.color = failed ? Theme.Cast : selected ? Theme.Ready : Theme.Control;
-            _label.Color = failed ? Theme.Cast : selected ? Theme.Text : off ? Theme.Dim : Theme.Muted;
+            _label.Color = failed ? Theme.Cast : selected ? Theme.Text : Theme.Muted;
         }
+    }
+
+    private sealed class FeatureRow
+    {
+        public FeatureRow(Feature feature, SwitchView toggle, IconButton gear, Label failed, CanvasGroup rows)
+        {
+            Feature = feature;
+            Switch = toggle;
+            Gear = gear;
+            Failed = failed;
+            Rows = rows;
+        }
+
+        public Feature Feature { get; }
+        public SwitchView Switch { get; }
+        public IconButton Gear { get; }
+        public Label Failed { get; }
+
+        /// <summary>The settings under the feature's row, dimmed while it is off, or null.</summary>
+        public CanvasGroup Rows { get; }
     }
 
     private sealed class ToggleRow

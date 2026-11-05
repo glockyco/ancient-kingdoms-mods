@@ -31,9 +31,9 @@ public sealed class BossListSettings
         Zones = page.Choice("Zones", ZoneFilter.ThisZone, "Zones",
             "This zone shows the zone you're in. All zones shows every zone.",
             (ZoneFilter.ThisZone, "This zone"), (ZoneFilter.AllZones, "All zones"));
-        Undiscovered = page.Choice("Undiscovered", UndiscoveredFilter.Silhouette, "Undiscovered",
-            "How to show monsters you haven't discovered yet.",
-            (UndiscoveredFilter.Silhouette, "Silhouette"), (UndiscoveredFilter.Show, "Show"), (UndiscoveredFilter.Hide, "Hide"));
+        Undiscovered = page.Choice("Undiscovered", UndiscoveredFilter.Show, "Undiscovered",
+            "Hide leaves out monsters you haven't discovered yet.",
+            (UndiscoveredFilter.Show, "Show"), (UndiscoveredFilter.Hide, "Hide"));
         page.Note("Watched monsters are always shown, whatever these filters say. Click a row in the list to watch a monster.");
 
         page.Section("Order");
