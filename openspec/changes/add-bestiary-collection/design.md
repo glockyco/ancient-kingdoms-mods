@@ -27,5 +27,4 @@
 
 ## Risks / Trade-offs
 
-- [The record holds other characters' finds] → The bar shows what the game's own page shows. The defect is reported in `docs/game-bugs/`.
 - [A Harmony postfix that no longer applies after a game update fails silently] → The patch reports through its feature's failure path, and the in-game check in the tasks covers it.
