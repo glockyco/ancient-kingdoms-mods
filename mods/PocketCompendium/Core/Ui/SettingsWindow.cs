@@ -497,6 +497,8 @@ public sealed class SettingsWindow
     {
         var group = _groups[_selected];
         if (group.Content != null && group.Content.Stale) BuildRows();
+        // A feature that fails while its row shows needs room for its notice, so the page is laid out again.
+        else if (_featureRows.Exists(row => row.Feature.Failed != row.FailedLaidOut)) BuildRows();
         foreach (var row in _featureRows)
         {
             bool on = row.Feature.Switch.Value && !row.Feature.Failed;
@@ -691,6 +693,7 @@ public sealed class SettingsWindow
             Switch = toggle;
             Gear = gear;
             Failed = failed;
+            FailedLaidOut = feature.Failed;
             Rows = rows;
         }
 
@@ -698,6 +701,9 @@ public sealed class SettingsWindow
         public SwitchView Switch { get; }
         public IconButton Gear { get; }
         public Label Failed { get; }
+
+        /// <summary>Whether the page left room for the failure notice when it was laid out.</summary>
+        public bool FailedLaidOut { get; }
 
         /// <summary>The settings under the feature's row, dimmed while it is off, or null.</summary>
         public CanvasGroup Rows { get; }
