@@ -50,7 +50,7 @@
         {#if i === guide.steps.length - 1}
           <img
             src="/mod-pictures/settings-window.webp"
-            alt="Pocket Compendium's settings window on its Boss list page, with the list's style, direction, tiers and levels."
+            alt="Pocket Compendium's settings window on its Respawns page, with switches for the boss list, map pins, dungeon entrances, world markers and edge arrows."
             width="786"
             height="565"
             loading="lazy"
