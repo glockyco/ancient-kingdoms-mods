@@ -98,7 +98,7 @@ When a monster that is up is off screen, an edge arrow SHALL show its portrait a
 
 ### Requirement: Map pins show portraits only
 
-On the local map, each tracked monster SHALL show as a portrait pin. A pin SHALL sit where a monster that is up is, as far as the game shows it, and otherwise on its spawn point or altar. Dead monsters SHALL carry a small time tag and monsters that are up SHALL glow. Hovering a pin SHALL show its name, level and spawn rules in the game's tooltip.
+On the local map, each tracked monster SHALL show as a portrait pin. A pin SHALL sit where a monster that is up is, as far as the game shows it, and otherwise on its spawn point or altar. Dead monsters SHALL carry a small time tag and monsters that are up SHALL glow. Hovering a pin SHALL show its name, level and spawn rules in Pocket Compendium's tooltip.
 
 #### Scenario: Hovering a pin
 
