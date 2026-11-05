@@ -68,8 +68,9 @@ internal sealed class TileView
         Monster = data.Monster;
         var monster = data.Monster;
         var state = monster.State;
-        _portrait.Set(GameAccess.Portrait(monster.Definition), GameAccess.TierColor(monster.Tier), !state.IsUp,
-            StateText.Remaining(state, monster.Rules, data.Now), watched, data.Silhouette);
+        // A tile keeps the portrait as it is: the time on it says the monster is dead.
+        _portrait.Set(GameAccess.Portrait(monster.Definition), GameAccess.TierColor(monster.Tier), dimmed: false,
+            watched, data.Silhouette);
 
         // The icon names states whose caption is not a time. Countdowns need none.
         var look = StateLook.Of(state, monster.Rules.NightWindow, monster.AltarItem != null ? monster.AltarItem.image : null);

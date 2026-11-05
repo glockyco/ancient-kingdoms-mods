@@ -4,22 +4,18 @@ using UnityEngine.UI;
 namespace PocketCompendium.Core.Ui;
 
 /// <summary>
-/// A monster portrait in a frame of its tier colour. A dead monster's portrait darkens under a
-/// sweep that clears as its wait runs out, an undiscovered one shows as a black silhouette like
-/// the game's Bestiary, and a watched one carries a gold corner.
+/// A monster portrait in a frame of its tier colour. A dead monster's portrait can be dimmed in full,
+/// an undiscovered one shows as a black silhouette like the game's Bestiary, and a watched one
+/// carries a gold corner.
 /// </summary>
 public sealed class PortraitView
 {
     private static readonly Color Down = new(0.42f, 0.42f, 0.45f, 1f);
-
-    /// <summary>The share of the wait still to run. Dark enough to read on dark portraits too.</summary>
-    internal static readonly Color SweepColor = new(0f, 0f, 0f, 0.75f);
     private static readonly Color SilhouetteBackground = new(0.16f, 0.18f, 0.22f, 1f);
 
     private readonly Image _frame;
     private readonly Image _background;
     private readonly Image _portrait;
-    private readonly SweepView _sweep;
     private readonly RectTransform _corner;
 
     public PortraitView(Transform parent, float size, float border)
@@ -32,8 +28,6 @@ public sealed class PortraitView
         HudFactory.Stretch(_background, new Vector2(border, border), new Vector2(-border, -border));
         _portrait = HudFactory.Icon("image", Rect, null);
         HudFactory.Stretch(_portrait, new Vector2(border, border), new Vector2(-border, -border));
-
-        _sweep = new SweepView(Rect, border, SweepColor);
 
         // A gold diamond with a dark edge over the top-right corner, like the compact tiles' mark.
         // Its center sits half its reach inside the corner, so in a grid of tiles it stops short
@@ -54,16 +48,14 @@ public sealed class PortraitView
 
     public RectTransform Rect { get; }
 
-    /// <param name="remaining">The share of the wait still to run, 0 without a countdown.</param>
-    public void Set(Sprite sprite, Color tier, bool down, float remaining, bool watched, bool silhouette)
+    /// <param name="dimmed">Dims the portrait in full, for a dead monster in a list row.</param>
+    public void Set(Sprite sprite, Color tier, bool dimmed, bool watched, bool silhouette)
     {
         if (_portrait.sprite != sprite) _portrait.sprite = sprite;
         _portrait.enabled = sprite != null;
         _frame.color = silhouette ? Theme.Dim : tier;
         _background.color = silhouette ? SilhouetteBackground : Theme.IconBg;
-        _portrait.color = silhouette ? Color.black : down ? Down : Color.white;
-
-        _sweep.Set(silhouette ? 0f : remaining);
+        _portrait.color = silhouette ? Color.black : dimmed ? Down : Color.white;
 
         if (_corner.gameObject.activeSelf != watched) _corner.gameObject.SetActive(watched);
     }

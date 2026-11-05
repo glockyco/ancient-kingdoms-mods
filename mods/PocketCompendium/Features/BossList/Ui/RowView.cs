@@ -118,8 +118,8 @@ internal sealed class RowView
         HudFactory.TopLeft(_hoverBar, 0f, 0f, 2f, Height);
 
         var tier = GameAccess.TierColor(monster.Tier);
-        _portrait.Set(GameAccess.Portrait(monster.Definition), tier, !state.IsUp,
-            StateText.Remaining(state, monster.Rules, data.Now), watched, data.Silhouette);
+        // A row dims a dead monster in full, so the monsters a player can act on stand out.
+        _portrait.Set(GameAccess.Portrait(monster.Definition), tier, !state.IsUp, watched, data.Silhouette);
 
         // The arrow column, then state over distance, then the name takes what is left.
         _arrowCircle.gameObject.SetActive(data.ShowDistance);

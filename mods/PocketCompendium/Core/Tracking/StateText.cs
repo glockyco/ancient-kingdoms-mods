@@ -106,8 +106,8 @@ public static class StateText
     }
 
     /// <summary>
-    /// The share of the wait still to run, for the darkening sweep over a dead portrait, or 0 for
-    /// a state without a countdown.
+    /// The share of the wait still to run, for the darkening sweep over a map pin's dead portrait,
+    /// or 0 for a state without a countdown.
     /// </summary>
     public static float Remaining(in TrackedState state, SpawnRules rules, double now)
     {

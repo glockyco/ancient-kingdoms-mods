@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace PocketCompendium.Features.BestiaryCountdown;
 
 /// <summary>
-/// Counts down dead monsters in the Bestiary: a sweep and time on their grid portraits, and a
+/// Counts down dead monsters in the Bestiary: the time on their grid portraits, and a
 /// "Respawns in" plate on their pages between the facts and the lore. It draws its own objects
 /// over the game's, so it needs no patch on the page.
 /// </summary>
@@ -144,29 +144,20 @@ public sealed class BestiaryCountdownFeature : Feature
 }
 
 /// <summary>
-/// A dead monster's countdown over its portrait in the Bestiary grid. A light dim marks it as dead,
-/// a dark sweep covers the share of the time still to run, so the portrait brightens as the spawn
-/// nears, and the time sits in bold on a shade at the bottom, so it reads on any portrait.
+/// A dead monster's countdown over its portrait in the Bestiary grid: the time in bold on a shade at
+/// the bottom, so it reads on any portrait. The portrait itself stays as it is.
 /// </summary>
 internal sealed class SlotOverlay
 {
-    // Light enough that the sweep's edge shows on dark portraits too.
-    private static readonly Color Dim = new(0f, 0f, 0f, 0.3f);
     private static readonly Color TimeShade = new(0f, 0f, 0f, 0.85f);
 
     private readonly RectTransform _root;
-    private readonly SweepView _sweep;
     private readonly Label _time;
 
     public SlotOverlay(RectTransform portrait)
     {
         _root = HudFactory.Rect("PC_Countdown", portrait).GetComponent<RectTransform>();
         HudFactory.Stretch(_root, Vector2.zero, Vector2.zero);
-
-        var dim = HudFactory.Box("dim", _root, Dim);
-        HudFactory.Stretch(dim, Vector2.zero, Vector2.zero);
-
-        _sweep = new SweepView(_root, 0f, PortraitView.SweepColor);
 
         var shade = HudFactory.Box("shade", _root, TimeShade);
         shade.sprite = Shapes.Shade;
@@ -189,7 +180,6 @@ internal sealed class SlotOverlay
         if (_root.gameObject.activeSelf != counting) _root.gameObject.SetActive(counting);
         if (!counting) return;
 
-        _sweep.Set(StateText.Remaining(state, monster.Rules, now));
         _time.Value = StateText.Caption(state, now);
     }
 
