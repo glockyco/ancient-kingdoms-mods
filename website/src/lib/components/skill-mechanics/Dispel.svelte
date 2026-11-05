@@ -80,8 +80,8 @@
     </p>
     <p class="text-muted-foreground">
       <span class="block"
-        >If the dispel lands, you lose skill, food, potion and relic buffs. Rest
-        and Bard songs stay. Pets also lose Rest.</span
+        >If the dispel lands, you lose skill, food, potion and relic buffs.
+        Rest, Bard songs and virtue blessings stay. Pets also lose Rest.</span
       >
     </p>
   {/if}
