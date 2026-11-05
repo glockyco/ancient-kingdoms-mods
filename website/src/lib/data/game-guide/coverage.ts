@@ -295,7 +295,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "virtues.honor": {
     href: "/mechanics/virtues#honor",
     reviewedBodySha256:
-      "0d4a6cd69a135deaebad29657659fbfc5b44c5c0695339ad72896e297a29b5d1",
+      "f042434afda860c2745b2fcd61d1022822e7bf3b3ee73a357979c95f78f715cf",
   },
   "virtues.humility": {
     href: "/mechanics/virtues#humility",
@@ -305,7 +305,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "virtues.progression-titles": {
     href: "/mechanics/virtues#ranks-and-titles",
     reviewedBodySha256:
-      "a98dcf77d7364ff6d23584cb6475f7be553b8f32d59459751d843a43dc6d5608",
+      "e2300f9a172b9832fca722d2265898bbea28b4f2547ca01bfb375358415caa2f",
   },
   "virtues.sacrifice": {
     href: "/mechanics/virtues#sacrifice",
@@ -315,12 +315,12 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "virtues.shrines": {
     href: "/mechanics/virtues#shrines",
     reviewedBodySha256:
-      "3933deeb346b58c51259164e71e4c3af5a61e07807a8358c6d68f3829f34a589",
+      "d84fd294a9a000419caddebb194df960a742e0f4f3f79d67a7e70efa8e9c1484",
   },
   "virtues.valor": {
     href: "/mechanics/virtues#valor",
     reviewedBodySha256:
-      "96aa7170f82bddc77eeb141ed9c259db7ec66a6036b6d0a1e405ab464f399db7",
+      "57a2b5c50918303cc94cfc1bcfcdeddcd1f9a6da1eb2817ced108d4d60eb58cc",
   },
   "world.adventurers-guild": {
     href: "/professions/adventuring#how-it-works",

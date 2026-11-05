@@ -3599,6 +3599,9 @@
     "Player.cs:ProcessMercenariesOnPlayerRespawn": {
       "span": 0
     },
+    "Player.cs:RefreshMercenaryVirtueBlessing": {
+      "span": 0
+    },
     "Player.cs:ReloadSummonedMercenaries": {
       "span": 0
     },
@@ -6264,6 +6267,18 @@
       "span": 0
     },
     "VirtueEscortStats.cs:TryForDungeon": {
+      "span": 0
+    },
+    "VirtuePersistence.cs:MigrateAccount": {
+      "span": 0
+    },
+    "VirtuePersistence.cs:Read": {
+      "span": 0
+    },
+    "VirtuePersistence.cs:Save": {
+      "span": 0
+    },
+    "VirtueRules.cs:BlessingDuration": {
       "span": 0
     },
     "VirtueRules.cs:CombatPoints": {

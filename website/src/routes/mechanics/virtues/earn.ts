@@ -7,7 +7,6 @@ import Hand from "@lucide/svelte/icons/hand";
 import Handshake from "@lucide/svelte/icons/handshake";
 import HeartPulse from "@lucide/svelte/icons/heart-pulse";
 import Landmark from "@lucide/svelte/icons/landmark";
-import LogOut from "@lucide/svelte/icons/log-out";
 import Route from "@lucide/svelte/icons/route";
 import Search from "@lucide/svelte/icons/search";
 import Shield from "@lucide/svelte/icons/shield";
@@ -126,10 +125,8 @@ export function earnMethods(
             text: "Pick a monster at full Health, near your level or stronger",
           },
           { icon: Shield, text: "Let it hit you first" },
-          {
-            icon: LogOut,
-            text: "Win, then leave combat to receive your points",
-          },
+          // Source: server-scripts/VirtueCombat.cs:OnDeath — each eligible kill pays its Honor at once.
+          { icon: Skull, text: "Defeat it to receive its points" },
         ],
         rewards: [
           {
@@ -259,14 +256,12 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
     },
     {
       // Source: server-scripts/VirtueCombat.cs:CancelHonor,Assistance,ClearFinishedHonorFight,OnDeath — the fight is marked invalid or ends, so its later kills give no Honor.
-      title: "The fight gives no points",
+      title: "The rest of the fight gives no points",
       kind: "no",
       items: [
         "Active mercenaries",
         "Help or heals from another player",
         "Healing potions and bandages",
-        "Using a portal",
-        "Dying",
       ],
     },
     {
@@ -296,8 +291,8 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       title: "Good to know",
       kind: "info",
       items: [
-        // Source: server-scripts/VirtueCombat.cs:OnDeath — the kill counts within 40 yd in the monster's zone.
-        "A kill counts when you damaged the monster and are alive, in its zone and within 40\u00a0yd.",
+        // Source: server-scripts/VirtueCombat.cs:OnDeath — the kill counts within 40 yd of the monster.
+        "A kill counts when you damaged the monster and are alive and within 40\u00a0yd.",
       ],
     },
   ],
@@ -319,6 +314,8 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       title: "Good to know",
       kind: "info",
       items: [
+        // Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine,AssignValorTarget — after 5 minutes of the blessing, or once it has ended, the shrine names a quarry other than the current one.
+        "Renew after 5 minutes for a different quarry.",
         // Source: server-scripts/Player.cs:AssignValorTarget,UserCode_CmdActivateVirtue__VirtueShrine — below rank 5, the shrine refuses Valor when no quarry fits.
         'Below rank\u00a05, when none fits your level, the shrine says "No worthy quarry answers the shrine at this time."',
       ],

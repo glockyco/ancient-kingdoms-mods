@@ -500,9 +500,11 @@
     </p>
   </header>
 
-  <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing,IsVirtueMastered — one virtue below rank 5 is active at a time, a rank 5 blessing keeps its own timer beside it, and receiving or renewing a blessing sets 3 hours. -->
+  <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing,IsVirtueMastered; VirtueRules.cs:BlessingDuration — one virtue below rank 5 is active at a time, a rank 5 blessing keeps its own timer beside it, and receiving or renewing a blessing sets 3 hours below rank 5 and 10 hours at rank 5. -->
   <!-- Source: server-scripts/Player.cs:TickVirtuesServer — the time counts down only while you are connected. -->
   <!-- Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine — Sacrifice needs an offering below rank 5. -->
+  <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing,RefreshMercenaryVirtueBlessing — receiving or renewing a blessing also gives it to each active mercenary that is alive, except Honesty's. -->
+  <!-- Source: server-scripts/VirtuePersistence.cs:Read,Save,MigrateAccount — the account keeps each virtue's highest points, and every character on it reads them. -->
   <section class="space-y-4">
     <h2 class="text-2xl font-semibold">Getting started</h2>
     <ol class="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
@@ -517,7 +519,7 @@
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
           Press <span class="font-medium text-foreground">Receive blessing</span
           > at one of its two shrines. Sacrifice asks for an offering instead, until
-          rank 5.
+          rank 5. Your mercenaries get it too.
         </p>
       </li>
       <li class="rounded-lg border bg-card p-4">
@@ -529,9 +531,9 @@
       <li id="ranks-and-titles" class="rounded-lg border bg-card p-4">
         {@render stepTitle(4, "Rise in rank")}
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
-          Points and titles stay when you switch. Pick the title you show at
-          that virtue's shrine. At rank&nbsp;5, its blessing stays alongside the
-          others.
+          All your characters share points and titles. Pick the title you show
+          at that virtue's shrine. At rank&nbsp;5, its blessing lasts 10 hours
+          and stays alongside the others.
         </p>
       </li>
     </ol>
