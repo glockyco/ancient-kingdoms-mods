@@ -59,7 +59,7 @@ const VALAARK_INVULNERABILITY: SpecialMechanic = {
 };
 
 const DRAGONBAIT_STEW_USE: SpecialMechanic = {
-  title: "Valaark vulnerability",
+  title: "Valaark Vulnerability",
   summary: [
     "Target ",
     VALAARK_LINK,

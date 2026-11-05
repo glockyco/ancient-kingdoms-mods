@@ -10,19 +10,19 @@
 
   const features = [
     {
-      title: "Boss list",
+      title: "Boss List",
       text: "Lists the bosses, elites, and fabled monsters in your zone and when they spawn. Click one to watch it.",
       image: "/mod-pictures/card-boss-list.webp",
       alt: "The boss list in Twilight Forest with monsters that are up, in combat and respawning.",
     },
     {
-      title: "World markers",
+      title: "World Markers",
       text: "Marks dead monsters on their spawn points with a respawn timer, and points to living ones off screen.",
       image: "/mod-pictures/card-world-markers.webp",
       alt: "Gukavep's spawn point with a respawn timer, and arrows to Maltheris Vex and Spirit of the Forest.",
     },
     {
-      title: "Boss skills",
+      title: "Boss Skills",
       text: "Shows the skill cooldowns of the monsters you're fighting, and when their next special can come.",
       image: "/mod-pictures/card-boss-skills.webp",
       alt: "Ancient Cyclops casting Earthshatter Slam while his other skills count down.",
@@ -34,7 +34,7 @@
       alt: "Troll King Grimlok's Bestiary page with drop chances, a drop's tooltip and his skills.",
     },
     {
-      title: "Map pins",
+      title: "Map Pins",
       text: "Marks the bosses, elites, and fabled monsters in your zone on the map, with their respawn timers. Hover over a dungeon's entrance to see its bosses.",
       image: "/mod-pictures/card-map-pins.webp",
       alt: "The map of Crescent Coast with a pin for each monster and the Sunken Temple's bosses beside its entrance.",
@@ -90,7 +90,7 @@
           variant="secondary"
           class="w-full sm:w-auto lg:w-full"
         >
-          <BookOpen class="size-5" aria-hidden="true" />How to install
+          <BookOpen class="size-5" aria-hidden="true" />How to Install
         </Cta>
       </div>
     </div>
@@ -138,7 +138,7 @@
       </p>
     </div>
     <Cta href="/mods/install" variant="secondary" class="w-full sm:w-auto">
-      Open the install guide<ArrowRight class="size-5" aria-hidden="true" />
+      Open the Install Guide<ArrowRight class="size-5" aria-hidden="true" />
     </Cta>
   </section>
 </div>

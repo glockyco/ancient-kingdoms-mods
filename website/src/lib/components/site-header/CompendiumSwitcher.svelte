@@ -83,7 +83,7 @@
         </li>
       {/each}
     </ul>
-    <a class="foot" href="/about">About this Compendium</a>
+    <a class="foot" href="/about">About This Compendium</a>
   </div>
 </div>
 

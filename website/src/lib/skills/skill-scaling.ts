@@ -22,35 +22,35 @@ const SCALING_FIELDS: Array<{
 }> = [
   {
     key: "health_cost_percent",
-    label: "Hit Points cost (% of maximum)",
+    label: "Hit Points Cost (% of Maximum)",
     isPercent: true,
     suffix: "",
   },
   {
     key: "mana_restored_percent",
-    label: "Mana restored (% of maximum)",
+    label: "Mana Restored (% of Maximum)",
     isPercent: true,
     suffix: "",
   },
   {
     key: "healing_percent",
-    label: "Healing percentage",
+    label: "Healing Percentage",
     isPercent: true,
     suffix: "",
   },
   {
     key: "lifetap_healing_percent_bonus",
-    label: "Lifetap healing bonus",
+    label: "Lifetap Healing Bonus",
     isPercent: true,
     suffix: "",
   },
   {
     key: "damage_over_time_execute_bonus",
-    label: "Damage-over-time execute bonus",
+    label: "Damage-over-Time Execute Bonus",
     isPercent: true,
     suffix: "",
   },
-  { key: "damage", label: "Skill damage", isPercent: false, suffix: "" },
+  { key: "damage", label: "Skill Damage", isPercent: false, suffix: "" },
   {
     key: "damage_percent",
     label: "Damage %",
@@ -112,7 +112,7 @@ const SCALING_FIELDS: Array<{
   },
   {
     key: "knockback_chance",
-    label: "Knockback",
+    label: "Knockback Chance",
     isPercent: true,
     suffix: "",
   },
@@ -168,6 +168,30 @@ const SCALING_FIELDS: Array<{
   }),
 ];
 
+/**
+ * The name of a skill's Hit Points per-second field. A negative value is damage of the
+ * debuff's type on a debuff and a drain on the caster otherwise.
+ */
+export function healthTickName(
+  skill: SkillDetailView,
+  key: "healing_per_second_bonus" | "health_percent_per_second_bonus",
+): string {
+  const field = statField("skill", key);
+  if ((skill[key]?.base_value ?? 0) >= 0) return statFieldName(field);
+  return statFieldName(
+    field,
+    "character",
+    skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff"
+      ? {
+          damageType:
+            skill.damage_over_time_type !== "Unknown"
+              ? (skill.damage_over_time_type ?? undefined)
+              : undefined,
+        }
+      : { drain: true },
+  );
+}
+
 export function scalingColumns(
   skill: SkillDetailView,
   scrollOnly = false,
@@ -221,24 +245,15 @@ export function scalingColumns(
       const field = damageTick
         ? { base_value: -val.base_value, bonus_per_level: -val.bonus_per_level }
         : val;
-      const label =
-        damageTick && def.stat
-          ? statFieldName(
-              def.stat,
-              "character",
-              skill.skill_type === "target_debuff" ||
-                skill.skill_type === "area_debuff"
-                ? {
-                    damageType:
-                      skill.damage_over_time_type !== "Unknown"
-                        ? (skill.damage_over_time_type ?? undefined)
-                        : undefined,
-                  }
-                : { drain: true },
-            )
-          : sharedConversion && def.key === "health_cost_percent"
-            ? "Conversion (% of maximum Hit Points and Mana)"
-            : def.label;
+      const label = damageTick
+        ? healthTickName(
+            skill,
+            def.key as
+              "healing_per_second_bonus" | "health_percent_per_second_bonus",
+          )
+        : sharedConversion && def.key === "health_cost_percent"
+          ? "Conversion (% of Maximum Hit Points and Mana)"
+          : def.label;
 
       cols.push({
         label,

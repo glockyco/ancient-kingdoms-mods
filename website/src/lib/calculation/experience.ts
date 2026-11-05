@@ -19,19 +19,19 @@ export function levelExperience(costs: readonly number[]): Calculation {
   return {
     steps: [
       {
-        name: `XP to next level, levels ${formatRange(1, 40)}`,
+        name: `XP to Next Level, Levels ${formatRange(1, 40)}`,
         expression: "78 XP × (125.8% to the power of (your level − 1))",
         rounding: "nearest",
       },
       {
-        name: `XP to next level, levels ${formatRange(41, 49)}`,
+        name: `XP to Next Level, Levels ${formatRange(41, 49)}`,
         expression: `${formatNumber(602060)} XP (the level 40 requirement) × (118% to the power of (your level − 40))`,
         rounding: "nearest",
       },
     ],
     inputs: [
       {
-        ...situational("level", "Your level", 20),
+        ...situational("level", "Your Level", 20),
         min: 1,
         max: 49,
         remember: true,
@@ -56,7 +56,7 @@ export function veteranExperience(): Calculation {
     steps: [
       {
         name: "Next Veteran Point",
-        expression: `${formatNumber(1_000_000)} XP + ${formatNumber(20_000)} XP × total veteran points`,
+        expression: `${formatNumber(1_000_000)} XP + ${formatNumber(20_000)} XP × Total Veteran Points`,
       },
     ],
     inputs: [
@@ -118,48 +118,48 @@ export function killExperience(): Calculation {
   return {
     steps: [
       {
-        name: "Base share",
+        name: "Base Share",
         expression:
           "Monster's base XP ÷ nearby party players, including dead players",
         rounding: "up",
       },
       {
-        name: "Level adjustment",
+        name: "Level Adjustment",
         expression:
           "Use the highest-level nearby party player to find the level-difference percentage. In a dungeon, add 10% to that percentage unless the monster is more than 20 levels lower",
       },
       {
-        name: "Adjusted share",
-        expression: "Base share × level adjustment",
+        name: "Adjusted Share",
+        expression: "Base Share × Level Adjustment",
         rounding: "nearest",
         limit:
           "0 XP if the monster is more than 20 levels lower, otherwise at least 1 XP",
       },
       {
-        name: "Party bonus",
-        expression: "Adjusted share × 125% × other nearby party players",
+        name: "Party Bonus",
+        expression: "Adjusted Share × 125% × other nearby party players",
         rounding: "nearest",
       },
       {
-        name: "XP per living player",
-        expression: "Adjusted share + party bonus",
+        name: "XP per Living Player",
+        expression: "Adjusted Share + Party Bonus",
       },
     ],
     inputs: [
-      situational("baseXp", "Monster's base XP", 1000),
+      situational("baseXp", "Monster's Base XP", 1000),
       {
         ...situational(
           "level",
-          "Highest level among nearby party players (your level when alone)",
+          "Highest Level Among Nearby Party Players (Your Level When Alone)",
           20,
         ),
         min: 1,
         max: 50,
       },
-      { ...situational("monsterLevel", "Monster level", 20), min: 1, max: 100 },
-      { ...situational("members", "Nearby party players", 3), min: 1, max: 5 },
+      { ...situational("monsterLevel", "Monster Level", 20), min: 1, max: 100 },
+      { ...situational("members", "Nearby Party Players", 3), min: 1, max: 5 },
       {
-        ...situational("dungeon", "Inside a dungeon", 0),
+        ...situational("dungeon", "Inside a Dungeon", 0),
         max: 1,
         choices: [
           { value: 0, label: "No" },
@@ -184,13 +184,13 @@ export function killExperience(): Calculation {
         ],
         result: `${formatNumber(result.total)} XP per living player before Double XP and Forgotten Altar bonuses`,
         working: [
-          `Base share: ${formatNumber(baseXp)} ÷ ${members} = ${formatNumber(result.share)} XP, rounded up`,
+          `Base Share: ${formatNumber(baseXp)} ÷ ${members} = ${formatNumber(result.share)} XP, rounded up`,
           level - monsterLevel > 20
-            ? "Level adjustment: monster more than 20 levels lower = 0%, no XP"
-            : `Level adjustment: percentage for level ${level} against monster level ${monsterLevel}${dungeon ? " + 10% for a dungeon" : ""} = ${formatPercent(result.multiplier, { decimals: 2, preserveNonzero: true })}`,
-          `Adjusted share: ${formatNumber(result.share)} × ${formatPercent(result.multiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(result.roundedShare)} XP, rounded${result.balanced !== result.roundedShare ? (level - monsterLevel > 20 ? ", limited to 0 XP by the 20-level cutoff" : ", limited to 1 XP") : ""}`,
-          `Party bonus: ${formatNumber(result.balanced)} × 125% × ${members - 1} = ${formatNumber(result.bonus)} XP, rounded`,
-          `XP per living player: ${formatNumber(result.balanced)} + ${formatNumber(result.bonus)} = ${formatNumber(result.total)} XP`,
+            ? "Level Adjustment: monster more than 20 levels lower = 0%, no XP"
+            : `Level Adjustment: percentage for level ${level} against monster level ${monsterLevel}${dungeon ? " + 10% for a dungeon" : ""} = ${formatPercent(result.multiplier, { decimals: 2, preserveNonzero: true })}`,
+          `Adjusted Share: ${formatNumber(result.share)} × ${formatPercent(result.multiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(result.roundedShare)} XP, rounded${result.balanced !== result.roundedShare ? (level - monsterLevel > 20 ? ", limited to 0 XP by the 20-level cutoff" : ", limited to 1 XP") : ""}`,
+          `Party Bonus: ${formatNumber(result.balanced)} × 125% × ${members - 1} = ${formatNumber(result.bonus)} XP, rounded`,
+          `XP per Living Player: ${formatNumber(result.balanced)} + ${formatNumber(result.bonus)} = ${formatNumber(result.total)} XP`,
         ],
       };
     },
@@ -202,19 +202,19 @@ export function deathExperience(): Calculation {
   return {
     steps: [
       {
-        name: "Death penalty",
+        name: "Death Penalty",
         expression: "10% of your current experience bar's requirement",
         rounding: "nearest",
       },
       {
-        name: "XP lost",
-        expression: "Death penalty",
+        name: "XP Lost",
+        expression: "Death Penalty",
         limit: "at most your current XP progress",
       },
     ],
     inputs: [
-      situational("requiredXp", "Current bar's XP requirement", 60650),
-      situational("currentXp", "Current XP progress", 10000),
+      situational("requiredXp", "Current Bar's XP Requirement", 60650),
+      situational("currentXp", "Current XP Progress", 10000),
     ],
     example: ({ requiredXp, currentXp }) => {
       const penalty = iround(multiplyF32(requiredXp, 0.1));
@@ -226,8 +226,8 @@ export function deathExperience(): Calculation {
         ],
         result: `${formatNumber(lost)} XP lost`,
         working: [
-          `Death penalty: 10% × ${formatNumber(requiredXp)} = ${formatNumber(penalty)} XP, rounded`,
-          `XP lost: smaller of ${formatNumber(penalty)} and ${formatNumber(currentXp)} = ${formatNumber(lost)} XP`,
+          `Death Penalty: 10% × ${formatNumber(requiredXp)} = ${formatNumber(penalty)} XP, rounded`,
+          `XP Lost: smaller of ${formatNumber(penalty)} and ${formatNumber(currentXp)} = ${formatNumber(lost)} XP`,
         ],
       };
     },

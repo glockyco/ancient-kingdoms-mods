@@ -14,21 +14,21 @@
       attacker. Spell Casting Haste changes player and mercenary spell casts.
     </p>
     <RefTable
-      caption="Attack intervals and the effects of Haste and Spell Casting Haste"
+      caption="Attack Intervals and the Effects of Haste and Spell Casting Haste"
       minWidth="40rem"
     >
       <thead>
         <tr>
           <th scope="col">Attack</th>
-          <th scope="col">Time between uses</th>
-          <th scope="col">What Haste does</th>
-          <th scope="col">What Spell Casting Haste does</th>
+          <th scope="col">Time Between Uses</th>
+          <th scope="col">What Haste Does</th>
+          <th scope="col">What Spell Casting Haste Does</th>
         </tr>
       </thead>
       <tbody>
         <!-- Source: server-scripts/Player.cs:3712-3749; Combat.cs:340-346 — weapon auto attacks use cast time plus a Haste-adjusted weapon wait bounded to 0.25–2 seconds. -->
         <tr>
-          <th scope="row">Player weapon auto attack</th>
+          <th scope="row">Player Weapon Auto Attack</th>
           <td>Cast time + <a href="#attack-speed">weapon wait</a></td>
           <td>Shortens weapon wait</td>
           <td>No effect</td>
@@ -36,7 +36,7 @@
         <!-- Source: server-scripts/Skills.cs:932-941; Player.cs:3169-3174,GetSkillRefractoryPeriod — player spell casts subtract the bounded spell haste, followed by a fixed auto-attack wait. -->
         <tr>
           <th scope="row">
-            Player spell auto attack, such as
+            Player Spell Auto Attack, Such as
             <a href="/skills/mystic_spark">Mystic Spark</a>
           </th>
           <td>Shortened cast + <a href="#cast-speed">0.75s</a></td>
@@ -45,49 +45,49 @@
         </tr>
         <!-- Source: server-scripts/Skills.cs:StartCast,FinishCast — player cooldowns use their listed duration, and spell casts subtract spell haste. -->
         <tr>
-          <th scope="row">Player skills other than auto attacks</th>
+          <th scope="row">Player Skills Other Than Auto Attacks</th>
           <td>Cast time + cooldown</td>
           <td>No effect</td>
           <td>Shortens spell casts</td>
         </tr>
         <!-- Source: server-scripts/Skills.cs:1149-1181; Pet.cs:2334-2339: Haste shortens a companion's first skill's cooldown only if that skill is not a spell, and non-mercenary casts receive no spell haste. -->
         <tr>
-          <th scope="row">Companion's first skill, if it is not a spell</th>
+          <th scope="row">Companion's First Skill, If It Is Not a Spell</th>
           <td>Cast time + cooldown × (100% − Haste)</td>
           <td>Shortens cooldown</td>
           <td>No effect</td>
         </tr>
         <!-- Source: server-scripts/Skills.cs:1149-1181; Pet.cs:2334-2339 — other companion and familiar skills keep their cooldowns and receive no spell haste. -->
         <tr>
-          <th scope="row">Other companion and familiar skills</th>
+          <th scope="row">Other Companion and Familiar Skills</th>
           <td>Cast time + cooldown</td>
           <td>No effect</td>
           <td>No effect</td>
         </tr>
         <!-- Source: server-scripts/Skills.cs:1149-1181 — mercenary non-spell auto attacks use Haste to shorten cooldown. -->
         <tr>
-          <th scope="row">Mercenary auto attack</th>
+          <th scope="row">Mercenary Auto Attack</th>
           <td>Cast time + cooldown × (100% − Haste)</td>
           <td>Shortens cooldown</td>
           <td>No effect</td>
         </tr>
         <!-- Source: server-scripts/Skills.cs:932-941,1149-1181; Pet.cs:2334-2339 — mercenary spells use the bounded spell haste for casts and keep their cooldowns. -->
         <tr>
-          <th scope="row">Mercenary spell</th>
+          <th scope="row">Mercenary Spell</th>
           <td><a href="#cast-speed">Shortened cast</a> + cooldown</td>
           <td>No effect</td>
           <td>Shortens cast</td>
         </tr>
         <!-- Source: server-scripts/Skills.cs:FinishCastMeleeAttackMonster; Monster.cs:2074-2080; Npc.cs:1305-1313 — monster and NPC non-spell attacks reduce cooldown by their skill Haste bonus. -->
         <tr>
-          <th scope="row">Monster and NPC non-spell attacks</th>
+          <th scope="row">Monster and NPC Non-Spell Attacks</th>
           <td>Cast time + cooldown × (100% − Haste)</td>
           <td>Shortens cooldown</td>
           <td>No effect</td>
         </tr>
         <!-- Source: server-scripts/Monster.cs:3447,2074-2080; Npc.cs:671,1305-1313; Skills.cs:FinishCast — monster and NPC casts receive zero spell haste, and spells keep their cooldowns. -->
         <tr>
-          <th scope="row">Monster and NPC spells</th>
+          <th scope="row">Monster and NPC Spells</th>
           <td>Cast time + cooldown</td>
           <td>No effect</td>
           <td>No effect</td>

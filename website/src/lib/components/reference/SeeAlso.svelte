@@ -8,7 +8,7 @@
 </script>
 
 <p class="text-sm text-muted-foreground">
-  See also
+  See Also
   {#each links as link, index (link.href)}{index > 0 ? " · " : " "}<a
       href={link.href}
       class="text-blue-600 hover:underline dark:text-blue-400">{link.label}</a

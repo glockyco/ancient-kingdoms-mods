@@ -86,7 +86,7 @@
 
     if (isLastWave) {
       return {
-        label: `${formatDuration(wave.seconds_to_complete_wave)} to defeat boss`,
+        label: `${formatDuration(wave.seconds_to_complete_wave)} to Defeat Boss`,
         icon: Timer,
       };
     } else if (wave.require_all_monsters_cleared) {
@@ -94,7 +94,7 @@
       return null;
     } else {
       return {
-        label: `${formatDuration(wave.seconds_to_complete_wave)} until next wave`,
+        label: `${formatDuration(wave.seconds_to_complete_wave)} Until Next Wave`,
         icon: Timer,
       };
     }

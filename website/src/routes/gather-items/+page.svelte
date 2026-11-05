@@ -103,7 +103,6 @@
   const columns: ColumnDef<ResourceWithZonesAndDrops>[] = [
     {
       accessorKey: "type",
-      header: "Type",
       size: 120,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
@@ -113,7 +112,6 @@
     },
     {
       accessorKey: "level",
-      header: "Tier",
       size: 80,
       filterFn: (
         row,
@@ -132,25 +130,21 @@
     },
     {
       accessorKey: "name",
-      header: "Name",
       enableHiding: false,
       size: 180,
     },
     {
       id: "item",
-      header: "Item",
       minSize: 180,
       accessorFn: (row) => row.item_reward_name || "",
     },
     {
       id: "drops",
-      header: "Random Drops",
       size: 170,
       accessorFn: (row) => row.drops.map((d) => d.item_name).join(" "),
     },
     {
       accessorKey: "respawn_time",
-      header: "Respawn",
       size: 120,
       sortingFn: (rowA, rowB) => {
         // Radiant sparks have random 100-3600s respawn regardless of database value
@@ -164,7 +158,6 @@
     },
     {
       id: "zones",
-      header: "Zones",
       size: 230,
       enableSorting: false,
       accessorFn: (row) => row.zones.map((z) => z.zone_name).join(" "),

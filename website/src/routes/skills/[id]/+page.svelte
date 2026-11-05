@@ -23,6 +23,7 @@
   import {
     scalingColumns as getScalingColumns,
     computeScalingValue,
+    healthTickName,
     showLevelScaling as getShowLevelScaling,
   } from "$lib/skills/skill-scaling";
   import * as Tabs from "$lib/components/ui/tabs";
@@ -52,6 +53,7 @@
   import { formatClassName } from "$lib/utils/classes";
   import Seo from "$lib/components/Seo.svelte";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
+  import { statField, statFieldName } from "$lib/stats";
 
   let { data }: { data: PageData } = $props();
 
@@ -61,7 +63,7 @@
     potion_buff: "Potion",
     relic_buff: "Relic",
     scroll: "Scroll",
-    weapon_proc: "Weapon effect",
+    weapon_proc: "Weapon Effect",
   };
   /** When a weapon effect rolls its chance. */
   const WEAPON_PROC_TRIGGERS = {
@@ -147,8 +149,8 @@
   // this skill does not render.
   const sections = $derived(
     [
-      { id: "granted-to", label: "Granted to", show: Boolean(data.season) },
-      { id: "granted-by", label: "Granted by", show: Boolean(data.virtue) },
+      { id: "granted-to", label: "Granted To", show: Boolean(data.season) },
+      { id: "granted-by", label: "Granted By", show: Boolean(data.virtue) },
       {
         id: "appearance",
         label: "Appearance",
@@ -307,12 +309,12 @@
         </span>
       {/if}
       {#if !granted}
-        <span>Max Rank {skill.max_level}</span>
+        <span>Max. Rank {skill.max_level}</span>
         <a
           class="underline underline-offset-4 hover:text-foreground"
           href="{base}/mechanics/character#skills-and-specializations"
         >
-          How ranks are learned
+          How Ranks Are Learned
         </a>
       {/if}
     </div>
@@ -323,7 +325,7 @@
   {#if data.season}
     <Card.Root id="granted-to" class="bg-muted/30">
       <Card.Header>
-        <Card.Title level={2}>Granted to</Card.Title>
+        <Card.Title level={2}>Granted To</Card.Title>
       </Card.Header>
       <Card.Content class="space-y-3 text-sm">
         <!-- Source: server-scripts/Player.cs:Start; server-scripts/EnviromentSystem.cs:CheckSpecialEvents — every online player receives the season's refreshed buff. -->
@@ -341,7 +343,7 @@
         <a
           href={seasonHref(data.season)}
           class="inline-block text-blue-600 hover:underline dark:text-blue-400"
-          >How seasonal events work</a
+          >How Seasonal Events Work</a
         >
       </Card.Content>
     </Card.Root>
@@ -350,7 +352,7 @@
     {@const virtue = data.virtue}
     <Card.Root id="granted-by" class="bg-muted/30">
       <Card.Header>
-        <Card.Title level={2}>Granted by</Card.Title>
+        <Card.Title level={2}>Granted By</Card.Title>
       </Card.Header>
       <Card.Content class="space-y-3 text-sm">
         <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing,TickVirtuesServer — a shrine grants the blessing for 3 hours online. -->
@@ -396,7 +398,7 @@
         <a
           href={virtueHref(virtue.id)}
           class="inline-block text-blue-600 hover:underline dark:text-blue-400"
-          >How {virtue.name} works</a
+          >How {virtue.name} Works</a
         >
       </Card.Content>
     </Card.Root>
@@ -547,7 +549,7 @@
           {/if}
           {#if skill.level_required > 1}
             <div>
-              <dt class="text-muted-foreground">Level Required</dt>
+              <dt class="text-muted-foreground">Req. Level</dt>
               <dd class="font-medium">{skill.level_required}</dd>
             </div>
           {/if}
@@ -772,7 +774,7 @@
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.damage}
             <div>
-              <dt class="text-muted-foreground">Skill damage</dt>
+              <dt class="text-muted-foreground">Skill Damage</dt>
               <dd class="font-medium">
                 {formatLinear(skill.damage)}
               </dd>
@@ -863,7 +865,7 @@
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.heals_health}
             <div>
-              <dt class="text-muted-foreground">Heals Health</dt>
+              <dt class="text-muted-foreground">Heals Hit Points</dt>
               <dd class="font-medium">
                 {formatLinear(skill.heals_health)}
               </dd>
@@ -1003,7 +1005,7 @@
                 {#if skill.summon_count_per_cast === -1}
                   <!-- Source: server-scripts/SummonSkillMonsters.cs:Apply — count players and mercenaries on the summoner's aggro list, limited by remaining active slots. -->
                   1 per player or mercenary the monster considers an enemy, limited
-                  by Max Active
+                  by Max. Active
                 {:else}
                   {skill.summon_count_per_cast}
                 {/if}
@@ -1011,7 +1013,7 @@
             </div>
             {#if skill.max_active_summons}
               <div>
-                <dt class="text-muted-foreground">Max Active</dt>
+                <dt class="text-muted-foreground">Max. Active</dt>
                 <dd class="font-medium">{skill.max_active_summons}</dd>
               </div>
             {/if}
@@ -1108,7 +1110,7 @@
             <a
               class="text-blue-600 dark:text-blue-400 hover:underline"
               href="{base}/mechanics/combat#duration-and-stacking"
-              >How effects stack</a
+              >How Effects Stack</a
             >
           </p>
         {/if}
@@ -1129,7 +1131,9 @@
             <!-- 2. Resource pools -->
             {#if skill.health_max_bonus}
               <div>
-                <dt class="text-muted-foreground">Max Health</dt>
+                <dt class="text-muted-foreground">
+                  {statFieldName(statField("skill", "health_max_bonus"))}
+                </dt>
                 <dd class="font-medium">
                   {formatLinear(skill.health_max_bonus)}
                 </dd>
@@ -1137,7 +1141,11 @@
             {/if}
             {#if skill.health_max_percent_bonus}
               <div>
-                <dt class="text-muted-foreground">Max Health %</dt>
+                <dt class="text-muted-foreground">
+                  {statFieldName(
+                    statField("skill", "health_max_percent_bonus"),
+                  )}
+                </dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.health_max_percent_bonus)}
                 </dd>
@@ -1145,7 +1153,9 @@
             {/if}
             {#if skill.mana_max_bonus}
               <div>
-                <dt class="text-muted-foreground">Max Mana</dt>
+                <dt class="text-muted-foreground">
+                  {statFieldName(statField("skill", "mana_max_bonus"))}
+                </dt>
                 <dd class="font-medium">
                   {formatLinear(skill.mana_max_bonus)}
                 </dd>
@@ -1153,7 +1163,9 @@
             {/if}
             {#if skill.mana_max_percent_bonus}
               <div>
-                <dt class="text-muted-foreground">Max Mana %</dt>
+                <dt class="text-muted-foreground">
+                  {statFieldName(statField("skill", "mana_max_percent_bonus"))}
+                </dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.mana_max_percent_bonus)}
                 </dd>
@@ -1161,7 +1173,9 @@
             {/if}
             {#if skill.energy_max_bonus}
               <div>
-                <dt class="text-muted-foreground">Max Rage</dt>
+                <dt class="text-muted-foreground">
+                  {statFieldName(statField("skill", "energy_max_bonus"))}
+                </dt>
                 <dd class="font-medium">
                   {formatLinear(skill.energy_max_bonus)}
                 </dd>
@@ -1351,9 +1365,7 @@
             {#if skill.healing_per_second_bonus}
               <div>
                 <dt class="text-muted-foreground">
-                  {skill.healing_per_second_bonus.base_value < 0
-                    ? "Damage/sec"
-                    : "Health/sec"}
+                  {healthTickName(skill, "healing_per_second_bonus")}
                 </dt>
                 <dd class="font-medium">
                   {formatLinear({
@@ -1371,11 +1383,7 @@
               <div>
                 <!-- Source: server-scripts/Skills.cs:1691-1705 — Reaper Form drains the caster's maximum Health each second. -->
                 <dt class="text-muted-foreground">
-                  {skill.is_necromancer_reaper_form
-                    ? "Self Health drain %/sec"
-                    : skill.health_percent_per_second_bonus.base_value < 0
-                      ? "Damage %/sec"
-                      : "Health %/sec"}
+                  {healthTickName(skill, "health_percent_per_second_bonus")}
                 </dt>
                 <dd class="font-medium">
                   {formatLinearPercent({
@@ -1391,7 +1399,9 @@
             {/if}
             {#if skill.mana_per_second_bonus}
               <div>
-                <dt class="text-muted-foreground">Mana/sec</dt>
+                <dt class="text-muted-foreground">
+                  {statFieldName(statField("skill", "mana_per_second_bonus"))}
+                </dt>
                 <dd class="font-medium">
                   {formatLinear(skill.mana_per_second_bonus)}
                 </dd>
@@ -1399,7 +1409,11 @@
             {/if}
             {#if skill.mana_percent_per_second_bonus}
               <div>
-                <dt class="text-muted-foreground">Mana %/sec</dt>
+                <dt class="text-muted-foreground">
+                  {statFieldName(
+                    statField("skill", "mana_percent_per_second_bonus"),
+                  )}
+                </dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.mana_percent_per_second_bonus)}
                 </dd>
@@ -1407,7 +1421,9 @@
             {/if}
             {#if skill.energy_per_second_bonus}
               <div>
-                <dt class="text-muted-foreground">Rage/sec</dt>
+                <dt class="text-muted-foreground">
+                  {statFieldName(statField("skill", "energy_per_second_bonus"))}
+                </dt>
                 <dd class="font-medium">
                   {formatLinear(skill.energy_per_second_bonus)}
                 </dd>
@@ -1415,7 +1431,11 @@
             {/if}
             {#if skill.energy_percent_per_second_bonus}
               <div>
-                <dt class="text-muted-foreground">Rage %/sec</dt>
+                <dt class="text-muted-foreground">
+                  {statFieldName(
+                    statField("skill", "energy_percent_per_second_bonus"),
+                  )}
+                </dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.energy_percent_per_second_bonus)}
                 </dd>
@@ -1688,7 +1708,7 @@
           href="/traps?traps.effect={skill.id}"
           class="mt-4 inline-block text-sm text-blue-600 dark:text-blue-400 hover:underline"
         >
-          View matching traps
+          View Matching Traps
         </a>
       </Card.Content>
     </Card.Root>

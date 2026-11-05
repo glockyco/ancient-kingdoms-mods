@@ -32,13 +32,13 @@
   const ROMAN = ["I", "II", "III", "IV", "V"];
 
   const sections = [
-    { id: "how-it-works", label: "How Mining works" },
+    { id: "how-it-works", label: "How Mining and Pickaxes Work" },
     { id: "pickaxes", label: "Pickaxes" },
-    { id: "calculator", label: "Success by skill" },
+    { id: "calculator", label: "Success by Skill" },
     { id: "ores", label: "Ores" },
-    { id: "where", label: "Where to mine" },
-    { id: "gems", label: "Bonus gems" },
-    { id: "uses", label: "What ore is for" },
+    { id: "where", label: "Where to Mine" },
+    { id: "gems", label: "Bonus Gems" },
+    { id: "uses", label: "What Ore Is For" },
   ];
 
   const bestPickaxe = $derived(
@@ -118,7 +118,7 @@
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Mining and Pickaxes work</h2>
+    <h2 class="text-xl font-semibold">How Mining and Pickaxes Work</h2>
     <ol class="divide-y divide-border">
       <!-- Source: server-scripts/Player.cs:TryGetSelectedPickaxe — the gather needs a
            Pickaxe-category weapon that is not broken. -->
@@ -196,7 +196,7 @@
             <th class="whitespace-nowrap p-3 text-right font-medium"
               >Tier V at 100 Mining</th
             >
-            <th class="p-3 font-medium">Where to get it</th>
+            <th class="p-3 font-medium">Where to Get It</th>
           </tr>
         </thead>
         <tbody>
@@ -231,7 +231,7 @@
   </section>
 
   <section id="calculator" class="space-y-4">
-    <h2 class="text-xl font-semibold">Success by skill</h2>
+    <h2 class="text-xl font-semibold">Success by Skill</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       On Tier V ore, each pickaxe quality adds 5% to your success chance. Each
       1% Mining adds another 0.5% to that chance. In the shaded bands, the node
@@ -246,7 +246,7 @@
           <label
             for="skill"
             class="text-xs uppercase tracking-wider text-muted-foreground"
-            >Mining skill</label
+            >Mining Skill</label
           >
           <input
             id="skill"
@@ -294,10 +294,10 @@
         series={curveSeries}
         {skillLevel}
         ariaLabel="Mining success chance against skill, one line per ore tier"
-        skillLabel="mining skill"
+        skillLabel="Mining Skill"
         floor={MINING_SUCCESS_FLOOR}
-        floorLabel="you cannot mine below here"
-        unavailableLabel="cannot mine"
+        floorLabel="You Cannot Mine Below Here"
+        unavailableLabel="Cannot Mine"
         noGainBands={NO_GAIN_BANDS}
       />
 
@@ -339,7 +339,7 @@
             <th class="p-3 font-medium">Tier</th>
             <th class="p-3 font-medium">Ore</th>
             <th class="p-3 text-right font-medium">Success</th>
-            <th class="p-3 text-right font-medium">Skill gain</th>
+            <th class="p-3 text-right font-medium">Skill Gain</th>
             <th class="p-3 text-right font-medium">XP</th>
             <th class="p-3 text-right font-medium">Respawn</th>
             <th class="p-3 text-right font-medium">Nodes</th>
@@ -405,7 +405,7 @@
   </section>
 
   <section id="where" class="space-y-4">
-    <h2 class="text-xl font-semibold">Where to mine</h2>
+    <h2 class="text-xl font-semibold">Where to Mine</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       There are {formatNumber(data.totalNodes)} nodes. Each ore is in two to four
       zones.
@@ -446,7 +446,7 @@
   </section>
 
   <section id="gems" class="space-y-4">
-    <h2 class="text-xl font-semibold">Bonus gems</h2>
+    <h2 class="text-xl font-semibold">Bonus Gems</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       Every success makes one more roll for a gem. The chance is between 0.8%
       and 2.5%. Mining skill does not change it.
@@ -454,7 +454,7 @@
     <details class="group">
       <summary
         class="cursor-pointer text-sm text-blue-600 hover:underline dark:text-blue-400"
-        >Every gem pool</summary
+        >Every Gem Pool</summary
       >
       <div class="mt-4 grid gap-4 sm:grid-cols-2">
         {#each data.ores.filter((ore) => ore.gems.length > 0) as ore (ore.id)}
@@ -484,7 +484,7 @@
   </section>
 
   <section id="uses" class="space-y-4">
-    <h2 class="text-xl font-semibold">What ore is for</h2>
+    <h2 class="text-xl font-semibold">What Ore Is For</h2>
     <ul class="flex flex-wrap gap-x-6 gap-y-1.5 text-sm">
       {#each data.ores as ore (ore.id)}
         <li>
@@ -504,7 +504,7 @@
     </ul>
 
     {#if data.quests.length > 0}
-      <h3 class="pt-2 text-sm font-medium">Quests that need ore</h3>
+      <h3 class="pt-2 text-sm font-medium">Quests That Need Ore</h3>
       <div class="overflow-x-auto rounded-lg border">
         <table class="w-full text-sm">
           <thead>

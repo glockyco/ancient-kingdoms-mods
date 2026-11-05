@@ -15,7 +15,7 @@
     aria-hidden="true"
   />
   <span class="flex-1 text-sm text-muted-foreground">
-    Search the compendium…
+    Search the Compendium…
   </span>
   <SearchShortcut class="hidden sm:inline" />
 </button>

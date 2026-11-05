@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { statName } from "$lib/stats";
   import { base } from "$app/paths";
   import {
     DataTable,
@@ -345,7 +346,7 @@
       { flag: data.monster.see_invisibility, label: "Sees Invisibility" },
       {
         flag: data.monster.is_immune_debuffs,
-        label: "Debuff immunity (some skills bypass)",
+        label: "Debuff Immunity (Some Skills Bypass)",
       },
       // Source: server-scripts/Combat.cs:DealDamageAt — fear never lands on a boss or on a target whose Combat.fearImmune is set.
       {
@@ -401,7 +402,7 @@
     cols.push({
       id: "rate",
       accessorFn: (drop) => drop.per_kill_chance ?? drop.rate,
-      header: "Drop chance",
+      header: "Drop Chance",
       size: 160,
     });
     if (hasFatecharmChances) {
@@ -439,12 +440,12 @@
       cols.push(
         {
           accessorKey: "level_min",
-          header: "Min Lv",
+          header: "Min. Level",
           size: 120,
         },
         {
           accessorKey: "level_max",
-          header: "Max Lv",
+          header: "Max. Level",
           size: 120,
         },
       );
@@ -515,7 +516,7 @@
           const flags: string[] = [];
           if (row.is_main_quest) flags.push("Main");
           if (row.is_epic_quest) flags.push("Epic");
-          if (row.is_adventurer_quest) flags.push("Daily");
+          if (row.is_adventurer_quest) flags.push("Adventurer");
           if (row.is_repeatable) flags.push("Repeatable");
           return flags.join(" ");
         },
@@ -894,7 +895,7 @@
   <!-- Header Summary Card -->
   <EntityCombatSummary
     titleId="monster-summary-title"
-    title="Monster summary"
+    title="Monster Summary"
     imageSrc={monsterImageSrc}
     imageAlt={`${data.monster.name} monster sprite`}
     imageWidth={data.visualAsset?.width}
@@ -960,7 +961,7 @@
           class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
           <CircleHelp class="h-4 w-4" />
-          How spawning works
+          How Spawning Works
         </a>
       </div>
 
@@ -1194,7 +1195,7 @@
         <div class="mb-4 space-y-3 rounded-md border bg-background/60 p-3">
           <div class="flex items-center justify-between gap-3">
             <label for="spawn-combat-stats-variant" class="text-sm font-medium">
-              Spawn variant
+              Spawn Variant
             </label>
             <div
               class="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
@@ -1290,7 +1291,9 @@
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Accuracy Bonus</div>
+          <div class="text-sm text-muted-foreground">
+            {statName("accuracy")}
+          </div>
           <div class="font-medium">
             {formatPercent(displayAccuracy)}
           </div>
@@ -1302,13 +1305,15 @@
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Health</div>
+          <div class="text-sm text-muted-foreground">{statName("health")}</div>
           <div class="font-medium">
             {formatNumber(displayHealth)}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Health Recovery</div>
+          <div class="text-sm text-muted-foreground">
+            {statName("health_regen")}
+          </div>
           <div class="font-medium">
             {formatNumber(data.monster.health_regen_base, { decimals: 3 })} / sec
           </div>
@@ -1431,7 +1436,7 @@
       </h2>
       {#if data.drops.some((drop) => drop.per_kill_chance !== undefined)}
         <p class="mb-4 text-sm text-muted-foreground">
-          The Drop chance column is per kill{hasFatecharmChances
+          The Drop Chance column is per kill{hasFatecharmChances
             ? " without a Fatecharm"
             : ""}. Quest items assume an unfinished gathering quest. Other drops
           assume no quest.
@@ -1536,7 +1541,7 @@
           class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
           <CircleHelp class="h-4 w-4" />
-          How regional events work
+          How Regional Events Work
         </a>
       </div>
       <!-- Source: server-scripts/RegionalInvasions.cs:Tick — invasion copies use the invasion's level range and health multiplier rather than the ordinary spawn settings. -->

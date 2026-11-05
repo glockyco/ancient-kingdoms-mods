@@ -105,7 +105,7 @@
               <th class="py-2 pr-4 text-left font-medium">Storage</th>
               <th class="py-2 pr-4 text-left font-medium">Scope</th>
               <th class="py-2 pr-4 text-left font-medium">Capacity</th>
-              <th class="py-2 text-left font-medium">How to expand</th>
+              <th class="py-2 text-left font-medium">How to Expand</th>
             </tr>
           </thead>
           <tbody>
@@ -197,7 +197,7 @@
                 <th class="py-2 pr-4 text-right font-medium">Slots</th>
                 <th class="py-2 pr-4 text-right font-medium">Unique</th>
                 <th class="py-2 pr-4 text-right font-medium">Source Level</th>
-                <th class="py-2 text-left font-medium">Known sources</th>
+                <th class="py-2 text-left font-medium">Known Sources</th>
               </tr>
             </thead>
             <tbody>
@@ -346,9 +346,9 @@
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
-              <th class="py-2 pr-4 text-left font-medium">Unlocking tab</th>
-              <th class="py-2 pr-4 text-right font-medium">Gold cost</th>
-              <th class="py-2 text-right font-medium">Total slots</th>
+              <th class="py-2 pr-4 text-left font-medium">Unlocking Tab</th>
+              <th class="py-2 pr-4 text-right font-medium">Gold Cost</th>
+              <th class="py-2 text-right font-medium">Total Slots</th>
             </tr>
           </thead>
           <tbody>
@@ -402,7 +402,7 @@
       </p>
 
       <div class="space-y-2 text-sm text-muted-foreground">
-        <h3 class="font-semibold text-foreground">Buying and placing chests</h3>
+        <h3 class="font-semibold text-foreground">Buying and Placing Chests</h3>
         <p>
           <!-- Source: server-scripts/Housing.cs:33-38 — owned house trigger shows the H-key house panel prompt. -->
           <!-- Source: server-scripts/CustomStrucUI.cs:122-134 — H opens the structure panel only inside an owned house buildable zone. -->
@@ -456,7 +456,7 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="font-semibold">House locations</h3>
+        <h3 class="font-semibold">House Locations</h3>
         {#if data.houses.length > 0}
           <div class="overflow-x-auto">
             <table class="w-full border-collapse text-sm">
@@ -464,7 +464,7 @@
                 <tr class="border-b border-border">
                   <th class="py-2 pr-4 text-left font-medium">House</th>
                   <th class="py-2 pr-4 text-left font-medium">Zone</th>
-                  <th class="py-2 pr-4 text-right font-medium">Base price</th>
+                  <th class="py-2 pr-4 text-right font-medium">Base Price</th>
                   <th class="py-2 pr-4 text-left font-medium">Requirement</th>
                   <th class="py-2 text-left font-medium">Map</th>
                 </tr>
@@ -519,7 +519,7 @@
       </p>
 
       <div class="space-y-2">
-        <h3 class="font-semibold">Chest sections</h3>
+        <h3 class="font-semibold">Chest Sections</h3>
         {#if data.houseChests.length > 0}
           <div class="overflow-x-auto">
             <table class="w-full border-collapse text-sm">
@@ -957,7 +957,7 @@
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
-              <th class="py-2 pr-4 text-left font-medium">Working set pieces</th
+              <th class="py-2 pr-4 text-left font-medium">Working Set Pieces</th
               >
               <th class="py-2 text-left font-medium">Bonus</th>
             </tr>

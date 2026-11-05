@@ -35,18 +35,18 @@ export const characterDamageCalculation: Calculation = {
         "150% of Intelligence above 0, rounded, + flat Spell Power from working equipment, learned skills and buffs",
     },
     {
-      name: "Percentage bonus",
+      name: "Percentage Bonus",
       expression:
         "Sum of percentage bonuses from your learned passive skills whose conditions you meet and your buffs. Razor of Wrath scales with current Rage ÷ maximum Rage, and Arcane Edge with current Mana ÷ maximum Mana",
     },
     {
-      name: "Extra amount",
-      expression: "Flat Attack Power or flat Spell Power × percentage bonus",
+      name: "Extra Amount",
+      expression: "Flat Attack Power or Flat Spell Power × Percentage Bonus",
       rounding: "nearest",
     },
     {
-      name: "Character window stat",
-      expression: "Flat Attack Power or flat Spell Power + extra amount",
+      name: "Character Window Stat",
+      expression: "Flat Attack Power or Flat Spell Power + Extra Amount",
       limit: "at least 0",
     },
   ],
@@ -57,8 +57,8 @@ export const characterDamageCalculation: Calculation = {
       given: ["201 flat Attack Power", "50% total Attack Power bonus"],
       result: `${number(result)} Attack Power in the character window`,
       working: [
-        `Extra amount: 201 × 50% = ${number(extra)}, rounded`,
-        `Character window stat: 201 + ${number(extra)} = ${number(result)}`,
+        `Extra Amount: 201 × 50% = ${number(extra)}, rounded`,
+        `Character Window Stat: 201 + ${number(extra)} = ${number(result)}`,
       ],
     };
   },
@@ -88,12 +88,12 @@ export function hitPipelineExample() {
 export const pipelineCalculation: Calculation = {
   steps: [
     {
-      name: "Starting damage",
+      name: "Starting Damage",
       expression:
         "Damage from the attack's own calculation, before the target's defenses",
     },
     {
-      name: "Moving-player damage",
+      name: "Moving-Player Damage",
       expression:
         "Apply the moving-player adjustment from Combat Advantage, before the avoidance roll",
     },
@@ -108,35 +108,35 @@ export const pipelineCalculation: Calculation = {
       rounding: "nearest",
     },
     {
-      name: "From-behind damage",
+      name: "From-Behind Damage",
       expression: "Apply the from-behind damage bonus from Combat Advantage",
     },
     {
-      name: "Level adjustment",
+      name: "Level Adjustment",
       expression:
         "Damage × 2% per level above the target, or −2% per level below it. Limit the percentage to −20% through +20% before multiplying",
       rounding: "up",
     },
     {
-      name: "Damage after level adjustment",
-      expression: "Damage + level adjustment",
+      name: "Damage After Level Adjustment",
+      expression: "Damage + Level Adjustment",
     },
     {
-      name: "Slayer reduction",
+      name: "Slayer Reduction",
       expression:
         "From 10% Slayer mastery, bosses and elites deal 0.1% less damage to you and your mercenaries, companions and familiars per 1% mastery, up to 10% less at 100%. Mercenaries, companions and familiars use their owner's mastery",
       rounding: "up",
     },
     {
-      name: "Rampage damage",
+      name: "Rampage Damage",
       expression:
         "A monster or NPC with Rampage adds damage × a random 50% to 75% on a non-spell hit while below 10% of its maximum Hit Points",
       rounding: "up",
     },
     {
-      name: "Reduced damage",
+      name: "Reduced Damage",
       expression:
-        "Subtract the damage Armor Class prevents from physical hits, or the damage Magic, Fire, Cold, Disease or Poison Resist prevents from its damage type, as in Damage reduction",
+        "Subtract the damage Armor Class prevents from physical hits, or the damage Magic, Fire, Cold, Disease or Poison Resist prevents from its damage type, as in Damage Reduction",
     },
     {
       name: statName("critical_resist"),
@@ -144,27 +144,27 @@ export const pipelineCalculation: Calculation = {
       limit: "between 0% and 100%",
     },
     {
-      name: "Critical extra percentage",
+      name: "Critical Extra Percentage",
       expression: "50% × (100% − Critical Resist)",
     },
     {
-      name: "Critical damage",
+      name: "Critical Damage",
       expression:
-        "On a critical hit, reduced damage × (100% + critical extra percentage)",
+        "On a critical hit, Reduced Damage × (100% + Critical Extra Percentage)",
       rounding: "nearest",
     },
     {
-      name: "On-hit effects",
+      name: "On-Hit Effects",
       expression:
         "The target's Heal on Hit heals the melee attacker, then its damage shields hurt the attacker. Neither changes this hit's damage",
     },
     {
-      name: "Resource gains",
+      name: "Resource Gains",
       expression:
         "Warriors and Rogues gain auto-attack and received-hit Rage. Mystic Spark restores Mana to its Wizard caster. These gains happen before shields absorb the hit",
     },
     {
-      name: "Damage after shields",
+      name: "Damage After Shields",
       expression:
         "Subtract Ward absorption, then Mana Shield absorption, from the hit",
     },
@@ -174,7 +174,7 @@ export const pipelineCalculation: Calculation = {
         "Use remaining positive damage for the lifetap calculation in Healing",
     },
     {
-      name: `${statName("health")} damage`,
+      name: `${statName("health")} Damage`,
       expression:
         "Only the damage remaining after shields reduces Hit Points. An active eligible Parry blocks it and counterattacks instead",
     },
@@ -194,15 +194,15 @@ export const pipelineCalculation: Calculation = {
       ],
       result: `${number(result.healthDamage)} Hit Points lost`,
       working: [
-        `Moving-player damage: 201 + 20 = ${number(result.moving)}`,
+        `Moving-Player Damage: 201 + 20 = ${number(result.moving)}`,
         `Variance: ${number(result.moving)} × 105% = ${number(result.variance)}, rounded`,
-        `From-behind damage: ${number(result.variance)} + ${number(ceilToInt(multiplyF32(result.variance, 0.1)))} + 1 = ${number(result.behind)}`,
-        `Level adjustment: ${number(result.behind)} × 4% = ${number(ceilToInt(multiplyF32(result.behind, 0.04)))}, rounded up`,
-        `Damage after level adjustment: ${number(result.behind)} + ${number(ceilToInt(multiplyF32(result.behind, 0.04)))} = ${number(result.leveled)}`,
-        `Reduced damage: ${number(result.leveled)} − ${number(result.mitigation.prevented)} = ${number(result.mitigation.taken)}`,
-        `Critical extra percentage: 50% × (100% − 20%) = ${percent(multiplyF32(0.5, addF32(1, -0.2)), { decimals: 2, preserveNonzero: true })}`,
-        `Critical damage: ${number(result.mitigation.taken)} × 140% = ${number(result.critical)}, rounded`,
-        `Damage after shields: ${number(result.critical)} − 20 − 10 = ${number(result.healthDamage)}`,
+        `From-Behind Damage: ${number(result.variance)} + ${number(ceilToInt(multiplyF32(result.variance, 0.1)))} + 1 = ${number(result.behind)}`,
+        `Level Adjustment: ${number(result.behind)} × 4% = ${number(ceilToInt(multiplyF32(result.behind, 0.04)))}, rounded up`,
+        `Damage After Level Adjustment: ${number(result.behind)} + ${number(ceilToInt(multiplyF32(result.behind, 0.04)))} = ${number(result.leveled)}`,
+        `Reduced Damage: ${number(result.leveled)} − ${number(result.mitigation.prevented)} = ${number(result.mitigation.taken)}`,
+        `Critical Extra Percentage: 50% × (100% − 20%) = ${percent(multiplyF32(0.5, addF32(1, -0.2)), { decimals: 2, preserveNonzero: true })}`,
+        `Critical Damage: ${number(result.mitigation.taken)} × 140% = ${number(result.critical)}, rounded`,
+        `Damage After Shields: ${number(result.critical)} − 20 − 10 = ${number(result.healthDamage)}`,
       ],
     };
   },
@@ -212,35 +212,35 @@ export const pipelineCalculation: Calculation = {
 export const advantageCalculation: Calculation = {
   steps: [
     {
-      name: "From-behind avoidance",
+      name: "From-Behind Avoidance",
       expression: "Avoidance chance × 80%",
     },
     {
-      name: "Moving-player avoidance",
+      name: "Moving-Player Avoidance",
       expression:
         "Avoidance chance after the from-behind adjustment, if attacking from behind, − 25 percentage points",
       limit: "at least 0%",
     },
     {
-      name: "Moving-player extra damage",
-      expression: "10% of starting damage, before variance",
+      name: "Moving-Player Extra Damage",
+      expression: "10% of Starting Damage, before Variance",
       rounding: "down",
     },
     {
-      name: "Damage after variance",
+      name: "Damage After Variance",
       expression:
-        "(Starting damage + any moving-player extra damage) × variance",
+        "(Starting Damage + any Moving-Player Extra Damage) × Variance",
       rounding: "nearest",
     },
     {
-      name: "From-behind extra damage",
+      name: "From-Behind Extra Damage",
       expression:
-        "10% of damage after variance, or 25% for Improved Backstab and Rogue mercenaries",
+        "10% of Damage After Variance, or 25% for Improved Backstab and Rogue mercenaries",
       rounding: "up",
     },
     {
-      name: "From-behind damage",
-      expression: "Damage after variance + from-behind extra damage + 1",
+      name: "From-Behind Damage",
+      expression: "Damage After Variance + From-Behind Extra Damage + 1",
     },
   ],
   note: "Attacking from behind means a single-target attack with attacker and target facing the same direction. Moving-player bonuses apply when the target is a moving player.",
@@ -260,12 +260,12 @@ export const advantageCalculation: Calculation = {
       ],
       result: `${number(damage + extra + 1)} damage before level adjustment and damage reduction, with ${percent(movingChance, { decimals: 2, preserveNonzero: true })} avoidance`,
       working: [
-        `From-behind avoidance: 50% × 80% = ${percent(behindChance, { decimals: 2, preserveNonzero: true })}`,
-        `Moving-player avoidance: ${percent(behindChance, { decimals: 2, preserveNonzero: true })} − 25 percentage points = ${percent(movingChance, { decimals: 2, preserveNonzero: true })}`,
-        `Moving-player extra damage: 201 × 10% = ${number(movingBonus)}, rounded down`,
-        `Damage after variance: (201 + ${number(movingBonus)}) × 100% = ${number(damage)}, rounded`,
-        `From-behind extra damage: ${number(damage)} × 10% = ${number(extra)}, rounded up`,
-        `From-behind damage: ${number(damage)} + ${number(extra)} + 1 = ${number(damage + extra + 1)}`,
+        `From-Behind Avoidance: 50% × 80% = ${percent(behindChance, { decimals: 2, preserveNonzero: true })}`,
+        `Moving-Player Avoidance: ${percent(behindChance, { decimals: 2, preserveNonzero: true })} − 25 percentage points = ${percent(movingChance, { decimals: 2, preserveNonzero: true })}`,
+        `Moving-Player Extra Damage: 201 × 10% = ${number(movingBonus)}, rounded down`,
+        `Damage After Variance: (201 + ${number(movingBonus)}) × 100% = ${number(damage)}, rounded`,
+        `From-Behind Extra Damage: ${number(damage)} × 10% = ${number(extra)}, rounded up`,
+        `From-Behind Damage: ${number(damage)} + ${number(extra)} + 1 = ${number(damage + extra + 1)}`,
       ],
     };
   },
@@ -298,43 +298,43 @@ export function damageOverTimeBonuses(
 export const damageOverTimeCalculation: Calculation = {
   steps: [
     {
-      name: "Flat tick",
+      name: "Flat Tick",
       expression:
-        "Listed damage each second + the rounded attribute addition from Debuff strength",
+        "Listed damage each second + the rounded Attribute Addition from Debuff Strength",
     },
     {
-      name: "Reduced tick",
+      name: "Reduced Tick",
       expression:
-        "Flat tick − damage prevented by Armor Class for physical damage, or by Magic, Fire, Cold, Disease or Poison Resist for its damage type, as in Damage reduction",
+        "Flat Tick − damage prevented by Armor Class for physical damage, or by Magic, Fire, Cold, Disease or Poison Resist for its damage type, as in Damage Reduction",
     },
     {
-      name: "Tick after Cleanse",
+      name: "Tick After Cleanse",
       expression:
-        "Reduced tick × 100% with 3 layers, 85% with 2, or 70% with 1",
+        "Reduced Tick × 100% with 3 layers, 85% with 2, or 70% with 1",
       rounding: "up",
     },
     {
-      name: "Reaper Form tick",
+      name: "Reaper Form Tick",
       expression:
-        "Tick after Cleanse × (100% + caster's active Reaper Form Spell Power bonus)",
+        "Tick After Cleanse × (100% + caster's active Reaper Form Spell Power bonus)",
       rounding: "nearest",
     },
     {
-      name: "Deathly Focus tick",
+      name: "Deathly Focus Tick",
       expression:
-        "Reaper Form tick × (100% + caster's Deathly Focus bonus), only while the target is below 30% of its maximum Hit Points",
+        "Reaper Form Tick × (100% + caster's Deathly Focus bonus), only while the target is below 30% of its maximum Hit Points",
       rounding: "nearest",
     },
     {
-      name: "Critical tick",
+      name: "Critical Tick",
       expression:
-        "On a critical tick: Deathly Focus tick × (100% + 50% × (100% − target's Critical Resist)). Critical Resist is limited to 0% through 100%",
+        "On a critical tick: Deathly Focus Tick × (100% + 50% × (100% − target's Critical Resist)). Critical Resist is limited to 0% through 100%",
       rounding: "nearest",
     },
     {
-      name: "Final tick",
+      name: "Final Tick",
       expression:
-        "Critical tick + the debuff's percentage of the target's maximum Hit Points, rounded",
+        "Critical Tick + the debuff's percentage of the target's maximum Hit Points, rounded",
     },
   ],
   note: "The example uses an Intelligence-scaled magic debuff applied by an online player.",
@@ -357,11 +357,11 @@ export const damageOverTimeCalculation: Calculation = {
       ],
       result: `${number(result.total)} damage each second`,
       working: [
-        `Flat tick: 100 + round(100 × 125%) = ${number(flatTick)}`,
-        `Reduced tick: ${number(flatTick)} − ${number(reduction.prevented)} = ${number(reduction.taken)}`,
-        `Tick after Cleanse: ${number(reduction.taken)} × 85% = ${number(result.layered)}, rounded up`,
-        `Reaper Form tick: ${number(result.layered)} × 150% = ${number(result.transformed)}, rounded`,
-        `Deathly Focus tick: ${number(result.transformed)} × 110% = ${number(result.total)}, rounded`,
+        `Flat Tick: 100 + round(100 × 125%) = ${number(flatTick)}`,
+        `Reduced Tick: ${number(flatTick)} − ${number(reduction.prevented)} = ${number(reduction.taken)}`,
+        `Tick After Cleanse: ${number(reduction.taken)} × 85% = ${number(result.layered)}, rounded up`,
+        `Reaper Form Tick: ${number(result.layered)} × 150% = ${number(result.transformed)}, rounded`,
+        `Deathly Focus Tick: ${number(result.transformed)} × 110% = ${number(result.total)}, rounded`,
       ],
     };
   },
@@ -393,32 +393,32 @@ export function hitThreat(
 export const threatCalculation: Calculation = {
   steps: [
     {
-      name: "Skill threat",
+      name: "Skill Threat",
       expression:
         "Single-target or area damage skills without projectiles also add one third of the caster's maximum Hit Points, rounded, when they add extra threat",
     },
     {
-      name: "Stun threat",
+      name: "Stun Threat",
       expression: "Stun chance × stun duration × 10",
       rounding: "nearest",
     },
     {
-      name: "Fear threat",
+      name: "Fear Threat",
       expression: "Fear chance × fear duration × 10",
       rounding: "nearest",
     },
     {
-      name: "Control threat",
-      expression: "Stun threat + fear threat",
+      name: "Control Threat",
+      expression: "Stun Threat + Fear Threat",
     },
     {
-      name: "Damage and control threat",
-      expression: "Starting damage + control threat",
+      name: "Damage and Control Threat",
+      expression: "Starting Damage + Control Threat",
       limit: "at most the target's current Hit Points",
     },
     {
-      name: "Threat gained",
-      expression: "Skill threat + damage and control threat",
+      name: "Threat Gained",
+      expression: "Skill Threat + Damage and Control Threat",
     },
   ],
   example: () => {
@@ -436,12 +436,12 @@ export const threatCalculation: Calculation = {
       ],
       result: `${number(result.total)} threat gained`,
       working: [
-        `Skill threat: 10 + ${number(2000)} ÷ 3 = 10 + ${number(result.health)} = ${number(skillThreat)}, with the Hit Points share rounded`,
-        `Stun threat: 50% × ${seconds(3)} × 10 = ${number(result.stun)}, rounded`,
-        `Fear threat: 10% × ${seconds(5)} × 10 = ${number(result.fear)}, rounded`,
-        `Control threat: ${number(result.stun)} + ${number(result.fear)} = ${number(control)}`,
-        `Damage and control threat: 201 + ${number(control)} = ${number(201 + control)}, limited to ${number(result.capped)}`,
-        `Threat gained: ${number(skillThreat)} + ${number(result.capped)} = ${number(result.total)}`,
+        `Skill Threat: 10 + ${number(2000)} ÷ 3 = 10 + ${number(result.health)} = ${number(skillThreat)}, with the Hit Points share rounded`,
+        `Stun Threat: 50% × ${seconds(3)} × 10 = ${number(result.stun)}, rounded`,
+        `Fear Threat: 10% × ${seconds(5)} × 10 = ${number(result.fear)}, rounded`,
+        `Control Threat: ${number(result.stun)} + ${number(result.fear)} = ${number(control)}`,
+        `Damage and Control Threat: 201 + ${number(control)} = ${number(201 + control)}, limited to ${number(result.capped)}`,
+        `Threat Gained: ${number(skillThreat)} + ${number(result.capped)} = ${number(result.total)}`,
       ],
     };
   },
@@ -454,14 +454,14 @@ export function extraCleanseChance(resist: number, accuracy: number) {
 export const cleanseCalculation: Calculation = {
   steps: [
     {
-      name: "Extra-layer chance",
+      name: "Extra-Layer Chance",
       expression: "(100% − debuff Cleanse Resist) × (100% + caster Accuracy)",
       limit: "between 0% and 100%",
     },
     {
-      name: "Layers removed",
+      name: "Layers Removed",
       expression:
-        "Below 100% Cleanse Resist, one layer is always removed and two separate rolls at the extra-layer chance can each remove one more. At 0% Cleanse Resist, all three layers are removed. At 100% Cleanse Resist, none are",
+        "Below 100% Cleanse Resist, one layer is always removed and two separate rolls at the Extra-Layer Chance can each remove one more. At 0% Cleanse Resist, all three layers are removed. At 100% Cleanse Resist, none are",
     },
   ],
   example: () => {
@@ -470,7 +470,7 @@ export const cleanseCalculation: Calculation = {
       given: ["50% debuff Cleanse Resist", "20% caster Accuracy"],
       result: `1 guaranteed layer removed, with ${percent(chance, { decimals: 2, preserveNonzero: true })} chance for each of 2 extra layers`,
       working: [
-        `Extra-layer chance: (100% − 50%) × (100% + 20%) = ${percent(chance, { decimals: 2, preserveNonzero: true })}`,
+        `Extra-Layer Chance: (100% − 50%) × (100% + 20%) = ${percent(chance, { decimals: 2, preserveNonzero: true })}`,
       ],
     };
   },
@@ -480,14 +480,14 @@ export const cleanseCalculation: Calculation = {
 export const dispelCalculation: Calculation = {
   steps: [
     {
-      name: "Cleanse Resist reduction",
+      name: "Cleanse Resist Reduction",
       expression:
         "50% of caster Accuracy for a single-target spell, 1% per scroll rank for a single-target scroll, or 0 for an area dispel",
     },
     {
-      name: "Buff removal chance",
+      name: "Buff Removal Chance",
       expression:
-        "100% − the monster buff's Cleanse Resist + Cleanse Resist reduction",
+        "100% − the monster buff's Cleanse Resist + Cleanse Resist Reduction",
       limit: "between 0% and 100%",
     },
   ],
@@ -502,8 +502,8 @@ export const dispelCalculation: Calculation = {
       ],
       result: `${percent(chance, { decimals: 2, preserveNonzero: true })} chance to remove that buff after the spell lands`,
       working: [
-        `Cleanse Resist reduction: 20% × 50% = ${percent(reduction, { decimals: 2, preserveNonzero: true })}`,
-        `Buff removal chance: 100% − 50% + ${percent(reduction, { decimals: 2, preserveNonzero: true })} = ${percent(chance, { decimals: 2, preserveNonzero: true })}`,
+        `Cleanse Resist Reduction: 20% × 50% = ${percent(reduction, { decimals: 2, preserveNonzero: true })}`,
+        `Buff Removal Chance: 100% − 50% + ${percent(reduction, { decimals: 2, preserveNonzero: true })} = ${percent(chance, { decimals: 2, preserveNonzero: true })}`,
       ],
     };
   },
@@ -513,14 +513,14 @@ export const dispelCalculation: Calculation = {
 export const dealtRageCalculation: Calculation = {
   steps: [
     {
-      name: "Damage counted",
+      name: "Damage Counted",
       expression:
         "Auto attack damage after the target's damage reduction and critical hits, before Ward and Mana Shield",
       limit: "at most the target's current Hit Points",
     },
     {
-      name: `${statName("rage")} gained`,
-      expression: "Damage counted × 25%",
+      name: `${statName("rage")} Gained`,
+      expression: "Damage Counted × 25%",
       rounding: "down",
     },
   ],
@@ -534,8 +534,8 @@ export const dealtRageCalculation: Calculation = {
       ],
       result: `${number(rage)} Rage gained`,
       working: [
-        `Damage counted: smaller of 201 and 150 = ${number(damage)}`,
-        `Rage gained: ${number(damage)} × 25% = ${number(rage)}, rounded down`,
+        `Damage Counted: smaller of 201 and 150 = ${number(damage)}`,
+        `Rage Gained: ${number(damage)} × 25% = ${number(rage)}, rounded down`,
       ],
     };
   },

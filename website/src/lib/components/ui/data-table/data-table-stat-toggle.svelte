@@ -29,7 +29,7 @@
   {#if selectedCount > 0}
     <Separator orientation="vertical" class="mx-2 h-4" />
     <Badge variant="secondary" class="rounded-sm px-1 font-normal">
-      {formatNumber(selectedCount)} ({mode})
+      {formatNumber(selectedCount)} ({mode === "all" ? "All" : "Any"})
     </Badge>
   {/if}
   <ChevronDownIcon

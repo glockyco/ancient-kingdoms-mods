@@ -149,24 +149,24 @@
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold tabular-nums">{MERC_MIN_LEVEL}</div>
-        <div class="text-sm text-muted-foreground">Level to hire</div>
+        <div class="text-sm text-muted-foreground">Level to Hire</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold tabular-nums">
           {activeMercenaryLimit(40)}
         </div>
-        <div class="text-sm text-muted-foreground">Active at level 40</div>
+        <div class="text-sm text-muted-foreground">Active at Level 40</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold tabular-nums">{MAX_HIRED}</div>
-        <div class="text-sm text-muted-foreground">Hired at most</div>
+        <div class="text-sm text-muted-foreground">Hired at Most</div>
       </div>
     </div>
   </section>
 
   <section id="classes" class="space-y-4">
     <div>
-      <h2 class="text-xl font-semibold">Compare the classes</h2>
+      <h2 class="text-xl font-semibold">Compare the Classes</h2>
       <p class="mt-1 text-sm text-muted-foreground">
         Every recruiter hires every class.
       </p>
@@ -179,8 +179,8 @@
             <th class="px-4 py-2.5 font-medium">Resource</th>
             <th class="px-4 py-2.5 text-center font-medium">Heals</th>
             <th class="px-4 py-2.5 text-center font-medium">Buffs</th>
-            <th class="px-4 py-2.5 text-center font-medium">Death save</th>
-            <th class="px-4 py-2.5 font-medium">Grows fastest</th>
+            <th class="px-4 py-2.5 text-center font-medium">Death Save</th>
+            <th class="px-4 py-2.5 font-medium">Grows Fastest</th>
           </tr>
         </thead>
         <tbody>
@@ -240,7 +240,7 @@
 
   <section id="growth" class="space-y-4">
     <div>
-      <h2 class="text-xl font-semibold">Attribute growth</h2>
+      <h2 class="text-xl font-semibold">Attribute Growth</h2>
       <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel — each attribute gains 1 at every multiple of its class interval. -->
       <p class="mt-1 text-sm text-muted-foreground">
         Each table value is the number of levels a mercenary needs to gain +1 in
@@ -293,7 +293,7 @@
   </section>
 
   <section id="how-it-works" class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">How mercenaries work</h2>
+    <h2 class="text-xl font-semibold">How Mercenaries Work</h2>
 
     <div class="mt-4 divide-y">
       <div
@@ -425,13 +425,13 @@
             <div id="skill-ranks">
               <Calculation calculation={rankCalculation} />
               <p class="mt-2 text-muted-foreground">
-                Find Max rank in the Skills table on each
+                Find Max. Rank in the Skills table on each
                 <a href="#classes" class={link}>mercenary class page</a>.
               </p>
             </div>
             <p>
               <a href={petHref("bard_mercenary", true)} class={link}
-                >Bard songs and level unlocks</a
+                >Bard Songs and Level Unlocks</a
               >
             </p>
             <Alert variant="info">
@@ -492,7 +492,7 @@
                 >
                 <tr class="border-b"
                   ><th class="py-2 pr-5 font-medium text-foreground"
-                    >Group stance</th
+                    >Group Stance</th
                   ><td class="py-2"
                     ><span class="block"
                       >Switch everyone to defensive stance if anyone is
@@ -502,7 +502,7 @@
                 >
                 <tr class="border-b"
                   ><th class="py-2 pr-5 font-medium text-foreground"
-                    >Group attack</th
+                    >Group Attack</th
                   ><td class="py-2"
                     ><span class="block"
                       >A Warrior mercenary attacks first.</span
@@ -518,7 +518,7 @@
                 <!-- Source: server-scripts/Pet.cs:UserCode_CmdAttackTarget__NetworkIdentity__NetworkConnectionToClient — individual orders break the target's enchanted sleep. -->
                 <tr class="border-b"
                   ><th class="py-2 pr-5 font-medium text-foreground"
-                    >Individual attack</th
+                    >Individual Attack</th
                   ><td class="py-2"
                     ><span class="block"
                       >In aggressive stance, the selected mercenary or companion
@@ -607,12 +607,12 @@
                 <thead>
                   <tr class="text-left">
                     <th class="py-1.5 pr-6 font-medium text-foreground"
-                      >Recovery method</th
+                      >Recovery Method</th
                     >
                     <th class="py-1.5 pr-6 font-medium text-foreground">When</th
                     >
                     <th class="py-1.5 font-medium text-foreground"
-                      >Maximum Hit Points restored</th
+                      >Maximum Hit Points Restored</th
                     >
                   </tr>
                 </thead>
@@ -707,7 +707,7 @@
   </section>
 
   <section id="equipment" class="space-y-4 rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">Equipping a mercenary</h2>
+    <h2 class="text-xl font-semibold">Equipping a Mercenary</h2>
     <!-- Source: server-scripts/UITarget.cs:477-481; EquipmentItem.cs:172-234; MercenaryEquipment.cs:21-86 — the target-panel helmet icon opens equipment, with owner-level, class, slot, and two-handed checks. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
@@ -756,7 +756,7 @@
     </p>
     <p class="text-sm leading-6">
       <a href="#auto-consume" class={link}
-        >Auto-Consume supplies and thresholds</a
+        >Auto-Consume Supplies and Thresholds</a
       >
     </p>
   </section>
@@ -787,7 +787,7 @@
         <thead class="border-b text-foreground">
           <tr
             ><th class="py-2 pr-5">Supply</th><th class="py-2"
-              >Automatic-use condition</th
+              >Automatic-Use Condition</th
             ></tr
           >
         </thead>
@@ -800,7 +800,7 @@
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
-              >Utility potion</th
+              >Utility Potion</th
             ><td class="py-2"
               ><span class="block"
                 >When neither the potion's buff nor another buff of its category
@@ -810,7 +810,7 @@
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
-              >Healing potion</th
+              >Healing Potion</th
             ><td class="py-2"
               ><span class="block"
                 >Below 50% Hit Points, if at least 90% of the potion's healing
@@ -820,7 +820,7 @@
           >
           <tr
             ><th class="py-2 pr-5 font-medium text-foreground"
-              >Resource potion</th
+              >Resource Potion</th
             ><td class="py-2"
               ><span class="block"
                 >Below 25% Rage for Warriors and Rogues, or 25% Mana for Mana
@@ -841,7 +841,7 @@
   </section>
 
   <section id="ai-behavior" class="space-y-4 rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">Healers, taunts, and area attacks</h2>
+    <h2 class="text-xl font-semibold">Healers, Taunts, and Area Attacks</h2>
     <!-- Source: server-scripts/Pet.cs:4589-4626,4669-4706,4831-4846,5301-5339,5341-5387; PetSkills.cs:163-214,268-275 — target score, healing thresholds, range, efficiency, and offensive mana reserve. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
@@ -867,7 +867,7 @@
         <thead
           ><tr class="border-b"
             ><th class="px-4 py-2">Class</th><th class="px-4 py-2"
-              >Moves behind the target after attacks</th
+              >Moves Behind the Target After Attacks</th
             ></tr
           ></thead
         >
@@ -907,7 +907,7 @@
       <table class="w-full min-w-[32rem] text-left text-sm leading-6">
         <thead class="border-b text-foreground">
           <tr
-            ><th class="py-2 pr-5">Healing choice</th><th class="py-2"
+            ><th class="py-2 pr-5">Healing Choice</th><th class="py-2"
               >Threshold</th
             ></tr
           >
@@ -915,7 +915,7 @@
         <tbody class="text-muted-foreground">
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
-              >When healing starts</th
+              >When Healing Starts</th
             ><td class="py-2"
               >Below 90% Hit Points. Below 40%, healing can interrupt an
               offensive cast.</td
@@ -923,20 +923,20 @@
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
-              >Heal-over-time buff</th
+              >Heal-over-Time Buff</th
             ><td class="py-2"
               >Below 70% Hit Points, without that buff already active.</td
             ></tr
           >
           <tr class="border-b"
-            ><th class="py-2 pr-5 font-medium text-foreground">Area heal</th><td
+            ><th class="py-2 pr-5 font-medium text-foreground">Area Heal</th><td
               class="py-2"
               >At least 3 allies below 60% Hit Points within healing range.</td
             ></tr
           >
           <tr
             ><th class="py-2 pr-5 font-medium text-foreground"
-              >Single-target heal</th
+              >Single-Target Heal</th
             ><td class="py-2"
               ><span class="block"
                 >At 75% Hit Points or lower, or 85% with full Mana. Above that,
@@ -999,7 +999,7 @@
 
   <section id="recruiters" class="space-y-4">
     <div>
-      <h2 class="text-xl font-semibold">Where to hire</h2>
+      <h2 class="text-xl font-semibold">Where to Hire</h2>
       <p class="mt-1 text-sm text-muted-foreground">
         A preferred race applies only to the classes that allow it. Each
         mercenary page shows the race that class gets.
@@ -1021,7 +1021,7 @@
       </div>
       <div class="min-w-0 flex-1">
         <div class="font-semibold group-hover:underline">
-          Stat ranges and hiring odds
+          Stat Ranges and Hiring Odds
         </div>
         <p class="mt-1 text-sm text-muted-foreground">
           Compare Hit Points, Mana, Attack Power, and Spell Power for every

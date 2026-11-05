@@ -7,19 +7,19 @@ export function rareSpawnOdds(chance: number): Calculation {
   return {
     steps: [
       {
-        name: "Failure chance per roll",
+        name: "Failure Chance per Roll",
         expression: "100% − the rare's spawn chance",
       },
       {
-        name: "Chance every roll fails",
-        expression: "Failure chance per roll raised to the number of rolls",
+        name: "Chance Every Roll Fails",
+        expression: "Failure Chance per Roll raised to the number of rolls",
       },
       {
-        name: "Chance of at least one spawn",
-        expression: "100% − chance every roll fails",
+        name: "Chance of at Least One Spawn",
+        expression: "100% − Chance Every Roll Fails",
       },
     ],
-    inputs: [{ ...situational("rolls", "Spawn rolls", 3), min: 1, max: 100 }],
+    inputs: [{ ...situational("rolls", "Spawn Rolls", 3), min: 1, max: 100 }],
     example: ({ rolls }) => {
       const failure = 1 - chance;
       const allFail = failure ** rolls;
@@ -30,9 +30,9 @@ export function rareSpawnOdds(chance: number): Calculation {
         ],
         result: `${formatPercent(1 - allFail, { decimals: 2, preserveNonzero: true })} chance of at least one spawn`,
         working: [
-          `Failure chance per roll: 100% − ${formatPercent(chance, { decimals: 2, preserveNonzero: true })} = ${formatPercent(failure, { decimals: 2, preserveNonzero: true })}`,
-          `Chance every roll fails: ${formatPercent(failure, { decimals: 2, preserveNonzero: true })} raised to ${rolls} = ${formatPercent(allFail, { decimals: 2, preserveNonzero: true })}`,
-          `Chance of at least one spawn: 100% − ${formatPercent(allFail, { decimals: 2, preserveNonzero: true })} = ${formatPercent(1 - allFail, { decimals: 2, preserveNonzero: true })}`,
+          `Failure Chance per Roll: 100% − ${formatPercent(chance, { decimals: 2, preserveNonzero: true })} = ${formatPercent(failure, { decimals: 2, preserveNonzero: true })}`,
+          `Chance Every Roll Fails: ${formatPercent(failure, { decimals: 2, preserveNonzero: true })} raised to ${rolls} = ${formatPercent(allFail, { decimals: 2, preserveNonzero: true })}`,
+          `Chance of at Least One Spawn: 100% − ${formatPercent(allFail, { decimals: 2, preserveNonzero: true })} = ${formatPercent(1 - allFail, { decimals: 2, preserveNonzero: true })}`,
         ],
       };
     },
@@ -44,7 +44,7 @@ export function rareSpawnWait(chance: number, interval: number): Calculation {
   return {
     steps: [
       {
-        name: "Average wait",
+        name: "Average Wait",
         expression: "Respawn timer ÷ spawn chance, excluding corpse time",
       },
     ],
@@ -55,7 +55,7 @@ export function rareSpawnWait(chance: number, interval: number): Calculation {
       ],
       result: `${formatDuration(seconds)} on average`,
       working: [
-        `Average wait: ${formatDuration(interval)} ÷ ${formatPercent(chance, { decimals: 2, preserveNonzero: true })} = ${formatDuration(seconds)}`,
+        `Average Wait: ${formatDuration(interval)} ÷ ${formatPercent(chance, { decimals: 2, preserveNonzero: true })} = ${formatDuration(seconds)}`,
       ],
     }),
   };

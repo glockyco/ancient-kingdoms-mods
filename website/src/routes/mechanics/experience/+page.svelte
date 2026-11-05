@@ -298,7 +298,7 @@
 
       <div class="space-y-3">
         <div class="flex flex-wrap items-baseline justify-between gap-x-4">
-          <h3 class="font-semibold">Experience per level</h3>
+          <h3 class="font-semibold">Experience per Level</h3>
           <span class="text-xs text-muted-foreground"
             >Log scale &middot; <span class="text-emerald-500">green</span>: 18%
             more XP per level after level 40 &middot; dashed: the earlier 25.8%
@@ -368,7 +368,7 @@
             class="tick"
             x={(CHART.left + CHART.right) / 2}
             y={CHART.h - 4}
-            text-anchor="middle">character level</text
+            text-anchor="middle">Character Level</text
           >
         </svg>
       </div>
@@ -378,7 +378,7 @@
           class="flex flex-wrap items-baseline gap-x-3 text-sm"
           for="level-picker"
         >
-          <span class="font-semibold">At level</span>
+          <span class="font-semibold">At Level</span>
           <span class="font-mono text-lg font-medium text-foreground"
             >{pickedLevel}</span
           >
@@ -394,25 +394,25 @@
         <dl class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
           <div>
             <dt class="text-xs text-muted-foreground">
-              To level {pickedLevel + 1}
+              To Level {pickedLevel + 1}
             </dt>
             <dd class="font-mono text-foreground">{formatNumber(xpToNext)}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              Total XP to reach level {pickedLevel}
+              Total XP to Reach Level {pickedLevel}
             </dt>
             <dd class="font-mono text-foreground">{formatNumber(xpBehind)}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              XP left to level {LEVEL_CAP}
+              XP Left to Level {LEVEL_CAP}
             </dt>
             <dd class="font-mono text-foreground">{formatNumber(xpAhead)}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              Progress from level 1 to {LEVEL_CAP}
+              Progress from Level 1 to {LEVEL_CAP}
             </dt>
             <dd class="font-mono text-foreground">
               {formatPercent(journeyDone / 100, {
@@ -427,16 +427,16 @@
       <details class="group">
         <summary
           class="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground"
-          >Every level, in full</summary
+          >Every Level, in Full</summary
         >
         <div class="mt-3 overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="border-b">
                 <th class="text-left p-2 font-medium">Level</th>
-                <th class="text-right p-2 font-medium">XP to next level</th>
+                <th class="text-right p-2 font-medium">XP to Next Level</th>
                 <th class="text-right p-2 font-medium"
-                  >Total XP at next level</th
+                  >Total XP at Next Level</th
                 >
               </tr>
             </thead>
@@ -565,7 +565,7 @@
 
       <div class="space-y-3">
         <div class="flex flex-wrap items-baseline justify-between gap-x-4">
-          <h3 class="font-semibold">Total XP by total veteran points</h3>
+          <h3 class="font-semibold">Total XP by Total Veteran Points</h3>
           <span class="text-xs text-muted-foreground"
             >Dashed line: total XP from level 1 to {LEVEL_CAP}</span
           >
@@ -639,7 +639,7 @@
             class="tick"
             x={(VET_CHART.left + VET_CHART.right) / 2}
             y={VET_CHART.h - 4}
-            text-anchor="middle">Total veteran points</text
+            text-anchor="middle">Total Veteran Points</text
           >
         </svg>
       </div>
@@ -653,7 +653,7 @@
           <span class="font-mono text-lg font-medium text-foreground"
             >{formatNumber(pickedVeteran)}</span
           >
-          <span class="font-semibold">total veteran points</span>
+          <span class="font-semibold">Total Veteran Points</span>
         </label>
         <input
           id="veteran-picker"
@@ -665,7 +665,7 @@
         />
         <dl class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
           <div>
-            <dt class="text-xs text-muted-foreground">Next point costs</dt>
+            <dt class="text-xs text-muted-foreground">Next Point Costs</dt>
             <dd class="font-mono text-foreground">
               {pickedVeteran < MAX_VETERAN_POINTS
                 ? formatNumber(veteranNext)
@@ -674,7 +674,7 @@
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              Total XP to reach this point count
+              Total XP to Reach This Point Count
             </dt>
             <dd class="font-mono text-foreground">
               {formatNumber(veteranBehind)}
@@ -682,7 +682,7 @@
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              Times the XP from level 1 to {LEVEL_CAP}
+              Times the XP from Level 1 to {LEVEL_CAP}
             </dt>
             <dd class="font-mono text-foreground">
               {formatNumber(veteranRuns, {
@@ -707,7 +707,7 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="font-semibold">Spending and counting</h3>
+        <h3 class="font-semibold">Spending and Counting</h3>
         <p class="text-sm text-muted-foreground">
           Veteran points buy ranks in veteran skills. Your total is your unspent
           points plus your learned veteran ranks.
@@ -827,7 +827,7 @@
       <Calculation calculation={killExperience()} />
 
       <div class="space-y-2">
-        <h3 class="font-semibold">Level difference scaling</h3>
+        <h3 class="font-semibold">Level Difference Scaling</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block"
             >Monsters 10 or more levels above you award 150% of their base XP.</span
@@ -904,24 +904,24 @@
             class="tick"
             x={(DIFF_CHART.left + DIFF_CHART.right) / 2}
             y={DIFF_CHART.h - 3}
-            text-anchor="middle">your level − monster level</text
+            text-anchor="middle">Your Level − Monster Level</text
           >
         </svg>
 
         <details class="group">
           <summary
             class="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground"
-            >Every step, in full</summary
+            >Every Step, in Full</summary
           >
           <div class="mt-3 overflow-x-auto">
             <table class="w-full text-sm border-collapse">
               <thead>
                 <tr class="border-b">
                   <th class="text-left p-2 font-medium"
-                    >Monster level compared with yours</th
+                    >Monster Level Compared with Yours</th
                   >
                   <th class="text-right p-2 font-medium"
-                    >Level-difference percentage</th
+                    >Level-Difference Percentage</th
                   >
                 </tr>
               </thead>
@@ -946,7 +946,7 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="font-semibold">Additional modifiers</h3>
+        <h3 class="font-semibold">Additional Modifiers</h3>
         <p class="text-sm text-muted-foreground">
           Dungeon kills, the Forgotten Altar event, and Double XP buffs change
           the level-scaled XP award:
@@ -1051,8 +1051,8 @@
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="border-b">
-                <th class="text-left p-2 font-medium">Nearby party players</th>
-                <th class="text-right p-2 font-medium">XP per living player</th>
+                <th class="text-left p-2 font-medium">Nearby Party Players</th>
+                <th class="text-right p-2 font-medium">XP per Living Player</th>
               </tr>
             </thead>
             <tbody>
@@ -1427,7 +1427,7 @@
       <table class="w-full text-sm border-collapse">
         <thead
           ><tr class="border-b"
-            ><th class="text-left p-2 font-medium">Augment quality</th><th
+            ><th class="text-left p-2 font-medium">Augment Quality</th><th
               class="text-right p-2 font-medium">XP</th
             ></tr
           ></thead
@@ -1484,7 +1484,7 @@
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
-            <th class="text-left p-2 font-medium">Zone type</th>
+            <th class="text-left p-2 font-medium">Zone Type</th>
             <th class="text-right p-2 font-medium">XP</th>
           </tr>
         </thead>

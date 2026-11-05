@@ -19,7 +19,7 @@
 -->
 <nav aria-label="Page sections" class="border-y py-3.5">
   <p class="mb-2.5 text-xs uppercase tracking-wider text-muted-foreground">
-    On this page
+    On This Page
   </p>
   <ul class="flex flex-wrap items-baseline gap-x-5 gap-y-1.5 text-sm">
     {#each sections as section (section.id)}

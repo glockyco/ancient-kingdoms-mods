@@ -52,32 +52,32 @@
     <!-- Source: server-scripts/Combat.cs:blockChance,GetProbResistMeleeDamage,GetProbResistMagic,DealDamageAt — physical hits roll Block Chance, other hits their matching resist, and the matching stat reduces the damage. -->
     <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; Combat.cs:GetProbResistMeleeDebuff — physical debuffs land against Armor Class, other typed debuffs against their matching resist, and untyped debuffs skip the roll. -->
     <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT — physical ticks meet Armor Class, typed ticks their matching resist, and untyped ticks Magic Resist. -->
-    <RefTable caption="Defense against each damage type">
+    <RefTable caption="Defense Against Each Damage Type">
       <thead>
         <tr>
           <th scope="col"><span class="sr-only">Defense</span></th>
           <th scope="col">Physical</th>
-          <th scope="col">Magic, fire, cold, poison and disease</th>
+          <th scope="col">Magic, Fire, Cold, Poison and Disease</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <th scope="row">Avoiding a hit</th>
+          <th scope="row">Avoiding a Hit</th>
           <td>{statName("block_chance")}</td>
           <td>Matching resist</td>
         </tr>
         <tr>
-          <th scope="row">Reducing a hit</th>
+          <th scope="row">Reducing a Hit</th>
           <td>{statName("armor_class")}</td>
           <td>Matching resist</td>
         </tr>
         <tr>
-          <th scope="row">Resisting a debuff</th>
+          <th scope="row">Resisting a Debuff</th>
           <td>{statName("armor_class")}</td>
           <td>Matching resist</td>
         </tr>
         <tr>
-          <th scope="row">Reducing damage over time</th>
+          <th scope="row">Reducing Damage over Time</th>
           <td>{statName("armor_class")}</td>
           <td>Matching resist</td>
         </tr>
@@ -104,10 +104,10 @@
       hit gets one roll. Avoiding it also prevents its stun, fear and knockback.
     </p>
     <VariantPicker
-      label="Hit type"
+      label="Hit Type"
       options={[
         { value: "physical", label: "Physical" },
-        { value: "other", label: "Magic, fire, cold, poison and disease" },
+        { value: "other", label: "Magic, Fire, Cold, Poison and Disease" },
       ]}
       bind:value={hitType}
     />
@@ -130,7 +130,7 @@
       links={[
         {
           href: "/mechanics/monster-spawns#leashing",
-          label: "Chase limits and resets",
+          label: "Chase Limits and Resets",
         },
       ]}
     />
@@ -146,7 +146,7 @@
       {DEFENSE_RATES.pointsForMaxReduction} points.
     </p>
     <VariantPicker
-      label="Your stat"
+      label="Your Stat"
       options={DEFENSE_STATS.map((stat) => ({
         value: stat.input.key,
         label: stat.input.label,
@@ -162,7 +162,7 @@
       links={[
         {
           href: "#avoidance",
-          label: "Block, Miss and Resist, for the chance to avoid the hit",
+          label: "Block, Miss and Resist, for the Chance to Avoid the Hit",
         },
       ]}
     />
@@ -188,8 +188,8 @@
     </ul>
     <SeeAlso
       links={[
-        { href: "#buffs", label: "Buff Strength for ward capacity" },
-        { href: "#damage-pipeline", label: "Damage steps" },
+        { href: "#buffs", label: "Buff Strength for Ward Capacity" },
+        { href: "#damage-pipeline", label: "Damage Steps" },
       ]}
     />
   </Topic>

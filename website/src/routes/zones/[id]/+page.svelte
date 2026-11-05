@@ -827,7 +827,7 @@
         <a
           href={virtueHref("compassion")}
           class="inline-block text-blue-600 dark:text-blue-400 hover:underline"
-          >How escorts work</a
+          >How Escorts Work</a
         >
       </div>
     </section>
@@ -1031,7 +1031,7 @@
           class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
           <CircleHelp class="h-4 w-4" />
-          How regional events work
+          How Regional Events Work
         </a>
       </div>
       <div class="space-y-3 rounded-md border bg-muted/30 p-4">
@@ -1133,7 +1133,7 @@
           class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
           <CircleHelp class="h-4 w-4" />
-          How seasonal events work
+          How Seasonal Events Work
         </a>
       </div>
       <div class="space-y-3 rounded-md border bg-muted/30 p-4">

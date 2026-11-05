@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { statName } from "$lib/stats";
   import { formatNumber, formatRange } from "$lib/utils/format";
   import {
     DataTable,
@@ -236,7 +237,7 @@
           const flags: string[] = [];
           if (row.is_main_quest) flags.push("Main");
           if (row.is_epic_quest) flags.push("Epic");
-          if (row.is_adventurer_quest) flags.push("Daily");
+          if (row.is_adventurer_quest) flags.push("Adventurer");
           if (row.is_repeatable) flags.push("Repeatable");
           return flags.join(" ");
         },
@@ -348,7 +349,7 @@
     },
     {
       accessorKey: "rate",
-      header: "Drop Rate",
+      header: "Drop Chance",
       size: 120,
     },
   ];
@@ -663,7 +664,7 @@
   <!-- Header Summary Card -->
   <EntityCombatSummary
     titleId="npc-summary-title"
-    title="NPC summary"
+    title="NPC Summary"
     imageSrc={npcImageSrc}
     imageAlt={`${data.npc.name} NPC sprite`}
     imageWidth={data.visualAsset?.width}
@@ -783,7 +784,9 @@
             <div class="font-medium">{data.npc.level}</div>
           </div>
           <div>
-            <div class="text-sm text-muted-foreground">Health</div>
+            <div class="text-sm text-muted-foreground">
+              {statName("health")}
+            </div>
             <div class="font-medium">{formatNumber(data.npc.health)}</div>
           </div>
           {#if data.npc.mana > 0}
@@ -826,7 +829,9 @@
           {/if}
           {#if data.npc.accuracy > 0}
             <div>
-              <div class="text-sm text-muted-foreground">Accuracy</div>
+              <div class="text-sm text-muted-foreground">
+                {statName("accuracy")}
+              </div>
               <div class="font-medium">
                 {formatPercent(data.npc.accuracy)}
               </div>
@@ -1093,7 +1098,7 @@
           class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
           <CircleHelp class="h-4 w-4" />
-          How seasonal events work
+          How Seasonal Events Work
         </a>
       </div>
       <DataTable

@@ -89,13 +89,11 @@
   const columns: ColumnDef<ChestWithDrops>[] = [
     {
       id: "name",
-      header: "Icon",
       enableHiding: false,
       size: 80,
     },
     {
       id: "key",
-      header: "Key",
       minSize: 180,
       accessorFn: (row) => row.tool_or_key_name || "",
       getUniqueValues: (row) =>
@@ -108,7 +106,6 @@
     },
     {
       id: "gold",
-      header: "Gold",
       size: 140,
       accessorFn: (row) => {
         if (row.gold_min > 0 || row.gold_max > 0) {
@@ -122,31 +119,26 @@
     },
     {
       id: "item",
-      header: "Item",
       minSize: 200,
       accessorFn: (row) => row.item_reward_name || "",
     },
     {
       id: "chance",
-      header: "Reward Chance",
       size: 150,
       accessorFn: (row) => chestRewardChance(row),
       sortingFn: "basic",
     },
     {
       id: "drops",
-      header: "Random Drops",
       size: 150,
       accessorFn: (row) => row.drops.length,
     },
     {
       accessorKey: "respawn_time",
-      header: "Respawn",
       size: 100,
     },
     {
       id: "zone",
-      header: "Zone",
       minSize: 150,
       accessorFn: (row) => row.zone_name,
       getUniqueValues: (row) => [row.zone_id],
@@ -158,7 +150,6 @@
     },
     {
       id: "location",
-      header: "Map",
       size: 100,
     },
   ];

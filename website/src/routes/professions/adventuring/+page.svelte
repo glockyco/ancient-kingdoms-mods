@@ -319,7 +319,7 @@
         <div class="text-2xl font-semibold">
           {formatNumber(data.quests.length)}
         </div>
-        <div class="text-sm text-muted-foreground">Adventurer quests</div>
+        <div class="text-sm text-muted-foreground">Adventurer Quests</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
@@ -335,7 +335,7 @@
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">{questLevelRange}</div>
-        <div class="text-sm text-muted-foreground">Quest levels</div>
+        <div class="text-sm text-muted-foreground">Quest Levels</div>
       </div>
     </div>
   </section>
@@ -433,7 +433,7 @@
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
           >
-            <span>Max Level: {data.profession.max_level}%</span>
+            <span>Max. Level: {data.profession.max_level}%</span>
             {#if data.profession.achievement_id}
               <AchievementLink
                 achievementId={data.profession.achievement_id}
@@ -483,7 +483,7 @@
       >
         <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="text-sm">Queue date</span>
+            <span class="text-sm">Queue Date</span>
             <button
               type="button"
               class="rounded-md border bg-background px-3 py-1.5 text-sm transition-colors hover:bg-muted"
@@ -556,7 +556,7 @@
                 <th class="p-3 text-left font-medium">Class Reward</th>
               {/if}
               <th class="p-3 text-right font-medium">Adventuring</th>
-              <th class="p-3 text-right font-medium">Recommended Level</th>
+              <th class="p-3 text-right font-medium">Rec. Level</th>
               <th class="p-3 text-right font-medium">Veteran Points Required</th
               >
             </tr>

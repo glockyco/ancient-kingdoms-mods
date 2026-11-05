@@ -151,7 +151,7 @@
             class="h-7 px-2"
             onclick={clearFilter}
           >
-            Clear filters
+            Clear Filters
           </Button>
         {/if}
       </div>

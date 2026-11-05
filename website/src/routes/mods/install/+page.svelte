@@ -37,7 +37,7 @@
   />
 
   <header class="mt-6 space-y-3">
-    <h1 class="text-3xl font-bold sm:text-4xl">How to install</h1>
+    <h1 class="text-3xl font-bold sm:text-4xl">How to Install</h1>
     <p class="text-lg text-pretty text-muted-foreground">
       Choose your system to see its steps.
     </p>

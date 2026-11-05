@@ -298,12 +298,12 @@ export function fishOutcomeRowsForSpot({
     ...fallbackRows,
     {
       kind: "trash",
-      label: "Trash catch",
+      label: "Trash Catch",
       chancePerBite: fishTrashChancePerHook(shared),
     },
     {
       kind: "escape",
-      label: "Fish escapes",
+      label: "Fish Escapes",
       chancePerBite: fishEscapeChancePerHook(shared),
     },
   ];
@@ -673,7 +673,7 @@ export function fishOutcomeRangesForSpot({
   const noCatch = chanceBounds(1 - successLow, 1 - successHigh);
   rows.push({
     kind: "no_catch",
-    label: "No bite",
+    label: "No Bite",
     chancePerCastMin: noCatch.min,
     chancePerCastMax: noCatch.max,
   });

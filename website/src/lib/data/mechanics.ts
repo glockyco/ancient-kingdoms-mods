@@ -107,7 +107,7 @@ export const MECHANICS_GROUPS = [
     ],
   },
   {
-    title: "Party & society",
+    title: "Party & Society",
     pages: [
       {
         title: "Party & Loot",
@@ -131,7 +131,7 @@ export const MECHANICS_GROUPS = [
     ],
   },
   {
-    title: "World & economy",
+    title: "World & Economy",
     pages: [
       {
         title: "World & Travel",

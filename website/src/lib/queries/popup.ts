@@ -863,10 +863,10 @@ async function fishingOutcomes(
     return success * conditional;
   }
   for (const [kind, label] of [
-    ["fallback_fish", "Any lower-tier fish"],
-    ["trash", "Trash catch"],
-    ["escape", "Fish escapes"],
-    ["no_catch", "No bite"],
+    ["fallback_fish", "Any Lower-Tier Fish"],
+    ["trash", "Trash Catch"],
+    ["escape", "Fish Escapes"],
+    ["no_catch", "No Bite"],
   ] as const) {
     const a = aggregate(low, kind),
       b = aggregate(high, kind);

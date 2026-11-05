@@ -100,13 +100,13 @@ export function calculationCasters(
 function casterName(caster: Caster): string {
   switch (caster.kind) {
     case "player":
-      return `${formatClassName(caster.classId)} (player)`;
+      return `${formatClassName(caster.classId)} (Player)`;
     case "any_player":
       return "Player";
     case "mercenary":
-      return `${caster.className} mercenary`;
+      return `${caster.className} Mercenary`;
     case "weapon_effect":
-      return "Player or mercenary (weapon effect on hit)";
+      return "Player or Mercenary (Weapon Effect on Hit)";
     case "monster":
       return "Monster or NPC";
     case "companion":
@@ -159,14 +159,14 @@ export function cadenceCalculation(
   const amounts = [
     {
       field: skill.damage!,
-      baseName: "Skill damage",
-      scaledName: mercenary ? "Damage before defenses" : "Damage before Melody",
-      finalName: "Damage before defenses",
+      baseName: "Skill Damage",
+      scaledName: mercenary ? "Starting Damage" : "Damage Before Melody",
+      finalName: "Starting Damage",
     },
     {
       field: skill.heals_health!,
-      baseName: "Skill healing",
-      scaledName: mercenary ? "Healing" : "Healing before Melody",
+      baseName: "Skill Healing",
+      scaledName: mercenary ? "Healing" : "Healing Before Melody",
       finalName: "Healing",
     },
   ];
@@ -185,25 +185,25 @@ export function cadenceCalculation(
         expression: describeRankScaling(amount.field, skill.max_level, number),
       })),
       {
-        name: "Song power",
+        name: "Song Power",
         expression: "100% + 0.1% per point of Charisma above 0",
         limit: "at most 300%",
       },
       ...amounts.map((amount) => ({
         name: amount.scaledName,
-        expression: `${amount.baseName} × Song power`,
+        expression: `${amount.baseName} × Song Power`,
         rounding: "nearest" as const,
       })),
       ...(!mercenary
         ? [
             {
-              name: "Melody bonus",
+              name: "Melody Bonus",
               expression:
                 "3 active songs give 0%, 4 give 15%, 5 give 25%, and 6 or more give 30%",
             },
             ...amounts.map((amount) => ({
               name: amount.finalName,
-              expression: `${amount.scaledName} × (100% + Melody bonus)`,
+              expression: `${amount.scaledName} × (100% + Melody Bonus)`,
               rounding: "nearest" as const,
             })),
           ]
@@ -224,7 +224,7 @@ export function cadenceCalculation(
         rankWorkingLines(amount.baseName, amount.field, rank, number),
       );
       working.push(
-        `Song power: 100% + ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(addF32(1, bonus.raw), { decimals: 2, preserveNonzero: true })}${bonus.raw !== bonus.limited ? `, limited to ${percent(power, { decimals: 2, preserveNonzero: true })}` : ""}`,
+        `Song Power: 100% + ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(addF32(1, bonus.raw), { decimals: 2, preserveNonzero: true })}${bonus.raw !== bonus.limited ? `, limited to ${percent(power, { decimals: 2, preserveNonzero: true })}` : ""}`,
       );
       for (const amount of evaluated)
         working.push(
@@ -232,7 +232,7 @@ export function cadenceCalculation(
         );
       if (!mercenary) {
         working.push(
-          `Melody bonus: ${number(values.songs)} active songs = ${percent(melody, { decimals: 2, preserveNonzero: true })}`,
+          `Melody Bonus: ${number(values.songs)} active songs = ${percent(melody, { decimals: 2, preserveNonzero: true })}`,
         );
         for (const amount of evaluated)
           working.push(
@@ -241,7 +241,7 @@ export function cadenceCalculation(
       }
       return {
         given: inputs.map((input) => describeInput(input, values[input.key])),
-        result: `${number(evaluated[0].value.total)} damage before the target's defenses and ${number(evaluated[1].value.total)} Hit Points restored before critical heals and the missing-Hit-Points cap`,
+        result: `${number(evaluated[0].value.total)} starting damage and ${number(evaluated[1].value.total)} Hit Points restored before critical heals and the missing-Hit-Points cap`,
         working,
       };
     },
@@ -337,7 +337,7 @@ export function damageCalculation(
     ? skill.channel_pulses
     : 0;
   const channeled = pulses > 1;
-  const totalName = channeled ? "Total damage" : "Damage before defenses";
+  const totalName = channeled ? "Total Damage" : "Starting Damage";
   const inputs = casterInputs(
     [
       ...casterRankInputs(skill.max_level, mercenary),
@@ -358,7 +358,7 @@ export function damageCalculation(
                   {
                     ...situational(
                       "offhandDamage",
-                      "Off-hand weapon's Base Damage",
+                      "Off-Hand Weapon's Base Damage",
                       31,
                     ),
                     phrase: "off-hand weapon Base Damage",
@@ -370,7 +370,7 @@ export function damageCalculation(
                   {
                     ...situational(
                       "meleeDamage",
-                      "Main-hand weapon's Base Damage",
+                      "Main-Hand Weapon's Base Damage",
                       30,
                     ),
                     phrase: "main-hand weapon Base Damage",
@@ -387,13 +387,13 @@ export function damageCalculation(
       ? [
           magic ? statName("spell_power") : statName("attack_power"),
           ...(weaponMagic ? [statName("attack_power")] : []),
-          ...(dexterity ? ["Dexterity contribution"] : []),
+          ...(dexterity ? ["Dexterity Contribution"] : []),
         ]
       : []),
-    ...(skill.damage ? ["Skill damage"] : []),
+    ...(skill.damage ? ["Skill Damage"] : []),
   ];
   const deductions = !scroll
-    ? `${subtractBow ? " − bow Base Damage" : ""}${subtractOffhand ? " − Off-hand deduction" : ""}${subtractMelee ? " − main-hand weapon Base Damage" : ""}`
+    ? `${subtractBow ? " − bow Base Damage" : ""}${subtractOffhand ? " − Off-Hand Deduction" : ""}${subtractMelee ? " − main-hand weapon Base Damage" : ""}`
     : "";
   const arithmetic = `${terms.join(" + ") || "0"}${deductions}`;
   const operationCount =
@@ -403,12 +403,12 @@ export function damageCalculation(
     (!scroll && subtractMelee ? 1 : 0);
   const combinedStep = multiplied && operationCount > 1;
   const flatOnly = !multiplied && scroll && !!skill.damage;
-  const baseName = flatOnly ? totalName : "Skill damage";
+  const baseName = flatOnly ? totalName : "Skill Damage";
   const steps: CalculationStep[] = [
     ...(!scroll && dexterity
       ? [
           {
-            name: "Dexterity contribution",
+            name: "Dexterity Contribution",
             expression: `${percent(dexterityFactor, { decimals: 2, preserveNonzero: true })} of Dexterity above 0`,
             rounding: "nearest" as const,
           },
@@ -417,8 +417,8 @@ export function damageCalculation(
     ...(!scroll && subtractOffhand
       ? [
           {
-            name: "Off-hand deduction",
-            expression: "Off-hand weapon's Base Damage × 50%",
+            name: "Off-Hand Deduction",
+            expression: "Off-Hand Weapon's Base Damage × 50%",
             rounding: "up" as const,
           },
         ]
@@ -436,7 +436,7 @@ export function damageCalculation(
         ]
       : []),
     ...(combinedStep
-      ? [{ name: "Combined damage", expression: arithmetic }]
+      ? [{ name: "Combined Damage", expression: arithmetic }]
       : []),
     ...(multiplied
       ? [
@@ -451,7 +451,7 @@ export function damageCalculation(
           {
             name: totalName,
             expression: multiplied
-              ? `${combinedStep ? "Combined damage" : arithmetic} × Damage %${multiplierCanLapse ? ` when it is above 0. Otherwise use ${combinedStep ? "Combined damage" : arithmetic}` : ""}`
+              ? `${combinedStep ? "Combined Damage" : arithmetic} × Damage %${multiplierCanLapse ? ` when it is above 0. Otherwise use ${combinedStep ? "Combined Damage" : arithmetic}` : ""}`
               : arithmetic,
             ...(multiplied ? { rounding: "nearest" as const } : {}),
           },
@@ -460,7 +460,7 @@ export function damageCalculation(
     ...(channeled
       ? [
           {
-            name: "Damage per pulse",
+            name: "Damage per Pulse",
             expression: `${totalName} ÷ ${pulses}, rounded down. Each point left over adds 1 to one pulse, starting with the first`,
           },
         ]
@@ -534,19 +534,19 @@ export function damageCalculation(
       const working = [
         ...(!scroll && dexterity && usesCharacter
           ? [
-              `Dexterity contribution: ${number(Math.max(0, values.dexterity))} × ${percent(dexterityFactor, { decimals: 2, preserveNonzero: true })} = ${number(dex)}, rounded`,
+              `Dexterity Contribution: ${number(Math.max(0, values.dexterity))} × ${percent(dexterityFactor, { decimals: 2, preserveNonzero: true })} = ${number(dex)}, rounded`,
             ]
           : []),
         ...(!scroll && subtractOffhand && usesCharacter
           ? [
-              `Off-hand deduction: ${number(values.offhandDamage)} × 50% = ${number(offhand)}, rounded up`,
+              `Off-Hand Deduction: ${number(values.offhandDamage)} × 50% = ${number(offhand)}, rounded up`,
             ]
           : []),
         ...(skill.damage
           ? rankWorkingLines(baseName, skill.damage, rank, number)
           : []),
         ...(combinedStep
-          ? [`Combined damage: ${numberArithmetic} = ${number(combined)}`]
+          ? [`Combined Damage: ${numberArithmetic} = ${number(combined)}`]
           : []),
         ...(multiplied
           ? rankWorkingLines("Damage %", skill.damage_percent!, rank, (value) =>
@@ -563,8 +563,8 @@ export function damageCalculation(
         ...(channeled
           ? [
               extra > 0
-                ? `Damage per pulse: ${number(result)} ÷ ${pulses} = ${number(share)}, rounded down, plus 1 on the first ${extra === 1 ? "pulse" : `${extra} pulses`} = ${pulseDamage.join(", ")}`
-                : `Damage per pulse: ${number(result)} ÷ ${pulses} = ${number(share)}`,
+                ? `Damage per Pulse: ${number(result)} ÷ ${pulses} = ${number(share)}, rounded down, plus 1 on the first ${extra === 1 ? "pulse" : `${extra} pulses`} = ${pulseDamage.join(", ")}`
+                : `Damage per Pulse: ${number(result)} ÷ ${pulses} = ${number(share)}`,
             ]
           : []),
       ];
@@ -582,8 +582,8 @@ export function damageCalculation(
             ]
           : inputs.map((input) => describeInput(input, values[input.key])),
         result: channeled
-          ? `Pulses deal ${pulseDamage.slice(0, -1).join(", ")} and ${pulseDamage.at(-1)} damage before the target's defenses`
-          : `${number(result)} damage before the target's defenses`,
+          ? `Pulses deal ${pulseDamage.slice(0, -1).join(", ")} and ${pulseDamage.at(-1)} starting damage`
+          : `${number(result)} starting damage`,
         working,
       };
     },
@@ -595,7 +595,7 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
   return {
     steps: [
       {
-        name: "Base damage share",
+        name: "Base Damage Share",
         expression: describeRankScaling(
           skill.charmed_damage_percent!,
           skill.max_level,
@@ -603,13 +603,13 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
         ),
       },
       {
-        name: "Song power",
+        name: "Song Power",
         expression: `100% + ${percent(0.001 * (skill.charisma_power_bonus_multiplier ?? 1), { decimals: 2, preserveNonzero: true })} per point of Charisma above 0`,
         limit: `at most ${percent(1 + 2 * (skill.charisma_power_bonus_multiplier ?? 1), { decimals: 2 })}`,
       },
       {
-        name: "Charmed monster's damage",
-        expression: "Base damage share × Song power",
+        name: "Charmed Monster's Damage",
+        expression: "Base Damage Share × Song Power",
         limit: "at most 100% of its ordinary damage",
       },
     ],
@@ -631,13 +631,13 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
         result: `The charmed monster deals ${percent(result, { decimals: 2, preserveNonzero: true })} of its ordinary damage`,
         working: [
           ...rankWorkingLines(
-            "Base damage share",
+            "Base Damage Share",
             skill.charmed_damage_percent!,
             rank,
             (value) => percent(value, { decimals: 2, preserveNonzero: true }),
           ),
-          `Song power: ${percent(power, { decimals: 2, preserveNonzero: true })}`,
-          `Charmed monster's damage: ${percent(base, { decimals: 2, preserveNonzero: true })} × ${percent(power, { decimals: 2, preserveNonzero: true })} = ${percent(raw, { decimals: 2, preserveNonzero: true })}${raw !== result ? `, limited to ${percent(result, { decimals: 2, preserveNonzero: true })}` : ""}`,
+          `Song Power: ${percent(power, { decimals: 2, preserveNonzero: true })}`,
+          `Charmed Monster's Damage: ${percent(base, { decimals: 2, preserveNonzero: true })} × ${percent(power, { decimals: 2, preserveNonzero: true })} = ${percent(raw, { decimals: 2, preserveNonzero: true })}${raw !== result ? `, limited to ${percent(result, { decimals: 2, preserveNonzero: true })}` : ""}`,
         ],
       };
     },

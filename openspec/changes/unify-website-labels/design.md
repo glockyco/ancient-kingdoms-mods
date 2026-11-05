@@ -37,9 +37,11 @@ Each label is edited where it is written. A function that title-cases strings at
 
 ### Names that change words
 
-- A skill's buff fields take their names from the stat catalogue, which the `stat-vocabulary` capability already requires, so "Max Health", "Max Mana", "Max Rage", "Heals Health" and "Mana/sec" become "Maximum Hit Points", "Maximum Mana", "Maximum Rage", "Heals Hit Points" and "Mana Regeneration".
+- Stat labels come from the stat catalogue, which the `stat-vocabulary` capability already requires. A skill's buff fields "Max Health", "Max Mana", "Max Rage", "Heals Health" and "Mana/sec" become "Maximum Hit Points", "Maximum Mana", "Maximum Rage", "Heals Hit Points" and "Mana Regeneration", and a monster's or NPC's "Health", "Health Recovery" and "Accuracy Bonus" become "Hit Points", "Health Regeneration" and "Accuracy".
 - "Drop Rate" on NPC, chest and resource pages becomes "Drop Chance", as on monster pages, and fishing's "Chance / Cast" becomes "Chance per Cast", as on the fishing page.
 - A skill's Rank Scaling column "Knockback" becomes "Knockback Chance", the name of the field beside it.
+- A skill calculator's result "Damage before defenses" becomes "Starting Damage". It is step 1 of the combat page's damage steps, before variance, the level adjustment and critical hits, which the combat page calls starting damage.
+- The quest list sorts and searches adventurer quests by "Adventurer", the badge they show, instead of "Daily".
 - The one-line skill summaries say "threat" instead of "aggro" on the website and in Pocket Compendium's port, whose parity test reads the website's output. Monster skills never show threat, so the mod's panels show no change.
 
 ### One definition per column label

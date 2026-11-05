@@ -232,7 +232,7 @@
       onclick={onSearchClick}
     >
       <Search class="h-5 w-5" />
-      <span class="sr-only">Search map</span>
+      <span class="sr-only">Search Map</span>
     </Button>
     <Button
       variant="secondary"
@@ -241,7 +241,7 @@
       onclick={() => (drawerOpen = true)}
     >
       <Menu class="h-5 w-5" />
-      <span class="sr-only">Open map controls</span>
+      <span class="sr-only">Open Map Controls</span>
     </Button>
   </div>
 

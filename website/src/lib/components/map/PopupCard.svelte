@@ -51,7 +51,7 @@
             class="h-6 w-6 cursor-pointer p-0"
             title="Focus on map"
           >
-            <span class="sr-only">Focus on map</span>
+            <span class="sr-only">Focus on Map</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"

@@ -127,7 +127,7 @@
     {/if}
 
     {#if !hasChildren}
-      <span class="text-sm text-muted-foreground ml-2">Source unknown</span>
+      <span class="text-sm text-muted-foreground ml-2">Source Unknown</span>
     {/if}
   </div>
 
@@ -140,7 +140,7 @@
         {#if node.recipe?.learningRequirement}
           <div class="ml-6 py-1.5 flex items-center gap-1.5">
             <BookOpen class="h-4 w-4 shrink-0 text-orange-500" />
-            <span class="text-muted-foreground text-sm">Requires recipe:</span>
+            <span class="text-muted-foreground text-sm">Requires Recipe:</span>
           </div>
           <ObtainabilityTree node={node.recipe.learningRequirement} />
         {/if}
@@ -206,7 +206,7 @@
       {:else if hasMergeChildren}
         <div class="ml-6 py-1.5 flex items-center gap-1.5">
           <Combine class="h-4 w-4 shrink-0 text-purple-500" />
-          <span class="text-muted-foreground text-sm">Merge components:</span>
+          <span class="text-muted-foreground text-sm">Merge Components:</span>
         </div>
         {#each node.merge?.materials ?? [] as child, index (`${child.item_id}_${index}`)}
           <ObtainabilityTree node={child} />

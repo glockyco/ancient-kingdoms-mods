@@ -9,29 +9,29 @@ export function deathRecovery(): Calculation {
   return {
     steps: [
       {
-        name: "Remains XP recovery",
-        expression: "50% of XP lost",
+        name: "Remains XP Recovery",
+        expression: "50% of XP Lost",
         rounding: "nearest",
       },
       {
-        name: "Resurrection XP recovery",
-        expression: "75% of XP lost",
+        name: "Resurrection XP Recovery",
+        expression: "75% of XP Lost",
         rounding: "nearest",
       },
       {
-        name: `${statName("health")} after Resurrection`,
+        name: `${statName("health")} After Resurrection`,
         expression: "60% of maximum Hit Points",
         rounding: "nearest",
       },
       {
-        name: `${statName("mana")} after Resurrection`,
+        name: `${statName("mana")} After Resurrection`,
         expression: "20% of maximum Hit Points",
         rounding: "nearest",
         limit: "at most maximum Mana",
       },
     ],
     inputs: [
-      situational("lostXp", "XP lost on death", 101),
+      situational("lostXp", "XP Lost on Death", 101),
       MAX_HEALTH,
       MAX_MANA,
     ],
@@ -49,10 +49,10 @@ export function deathRecovery(): Calculation {
         ],
         result: `${formatNumber(remains)} XP from remains, or ${formatNumber(resurrection)} XP, ${formatNumber(health)} Hit Points and ${formatNumber(mana)} Mana from Resurrection`,
         working: [
-          `Remains XP recovery: 50% × ${formatNumber(lostXp)} = ${formatNumber(remains)} XP, rounded`,
-          `Resurrection XP recovery: 75% × ${formatNumber(lostXp)} = ${formatNumber(resurrection)} XP, rounded`,
-          `${statName("health")} after Resurrection: 60% × ${formatNumber(maxHealth)} = ${formatNumber(health)} Hit Points, rounded`,
-          `${statName("mana")} after Resurrection: 20% × ${formatNumber(maxHealth)} = ${formatNumber(uncappedMana)} Mana, rounded${mana < uncappedMana ? `, limited to ${formatNumber(mana)} Mana` : ""}`,
+          `Remains XP Recovery: 50% × ${formatNumber(lostXp)} = ${formatNumber(remains)} XP, rounded`,
+          `Resurrection XP Recovery: 75% × ${formatNumber(lostXp)} = ${formatNumber(resurrection)} XP, rounded`,
+          `${statName("health")} After Resurrection: 60% × ${formatNumber(maxHealth)} = ${formatNumber(health)} Hit Points, rounded`,
+          `${statName("mana")} After Resurrection: 20% × ${formatNumber(maxHealth)} = ${formatNumber(uncappedMana)} Mana, rounded${mana < uncappedMana ? `, limited to ${formatNumber(mana)} Mana` : ""}`,
         ],
       };
     },

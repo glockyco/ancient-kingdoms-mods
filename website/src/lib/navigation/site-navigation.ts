@@ -138,7 +138,7 @@ export const BROWSE_GROUPS: readonly NavigationGroup[] = [
     label: "Mechanics",
     links: mechanicsLinks,
     more: {
-      label: `All ${mechanicsPages.length} mechanics`,
+      label: `All ${mechanicsPages.length} Mechanics`,
       href: "/mechanics",
     },
   },

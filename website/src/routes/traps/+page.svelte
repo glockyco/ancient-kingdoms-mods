@@ -51,7 +51,6 @@
   const columns: ColumnDef<TrapRow>[] = [
     {
       id: "effect",
-      header: "Effect",
       size: 360,
       enableHiding: false,
       accessorFn: (row) =>
@@ -66,7 +65,6 @@
     },
     {
       id: "mechanics",
-      header: "Mechanics",
       minSize: 280,
       accessorFn: (row) =>
         [TRAP_TYPE_LABELS[row.type], row.fire_interval, row.name]
@@ -75,7 +73,6 @@
     },
     {
       id: "type",
-      header: "Type",
       accessorFn: (row) => TRAP_TYPE_LABELS[row.type],
       getUniqueValues: (row) => [row.type],
       filterFn: (row, _columnId, filterValue: string[]) => {
@@ -85,7 +82,6 @@
     },
     {
       id: "zone",
-      header: "Zone",
       size: 210,
       accessorFn: (row) => row.zone_name,
       getUniqueValues: (row) => [row.zone_id],
@@ -96,7 +92,6 @@
     },
     {
       id: "location",
-      header: "Map",
       // Grows for "No in-game map", which does not fit beside a button-sized column.
       minSize: 90,
       enableSorting: false,

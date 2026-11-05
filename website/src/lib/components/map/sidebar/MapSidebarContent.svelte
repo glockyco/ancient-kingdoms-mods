@@ -216,7 +216,7 @@
       onclick={onSearchClick}
     >
       <Search class="h-4 w-4" />
-      <span>Search map...</span>
+      <span>Search Map...</span>
       <kbd class="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
         {navigator?.platform?.includes("Mac") ? "⌘" : "Ctrl"}K
       </kbd>

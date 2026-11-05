@@ -496,7 +496,7 @@
   {#if entity.type === "house"}
     {@const house = entity as HouseMapEntity}
     <div class="flex justify-between border-t pt-2">
-      <span class="text-muted-foreground">Base price</span>
+      <span class="text-muted-foreground">Base Price</span>
       <span>{formatNumber(house.basePrice)} gold</span>
     </div>
     {#if house.subZoneName}
@@ -513,7 +513,7 @@
     {/if}
     {#if house.factionRequired > 0}
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Faction required</span>
+        <span class="text-muted-foreground">Faction Required</span>
         <span>{formatNumber(house.factionRequired)}</span>
       </div>
     {/if}
@@ -666,7 +666,7 @@
     {#if monsterAltarDetails.length > 0}
       <div class="border-t pt-2">
         <div class="mb-1 text-sm font-medium text-muted-foreground">
-          Spawns at
+          Spawns At
         </div>
         <div class="space-y-0.5">
           {#each monsterAltarDetails as altar (altar.id)}
@@ -765,7 +765,7 @@
     {#if monsterDetails && monsterDetails.renewalSages.length > 0}
       <div class="border-t pt-2">
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Reset by
+          Reset By
         </div>
         <div class="space-y-0.5">
           {#each monsterDetails.renewalSages as sage (sage.npcId)}
@@ -811,7 +811,7 @@
     <!-- Teleport destination -->
     {#if npc.hasTeleport && npc.teleportDestName}
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Teleports to</span>
+        <span class="text-muted-foreground">Teleports To</span>
         {#if npc.teleportZoneId}
           <MapEntityLink
             href={buildEntityUrl(npc.teleportZoneId, "zone")}
@@ -971,7 +971,7 @@
     {#if npcDetails && npcDetails.itemsSold.some((item) => item.seasons.length > 0)}
       <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor — Repair merchants add the active season's items to their stock. -->
       <div class="border-t pt-2 text-sm">
-        <div class="mb-1 font-medium text-muted-foreground">Seasonal stock</div>
+        <div class="mb-1 font-medium text-muted-foreground">Seasonal Stock</div>
         {#each seasons as season (season)}
           {@const stock = npcDetails.itemsSold.filter((item) =>
             item.seasons.includes(season),
@@ -1166,7 +1166,7 @@
               </div>
               {#if drop.isRandomItem && drop.randomItemOutcomes}
                 <div class="ml-2 truncate text-muted-foreground">
-                  <span>Can be:</span>
+                  <span>Can Be:</span>
                   {#each drop.randomItemOutcomes.slice(0, 3) as outcome, j (j)}
                     <button
                       type="button"
@@ -1327,7 +1327,7 @@
         <span
           class="inline-block h-2 w-2 rounded-full border border-orange-900 bg-orange-400"
         ></span>
-        <span class="text-muted-foreground">Monster spawn points</span>
+        <span class="text-muted-foreground">Monster Spawn Points</span>
       </div>
     {/if}
 

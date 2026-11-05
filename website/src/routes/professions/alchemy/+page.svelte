@@ -155,7 +155,7 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
-        <span>Max Level: {data.profession.max_level}%</span>
+        <span>Max. Level: {data.profession.max_level}%</span>
         {#if data.profession.achievement_id}
           <AchievementLink
             achievementId={data.profession.achievement_id}
@@ -167,7 +167,7 @@
   </div>
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning works</h2>
+    <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning Work</h2>
     <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — a known recipe cannot be learned again; learning consumes one recipe item. -->
     <p class="text-muted-foreground">
       <span class="block"
@@ -202,7 +202,7 @@
           <thead class="bg-muted/50">
             <tr>
               <th class="text-left p-3 font-medium">Zone</th>
-              <th class="text-left p-3 font-medium">Sub-zone</th>
+              <th class="text-left p-3 font-medium">Sub-Zone</th>
               <th class="text-left p-3 font-medium">Map</th>
             </tr>
           </thead>
@@ -379,7 +379,7 @@
         <span class="font-mono w-12">{skillLevel}%</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Skill gain chance:</span>
+        <span>Skill Gain Chance:</span>
         <span class="font-mono text-foreground"
           >{alchemySkillGainChancePercent(skillLevel).toFixed(0)}%</span
         >
@@ -566,7 +566,7 @@
           {#if isExpanded && canExpand}
             <div class="bg-muted/20 p-4" style="grid-column: 1 / -1;">
               <div class="text-muted-foreground mb-2">
-                How to obtain ingredients:
+                How to Obtain Ingredients:
               </div>
               <div class="bg-background rounded-md p-3 border overflow-x-auto">
                 <ObtainabilityTree

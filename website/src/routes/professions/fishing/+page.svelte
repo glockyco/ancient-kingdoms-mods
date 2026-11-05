@@ -184,7 +184,7 @@
         };
       }),
       {
-        label: "No bite",
+        label: "No Bite",
         itemId: null,
         tooltipHtml: null,
         quality: null,
@@ -216,16 +216,16 @@
     for (const row of outcomeRows) {
       if (row.note === "Fish from this spot") primaryFish += row.chance;
       else if (row.note === "Lower-tier fish") fallbackFish += row.chance;
-      else if (row.label === "Trash catch") trash += row.chance;
-      else if (row.label === "Fish escapes") escape += row.chance;
+      else if (row.label === "Trash Catch") trash += row.chance;
+      else if (row.label === "Fish Escapes") escape += row.chance;
     }
 
     return [
-      { label: "No bite", chance: 1 - selectedSpotSuccessChance },
-      { label: "Fish from this spot", chance: primaryFish },
-      { label: "Fish from lower tiers", chance: fallbackFish },
-      { label: "Trash catch", chance: trash },
-      { label: "Fish escapes", chance: escape },
+      { label: "No Bite", chance: 1 - selectedSpotSuccessChance },
+      { label: "Fish from This Spot", chance: primaryFish },
+      { label: "Fish from Lower Tiers", chance: fallbackFish },
+      { label: "Trash Catch", chance: trash },
+      { label: "Fish Escapes", chance: escape },
     ];
   });
 
@@ -353,13 +353,13 @@
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.rod_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Fishing rods</div>
+        <div class="text-sm text-muted-foreground">Fishing Rods</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.spot_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Fishing spots</div>
+        <div class="text-sm text-muted-foreground">Fishing Spots</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
@@ -371,19 +371,19 @@
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.food_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Fish foods</div>
+        <div class="text-sm text-muted-foreground">Fish Foods</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.potion_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Fish potions</div>
+        <div class="text-sm text-muted-foreground">Fish Potions</div>
       </div>
     </div>
   </section>
 
   <section id="how-it-works" class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">How Fishing works</h2>
+    <h2 class="text-xl font-semibold">How Fishing Works</h2>
     <!-- Source: server-scripts/Utils.cs:577-586 — Fishing spot success chance per tier. -->
     <!-- Source: server-scripts/GatherItem.cs:699-707 — < 0.2 spot success hard-blocks fishing. -->
     <!-- Source: server-scripts/GatherItem.cs:707-729,731-742,744-761,763-779,781-798 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
@@ -505,7 +505,7 @@
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
           >
-            <span>Max Level: {data.profession.max_level}%</span>
+            <span>Max. Level: {data.profession.max_level}%</span>
             {#if data.profession.achievement_id}
               <AchievementLink
                 achievementId={data.profession.achievement_id}
@@ -686,14 +686,14 @@
 
       <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div class="rounded-lg border p-4">
-          <div class="text-sm text-muted-foreground">Bite chance per cast</div>
+          <div class="text-sm text-muted-foreground">Bite Chance per Cast</div>
           <div class="text-2xl font-semibold">
             {formatPercent(selectedSpotSuccessChance)}
           </div>
         </div>
         <div class="rounded-lg border p-4">
           <div class="text-sm text-muted-foreground">
-            XP per successful cast
+            XP per Successful Cast
           </div>
           <div class="text-2xl font-semibold">
             {formatNumber(fishingExperienceForTier(selectedSpot.level))}
@@ -701,7 +701,7 @@
         </div>
         <div class="rounded-lg border p-4">
           <div class="text-sm text-muted-foreground">
-            Fishing gain chance per cast
+            Fishing Gain Chance per Cast
           </div>
           <div class="text-2xl font-semibold">
             {formatPercent(selectedSpotSuccessChance * masteryGainChance)}
@@ -709,7 +709,7 @@
         </div>
         <div class="rounded-lg border p-4">
           <div class="text-sm text-muted-foreground">
-            Fishing gain per increase
+            Fishing Gain per Increase
           </div>
           <div class="text-2xl font-semibold">
             {#if masteryGainChance > 0}
@@ -725,13 +725,13 @@
           </div>
         </div>
         <div class="rounded-lg border p-4">
-          <div class="text-sm text-muted-foreground">Click window</div>
+          <div class="text-sm text-muted-foreground">Click Window</div>
           <div class="text-2xl font-semibold">
             {fishingClickWindowSeconds(selectedSpot.level).toFixed(2)}s
           </div>
         </div>
         <div class="rounded-lg border p-4">
-          <div class="text-sm text-muted-foreground">Cast delay</div>
+          <div class="text-sm text-muted-foreground">Cast Delay</div>
           <div class="text-2xl font-semibold">
             {formatRange(`${castDelay.min}s`, `${castDelay.max}s`)}
           </div>
@@ -744,7 +744,7 @@
             <thead class="bg-muted/50">
               <tr>
                 <th class="p-3 text-left font-medium">Outcome</th>
-                <th class="p-3 text-right font-medium">Chance per cast</th>
+                <th class="p-3 text-right font-medium">Chance per Cast</th>
               </tr>
             </thead>
             <tbody>
@@ -767,8 +767,8 @@
         onclick={() => (showCalculatorDetails = !showCalculatorDetails)}
       >
         {showCalculatorDetails
-          ? "Hide detailed fish chances"
-          : "Show detailed fish chances"}
+          ? "Hide Detailed Fish Chances"
+          : "Show Detailed Fish Chances"}
       </button>
 
       {#if showCalculatorDetails}
@@ -779,7 +779,7 @@
                 <tr>
                   <th class="p-3 text-left font-medium">Fish</th>
                   <th class="p-3 text-left font-medium">Source</th>
-                  <th class="p-3 text-right font-medium">Chance per cast</th>
+                  <th class="p-3 text-right font-medium">Chance per Cast</th>
                 </tr>
               </thead>
               <tbody>
@@ -829,7 +829,7 @@
             <tr>
               <th class="p-3 text-left font-medium">Rod</th>
               <th class="p-3 text-right font-medium">Source Level</th>
-              <th class="p-3 text-left font-medium">Known sources</th>
+              <th class="p-3 text-left font-medium">Known Sources</th>
             </tr>
           </thead>
           <tbody>

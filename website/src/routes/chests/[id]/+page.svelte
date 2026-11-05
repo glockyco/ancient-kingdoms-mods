@@ -194,7 +194,7 @@
           <thead>
             <tr class="border-b bg-muted/50">
               <th class="text-left font-medium p-3">Item</th>
-              <th class="text-right font-medium p-3 w-28">Drop Rate</th>
+              <th class="text-right font-medium p-3 w-28">Drop Chance</th>
             </tr>
           </thead>
           <tbody>

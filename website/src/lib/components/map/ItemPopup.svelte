@@ -222,7 +222,7 @@
     {#if details.droppers.length > 0}
       <div>
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Dropped by
+          Dropped By
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.droppers as dropper (dropper.monsterId)}
@@ -280,7 +280,7 @@
     {#if details.vendors.some((vendor) => vendor.seasons.length === 0)}
       <div class={details.droppers.length > 0 ? "border-t pt-2" : ""}>
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Sold by
+          Sold By
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.vendors.filter((vendor) => vendor.seasons.length === 0) as vendor, i (i)}
@@ -311,7 +311,7 @@
 
     {#if shopGroups.length > 0}
       <div class="border-t pt-2 text-sm">
-        <div class="mb-1 font-medium text-muted-foreground">Seasonal shop</div>
+        <div class="mb-1 font-medium text-muted-foreground">Seasonal Shop</div>
         {#each shopGroups as group, i (i)}
           <div class="mt-2 space-y-1">
             {@render rowSeasons(group.seasons)}
@@ -348,7 +348,7 @@
 
     {#if details.packSources.length > 0}
       <div class="border-t pt-2 text-sm">
-        <div class="mb-1 font-medium text-muted-foreground">Opened from</div>
+        <div class="mb-1 font-medium text-muted-foreground">Opened From</div>
         <div class="max-h-32 space-y-1 overflow-y-auto pr-2">
           {#each details.packSources as pack (pack.itemId)}
             <div class="flex items-start justify-between gap-2">
@@ -374,7 +374,7 @@
           : ""}
       >
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Gathered from
+          Gathered From
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.gatheringSources as source (source.resourceId)}
@@ -563,7 +563,7 @@
           : ""}
       >
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Crafted from
+          Crafted From
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.craftingSources as recipe, recipeIndex (recipeIndex)}
@@ -598,7 +598,7 @@
           : ""}
       >
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Merged from
+          Merged From
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.mergeSources as source, i (i)}

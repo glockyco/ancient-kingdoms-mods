@@ -28,7 +28,7 @@
 
   <Card.Root id="game-modes" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Game modes and Hardcore</Card.Title>
+      <Card.Title>Game Modes and Hardcore</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/UICharacterSelection.cs:161-212,286-333 — modes 0, 1, and 2 select a local world, an online server list, or LAN hosting and IP joining. -->
@@ -95,7 +95,7 @@
 
   <Card.Root id="exploration" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Exploration and maps</Card.Title>
+      <Card.Title>Exploration and Maps</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/ZoneTrigger.cs:122-125,141-195 — a named area is recorded on first entry; discovery awards 10 city, 25 other, or 150 dungeon XP and increases Exploring. -->
@@ -153,7 +153,7 @@
 
   <Card.Root id="map-notes" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Personal map notes</Card.Title>
+      <Card.Title>Personal Map Notes</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/UIMapNotesController.cs:47-51,430-440,467-472,526-556 — note text is limited to 80 characters, empty notes cannot be saved, and a zone accepts at most 50 notes. -->
@@ -178,7 +178,7 @@
 
   <Card.Root id="binding-and-travel" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Binding and travel</Card.Title>
+      <Card.Title>Binding and Travel</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Npc.cs:InteractNpc; Player.cs:UserCode_CmdBindPlayer; TargetBuffSkill.cs:Apply; ScrollItem.cs:UseAfterCast; website/data/compendium.db:skills.bind_affinity — confirming a binder or bind spell saves the player's current zone and position; Bind Affinity belongs to Ranger, Cleric, Wizard, Druid and Necromancer. -->
@@ -257,7 +257,7 @@
 
   <Card.Root id="portals" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Portals and entry requirements</Card.Title>
+      <Card.Title>Portals and Entry Requirements</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Portal.cs:46-53 and server-scripts/InteractablePortal.cs:80-91 — ordinary portals respond to entering their trigger; interactable portals respond to interaction. -->
@@ -283,7 +283,7 @@
                 >Barrier</th
               >
               <th scope="col" class="py-2 text-left font-medium"
-                >Passage rule</th
+                >Passage Rule</th
               >
             </tr>
           </thead>
@@ -295,7 +295,7 @@
             </tr>
             <tr class="border-b border-border/60">
               <th scope="row" class="py-2 pr-6 text-left font-medium"
-                >Living monster</th
+                >Living Monster</th
               >
               <td class="py-2">Blocked while a specific monster is alive.</td>
             </tr>
@@ -309,7 +309,7 @@
             <!-- Source: server-scripts/Portal.cs:OnTriggerEnter2D; InteractablePortal.cs:OnClick; UIEquipment.cs:Update — entry checks each player's own level and total item level, reports missing thresholds, and the equipment window displays the total. -->
             <tr>
               <th scope="row" class="py-2 pr-6 text-left font-medium"
-                >Level and total item level</th
+                >Level and Total Item Level</th
               >
               <td class="py-2"
                 >Each player needs the required character level and total item
@@ -334,7 +334,7 @@
   </Card.Root>
   <Card.Root id="seasonal-events" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Seasonal events</Card.Title>
+      <Card.Title>Seasonal Events</Card.Title>
     </Card.Header>
     <Card.Content class="text-sm text-muted-foreground">
       <p>

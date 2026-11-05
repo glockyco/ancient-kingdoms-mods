@@ -188,28 +188,28 @@ export const achievementRelationships: Record<
   FIRST_STEPS: [
     {
       kind: "mechanic",
-      label: "Levels and experience",
+      label: "Levels and Experience",
       href: "/mechanics/experience",
     },
   ],
   CHAMPION_RISE: [
     {
       kind: "mechanic",
-      label: "Levels and experience",
+      label: "Levels and Experience",
       href: "/mechanics/experience",
     },
   ],
   TRUE_HERO: [
     {
       kind: "mechanic",
-      label: "Levels and experience",
+      label: "Levels and Experience",
       href: "/mechanics/experience",
     },
   ],
   VETERAN_EDGE: [
     {
       kind: "mechanic",
-      label: "Veteran points",
+      label: "Veteran Points",
       href: "/mechanics/experience#veteran-points",
     },
   ],
@@ -225,15 +225,15 @@ export const achievementRelationships: Record<
     },
   ],
   MAGIC_ITEM: [
-    { kind: "item", label: "Magic items", href: "/items?items.quality=2" },
+    { kind: "item", label: "Magic Items", href: "/items?items.quality=2" },
   ],
   EPIC_ITEM: [
-    { kind: "item", label: "Epic items", href: "/items?items.quality=3" },
+    { kind: "item", label: "Epic Items", href: "/items?items.quality=3" },
   ],
   LEGENDARY_ITEM: [
     {
       kind: "item",
-      label: "Legendary items",
+      label: "Legendary Items",
       href: "/items?items.quality=4",
     },
   ],

@@ -203,8 +203,8 @@
         <table class="w-full min-w-[420px] border-collapse text-sm">
           <thead>
             <tr class="border-b border-border text-foreground">
-              <th class="py-2 pr-5 text-left font-medium">Active songs</th>
-              <th class="py-2 text-left font-medium">Damage and healing</th>
+              <th class="py-2 pr-5 text-left font-medium">Active Songs</th>
+              <th class="py-2 text-left font-medium">Damage and Healing</th>
             </tr>
           </thead>
           <tbody>

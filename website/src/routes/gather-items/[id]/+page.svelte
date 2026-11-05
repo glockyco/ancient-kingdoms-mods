@@ -393,7 +393,7 @@
       id: "drop_rate",
       accessorFn: (drop) => getDisplayedDropChance(drop),
       sortingFn: "basic",
-      header: resource.is_fishing_spot ? "Chance / Cast" : "Drop Rate",
+      header: resource.is_fishing_spot ? "Chance per Cast" : "Drop Chance",
       size: 140,
     },
   ] satisfies ColumnDef<GatheringResourceDrop>[]);
@@ -664,7 +664,7 @@
               <!-- Source: server-scripts/GatherItem.cs:OnInteractFishServer — the initial roll is a bite, not a guaranteed fish. -->
               <div class="text-sm text-muted-foreground">
                 {resource.is_fishing_spot
-                  ? "Bite chance per cast"
+                  ? "Bite Chance per Cast"
                   : "Success Chance"}
               </div>
               <div
@@ -687,8 +687,8 @@
           <div>
             <div class="text-sm text-muted-foreground">
               {resource.is_fishing_spot
-                ? "Fishing gain chance per cast"
-                : "Skill gain chance after gathering"}
+                ? "Fishing Gain Chance per Cast"
+                : "Skill Gain Chance After Gathering"}
             </div>
             <div class="font-mono font-medium">
               {resource.is_fishing_spot
@@ -699,7 +699,7 @@
           <div>
             <div class="text-sm text-muted-foreground">
               {resource.is_fishing_spot
-                ? "Fishing gain per increase"
+                ? "Fishing Gain per Increase"
                 : "Skill Gain Amount"}
             </div>
             <div class="font-mono">

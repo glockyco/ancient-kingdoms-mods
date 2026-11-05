@@ -34,7 +34,7 @@ export function evaluateRepair(
 
 // Source: server-scripts/ItemSlot.cs:ToolTip — durability is the item's rounded percentage, not its hidden point count.
 const DURABILITY = {
-  ...situational("durability", "Durability (item tooltip)", 0.3),
+  ...situational("durability", "Durability (Item Tooltip)", 0.3),
   max: 1,
   unit: "%" as const,
 };
@@ -46,34 +46,34 @@ export function repairCost(): Calculation {
     note: "Read the sell price beside the gold icon and the Durability percentage in the item tooltip. Read Charisma in the character window. This is an estimate because the tooltip rounds durability to a whole percent. Gear bought with tokens always costs 1 or 2 gold to repair.",
     steps: [
       {
-        name: "Missing durability",
+        name: "Missing Durability",
         expression: "100% − durability %",
       },
       {
-        name: "Base repair cost",
-        expression: "Sell price × missing durability × 50%",
+        name: "Base Repair Cost",
+        expression: "Sell Price × Missing Durability × 50%",
         rounding: "nearest",
       },
       {
-        name: "Repair discount",
+        name: "Repair Discount",
         expression: "0.2% per point of Charisma above 0",
         limit: "at most 50%",
       },
       {
-        name: "Gold saved",
-        expression: "Base repair cost × repair discount",
+        name: "Gold Saved",
+        expression: "Base Repair Cost × Repair Discount",
         rounding: "up",
       },
       {
-        name: "Repair price",
-        expression: "Base repair cost − gold saved",
+        name: "Repair Price",
+        expression: "Base Repair Cost − Gold Saved",
         limit: "at least 1 gold",
       },
     ],
     inputs: [
       situational(
         "itemValue",
-        "Sell price (gold amount in item tooltip)",
+        "Sell Price (Gold Amount in Item Tooltip)",
         1000,
       ),
       DURABILITY,
@@ -94,14 +94,14 @@ export function repairCost(): Calculation {
         working:
           durability === 1
             ? [
-                `Missing durability: 100% − ${formatPercent(durability, { decimals: 2, preserveNonzero: true })} = 0%`,
+                `Missing Durability: 100% − ${formatPercent(durability, { decimals: 2, preserveNonzero: true })} = 0%`,
               ]
             : [
-                `Missing durability: 100% − ${formatPercent(durability, { decimals: 2, preserveNonzero: true })} = ${formatPercent(result.missing, { decimals: 2, preserveNonzero: true })}`,
-                `Base repair cost: ${formatNumber(itemValue)} × ${formatPercent(result.missing, { decimals: 2, preserveNonzero: true })} × 50% = ${formatNumber(result.base)} gold, rounded`,
-                `Repair discount: 0.2% × ${formatNumber(Math.max(0, charisma))} = ${formatPercent(result.uncappedDiscount, { decimals: 2, preserveNonzero: true })}${result.discount < result.uncappedDiscount ? `, limited to ${formatPercent(result.discount, { decimals: 2, preserveNonzero: true })}` : ""}`,
-                `Gold saved: ${formatNumber(result.base)} × ${formatPercent(result.discount, { decimals: 2, preserveNonzero: true })} = ${formatNumber(result.saving)} gold, rounded up`,
-                `Repair price: ${formatNumber(result.base)} − ${formatNumber(result.saving)} = ${formatNumber(result.unboundedPrice)} gold${result.total !== result.unboundedPrice ? `, limited to ${formatNumber(result.total)} gold` : ""}`,
+                `Missing Durability: 100% − ${formatPercent(durability, { decimals: 2, preserveNonzero: true })} = ${formatPercent(result.missing, { decimals: 2, preserveNonzero: true })}`,
+                `Base Repair Cost: ${formatNumber(itemValue)} × ${formatPercent(result.missing, { decimals: 2, preserveNonzero: true })} × 50% = ${formatNumber(result.base)} gold, rounded`,
+                `Repair Discount: 0.2% × ${formatNumber(Math.max(0, charisma))} = ${formatPercent(result.uncappedDiscount, { decimals: 2, preserveNonzero: true })}${result.discount < result.uncappedDiscount ? `, limited to ${formatPercent(result.discount, { decimals: 2, preserveNonzero: true })}` : ""}`,
+                `Gold Saved: ${formatNumber(result.base)} × ${formatPercent(result.discount, { decimals: 2, preserveNonzero: true })} = ${formatNumber(result.saving)} gold, rounded up`,
+                `Repair Price: ${formatNumber(result.base)} − ${formatNumber(result.saving)} = ${formatNumber(result.unboundedPrice)} gold${result.total !== result.unboundedPrice ? `, limited to ${formatNumber(result.total)} gold` : ""}`,
               ],
       };
     },
@@ -118,27 +118,27 @@ export function merchantPrice(selling: boolean): Calculation {
       ...(selling
         ? [
             {
-              name: "Durability-adjusted value",
-              expression: "Sell price × durability %",
+              name: "Durability-Adjusted Value",
+              expression: "Sell Price × durability %",
               rounding: "nearest" as const,
             },
           ]
         : []),
       {
-        name: selling ? "Sale bonus" : "Purchase discount",
+        name: selling ? "Sale Bonus" : "Purchase Discount",
         expression: "0.2% per point of Charisma above 0",
         limit: "at most 25%",
       },
       {
-        name: selling ? "Extra gold" : "Gold saved",
-        expression: `${selling ? "Durability-adjusted value" : "Buy Price"} × ${selling ? "sale bonus" : "purchase discount"}`,
+        name: selling ? "Extra Gold" : "Gold Saved",
+        expression: `${selling ? "Durability-Adjusted Value" : "Buy Price"} × ${selling ? "Sale Bonus" : "Purchase Discount"}`,
         rounding: "up",
       },
       {
-        name: selling ? "Sale price" : "Purchase price",
+        name: selling ? "Sale Price" : "Purchase Price",
         expression: selling
-          ? "Durability-adjusted value + extra gold"
-          : "Buy Price − gold saved",
+          ? "Durability-Adjusted Value + Extra Gold"
+          : "Buy Price − Gold Saved",
         limit: selling
           ? "at least 1 gold. An item with a 1 gold sell price always sells for 1 gold"
           : "at least 1 gold",
@@ -148,7 +148,7 @@ export function merchantPrice(selling: boolean): Calculation {
       situational(
         "itemValue",
         selling
-          ? "Sell price (gold amount in item tooltip)"
+          ? "Sell Price (Gold Amount in Item Tooltip)"
           : "Buy Price (item page)",
         1000,
       ),
@@ -166,7 +166,7 @@ export function merchantPrice(selling: boolean): Calculation {
       const total = itemValue === 1 ? 1 : Math.max(1, unboundedPrice);
       return {
         given: [
-          `${formatNumber(itemValue)} gold ${selling ? "sell price" : "Buy Price"}`,
+          `${formatNumber(itemValue)} gold ${selling ? "Sell Price" : "Buy Price"}`,
           ...(selling
             ? [
                 `${formatPercent(durability, { decimals: 2, preserveNonzero: true })} durability`,
@@ -178,12 +178,12 @@ export function merchantPrice(selling: boolean): Calculation {
         working: [
           ...(selling
             ? [
-                `Durability-adjusted value: ${formatNumber(itemValue)} × ${formatPercent(durability, { decimals: 2, preserveNonzero: true })} = ${formatNumber(adjusted)} gold, rounded`,
+                `Durability-Adjusted Value: ${formatNumber(itemValue)} × ${formatPercent(durability, { decimals: 2, preserveNonzero: true })} = ${formatNumber(adjusted)} gold, rounded`,
               ]
             : []),
-          `${selling ? "Sale bonus" : "Purchase discount"}: 0.2% × ${formatNumber(Math.max(0, charisma))} = ${formatPercent(uncappedDiscount, { decimals: 2, preserveNonzero: true })}${discount < uncappedDiscount ? `, limited to ${formatPercent(discount, { decimals: 2, preserveNonzero: true })}` : ""}`,
-          `${selling ? "Extra gold" : "Gold saved"}: ${formatNumber(adjusted)} × ${formatPercent(discount, { decimals: 2, preserveNonzero: true })} = ${formatNumber(change)} gold, rounded up`,
-          `${selling ? "Sale price" : "Purchase price"}: ${formatNumber(adjusted)} ${selling ? "+" : "−"} ${formatNumber(change)} = ${formatNumber(unboundedPrice)} gold${total !== unboundedPrice ? `, limited to ${formatNumber(total)} gold` : ""}`,
+          `${selling ? "Sale Bonus" : "Purchase Discount"}: 0.2% × ${formatNumber(Math.max(0, charisma))} = ${formatPercent(uncappedDiscount, { decimals: 2, preserveNonzero: true })}${discount < uncappedDiscount ? `, limited to ${formatPercent(discount, { decimals: 2, preserveNonzero: true })}` : ""}`,
+          `${selling ? "Extra Gold" : "Gold Saved"}: ${formatNumber(adjusted)} × ${formatPercent(discount, { decimals: 2, preserveNonzero: true })} = ${formatNumber(change)} gold, rounded up`,
+          `${selling ? "Sale Price" : "Purchase Price"}: ${formatNumber(adjusted)} ${selling ? "+" : "−"} ${formatNumber(change)} = ${formatNumber(unboundedPrice)} gold${total !== unboundedPrice ? `, limited to ${formatNumber(total)} gold` : ""}`,
         ],
       };
     },

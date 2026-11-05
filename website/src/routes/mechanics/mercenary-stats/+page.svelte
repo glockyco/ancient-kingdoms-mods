@@ -336,7 +336,7 @@
       ${grid}${xt}
       <polyline class="curve" points="${pts.join(" ")}"/>
       ${dots}${now}
-      <text x="${(L + R) / 2}" y="${H - 2}" text-anchor="middle">Top percentage accepted for each stat roll</text>
+      <text x="${(L + R) / 2}" y="${H - 2}" text-anchor="middle">Top Percentage Accepted for Each Stat Roll</text>
     </svg>`;
   }
 </script>
@@ -353,7 +353,7 @@
       items={[
         { label: "Home", href: "/" },
         { label: "Mechanics", href: "/mechanics" },
-        { label: "Mercenary stat ranges" },
+        { label: "Mercenary Stat Ranges" },
       ]}
     />
   </div>
@@ -362,10 +362,10 @@
     <MercenaryNav mercenaries={data.links} current="stat-ranges" />
   </div>
 
-  <h1>Mercenary stat ranges</h1>
+  <h1>Mercenary Stat Ranges</h1>
 
   <details class="howto">
-    <summary>How to read these ranges</summary>
+    <summary>How to Read These Ranges</summary>
     <div class="howto-body">
       <p>
         Set your level and total veteran points to compare stats without gear.
@@ -406,7 +406,7 @@
       />
       <!-- Source: server-scripts/Player.cs:CmdBuyMercenary; UICharacterInfo.cs:Update — VT adds base-resource multipliers and both combat-power bonuses. -->
       <NumberField
-        label="Total veteran points"
+        label="Total Veteran Points"
         hint="increases stats and skill ranks"
         value={veteran}
         min={OWNER_LIMITS.veteran[0]}
@@ -522,7 +522,7 @@
   </div>
 
   <section class="cost-sec" aria-label="Hiring cost and odds">
-    <h2>Hiring odds &amp; cost</h2>
+    <h2>Hiring Odds &amp; Cost</h2>
     <p class="sub">
       Choose a class, race, and recruiter, then set the lowest stats you would
       accept. The calculator shows your chance per hire and average gold cost.
@@ -586,7 +586,7 @@
             />
           </label>
           <div class="field">
-            <span>Hire discount</span><span class="disc-val"
+            <span>Hire Discount</span><span class="disc-val"
               >{discount > 0
                 ? `−${formatPercent(discount, {
                     decimals: 2,
@@ -637,7 +637,7 @@
       <div class="cost-outputs">
         <div class="stats3">
           <div class="stat3">
-            <span class="k">Qualifying hire chance</span><span class="v"
+            <span class="k">Qualifying Hire Chance</span><span class="v"
               >{formatPercent(pTotal, {
                 decimals: 2,
                 preserveNonzero: true,
@@ -645,14 +645,14 @@
             >
           </div>
           <div class="stat3">
-            <span class="k">Expected hires</span><span class="v"
+            <span class="k">Expected Hires</span><span class="v"
               >{Number.isFinite(avgHires)
                 ? `about ${formatNumber(avgHires, { decimals: 1 })}`
                 : "∞"}</span
             >
           </div>
           <div class="stat3">
-            <span class="k">Expected gold</span><span class="v"
+            <span class="k">Expected Gold</span><span class="v"
               >{Number.isFinite(avgGold)
                 ? `about ${formatNumber(Math.round(avgGold))}`
                 : "∞"}</span

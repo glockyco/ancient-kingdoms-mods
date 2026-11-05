@@ -9,14 +9,14 @@
   <Panel>
     <!-- Source: server-scripts/Monster.cs:UpdateServer_STUNNED,UpdateServer_FEAR,UpdateServer_IDLE — a stunned monster waits, a feared monster runs to random points, a rooted monster still uses skills in range, and a sleeping monster does nothing. -->
     <!-- Source: server-scripts/Combat.cs:DealDamageAt; TargetDebuffSkill.cs:144-180; AreaDebuffSkill.cs:155-191; BuffSkill.cs:173-203 — stun skips feared targets and most Bear Mount riders, fear skips bosses and fear-immune targets, knockback skips targets 15 or more levels above a non-boss attacker, and bosses and elites resist base Movement Speed bonuses below -10 unless IgnoreImmuneDebuff passes. -->
-    <RefTable caption="Crowd control effects compared" minWidth="44rem">
+    <RefTable caption="Crowd Control Effects Compared" minWidth="44rem">
       <thead>
         <tr>
           <th scope="col">Effect</th>
-          <th scope="col">Caused by</th>
-          <th scope="col">Effect on a monster</th>
+          <th scope="col">Caused By</th>
+          <th scope="col">Effect on a Monster</th>
           <th scope="col">Ends</th>
-          <th scope="col">Stopped by</th>
+          <th scope="col">Stopped By</th>
         </tr>
       </thead>
       <tbody>
@@ -133,11 +133,11 @@
       <a href="/skills/immobilize">Immobilize</a>, roots the target. Damage does
       not end it.
     </p>
-    <RefTable caption="Chance for a rooted target to break free">
+    <RefTable caption="Chance for a Rooted Target to Break Free">
       <thead>
         <tr>
-          <th scope="col">Rooted target</th>
-          <th scope="col">Break-free roll</th>
+          <th scope="col">Rooted Target</th>
+          <th scope="col">Break-Free Roll</th>
         </tr>
       </thead>
       <tbody>
@@ -149,7 +149,7 @@
           </td>
         </tr>
         <tr>
-          <th scope="row">NPC, mercenary, companion or familiar</th>
+          <th scope="row">NPC, Mercenary, Companion or Familiar</th>
           <td>Every second, 10%</td>
         </tr>
       </tbody>

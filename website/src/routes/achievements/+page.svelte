@@ -85,7 +85,7 @@
       <h1
         class="max-w-xl text-balance text-4xl font-bold tracking-[-0.035em] sm:text-5xl lg:text-6xl"
       >
-        Every Steam achievement
+        Every Steam Achievement
       </h1>
       <p
         class="mt-5 max-w-xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg"
@@ -142,7 +142,7 @@
               class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden="true"
             />
-            <span class="sr-only">Search achievements</span>
+            <span class="sr-only">Search Achievements</span>
             <input
               id="achievement-search"
               type="search"
@@ -179,7 +179,7 @@
             onclick={() => (query = "")}
             class="mt-3 text-sm text-blue-600 underline-offset-4 hover:underline dark:text-blue-400"
           >
-            Clear the search
+            Clear the Search
           </button>
         </div>
       {/if}

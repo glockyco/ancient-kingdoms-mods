@@ -77,7 +77,7 @@
       items: data.quest.rewards.items.filter((item) => !item.choice),
     },
     {
-      label: "Choose one:",
+      label: "Choose One:",
       items: data.quest.rewards.items.filter((item) => item.choice),
     },
   ]);

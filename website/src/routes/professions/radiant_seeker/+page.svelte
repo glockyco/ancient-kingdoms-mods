@@ -20,10 +20,10 @@
 
   const mechanics = PROFESSION_MECHANICS.radiant_seeker;
   const sections = [
-    { id: "how-it-works", label: "How Radiant Seeker works" },
-    { id: "chance", label: "Aether chance" },
-    { id: "locations", label: "Spark locations" },
-    { id: "combat", label: "Aether in combat" },
+    { id: "how-it-works", label: "How Radiant Sparks Work" },
+    { id: "chance", label: "Aether Chance" },
+    { id: "locations", label: "Spark Locations" },
+    { id: "combat", label: "Radiant Aether in Combat" },
   ];
 
   let skillLevel = $state(mechanics.startingBonus.percent);
@@ -88,7 +88,7 @@
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Radiant Sparks work</h2>
+    <h2 class="text-xl font-semibold">How Radiant Sparks Work</h2>
     <ol class="divide-y divide-border">
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
         <span class="text-sm tabular-nums text-muted-foreground">1</span>
@@ -140,7 +140,7 @@
   </section>
 
   <section id="chance" class="space-y-4">
-    <h2 class="text-xl font-semibold">Aether chance</h2>
+    <h2 class="text-xl font-semibold">Aether Chance</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       Radiant Seeker increases the chance that a spark gives you Radiant Aether.
       You can gather sparks at any Radiant Seeker skill.
@@ -151,7 +151,7 @@
         <label
           for="radiant-skill"
           class="text-xs uppercase tracking-wider text-muted-foreground"
-          >Radiant Seeker skill</label
+          >Radiant Seeker Skill</label
         >
         <input
           id="radiant-skill"
@@ -170,7 +170,7 @@
         series={curveSeries}
         {skillLevel}
         ariaLabel="Radiant Aether chance against Radiant Seeker skill"
-        skillLabel="Radiant Seeker skill"
+        skillLabel="Radiant Seeker Skill"
         yMax={0.3}
         yTicks={[0, 0.1, 0.2, 0.3]}
       />
@@ -201,7 +201,7 @@
   <section id="locations" class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 class="text-xl font-semibold">Spark locations</h2>
+        <h2 class="text-xl font-semibold">Spark Locations</h2>
         <p class="mt-1 text-sm text-muted-foreground">
           {formatNumber(data.resource.node_count)} Radiant Sparks across {formatNumber(
             data.resource.zones.length,
@@ -237,7 +237,7 @@
   </section>
 
   <section id="combat" class="space-y-4">
-    <h2 class="text-xl font-semibold">Radiant Aether in combat</h2>
+    <h2 class="text-xl font-semibold">Radiant Aether in Combat</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       Radiant Aether can activate automatically in three combat situations. Each
       activation consumes one Aether.
@@ -247,7 +247,7 @@
     </p>
     <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
       <!-- Source: server-scripts/Player.cs:HasRadiantAether — combat checks only slots 0–23. -->
-      <span class="font-medium text-foreground">Inventory requirement:</span>
+      <span class="font-medium text-foreground">Inventory Requirement:</span>
       Carry Radiant Aether in one of your first 24 inventory slots to use it in combat.
       Backpack-added slots do not count.
     </p>
@@ -261,14 +261,14 @@
         >
           <div class="flex min-w-0 items-center gap-2 text-muted-foreground">
             <Swords class="h-5 w-5 shrink-0 text-rose-500" />
-            <span>When your attack scores a critical hit</span>
+            <span>When Your Attack Scores a Critical Hit</span>
           </div>
           <span
             class="pl-7 text-xs font-medium tabular-nums text-rose-500 sm:pl-0"
             >15% activation</span
           >
         </div>
-        <h3 class="mt-2 font-semibold">Deal 3× damage instead of 1.5×</h3>
+        <h3 class="mt-2 font-semibold">Deal 3× Damage Instead of 1.5×</h3>
         <p class="mt-1 text-pretty text-sm text-muted-foreground">
           With 50% Critical Resist, a 3× critical hit deals 2× damage instead.
         </p>
@@ -282,7 +282,7 @@
         >
           <div class="flex min-w-0 items-center gap-2 text-muted-foreground">
             <HeartPulse class="h-5 w-5 shrink-0 text-emerald-500" />
-            <span>When an incoming hit is lethal</span>
+            <span>When an Incoming Hit Is Lethal</span>
           </div>
           <span
             class="pl-7 text-xs font-medium tabular-nums text-emerald-500 sm:pl-0"
@@ -290,7 +290,7 @@
           >
         </div>
         <h3 class="mt-2 font-semibold">
-          Take no damage and return to full health
+          Take No Damage and Return to Full Health
         </h3>
       </div>
 
@@ -304,7 +304,7 @@
           <div class="flex min-w-0 items-center gap-2 text-muted-foreground">
             <Shield class="h-5 w-5 shrink-0 text-sky-500" />
             <span
-              >When hostile area damage or a debuff targets players carrying
+              >When Hostile Area Damage or a Debuff Targets Players Carrying
               Aether</span
             >
           </div>
@@ -312,7 +312,7 @@
             >Chance depends on the number of eligible Aether carriers</span
           >
         </div>
-        <h3 class="mt-2 font-semibold">Cancel the area skill for everyone</h3>
+        <h3 class="mt-2 font-semibold">Cancel the Area Skill for Everyone</h3>
         <p class="mt-1 text-pretty text-sm text-muted-foreground">
           One activation prevents the hostile area damage or debuff from
           affecting any target.
@@ -320,17 +320,17 @@
         <details class="mt-3 text-sm">
           <summary
             class="w-fit cursor-pointer font-medium text-foreground hover:underline"
-            >How group activation is calculated</summary
+            >How Group Activation Is Calculated</summary
           >
           <dl
             class="mt-2 max-w-lg divide-y divide-border text-muted-foreground"
           >
             <div class="flex items-baseline justify-between gap-4 py-1.5">
-              <dt>1 player carrying Aether</dt>
+              <dt>1 Player Carrying Aether</dt>
               <dd class="font-medium tabular-nums text-foreground">15%</dd>
             </div>
             <div class="flex items-baseline justify-between gap-4 py-1.5">
-              <dt>2 or more players carrying Aether</dt>
+              <dt>2 or More Players Carrying Aether</dt>
               <dd class="text-right font-medium text-foreground">
                 Each gets the lower of 10% or 25% ÷ player count
               </dd>

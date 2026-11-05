@@ -20,5 +20,5 @@
   {...restProps}
 >
   <EllipsisIcon class="size-4" />
-  <span class="sr-only">More pages</span>
+  <span class="sr-only">More Pages</span>
 </span>

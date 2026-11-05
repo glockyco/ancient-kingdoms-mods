@@ -12,13 +12,13 @@ export function mysticSparkMana(hit = 200, targetHealth = 150): Calculation {
     note: "Use a hit on a target without a ward or Mana Shield. They absorb damage after Mystic Spark counts it, so they lower the damage number you see.",
     steps: [
       {
-        name: "Eligible hit damage",
+        name: "Eligible Hit Damage",
         expression: "The hit's damage number",
         limit: "at most the target's Hit Points before the hit",
       },
       {
-        name: `${statName("mana")} gained`,
-        expression: "35% of eligible hit damage",
+        name: `${statName("mana")} Gained`,
+        expression: "35% of Eligible Hit Damage",
         rounding: "down",
         limit: "at most your missing Mana",
       },
@@ -31,8 +31,8 @@ export function mysticSparkMana(hit = 200, targetHealth = 150): Calculation {
       ],
       result: `${formatNumber(mana)} Mana restored`,
       working: [
-        `Eligible hit damage: smaller of ${formatNumber(hit)} and ${formatNumber(targetHealth)} = ${formatNumber(eligible)}`,
-        `Mana gained: 35% × ${formatNumber(eligible)} = ${formatNumber(mana)} Mana, rounded down`,
+        `Eligible Hit Damage: smaller of ${formatNumber(hit)} and ${formatNumber(targetHealth)} = ${formatNumber(eligible)}`,
+        `Mana Gained: 35% × ${formatNumber(eligible)} = ${formatNumber(mana)} Mana, rounded down`,
       ],
     }),
   };

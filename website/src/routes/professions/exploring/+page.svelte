@@ -68,7 +68,7 @@
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <MapPin class="h-5 w-5 text-emerald-500" />
-      Areas to discover ({formatNumber(data.areas.length)})
+      Areas to Discover ({formatNumber(data.areas.length)})
     </h2>
     <div class="rounded-lg border overflow-x-auto">
       <table class="w-full whitespace-nowrap">
@@ -77,7 +77,7 @@
             <th class="p-3 font-medium">Type</th>
             <th class="text-left p-3 font-medium">Zone</th>
             <th class="text-left p-3 font-medium">Area</th>
-            <th class="text-right p-3 font-medium">Zone monster levels</th>
+            <th class="text-right p-3 font-medium">Zone Monster Levels</th>
             <th class="text-right p-3 font-medium">Discovery XP</th>
           </tr>
         </thead>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { formatNumber } from "$lib/utils/format";
+  import { statName } from "$lib/stats";
   import Skull from "@lucide/svelte/icons/skull";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import SeasonIcons from "$lib/components/SeasonIcons.svelte";
@@ -90,20 +91,17 @@
   const columns: ColumnDef<MonsterRow>[] = [
     {
       id: "icon",
-      header: "",
       size: 50,
       enableSorting: false,
       enableHiding: false,
     },
     {
       accessorKey: "name",
-      header: "Name",
       enableHiding: false,
       minSize: 220,
     },
     {
       accessorKey: "level_min",
-      header: "Level",
       size: 150,
       filterFn: (
         row,
@@ -121,53 +119,43 @@
     },
     {
       accessorKey: "health",
-      header: "Health",
       size: 150,
     },
     {
       accessorKey: "damage",
-      header: "Attack Power",
       size: 150,
     },
     {
       accessorKey: "magic_damage",
-      header: "Spell Power",
       size: 180,
     },
     {
       accessorKey: "defense",
-      header: "Armor Class",
       size: 150,
     },
     {
       accessorKey: "magic_resist",
-      header: "Magic Res",
       size: 150,
     },
     {
       accessorKey: "poison_resist",
-      header: "Poison Res",
       size: 150,
     },
     {
       accessorKey: "fire_resist",
-      header: "Fire Res",
       size: 150,
     },
     {
       accessorKey: "cold_resist",
-      header: "Cold Res",
       size: 150,
     },
     {
       accessorKey: "disease_resist",
-      header: "Disease Res",
       size: 150,
     },
     ...createRespawnColumns<MonsterRow>(),
     {
       id: "zones",
-      header: "Zones",
       size: 230,
       enableSorting: false,
       accessorFn: (row) => row.zones.map((z) => z.zone_name).join(" "),
@@ -175,7 +163,6 @@
     {
       id: "classification",
       accessorKey: "classification",
-      header: "Class",
       enableHiding: false,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
@@ -185,7 +172,6 @@
     },
     {
       accessorKey: "season",
-      header: "Season",
       enableHiding: false,
       filterFn: (row, columnId, values: string[]) =>
         !values?.length || values.includes(row.getValue(columnId)),
@@ -193,7 +179,6 @@
     {
       id: "zone_ids",
       accessorKey: "zone_ids",
-      header: "Zone Filter",
       enableHiding: false,
       getUniqueValues: (row) => row.zone_ids,
       filterFn: (row, columnId, filterValue: string[]) => {
@@ -208,7 +193,7 @@
     icon: "",
     name: "Name",
     level_min: "Level",
-    health: "Health",
+    health: statName("health"),
     damage: "Attack Power",
     magic_damage: "Spell Power",
     defense: "Armor Class",

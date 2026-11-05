@@ -143,7 +143,7 @@
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
         <p class="text-muted-foreground">
           <span class="font-medium text-foreground"
-            >{changed ? "Your numbers" : "Example"}</span
+            >{changed ? "Your Numbers" : "Example"}</span
           >
           {#if !editing}
             {#each example.given as input (input)}
@@ -167,8 +167,8 @@
               >{editing
                 ? "Done"
                 : changed
-                  ? "Change your numbers"
-                  : "Use your numbers"}</Button
+                  ? "Change Your Numbers"
+                  : "Use Your Numbers"}</Button
             >
           </div>
         {/if}

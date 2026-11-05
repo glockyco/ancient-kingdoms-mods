@@ -143,20 +143,20 @@ export const load: PageServerLoad = async ({
             ? locationName("altars", method.detail.altar_id)
             : null;
         labels.push(
-          altarName ? `${altarName}, final wave` : "Final altar wave",
+          altarName ? `${altarName}, Final Wave` : "Final Altar Wave",
         );
       } else if (method.ruleId === "placeholder_loot") {
-        labels.push("After the parent monster dies");
+        labels.push("After the Parent Monster Dies");
       } else if (method.ruleId === "lootless") {
-        labels.push("No loot");
+        labels.push("No Loot");
       }
       if (respawnVaries)
         labels.push(
-          method.detail.respawn === 1 ? "Respawning" : "Does not respawn",
+          method.detail.respawn === 1 ? "Respawning" : "Does Not Respawn",
         );
       if (experienceVaries)
         labels.push(
-          `${formatNumber(Number(method.detail.exp_multiplier) * 100, { decimals: 20 })}% experience`,
+          `${formatNumber(Number(method.detail.exp_multiplier) * 100, { decimals: 20 })}% Experience`,
         );
       return [method.methodId, labels.join(" · ")];
     }),

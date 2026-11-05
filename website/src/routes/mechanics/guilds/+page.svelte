@@ -29,7 +29,7 @@
 
   <Card.Root id="membership" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Guild membership</Card.Title>
+      <Card.Title>Guild Membership</Card.Title>
       <Card.Description
         >Create a guild at a Guild Registrar. It holds up to 10 members,
         including its leader.</Card.Description
@@ -95,7 +95,7 @@
 
   <Card.Root id="guild-points" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Guild points</Card.Title>
+      <Card.Title>Guild Points</Card.Title>
       <Card.Description
         >The character credited with a boss kill earns guild points if they
         belong to a guild.</Card.Description
@@ -125,8 +125,8 @@
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
-              <th class="py-2 pr-6 text-left font-medium">Boss (level)</th>
-              <th class="py-2 text-left font-medium">Guild points</th>
+              <th class="py-2 pr-6 text-left font-medium">Boss (Level)</th>
+              <th class="py-2 text-left font-medium">Guild Points</th>
             </tr>
           </thead>
           <tbody>

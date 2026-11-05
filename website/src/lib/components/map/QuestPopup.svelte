@@ -146,7 +146,7 @@
       <div
         class="flex flex-wrap items-center gap-1 rounded bg-muted px-2 py-1 text-sm text-muted-foreground"
       >
-        Accepted during
+        Accepted During
         {#each details.seasons as season (season)}
           <SeasonLabel {season} />
         {/each}

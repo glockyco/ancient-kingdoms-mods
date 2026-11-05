@@ -22,7 +22,7 @@
     <!-- Source: server-scripts/Combat.cs:718-942,952-1084,1114-1474,1113-1130,1150-1181 — ordered direct-hit pipeline, including avoidance, moving damage, on-hit effects, resource gains, shields, lifetap, and critical scaling. -->
     <p>Direct hits use these steps in order.</p>
 
-    <h4>Before avoidance</h4>
+    <h4>Before Avoidance</h4>
     <ol>
       <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply — the skill calculates its damage before the target's defenses. -->
       <li>
@@ -44,7 +44,7 @@
       </li>
     </ol>
 
-    <h4>Damage modifiers</h4>
+    <h4>Damage Modifiers</h4>
     <ol start="4">
       <!-- Source: server-scripts/Combat.cs:837 — variance multiplies damage by a random factor from 0.9 to 1.1 and applies RoundToInt. -->
       <li>Multiply damage by a random 90% to 110%, <RoundedTerm />.</li>
@@ -72,7 +72,7 @@
       </li>
     </ol>
 
-    <h4>Damage reduction and critical hits</h4>
+    <h4>Damage Reduction and Critical Hits</h4>
     <ol start="9">
       <!-- Source: server-scripts/Combat.cs:909-929 — the matching defense reduces hit damage. -->
       <li>
@@ -91,7 +91,7 @@
       </li>
     </ol>
 
-    <h4>On-hit effects and {statName("health")}</h4>
+    <h4>On-Hit Effects and {statName("health")}</h4>
     <ol start="12">
       <!-- Source: server-scripts/Combat.cs:952-986 — a non-spell melee DamageSkill hit heals the attacker by each of the target's buffs' healOnHitPercent of the damage, rounded, before damage shields. -->
       <li>
@@ -149,24 +149,24 @@
     <p>
       Final Cadence, ground-marking skills, Rageblow and Mana Burn use the whole
       formula in their row instead. Scrolls use only their own listed damage.
-      Each skill page has a calculator for its damage before defenses.
+      Each skill page has a calculator for its starting damage.
     </p>
     <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; AreaDamageSkill.cs:Apply; AreaObjectSpawnSkill.cs:AreaObjectSpawner.ApplyDamageToEntities; EquipmentItem.cs:ToolTip — handlers choose stats by class, handler and element; ground marks use listed damage only; weapon tooltip damage is Base Damage. -->
-    <RefTable caption="Starting damage by damage type">
+    <RefTable caption="Starting Damage by Damage Type">
       <thead>
         <tr>
           <th scope="col">Attack</th>
-          <th scope="col">Starts from</th>
+          <th scope="col">Starts From</th>
         </tr>
       </thead>
       <tbody>
         <tr><th colspan="2" scope="rowgroup">Physical</th></tr>
         <tr>
-          <th scope="row">Physical attacks, including monster attacks</th>
+          <th scope="row">Physical Attacks, Including Monster Attacks</th>
           <td>Attack Power</td>
         </tr>
         <tr>
-          <th scope="row">Player targeted and mercenary bow attacks</th>
+          <th scope="row">Player Targeted and Mercenary Bow Attacks</th>
           <td>Attack Power + 150% of Dexterity, <RoundedTerm /></td>
         </tr>
       </tbody>
@@ -174,38 +174,38 @@
         <tr><th colspan="2" scope="rowgroup">Poison</th></tr>
         <tr>
           <th scope="row">
-            Rogue and Rogue mercenary targeted attacks, and player Rogue
-            projectile and frontal attacks
+            Rogue and Rogue Mercenary Targeted Attacks, and Player Rogue
+            Projectile and Frontal Attacks
           </th>
           <td>Attack Power + 250% of Dexterity, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row">
-            Other classes' targeted, projectile and frontal-projectile attacks,
-            such as <a href="/skills/poison_spray">Poison Spray</a>
+            Other Classes' Targeted, Projectile and Frontal-Projectile Attacks,
+            Such as <a href="/skills/poison_spray">Poison Spray</a>
           </th>
           <td>Spell Power, except Ranger frontal projectiles below</td>
         </tr>
         <tr>
-          <th scope="row">Monster targeted and projectile attacks</th>
+          <th scope="row">Monster Targeted and Projectile Attacks</th>
           <td>Spell Power</td>
         </tr>
         <tr>
-          <th scope="row">Area attacks</th>
+          <th scope="row">Area Attacks</th>
           <td>Attack Power</td>
         </tr>
       </tbody>
       <tbody>
         <tr
-          ><th colspan="2" scope="rowgroup">Magic, fire, cold and disease</th
+          ><th colspan="2" scope="rowgroup">Magic, Fire, Cold and Disease</th
           ></tr
         >
         <tr>
-          <th scope="row">Spells, including monster spells</th>
+          <th scope="row">Spells, Including Monster Spells</th>
           <td>Spell Power, except Ranger frontal projectiles below</td>
         </tr>
         <tr>
-          <th scope="row">Magic weapon attacks</th>
+          <th scope="row">Magic Weapon Attacks</th>
           <td>Spell Power + Attack Power</td>
         </tr>
         <tr>
@@ -226,23 +226,23 @@
         </tr>
       </tbody>
       <tbody>
-        <tr><th colspan="2" scope="rowgroup">Any damage type</th></tr>
+        <tr><th colspan="2" scope="rowgroup">Any Damage Type</th></tr>
         <tr>
           <th scope="row">
-            Ranger frontal projectiles, such as
+            Ranger Frontal Projectiles, Such as
             <a href="/skills/forest_guardians_aid">Forest Guardians Aid</a>
           </th>
           <td>Attack Power + 150% of Dexterity, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row"
-            ><a href="#ground-area-damage">Ground-marking skills</a></th
+            ><a href="#ground-area-damage">Ground-Marking Skills</a></th
           >
           <td>Listed skill damage only</td>
         </tr>
       </tbody>
       <tbody>
-        <tr><th colspan="2" scope="rowgroup">Resource-based attacks</th></tr>
+        <tr><th colspan="2" scope="rowgroup">Resource-Based Attacks</th></tr>
         <tr>
           <th scope="row"><a href="/skills/rageblow">Rageblow</a></th>
           <td>200% of current Rage, spending all Rage</td>
@@ -262,10 +262,10 @@
       starting damage.
     </p>
 
-    <h4>Weapon deductions</h4>
+    <h4>Weapon Deductions</h4>
     <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; EquipmentItem.cs:ToolTip — player Ranger targeted and frontal damage subtract bow Base Damage, player Rogue targeted damage subtracts half off-hand Base Damage rounded up, player bow attacks subtract the Base Damage of a main-hand weapon, each only while the weapon has durability left, and mercenaries and Ranger frontal projectiles retain weapon damage. -->
     <!-- Source: website/data/compendium.db skills.skill_type — Swift Slash is a Ranger target_damage skill and Forest Guardians Aid a Ranger frontal_projectiles skill. -->
-    <RefTable caption="Weapon damage deducted from starting damage">
+    <RefTable caption="Weapon Damage Deducted from Starting Damage">
       <thead>
         <tr>
           <th scope="col">Attack</th>
@@ -275,26 +275,26 @@
       <tbody>
         <tr>
           <th scope="row">
-            Player Ranger targeted and frontal damage skills, such as
+            Player Ranger Targeted and Frontal Damage Skills, Such as
             <a href="/skills/swift_slash">Swift Slash</a>
           </th>
           <td>Bow's Base Damage</td>
         </tr>
         <tr>
           <th scope="row"
-            >Player Rogue targeted damage skills of any damage type</th
+            >Player Rogue Targeted Damage Skills of Any Damage Type</th
           >
           <td>50% of off-hand weapon's Base Damage, rounded up</td>
         </tr>
         <tr>
-          <th scope="row">Player targeted bow attacks</th>
+          <th scope="row">Player Targeted Bow Attacks</th>
           <td>Main-hand weapon's Base Damage</td>
         </tr>
         <tr>
           <th scope="row">
-            Ranger frontal projectiles, such as
+            Ranger Frontal Projectiles, Such as
             <a href="/skills/forest_guardians_aid">Forest Guardians Aid</a>, and
-            every mercenary attack
+            Every Mercenary Attack
           </th>
           <td>
             None. Weapon damage stays in Attack Power, including a Rogue
@@ -303,7 +303,7 @@
         </tr>
       </tbody>
     </RefTable>
-    <h4>Character window Attack Power and Spell Power</h4>
+    <h4>Character Window Attack Power and Spell Power</h4>
     <!-- Source: server-scripts/Combat.cs:damage,magicDamage; Strength.cs:GetDamageBonus; Intelligence.cs:GetMagicDamageBonus — percentage damage applies to the full flat stat; only the Intelligence addition and percentage addition round, not the flat-stat sum. -->
     <Formula calculation={characterDamageCalculation} />
   </Topic>

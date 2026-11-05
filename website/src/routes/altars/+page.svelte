@@ -51,46 +51,38 @@
   const columns: ColumnDef<AltarRow>[] = [
     {
       accessorKey: "name",
-      header: "Name",
       enableHiding: false,
       minSize: 200,
     },
     {
       // Hidden by default, but needed for type filter
       accessorKey: "type",
-      header: "Type",
       size: 120,
     },
     {
       id: "boss",
-      header: "Boss",
       size: 200,
       accessorFn: (row) => row.bossNames.join(", "),
     },
     {
       accessorKey: "totalEnemies",
-      header: "Enemies",
       size: 120,
     },
     {
       accessorKey: "totalWaves",
-      header: "Waves",
       size: 110,
     },
     {
       accessorKey: "minLevelRequired",
-      header: "Level",
       size: 100,
     },
     {
       id: "scaling",
-      header: "Level Scaling",
       size: 150,
       accessorFn: (row) => row.usesVeteranScaling,
     },
     {
       id: "zone",
-      header: "Zone",
       size: 180,
       accessorFn: (row) => row.zoneName,
     },
@@ -100,7 +92,7 @@
     name: "Name",
     type: "Type",
     zone: "Zone",
-    minLevelRequired: "Level",
+    minLevelRequired: "Req. Level",
     boss: "Boss",
     totalEnemies: "Enemies",
     totalWaves: "Waves",

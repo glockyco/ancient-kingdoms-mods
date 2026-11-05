@@ -134,7 +134,7 @@
 
   <Card.Root id="cycle" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>The respawn cycle</Card.Title>
+      <Card.Title>The Respawn Cycle</Card.Title>
       <Card.Description>
         Most monsters return at full Hit Points 8 minutes after a kill: 2
         minutes of corpse time followed by a 6-minute respawn timer.
@@ -154,7 +154,7 @@
           </div>
           <div class="col-span-3 min-w-0 bg-muted/50 px-2 py-2">
             <span class="block truncate font-medium text-foreground"
-              >Waiting to respawn</span
+              >Waiting to Respawn</span
             >
             <span class="block truncate"
               >respawn timer · {formatDuration(360)}</span
@@ -195,7 +195,7 @@
 
   <Card.Root id="empty-zones" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>What happens when everyone leaves?</Card.Title>
+      <Card.Title>What Happens When Everyone Leaves?</Card.Title>
       <Card.Description>
         Loot left on corpses is lost. Living monsters reset when someone
         returns.
@@ -236,7 +236,7 @@
 
   <Card.Root id="bosses" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Boss respawn timers</Card.Title>
+      <Card.Title>Boss Respawn Timers</Card.Title>
       <Card.Description>
         Boss and elite respawn timers keep running through server restarts.
       </Card.Description>
@@ -246,7 +246,7 @@
       <div class="overflow-x-auto text-sm text-muted-foreground">
         <table class="w-full border-collapse">
           <caption class="mb-2 text-left font-medium text-foreground">
-            After a server restart
+            After a Server Restart
           </caption>
           <thead>
             <tr class="border-b border-border">
@@ -257,7 +257,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each [["Boss or elite with time left on its timer", "Waits for the rest, at most one full respawn timer."], ["Rare boss or elite whose timer has ended", "Stays hidden for one full respawn timer, then rolls its spawn chance."], ["Regular monster", "Starts alive."], ["Regular rare monster", "Rolls its spawn chance."], ["Summoned or Halloween monster", "Starts hidden."]] as row (row[0])}
+            {#each [["Boss or Elite with Time Left on Its Timer", "Waits for the rest, at most one full respawn timer."], ["Rare Boss or Elite Whose Timer Has Ended", "Stays hidden for one full respawn timer, then rolls its spawn chance."], ["Regular Monster", "Starts alive."], ["Regular Rare Monster", "Rolls its spawn chance."], ["Summoned or Halloween Monster", "Starts hidden."]] as row (row[0])}
               <tr class="border-b border-border/50 hover:bg-muted/30">
                 <th scope="row" class="py-2 pr-4 text-left font-medium"
                   >{row[0]}</th
@@ -326,14 +326,14 @@
 
   <Card.Root id="missing-boss" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Why a boss is absent</Card.Title>
+      <Card.Title>Why a Boss Is Absent</Card.Title>
     </Card.Header>
     <Card.Content class="overflow-x-auto">
       <table class="w-full border-collapse text-sm">
         <thead>
           <tr class="border-b border-border">
-            <th class="py-2 pr-4 text-left font-medium">Why it is absent</th>
-            <th class="py-2 text-left font-medium">Where to check</th>
+            <th class="py-2 pr-4 text-left font-medium">Why It Is Absent</th>
+            <th class="py-2 text-left font-medium">Where to Check</th>
           </tr>
         </thead>
         <tbody class="text-muted-foreground">
@@ -405,7 +405,7 @@
 
   <Card.Root id="rare-spawns" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Rare spawns</Card.Title>
+      <Card.Title>Rare Spawns</Card.Title>
       <Card.Description>
         When a rare monster's respawn timer ends, it appears only if its
         spawn-chance roll succeeds.
@@ -586,15 +586,15 @@
               >
               <th
                 class="sticky top-0 border-b border-border bg-background py-2 pr-4 text-right font-medium"
-                >Roll interval</th
+                >Roll Interval</th
               >
               <th
                 class="sticky top-0 border-b border-border bg-background py-2 pr-4 text-right font-medium"
-                >Spawn chance</th
+                >Spawn Chance</th
               >
               <th
                 class="sticky top-0 border-b border-border bg-background py-2 pr-2 text-right font-medium"
-                >Average wait</th
+                >Average Wait</th
               >
             </tr>
           </thead>
@@ -782,7 +782,7 @@
                 <th class="py-2 pr-4 text-left font-medium">Rolls</th>
                 {#each RARE_ROLL_CHANCES as chance (chance)}
                   <th class="py-2 text-right font-medium"
-                    >{formatPercent(chance, { decimals: 0 })} chance</th
+                    >{formatPercent(chance, { decimals: 0 })} Chance</th
                   >
                 {/each}
               </tr>
@@ -816,7 +816,7 @@
               <tr class="border-b border-border">
                 <th class="py-2 pr-4 text-left font-medium">Dungeon</th>
                 <th class="py-2 pr-4 text-left font-medium">Sage</th>
-                <th class="py-2 text-right font-medium">Base fee</th>
+                <th class="py-2 text-right font-medium">Base Fee</th>
               </tr>
             </thead>
             <tbody>
@@ -858,7 +858,7 @@
 
   <Card.Root id="spawn-windows" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Day and night spawns</Card.Title>
+      <Card.Title>Day and Night Spawns</Card.Title>
       <Card.Description>
         Some monsters appear only during particular in-game hours.
       </Card.Description>
@@ -894,10 +894,10 @@
               <th class="py-2 pr-4 text-right font-medium">Level</th>
               <th class="py-2 pr-4 text-left font-medium">Zone</th>
               <th class="py-2 pr-4 text-left font-medium whitespace-nowrap"
-                >Window (game time)</th
+                >Window (Game Time)</th
               >
               <th class="py-2 text-right font-medium whitespace-nowrap"
-                >Available (real time)</th
+                >Available (Real Time)</th
               >
             </tr>
           </thead>
@@ -954,7 +954,7 @@
 
   <Card.Root id="summons" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Kill-triggered summons</Card.Title>
+      <Card.Title>Kill-Triggered Summons</Card.Title>
       <Card.Description>
         Some monsters appear only after the monsters guarding their location are
         all dead.
@@ -1172,10 +1172,10 @@
               <th class="py-2 pr-4 text-left font-medium">Summon</th>
               <th class="py-2 pr-4 text-left font-medium">Zone</th>
               <th class="py-2 pr-4 text-left font-medium"
-                >Specific guards (all dead at once)</th
+                >Specific Guards (All Dead at Once)</th
               >
               <th class="py-2 pr-4 text-left font-medium"
-                >Respawn timer and corpse time</th
+                >Respawn Timer and Corpse Time</th
               >
               <th class="py-2 text-right font-medium">Chance</th>
             </tr>
@@ -1235,7 +1235,7 @@
 
   <Card.Root id="leashing" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Chase limits and resets</Card.Title>
+      <Card.Title>Chase Limits and Resets</Card.Title>
       <Card.Description>
         Most monsters give up a chase at a set distance and reset when they get
         home.
@@ -1294,7 +1294,7 @@
 
   <Card.Root id="other-spawns" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Other ways monsters appear</Card.Title>
+      <Card.Title>Other Ways Monsters Appear</Card.Title>
       <Card.Description>
         Some monsters appear after a kill, during altar events, or at Halloween
         instead of returning on their own timer.

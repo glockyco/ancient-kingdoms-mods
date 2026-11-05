@@ -25,11 +25,11 @@
       of maximum Rage each second.
     </p>
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — dealt-hit Rage counts auto-attack damage after mitigation and critical hits, before Ward and Mana Shield, capped at current target Health. -->
-    <h4>Dealing an auto attack</h4>
+    <h4>Dealing an Auto Attack</h4>
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — auto attacks grant 25% of counted damage as Rage, rounded down. -->
     <Formula calculation={dealtRageCalculation} />
     <!-- Source: server-scripts/Combat.cs:DealDamageAt,GenerateRageOnHit — targeted physical melee hits grant received-hit Rage after mitigation and critical hits, before shields. -->
-    <h4>Receiving a targeted physical melee hit</h4>
+    <h4>Receiving a Targeted Physical Melee Hit</h4>
     <!-- Source: server-scripts/Combat.cs:DealDamageAt,GenerateRageOnHit — received-hit Rage is 35% of the square root of damage, rounded down and bounded to 1–25 for positive damage. -->
     <Formula calculation={receivedHitCalculation()} />
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — projectiles and area attacks give no received-hit Rage, and Warrior and Rogue mercenaries follow the same Rage rules. -->

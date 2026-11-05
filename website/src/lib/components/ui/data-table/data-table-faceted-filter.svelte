@@ -138,7 +138,7 @@
                 onSelect={() => column?.setFilterValue(undefined)}
                 class="justify-center text-center"
               >
-                Clear filters
+                Clear Filters
               </Command.Item>
             </Command.Group>
           {/if}

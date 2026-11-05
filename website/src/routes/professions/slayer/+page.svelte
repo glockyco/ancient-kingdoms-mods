@@ -43,17 +43,17 @@
   const damageCurve = [
     {
       id: "slayer_reduction",
-      label: "Damage reduction",
+      label: "Damage Reduction",
       chanceAt: (skillPercent: number) =>
         thresholdedDamageReduction(mechanics.damageReduction, skillPercent),
     },
   ];
 
   const sections = [
-    { id: "how-it-works", label: "How Slayer works" },
-    { id: "payoff", label: "Damage reduction" },
-    { id: "mastery", label: "Mastery" },
-    { id: "targets", label: "Targets" },
+    { id: "how-it-works", label: "Bestiary Discoveries and Slayer" },
+    { id: "payoff", label: "Damage Reduction" },
+    { id: "mastery", label: "Account-Wide Mastery" },
+    { id: "targets", label: "Slayer Targets" },
   ];
 
   function getClassification(target: SlayerTarget): string {
@@ -324,7 +324,7 @@
       column={classificationCol}
       title="Classification"
       options={[
-        { label: "World boss", value: "world_boss" },
+        { label: "World Boss", value: "world_boss" },
         { label: "Boss", value: "boss" },
         { label: "Fabled", value: "fabled" },
         { label: "Elite", value: "elite" },
@@ -449,7 +449,7 @@
   </section>
 
   <section id="payoff" class="space-y-4">
-    <h2 class="text-xl font-semibold">Damage reduction</h2>
+    <h2 class="text-xl font-semibold">Damage Reduction</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       Below 10% Slayer, boss and elite hits deal full damage. At 10% Slayer, a
       100-damage hit loses 1 damage. At 100%, it loses 10. Armor Class and
@@ -461,7 +461,7 @@
         <label
           for="slayer-mastery"
           class="text-xs uppercase tracking-wider text-muted-foreground"
-          >Slayer mastery</label
+          >Slayer Mastery</label
         >
         <input
           id="slayer-mastery"
@@ -480,7 +480,7 @@
         series={damageCurve}
         skillLevel={slayerLevel}
         ariaLabel="Slayer damage reduction against Slayer mastery"
-        skillLabel="Slayer mastery"
+        skillLabel="Slayer Mastery"
         yMax={0.1}
         yTicks={[0, 0.025, 0.05, 0.075, 0.1]}
       />
@@ -499,7 +499,7 @@
 
       <details class="text-sm">
         <summary class="w-fit cursor-pointer font-medium hover:underline"
-          >Exact damage rule</summary
+          >Exact Damage Rule</summary
         >
         <!-- Source: server-scripts/Combat.cs:DealDamageAt -->
         <div class="mt-2 space-y-2 text-pretty text-muted-foreground">
@@ -515,7 +515,7 @@
   </section>
 
   <section id="mastery" class="space-y-4">
-    <h2 class="text-xl font-semibold">Account-wide mastery</h2>
+    <h2 class="text-xl font-semibold">Account-Wide Mastery</h2>
     <!-- Source: server-scripts/Database.cs:CalculateSlayerLevelForAccount -->
     <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
       The game adds the capped kills of every character on the account, then
@@ -542,7 +542,7 @@
   </section>
 
   <section id="targets" class="space-y-4">
-    <h2 class="text-xl font-semibold">Slayer targets</h2>
+    <h2 class="text-xl font-semibold">Slayer Targets</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       Only bosses and elites give Slayer mastery. Regular monsters and hunt
       targets do not.

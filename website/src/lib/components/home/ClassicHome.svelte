@@ -210,7 +210,7 @@
         "bg-amber-500/10 text-amber-500",
         "Pocket Compendium",
         "Shows when bosses, elites and fabled monsters respawn, puts a timer on each spawn point, and counts down their skills while you fight them.",
-        "Get the mod",
+        "Get the Mod",
       )}
     </div>
 
@@ -279,7 +279,7 @@
 
     <!-- Game mechanics -->
     <section>
-      {@render sectionLabel("Game mechanics")}
+      {@render sectionLabel("Game Mechanics")}
       <div class="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-5">
         {#each MECHANICS_GROUPS as group (group.title)}
           <div>

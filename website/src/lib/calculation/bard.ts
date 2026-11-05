@@ -23,7 +23,7 @@ export function melodyBonus(songs: number): number {
 
 // Source: server-scripts/BardFinalCadenceSkill.cs:HasRequiredSongsActive — Final Cadence needs at least three active songs.
 export const ACTIVE_SONGS: CalculationInput = {
-  ...situational("songs", "Active songs", 4),
+  ...situational("songs", "Active Songs", 4),
   phrase: "active songs",
   min: 3,
   max: 30,
@@ -34,20 +34,20 @@ export function finalCadenceMelody(): Calculation {
   return {
     steps: [
       {
-        name: "Melody bonus",
+        name: "Melody Bonus",
         expression: "The bonus for your active songs from the table",
       },
       {
-        name: "Damage or healing",
+        name: "Damage or Healing",
         expression:
-          "Tooltip damage or healing (base plus bonus) × (100% + Melody bonus)",
+          "Tooltip Damage or Healing (base plus bonus) × (100% + Melody Bonus)",
         rounding: "nearest",
       },
     ],
     inputs: [
       situational(
         "scaledAmount",
-        "Tooltip damage or healing, including the Charisma bonus",
+        "Tooltip Damage or Healing, Including the Charisma Bonus",
         100,
       ),
       ACTIVE_SONGS,
@@ -61,10 +61,10 @@ export function finalCadenceMelody(): Calculation {
           `${songs} active songs`,
         ],
         // Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies; Combat.cs:DealDamageAt — defenses modify damage and heals can crit before being capped by missing Health.
-        result: `${formatNumber(total)} damage before defenses, or ${formatNumber(total)} healing before critical heals. Healing cannot exceed the target's missing Hit Points.`,
+        result: `${formatNumber(total)} starting damage, or ${formatNumber(total)} healing before critical heals. Healing cannot exceed the target's missing Hit Points.`,
         working: [
-          `Melody bonus: ${formatPercent(melodyBonus(songs), { decimals: 2, preserveNonzero: true })} for ${songs} active songs`,
-          `Damage or healing: ${formatNumber(scaledAmount)} × ${formatPercent(multiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(total)}, rounded`,
+          `Melody Bonus: ${formatPercent(melodyBonus(songs), { decimals: 2, preserveNonzero: true })} for ${songs} active songs`,
+          `Damage or Healing: ${formatNumber(scaledAmount)} × ${formatPercent(multiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(total)}, rounded`,
         ],
       };
     },
@@ -126,24 +126,24 @@ export function bardCharmResistance(): Calculation {
   return {
     steps: [
       {
-        name: "Level adjustment",
+        name: "Level Adjustment",
         expression: `(Monster level − your level) × ${DEFENSE_RATES.levelTermPerLevel}`,
         limit: `between −${DEFENSE_RATES.maxLevelTerm} and +${DEFENSE_RATES.maxLevelTerm}`,
       },
       {
-        name: "Base resist chance",
-        expression: `Monster's Magic Resist × ${DEFENSE_RATES.resistChancePerPoint} + level adjustment`,
+        name: "Base Resist Chance",
+        expression: `Monster's Magic Resist × ${DEFENSE_RATES.resistChancePerPoint} + Level Adjustment`,
         limit: `between 0% and ${DEFENSE_RATES.maxAvoidance}`,
       },
       {
-        name: "Charm resist chance",
-        expression: `Base resist chance + ${perLevel} per level the monster is above you − ${perCharisma} per point of Charisma above 0`,
+        name: "Charm Resist Chance",
+        expression: `Base Resist Chance + ${perLevel} per level the monster is above you − ${perCharisma} per point of Charisma above 0`,
         limit: `between 0% and ${percent(MAX_CHARM_RESIST)}`,
       },
     ],
     inputs: [
       {
-        ...situational("level", "Your level (character window)", 50),
+        ...situational("level", "Your Level (Character Window)", 50),
         min: 1,
         max: 50,
         remember: true,
@@ -152,13 +152,13 @@ export function bardCharmResistance(): Calculation {
       {
         ...situational(
           "monsterLevel",
-          "Monster level (target frame or monster page)",
+          "Monster Level (Target Frame or Monster Page)",
           52,
         ),
         min: 1,
         max: 100,
       },
-      situational("magicResist", "Monster's Magic Resist (monster page)", 300),
+      situational("magicResist", "Monster's Magic Resist (Monster Page)", 300),
     ],
     example: ({ level, charisma, monsterLevel, magicResist }) => {
       const terms = charmResistTerms(
@@ -178,9 +178,9 @@ export function bardCharmResistance(): Calculation {
         ],
         result: `${percent(chance)} chance to resist Charm`,
         working: [
-          `Level adjustment: (${monsterLevel} − ${level}) × ${DEFENSE_RATES.levelTermPerLevel} = ${percent(rawAdjustment)}${limited(rawAdjustment, adjustment)}`,
-          `Base resist chance: ${formatNumber(magicResist)} × ${DEFENSE_RATES.resistChancePerPoint} ${adjustment < 0 ? "−" : "+"} ${percent(Math.abs(adjustment))} = ${percent(rawBase)}${limited(rawBase, base)}`,
-          `Charm resist chance: ${percent(base)} + ${Math.max(0, difference)} × ${perLevel} − ${formatNumber(Math.max(0, charisma))} × ${perCharisma} = ${percent(rawChance)}${limited(rawChance, chance)}`,
+          `Level Adjustment: (${monsterLevel} − ${level}) × ${DEFENSE_RATES.levelTermPerLevel} = ${percent(rawAdjustment)}${limited(rawAdjustment, adjustment)}`,
+          `Base Resist Chance: ${formatNumber(magicResist)} × ${DEFENSE_RATES.resistChancePerPoint} ${adjustment < 0 ? "−" : "+"} ${percent(Math.abs(adjustment))} = ${percent(rawBase)}${limited(rawBase, base)}`,
+          `Charm Resist Chance: ${percent(base)} + ${Math.max(0, difference)} × ${perLevel} − ${formatNumber(Math.max(0, charisma))} × ${perCharisma} = ${percent(rawChance)}${limited(rawChance, chance)}`,
         ],
       };
     },

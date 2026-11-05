@@ -297,9 +297,9 @@
     },
     {
       accessorKey: "required_spent_points",
-      header: "Req Points",
+      header: "Req. Points",
     },
-    { accessorKey: "level_required", header: "Req Lvl" },
+    { accessorKey: "level_required", header: "Req. Level" },
     {
       id: "prerequisites",
       header: "Prerequisites",
@@ -311,7 +311,7 @@
     },
     {
       accessorKey: "max_level",
-      header: "Max Rank",
+      header: "Max. Rank",
     },
     {
       accessorKey: "effect",
@@ -476,13 +476,13 @@
     if (hasQuestFlags) {
       cols.push({
         id: "flags",
-        header: "Quest labels",
+        header: "Quest Labels",
         enableSorting: false,
         accessorFn: (row) => {
           const flags: string[] = [];
           if (row.is_main_quest) flags.push("Main");
           if (row.is_epic_quest) flags.push("Epic");
-          if (row.is_adventurer_quest) flags.push("Daily");
+          if (row.is_adventurer_quest) flags.push("Adventurer");
           if (row.is_repeatable) flags.push("Repeatable");
           return flags.join(" ");
         },
@@ -493,7 +493,7 @@
       { accessorKey: "name", header: "Name" },
       {
         accessorKey: "level_required",
-        header: "Req Lvl",
+        header: "Req. Level",
         filterFn: (
           row,
           columnId,
@@ -509,7 +509,7 @@
           return true;
         },
       },
-      { accessorKey: "level_recommended", header: "Rec Lvl" },
+      { accessorKey: "level_recommended", header: "Rec. Level" },
     );
 
     return cols;
@@ -1023,11 +1023,11 @@
         <a
           href="/mechanics/character#attributes"
           class="mt-3 inline-block text-blue-600 dark:text-blue-400 hover:underline"
-          >Attribute rules</a
+          >Attribute Rules</a
         >
       </div>
       <div class="rounded-lg border bg-muted/30 p-4">
-        <h3 class="font-semibold">Off-hand</h3>
+        <h3 class="font-semibold">Off-Hand</h3>
         <p class="mt-2 text-muted-foreground">{data.guide.equipment.text}</p>
       </div>
     </div>
@@ -1114,7 +1114,7 @@
           cooldown: "Cooldown",
           cast_time: "Cast Time",
           effect: "Effect",
-          max_level: "Max Rank",
+          max_level: "Max. Rank",
         }}
         urlKey="class-{data.class.id}-skills"
         pageSize={10}

@@ -121,8 +121,8 @@
       id: g.ids[0],
       label:
         g.ids.length === pet.profile.resistances.length
-          ? "Each base resistance"
-          : `${g.ids.map((id) => statName(id)).join(", ")} base resistance`,
+          ? "Each Base Resistance"
+          : `${g.ids.map((id) => statName(id)).join(", ")} Base Resistance`,
       per_level: g.per_level,
       atLevel: g.base + g.per_level * (level - 1),
     }));
@@ -298,7 +298,7 @@
           <a
             href="/mechanics/mercenary-stats"
             class="ml-1 text-blue-600 dark:text-blue-400 hover:underline"
-            >Race odds and stat ranges</a
+            >Race Odds and Stat Ranges</a
           >
         </dd>
       </div>
@@ -310,7 +310,7 @@
       <Card.Header>
         <Card.Title id="owner-title" class="flex items-center gap-2 text-base">
           <User class="h-4 w-4 text-muted-foreground" />
-          Your character
+          Your Character
         </Card.Title>
       </Card.Header>
       <Card.Content class="grid gap-6 sm:grid-cols-3">
@@ -323,7 +323,7 @@
           onchange={(v) => setMercenaryOwner("level", v)}
         />
         <NumberField
-          label="Total veteran points"
+          label="Total Veteran Points"
           value={veteran}
           min={OWNER_LIMITS.veteran[0]}
           max={OWNER_LIMITS.veteran[1]}
@@ -354,7 +354,7 @@
       class="mb-4 text-xl font-semibold flex items-center gap-2"
     >
       <TrendingUp class="h-5 w-5 text-emerald-500" />
-      At level {level}, with {veteran} total veteran points
+      At Level {level}, with {veteran} Total Veteran Points
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-4">
@@ -377,7 +377,7 @@
               range("spell_power", stats.spell),
             )}{/if}
           {@render stat(
-            "Skill rank",
+            "Skill Rank",
             String(skillRank),
             "Each skill stops at its own maximum rank.",
           )}
@@ -395,22 +395,22 @@
   </section>
   <section aria-labelledby="shared-rules-title">
     <h2 id="shared-rules-title" class="mb-4 text-xl font-semibold">
-      Shared mercenary rules
+      Shared Mercenary Rules
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-4">
         <dl class="grid gap-3 sm:grid-cols-3">
           {@render stat(
-            "Active mercenaries",
+            "Active Mercenaries",
             String(activeMercenaryLimit(level)),
             `Up to ${MAX_HIRED} hired`,
           )}
           {@render stat(
-            "Hire price",
+            "Hire Price",
             `${formatNumber(hirePrice(level, veteran, discount))} gold`,
           )}
           {@render stat(
-            "Resurrection fee",
+            "Resurrection Fee",
             `${formatNumber(resurrectionPrice(level, veteran, discount))} gold`,
           )}
         </dl>
@@ -443,9 +443,9 @@
             <tr class="border-b text-left text-muted-foreground">
               <th class="py-2 pr-4 font-medium">Stat</th>
               <th class="py-2 pr-4 font-medium">Gain</th>
-              <th class="py-2 pr-4 text-right font-medium">At level {level}</th>
+              <th class="py-2 pr-4 text-right font-medium">At Level {level}</th>
               <th class="hidden w-1/3 py-2 sm:table-cell"
-                ><span class="sr-only">Share of the level 50 value</span></th
+                ><span class="sr-only">Share of the Level 50 Value</span></th
               >
             </tr>
           </thead>
@@ -493,7 +493,7 @@
 
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <h3 class="text-sm font-semibold">Skill rank</h3>
+            <h3 class="text-sm font-semibold">Skill Rank</h3>
             <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — mercenary ranks use owner level and veteran points, cap at each skill's max, and have a minimum of 1 for Bards and Necromancers. -->
             <p class="mt-1 text-sm">
               Gains one rank per 5 character levels and per 10 total veteran
@@ -501,12 +501,12 @@
               <a
                 href="/mercenaries#skill-ranks"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
-                >How skill ranks grow</a
+                >How Skill Ranks Grow</a
               >
             </p>
           </div>
           <div>
-            <h3 class="text-sm font-semibold">Veteran resource bonuses</h3>
+            <h3 class="text-sm font-semibold">Veteran Resource Bonuses</h3>
             <!-- Source: server-scripts/Player.cs:11853-11867,12057-12072; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
               Your {veteran} total veteran points add about
@@ -535,7 +535,7 @@
               <a
                 href="/mercenaries#how-it-works"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
-                >Veteran bonuses shared by all mercenaries</a
+                >Veteran Bonuses Shared by All Mercenaries</a
               >
             </p>
           </div>
@@ -570,7 +570,7 @@
             <thead>
               <tr class="border-b text-left text-muted-foreground">
                 <th class="py-2 pr-4 font-medium">Companion</th>
-                <th class="py-2 font-medium">Your level</th>
+                <th class="py-2 font-medium">Your Level</th>
               </tr>
             </thead>
             <tbody>
@@ -650,7 +650,7 @@
               <tr class="border-b text-left text-muted-foreground">
                 <th class="py-2 pr-4 font-medium">Song</th>
                 <th class="py-2 pr-4 font-medium">Plays</th>
-                <th class="py-2 font-medium">From level</th>
+                <th class="py-2 font-medium">From Level</th>
               </tr>
             </thead>
             <tbody>
@@ -713,7 +713,7 @@
         class="mb-4 text-xl font-semibold flex items-center gap-2"
       >
         <ShieldPlus class="h-5 w-5 text-amber-500" />
-        Death save
+        Death Save
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4 text-sm">
@@ -739,11 +739,11 @@
           {/if}
           <dl class="grid grid-cols-3 gap-3">
             {@render stat(
-              "Invulnerable for",
+              "Invulnerable For",
               formatSeconds(deathSaveInfo.now.seconds),
             )}
             {@render stat(
-              `${statName("rage")} cost`,
+              `${statName("rage")} Cost`,
               formatStat("rage", deathSaveInfo.now.rage),
             )}
             {@render stat("Cooldown", formatSeconds(deathSaveInfo.cooldown))}
@@ -751,9 +751,9 @@
           <table class="w-full text-left">
             <thead
               ><tr class="border-b"
-                ><th class="py-2">Total veteran points</th><th class="py-2"
+                ><th class="py-2">Total Veteran Points</th><th class="py-2"
                   >Duration</th
-                ><th class="py-2">Rage cost</th></tr
+                ><th class="py-2">Rage Cost</th></tr
               ></thead
             >
             <tbody>
@@ -790,14 +790,14 @@
       <Card.Content class="space-y-4 text-sm">
         <!-- Source: the export's equipment_slots.json — the mercenary prefab's MercenaryEquipment.slotInfo. -->
         <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {@render stat("Main hand", slotName(mainHand.accepted_category))}
+          {@render stat("Main Hand", slotName(mainHand.accepted_category))}
           {#if slot13}{@render stat(
-              "Off-hand",
+              "Off-Hand",
               slotName(slot13.accepted_category),
             )}{/if}
         </dl>
         <p>
-          <span class="text-muted-foreground">Other slots:</span>
+          <span class="text-muted-foreground">Other Slots:</span>
           {#each slotGroups as g, i (g.category)}{i > 0 ? " · " : ""}{slotName(
               g.category,
             )}{g.count > 1 ? ` ×${g.count}` : ""}{/each}
@@ -815,7 +815,7 @@
             <a
               href="/mercenaries#equipment"
               class="text-blue-600 dark:text-blue-400 hover:underline"
-              >Shared equipment rules</a
+              >Shared Equipment Rules</a
             >
           </li>
           {#if slot13?.accepted_category === "Shield" || slot13?.accepted_category === "Instrument"}
@@ -846,7 +846,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <MapPin class="h-5 w-5 text-emerald-500" />
-        Recruited at
+        Recruited At
       </h2>
       <!-- Source: server-scripts/Npc.cs:1908-1919 — recruiters serve players from level 10. -->
       <p class="mb-3 text-sm text-muted-foreground">
@@ -854,7 +854,7 @@
         <a
           href="/mercenaries#how-it-works"
           class="text-blue-600 dark:text-blue-400 hover:underline"
-          >Hiring, commands, and resurrection</a
+          >Hiring, Commands, and Resurrection</a
         >
       </p>
       <RecruiterTable

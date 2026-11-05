@@ -85,7 +85,7 @@
 
   const eventLanes = $derived<{ title: string; stages: EventStage[] }[]>([
     {
-      title: "Supply, hunting, and cooking requests",
+      title: "Supply, Hunting, and Cooking Requests",
       stages: [
         {
           name: "Request",
@@ -99,7 +99,7 @@
       ],
     },
     {
-      title: "City invasions",
+      title: "City Invasions",
       stages: [
         {
           name: "Warning",
@@ -162,7 +162,7 @@
 
   <Card.Root id="availability" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>When events happen</Card.Title>
+      <Card.Title>When Events Happen</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEvents.cs:120-125,377-432 — checks start 300 seconds after server start and repeat every 1800 seconds, with a 30% roll if connected players exist and no event is active or waiting. -->
@@ -196,7 +196,7 @@
       <!-- Source: server-scripts/RegionalInvasions.cs:Tick; RegionalEvents.cs:433-442; RegionalEventProgress.cs:38-60,116-136 — no invaders spawn before the invasion starts. A living level 35 participant in the zone starts it, and an unstarted invasion expires after 1200 seconds. -->
       <!-- Source: server-scripts/RegionalEventProgress.cs:84-113,117-154; server-scripts/RegionalEventText.cs:Notice — reaching the goal starts Prosperity at once. An expired event pays nothing and has no penalty. -->
       <div class="space-y-6 pt-2">
-        <h3 class="font-semibold text-foreground">How an event runs</h3>
+        <h3 class="font-semibold text-foreground">How an Event Runs</h3>
         <div class="space-y-8">
           {#each eventLanes as lane (lane.title)}
             <section
@@ -260,7 +260,7 @@
 
   <Card.Root id="activities" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>What to do</Card.Title>
+      <Card.Title>What to Do</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEventText.cs:30-40 — the six activity titles. -->
@@ -270,7 +270,7 @@
             ><tr class="border-b"
               ><th class="p-3 text-left font-medium text-foreground">Event</th
               ><th class="p-3 text-left font-medium text-foreground"
-                >What counts</th
+                >What Counts</th
               ></tr
             ></thead
           >
@@ -298,7 +298,7 @@
   </Card.Root>
 
   <Card.Root id="regions" class="bg-muted/30">
-    <Card.Header><Card.Title>Events by region</Card.Title></Card.Header>
+    <Card.Header><Card.Title>Events by Region</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEvents.cs:243-257,270-306,536-551 — gathering uses 5 yd, hunting uses 40 yd, fishing and cooking use 2.5 yd from the activity collider. Herbs exclude Northern Wastes. Ore uses zones 2, 3 and 5. -->
       <!-- Source: server-scripts/RegionalEventActivities.cs:Discover — fishing needs valid spots and fish, and cooking needs city ovens and dishes made from the city's animal meat. -->
@@ -320,7 +320,7 @@
               ><th class="p-3 text-center font-medium text-foreground">Fish</th
               ><th class="p-3 text-left font-medium text-foreground">Hunt</th
               ><th class="p-3 text-left font-medium text-foreground"
-                >Cook and defend</th
+                >Cook and Defend</th
               ></tr
             ></thead
           >
@@ -369,7 +369,7 @@
   </Card.Root>
 
   <Card.Root id="rewards" class="bg-muted/30">
-    <Card.Header><Card.Title>Goals and rewards</Card.Title></Card.Header>
+    <Card.Header><Card.Title>Goals and Rewards</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEventProgress.cs:38-48; server-scripts/RegionalEvents.cs:220-227,527-559 — goals count living, connected players in the chosen region at event creation, with at most four extra participants. -->
       <p>
@@ -379,12 +379,12 @@
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="rounded-md border bg-muted/30 p-4">
           <h3 class="font-semibold text-foreground">
-            Supply, hunting, and cooking requests
+            Supply, Hunting, and Cooking Requests
           </h3>
           <p>12 actions, plus 3 for each extra player (12 - 24)</p>
         </div>
         <div class="rounded-md border bg-muted/30 p-4">
-          <h3 class="font-semibold text-foreground">City invasions</h3>
+          <h3 class="font-semibold text-foreground">City Invasions</h3>
           <p>60 invaders, plus 10 for each extra player (60 - 100)</p>
         </div>
       </div>
@@ -418,7 +418,7 @@
   </Card.Root>
 
   <Card.Root id="invasions" class="bg-muted/30">
-    <Card.Header><Card.Title>City invasions</Card.Title></Card.Header>
+    <Card.Header><Card.Title>City Invasions</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalInvasions.cs:Tick — invaders cycle through the configured attacker list, use the configured level range and health multiplier, and keep only their first skill. -->
       <div class="overflow-x-auto">
@@ -427,13 +427,13 @@
             ><tr class="border-b"
               ><th class="p-3 text-left font-medium text-foreground">City</th
               ><th class="p-3 text-left font-medium text-foreground"
-                >Invader level</th
+                >Invader Level</th
               ><th class="p-3 text-left font-medium text-foreground"
-                >Invader health</th
+                >Invader Health</th
               ><th class="p-3 text-left font-medium text-foreground"
                 >Invaders</th
               ><th class="p-3 text-left font-medium text-foreground"
-                >Cooking request</th
+                >Cooking Request</th
               ></tr
             ></thead
           >

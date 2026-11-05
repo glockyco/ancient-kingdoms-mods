@@ -34,7 +34,7 @@
     </Card.Header>
     <Card.Content class="space-y-6 text-sm text-muted-foreground">
       <div class="space-y-2">
-        <h3 class="font-semibold text-foreground">On death</h3>
+        <h3 class="font-semibold text-foreground">On Death</h3>
         <!-- Source: server-scripts/Experience.cs:Death; server-scripts/Player.cs:4417-4449 — death removes 10% of the bar requirement, rounded and limited to current XP, and one durability from every equipped item. -->
         <p>
           <span class="block"
@@ -84,7 +84,7 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="font-semibold text-foreground">Respawn and remains</h3>
+        <h3 class="font-semibold text-foreground">Respawn and Remains</h3>
         <!-- Source: server-scripts/Player.cs:3862-3891 — respawn creates remains at the death site, moves the player to the bind point, and revives at half health. -->
         <!-- Source: server-scripts/Entity.cs:370-381 — Revive rounds the specified fraction of maximum health. -->
         <p>
@@ -121,9 +121,9 @@
             <thead>
               <tr class="border-b">
                 <th class="p-2 font-medium text-foreground">Method</th>
-                <th class="p-2 font-medium text-foreground">Lost XP returned</th
+                <th class="p-2 font-medium text-foreground">Lost XP Returned</th
                 >
-                <th class="p-2 font-medium text-foreground">How it works</th>
+                <th class="p-2 font-medium text-foreground">How It Works</th>
               </tr>
             </thead>
             <tbody>
@@ -131,7 +131,7 @@
               <!-- Source: server-scripts/Player.cs:15673-15682 — collecting remains returns half the stored XP loss and destroys the remains. -->
               <tr class="border-b">
                 <th class="p-2 font-medium text-foreground"
-                  >Collect your remains</th
+                  >Collect Your Remains</th
                 >
                 <td class="p-2">50%, rounded</td>
                 <td class="p-2">

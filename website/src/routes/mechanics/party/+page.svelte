@@ -237,7 +237,7 @@
           <thead>
             <tr class="border-b border-border">
               <th class="py-2 pr-6 text-left font-medium">Prefix</th>
-              <th class="py-2 text-left font-medium">Audience or result</th>
+              <th class="py-2 text-left font-medium">Audience or Result</th>
             </tr>
           </thead>
           <tbody>

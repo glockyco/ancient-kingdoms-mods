@@ -111,14 +111,12 @@
   const columns: ColumnDef<RecipeRow>[] = [
     {
       id: "details",
-      header: "",
       size: 32,
       enableSorting: false,
       enableHiding: false,
     },
     {
       accessorKey: "type",
-      header: "Type",
       size: 90,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
@@ -131,32 +129,27 @@
     },
     {
       accessorKey: "tier",
-      header: "Tier",
       size: 80,
     },
     {
       accessorKey: "result_item_name",
-      header: "Output",
       minSize: 220,
       enableHiding: false,
     },
     {
       id: "ingredient1",
-      header: "Ingredient 1",
       size: 270,
       enableSorting: false,
       accessorFn: (row) => row.ingredients[0]?.item_name ?? "",
     },
     {
       id: "ingredient2",
-      header: "Ingredient 2",
       size: 220,
       enableSorting: false,
       accessorFn: (row) => row.ingredients[1]?.item_name ?? "",
     },
     {
       id: "ingredient3",
-      header: "Ingredient 3",
       minSize: 220,
       enableSorting: false,
       accessorFn: (row) => row.ingredients[2]?.item_name ?? "",

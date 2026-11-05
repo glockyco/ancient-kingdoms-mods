@@ -138,25 +138,25 @@
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.craftable_scroll_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Craftable scrolls</div>
+        <div class="text-sm text-muted-foreground">Craftable Scrolls</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.scaling_scroll_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Scaling scrolls</div>
+        <div class="text-sm text-muted-foreground">Scaling Scrolls</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.fixed_rank_scroll_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Fixed-rank scrolls</div>
+        <div class="text-sm text-muted-foreground">Fixed-Rank Scrolls</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.scribing_table_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Scribing tables</div>
+        <div class="text-sm text-muted-foreground">Scribing Tables</div>
       </div>
     </div>
   </section>
@@ -234,7 +234,7 @@
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
           >
-            <span>Max Level: {data.profession.max_level}%</span>
+            <span>Max. Level: {data.profession.max_level}%</span>
             {#if data.profession.achievement_id}
               <AchievementLink
                 achievementId={data.profession.achievement_id}
@@ -272,12 +272,12 @@
 
       <div class="mt-4 grid gap-3 sm:grid-cols-3">
         <div class="rounded-lg border bg-background p-3">
-          <div class="text-sm text-muted-foreground">Scaling scroll rank</div>
+          <div class="text-sm text-muted-foreground">Scaling Scroll Rank</div>
           <div class="text-xl font-semibold">{selectedScrollRank}</div>
         </div>
         <div class="rounded-lg border bg-background p-3">
           <div class="text-sm text-muted-foreground">
-            Gain chance per craft/use
+            Gain Chance per Craft/Use
           </div>
           <div class="text-xl font-semibold">
             {getMasteryGainChance().toFixed(0)}%
@@ -285,7 +285,7 @@
         </div>
         <div class="rounded-lg border bg-background p-3">
           <div class="text-sm text-muted-foreground">
-            Gain amount per increase
+            Gain Amount per Increase
           </div>
           <div class="text-sm leading-6">
             <!-- Source: server-scripts/Player.cs:14742; server-scripts/ScrollItem.cs:110 — crafting and use stop granting Scroll Mastery at the cap. -->
@@ -428,7 +428,7 @@
                 <tr class="border-t bg-muted/20">
                   <td class="p-4" colspan="4">
                     <div class="mb-2 text-muted-foreground">
-                      How to obtain ingredients:
+                      How to Obtain Ingredients:
                     </div>
                     <div
                       class="overflow-x-auto rounded-md border bg-background p-3"
@@ -460,7 +460,7 @@
           <thead class="bg-muted/50">
             <tr>
               <th class="p-3 text-left font-medium">Zone</th>
-              <th class="p-3 text-left font-medium">Sub-zone</th>
+              <th class="p-3 text-left font-medium">Sub-Zone</th>
               <th class="p-3 text-left font-medium">Map</th>
             </tr>
           </thead>

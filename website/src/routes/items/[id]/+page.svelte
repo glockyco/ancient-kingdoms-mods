@@ -580,8 +580,8 @@
   const altarDropColumns: ColumnDef<AltarDropRow>[] = [
     { accessorKey: "altar_name", header: "Altar", minSize: TEXT },
     { accessorKey: "drop_rate", header: "Chance", size: NUMBER },
-    { id: "tier", header: "Reward tier", minSize: TEXT, enableSorting: false },
-    { accessorKey: "boss_monster_name", header: "Final boss", minSize: TEXT },
+    { id: "tier", header: "Reward Tier", minSize: TEXT, enableSorting: false },
+    { accessorKey: "boss_monster_name", header: "Final Boss", minSize: TEXT },
     { accessorKey: "zone_name", header: "Zone", minSize: TEXT },
   ];
 
@@ -653,8 +653,8 @@
 
   type TreasureMapRow = (typeof computed.rewardedByTreasureMaps)[number];
   const treasureMapColumns: ColumnDef<TreasureMapRow>[] = [
-    { accessorKey: "map_name", header: "Treasure map", minSize: TEXT },
-    { accessorKey: "zone_name", header: "Dig zone", minSize: TEXT },
+    { accessorKey: "map_name", header: "Treasure Map", minSize: TEXT },
+    { accessorKey: "zone_name", header: "Dig Zone", minSize: TEXT },
   ];
 
   type GatherRow = (typeof computed.gatheredFrom)[number];
@@ -666,7 +666,7 @@
     { accessorKey: "gather_item_name", header: "Resource", minSize: TEXT },
     {
       accessorKey: "rate",
-      header: fishingOnly ? "Chance / Cast" : "Chance",
+      header: fishingOnly ? "Chance per Cast" : "Chance",
       size: 160,
     },
     ...(computed.gatheredFrom.some((g) => (g.amount_max ?? 0) > 0)
@@ -717,8 +717,8 @@
 
   type PortalRow = (typeof computed.requiredForPortals)[number];
   const portalColumns: ColumnDef<PortalRow>[] = [
-    { accessorKey: "from_zone_name", header: "Portal in", minSize: TEXT },
-    { accessorKey: "to_zone_name", header: "Leads to", minSize: TEXT },
+    { accessorKey: "from_zone_name", header: "Portal In", minSize: TEXT },
+    { accessorKey: "to_zone_name", header: "Leads To", minSize: TEXT },
   ];
 
   type OpensChestRow = (typeof computed.opensChests)[number];
@@ -1424,7 +1424,7 @@
           <!-- Source: server-scripts/PlayerEquipment.cs:OnEquipmentChanged — set bonuses apply at 3 pieces (attributes) and 5 pieces (skills) -->
           {#if computed.armorSetAttributeBonuses && computed.armorSetAttributeBonuses.length > 0}
             <div>
-              <h3 class="text-sm font-semibold mb-2">Set Bonuses (3 pieces)</h3>
+              <h3 class="text-sm font-semibold mb-2">Set Bonuses (3 Pieces)</h3>
               <div class="space-y-2">
                 {#each computed.armorSetAttributeBonuses as bonus (bonus.stat_id)}
                   <div
@@ -1445,7 +1445,7 @@
           <!-- Skill Bonuses (5-piece) -->
           {#if computed.armorSetSkillBonuses && computed.armorSetSkillBonuses.length > 0}
             <div>
-              <h3 class="text-sm font-semibold mb-2">Set Bonuses (5 pieces)</h3>
+              <h3 class="text-sm font-semibold mb-2">Set Bonuses (5 Pieces)</h3>
               <div class="space-y-2">
                 {#each computed.armorSetSkillBonuses as bonus (bonus.skill_id)}
                   <div
@@ -1501,7 +1501,7 @@
             </div>
             {#if data.item.level_required > 1}
               <div class={styles.fact}>
-                <dt class={styles.label}>Level Required</dt>
+                <dt class={styles.label}>Req. Level</dt>
                 <dd>{data.item.level_required}</dd>
               </div>
             {/if}
@@ -1547,7 +1547,7 @@
             {/if}
             {#if data.item.max_stack > 1}
               <div class={styles.fact}>
-                <dt class={styles.label}>Max Stack</dt>
+                <dt class={styles.label}>Max. Stack</dt>
                 <dd>{formatNumber(data.item.max_stack)}</dd>
               </div>
             {/if}
@@ -1566,7 +1566,7 @@
             {/if}
             {#if computed.maxDurability && !isAugment}
               <div class={styles.fact}>
-                <dt class={styles.label}>Max Durability</dt>
+                <dt class={styles.label}>Max. Durability</dt>
                 <dd>{formatNumber(computed.maxDurability)}</dd>
               </div>
             {/if}
@@ -1655,7 +1655,7 @@
             <div class="space-y-1">
               <!-- A description can state a stat in words or with a number, but only stat lines are a stat list. -->
               <h3 class="text-sm font-semibold">
-                Not in the tooltip's stat lines
+                Not in the Tooltip's Stat Lines
               </h3>
               <dl class={styles.factList}>
                 {#if unlistedAttackDelay}
@@ -2202,7 +2202,7 @@
   <!-- Dropped By -->
   {#if computed.droppedBy.length > 0}
     <RelationTable
-      title="Dropped by"
+      title="Dropped By"
       mapTarget={(drop) =>
         mapTarget("monster")(drop.monster_id, drop.monster_name)}
       rows={computed.droppedBy}
@@ -2230,7 +2230,7 @@
   <!-- Sold By -->
   {#if computed.soldBy.length > 0}
     <RelationTable
-      title="Sold by"
+      title="Sold By"
       mapTarget={(vendor) => mapTarget("npc")(vendor.npc_id, vendor.npc_name)}
       rows={computed.soldBy}
       columns={vendorColumns}
@@ -2353,7 +2353,7 @@
           href={resolve("/recipes/[id]", {
             id: computed.craftedFrom[0].recipe_id,
           })}
-          class="mt-4 inline-block text-sm {styles.link}">View the recipe</a
+          class="mt-4 inline-block text-sm {styles.link}">View the Recipe</a
         >
         {@render cookingRequests("dish")}
       </Card.Content>
@@ -2373,7 +2373,7 @@
     <!-- Crafted by -->
     <Card.Root class="@container bg-muted/30">
       <Card.Header>
-        <Card.Title level={2}>Crafted by</Card.Title>
+        <Card.Title level={2}>Crafted By</Card.Title>
       </Card.Header>
       <Card.Content>
         <dl class={styles.factList}>
@@ -2408,7 +2408,7 @@
           href={resolve("/recipes/[id]", {
             id: computed.craftedFrom[0].recipe_id,
           })}
-          class="mt-4 inline-block text-sm {styles.link}">View the recipe</a
+          class="mt-4 inline-block text-sm {styles.link}">View the Recipe</a
         >
       </Card.Content>
     </Card.Root>
@@ -2417,7 +2417,7 @@
     <!-- Created From (shown when no stats and not a merge item) -->
     <Card.Root class="@container bg-muted/30">
       <Card.Header>
-        <Card.Title level={2}>Created from</Card.Title>
+        <Card.Title level={2}>Created From</Card.Title>
       </Card.Header>
       <Card.Content>
         <dl class={styles.factList}>
@@ -2504,7 +2504,7 @@
   <!-- Gathered From -->
   {#if computed.gatheredFrom.length > 0}
     <RelationTable
-      title="Gathered from"
+      title="Gathered From"
       mapTarget={(gather) =>
         mapTarget("resource")(
           gather.gather_item_id,
@@ -2629,7 +2629,7 @@
   <!-- Currency For -->
   {#if computed.usedAsCurrencyFor.length > 0}
     <RelationTable
-      title="Currency for"
+      title="Currency For"
       rows={computed.usedAsCurrencyFor}
       columns={currencyColumns}
       cell={renderCurrencyCell}

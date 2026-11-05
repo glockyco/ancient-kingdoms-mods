@@ -91,7 +91,7 @@
         "home-items",
         "Items",
         "/items",
-        `All ${formatNumber(HOME_COUNTS.items)} items`,
+        `All ${formatNumber(HOME_COUNTS.items)} Items`,
       )}
       <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
         {#each HOME_SHOWCASE.itemGroups as group (group.label)}
@@ -102,7 +102,7 @@
               group.icon.src,
               size,
               group.label,
-              `${formatNumber(group.count)} items`,
+              `${formatNumber(group.count)} Items`,
             )}
           </li>
         {/each}
@@ -114,7 +114,7 @@
         "home-bosses",
         "World Bosses",
         "/monsters",
-        `All ${formatNumber(HOME_COUNTS.monsters)} monsters`,
+        `All ${formatNumber(HOME_COUNTS.monsters)} Monsters`,
       )}
       <ul class="bosses" style={bossColumns}>
         {#each HOME_SHOWCASE.worldBosses as boss (boss.id)}
@@ -157,9 +157,9 @@
         decoding="async"
       />
       <span class="map-copy">
-        <span class="map-title">Interactive world map</span>
+        <span class="map-title">Interactive World Map</span>
         <span class="map-cta"
-          >Open the map <span aria-hidden="true">→</span></span
+          >Open the Map <span aria-hidden="true">→</span></span
         >
       </span>
     </a>
@@ -169,7 +169,7 @@
         "home-classes",
         "Classes",
         "/classes",
-        `All ${HOME_COUNTS.classes} classes`,
+        `All ${HOME_COUNTS.classes} Classes`,
       )}
       <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
         {#each HOME_SHOWCASE.classes as gameClass (gameClass.id)}
@@ -191,7 +191,7 @@
         "home-recipes",
         "Recipes",
         "/recipes",
-        `All ${formatNumber(HOME_COUNTS.recipes)} recipes`,
+        `All ${formatNumber(HOME_COUNTS.recipes)} Recipes`,
       )}
       <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
         {#each HOME_SHOWCASE.crafting as recipeType (recipeType.type)}
@@ -202,7 +202,7 @@
               recipeType.icon.src,
               size,
               recipeType.type,
-              `${formatNumber(recipeType.count)} recipes`,
+              `${formatNumber(recipeType.count)} Recipes`,
             )}
           </li>
         {/each}
@@ -214,7 +214,7 @@
         "home-professions",
         "Professions",
         "/professions",
-        `All ${HOME_COUNTS.professions} professions`,
+        `All ${HOME_COUNTS.professions} Professions`,
       )}
       <div class="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
         {#each HOME_SHOWCASE.professionGroups as group (group.label)}
@@ -253,7 +253,7 @@
         "home-zones",
         "Zones",
         "/zones",
-        `All ${HOME_COUNTS.zones} zones`,
+        `All ${HOME_COUNTS.zones} Zones`,
       )}
       <!-- One grid of every zone. Until it is opened, CSS shows the first two
            rows at the current column count; the button names how many more
@@ -271,7 +271,7 @@
         onclick={() => (zonesOpen = !zonesOpen)}
       >
         {#if zonesOpen}
-          Show fewer zones
+          Show Fewer Zones
         {:else}
           Show
           {#each ZONE_COLUMNS as columns (columns)}
@@ -279,13 +279,13 @@
               >{formatNumber(zoneCount - 2 * columns)}</span
             >
           {/each}
-          more zones
+          More Zones
         {/if}
       </button>
     </section>
 
     <section aria-labelledby="home-more">
-      <h2 id="home-more" class="section-title mb-4">More to explore</h2>
+      <h2 id="home-more" class="section-title mb-4">More to Explore</h2>
       <ul class="grid gap-1 sm:grid-cols-2 lg:grid-cols-4">
         {#each directory as item (item.id)}
           {@const def = entityRegistry[item.id]}
@@ -309,7 +309,7 @@
         "home-mechanics",
         "Mechanics",
         "/mechanics",
-        "All mechanics",
+        "All Mechanics",
       )}
       <div class="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
         {#each MECHANICS_GROUPS as group (group.title)}
@@ -387,7 +387,7 @@
       <span class="entry-meta"
         >{zone.isDungeon ? "Dungeon" : "Overworld"}{zone.levelMedian === null
           ? ""
-          : ` · Median level ${zone.levelMedian}`}</span
+          : ` · Median Level ${zone.levelMedian}`}</span
       >
     </span>
   </a>

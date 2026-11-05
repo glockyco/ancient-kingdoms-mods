@@ -8,6 +8,7 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Sword from "@lucide/svelte/icons/sword";
   import { formatNumber } from "$lib/utils/format";
+  import { statName } from "$lib/stats";
 
   interface Props {
     titleId: string;
@@ -70,7 +71,7 @@
           >
             <Sparkles class="h-5 w-5" />
           </span>
-          <span class="sr-only">Magic Resist: </span>
+          <span class="sr-only">{statName("magic_resist")}: </span>
           <span class="text-lg font-semibold">{formatNumber(magicResist)}</span>
         </div>
         <div class="flex items-center gap-3" title="Poison Resist">
@@ -80,7 +81,7 @@
           >
             <Skull class="h-5 w-5" />
           </span>
-          <span class="sr-only">Poison Resist: </span>
+          <span class="sr-only">{statName("poison_resist")}: </span>
           <span class="text-lg font-semibold">{formatNumber(poisonResist)}</span
           >
         </div>
@@ -91,7 +92,7 @@
           >
             <Flame class="h-5 w-5" />
           </span>
-          <span class="sr-only">Fire Resist: </span>
+          <span class="sr-only">{statName("fire_resist")}: </span>
           <span class="text-lg font-semibold">{formatNumber(fireResist)}</span>
         </div>
         <div class="flex items-center gap-3" title="Cold Resist">
@@ -101,7 +102,7 @@
           >
             <Snowflake class="h-5 w-5" />
           </span>
-          <span class="sr-only">Cold Resist: </span>
+          <span class="sr-only">{statName("cold_resist")}: </span>
           <span class="text-lg font-semibold">{formatNumber(coldResist)}</span>
         </div>
         <div class="flex items-center gap-3" title="Disease Resist">
@@ -111,7 +112,7 @@
           >
             <Skull class="h-5 w-5" />
           </span>
-          <span class="sr-only">Disease Resist: </span>
+          <span class="sr-only">{statName("disease_resist")}: </span>
           <span class="text-lg font-semibold"
             >{formatNumber(diseaseResist)}</span
           >
@@ -138,7 +139,7 @@
           title="Health"
         >
           <Heart class="h-5 w-5 fill-current" aria-hidden="true" />
-          <span class="sr-only">Health: </span>
+          <span class="sr-only">{statName("health")}: </span>
           {formatCompactNumber(health)}
         </div>
       </div>
@@ -154,7 +155,7 @@
           >
             <Sword class="h-5 w-5" />
           </span>
-          <span class="sr-only">Attack Power: </span>
+          <span class="sr-only">{statName("attack_power")}: </span>
           <span class="text-lg font-semibold">{formatNumber(damage)}</span>
         </div>
         <div
@@ -167,7 +168,7 @@
           >
             <Sparkles class="h-5 w-5" />
           </span>
-          <span class="sr-only">Spell Power: </span>
+          <span class="sr-only">{statName("spell_power")}: </span>
           <span class="min-w-0 text-lg font-semibold break-words"
             >{formatNumber(magicDamage)}</span
           >
@@ -182,7 +183,7 @@
           >
             <Shield class="h-5 w-5" />
           </span>
-          <span class="sr-only">Armor Class: </span>
+          <span class="sr-only">{statName("armor_class")}: </span>
           <span class="text-lg font-semibold">{formatNumber(defense)}</span>
         </div>
         {@render metadata?.()}

@@ -8,14 +8,14 @@ export function partyGold(): Calculation {
   return {
     steps: [
       {
-        name: "Gold per nearby player",
-        expression: "Gold collected ÷ nearby party players",
+        name: "Gold per Nearby Player",
+        expression: "Gold Collected ÷ Nearby Party Players",
         rounding: "up",
       },
     ],
     inputs: [
-      situational("gold", "Gold collected", 100),
-      { ...situational("members", "Nearby party players", 3), min: 1, max: 5 },
+      situational("gold", "Gold Collected", 100),
+      { ...situational("members", "Nearby Party Players", 3), min: 1, max: 5 },
     ],
     example: ({ gold, members }) => {
       const share = ceilToInt(divideF32(gold, members));
@@ -26,7 +26,7 @@ export function partyGold(): Calculation {
         ],
         result: `${formatNumber(share)} gold per nearby player`,
         working: [
-          `Gold per nearby player: ${formatNumber(gold)} ÷ ${members} = ${formatNumber(share)} gold, rounded up`,
+          `Gold per Nearby Player: ${formatNumber(gold)} ÷ ${members} = ${formatNumber(share)} gold, rounded up`,
         ],
       };
     },

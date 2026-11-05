@@ -38,26 +38,22 @@
   const columns: ColumnDef<ZoneListView>[] = [
     {
       accessorKey: "is_dungeon",
-      header: "Type",
       enableHiding: false,
       size: 70,
     },
     {
       accessorKey: "name",
-      header: "Name",
       enableHiding: false,
       minSize: 220,
     },
     {
       id: "level_range",
-      header: "Monster levels",
       accessorFn: (row) => row.level_min,
       enableSorting: false,
       size: 150,
     },
     {
       accessorKey: "level_median",
-      header: "Median monster level",
       size: 210,
       sortingFn: (rowA, rowB) => {
         const a = rowA.original.level_median;
@@ -70,27 +66,22 @@
     },
     {
       accessorKey: "boss_count",
-      header: "Bosses",
       size: 130,
     },
     {
       accessorKey: "elite_count",
-      header: "Elites",
       size: 110,
     },
     {
       accessorKey: "altar_count",
-      header: "Altars",
       size: 110,
     },
     {
       accessorKey: "npc_count",
-      header: "NPCs",
       size: 110,
     },
     {
       accessorKey: "gather_count",
-      header: "Resources",
       size: 150,
     },
   ];
@@ -98,8 +89,8 @@
   const columnLabels: Record<string, string> = {
     is_dungeon: "Type",
     name: "Name",
-    level_range: "Monster levels",
-    level_median: "Median monster level",
+    level_range: "Monster Levels",
+    level_median: "Median Monster Level",
     boss_count: "Bosses",
     elite_count: "Elites",
     altar_count: "Altars",

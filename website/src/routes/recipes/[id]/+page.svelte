@@ -132,7 +132,7 @@
     <div class="grid gap-4 lg:grid-cols-3">
       {#if data.recipe.taught_by_recipe_id && data.recipe.taught_by_recipe_name}
         <div>
-          <div class="text-sm text-muted-foreground mb-1">Taught by</div>
+          <div class="text-sm text-muted-foreground mb-1">Taught By</div>
           <ItemLink
             itemId={data.recipe.taught_by_recipe_id}
             itemName={data.recipe.taught_by_recipe_name}

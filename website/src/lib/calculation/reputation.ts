@@ -13,14 +13,14 @@ const percent = (fraction: number) => `${Math.round(fraction * 1000) / 10}%`;
 
 // Source: server-scripts/Player.cs:ApplyVirtueFactionGain — Honesty raises each positive gain, rounded.
 const HONESTY_STEP: CalculationStep = {
-  name: "With an Honesty blessing",
-  expression: `Reputation gained × (100% + ${percent(honestyGainBonus(1))} per Honesty rank, ${percent(honestyGainBonus(0))} at rank 0)`,
+  name: "With an Honesty Blessing",
+  expression: `Reputation Gained × (100% + ${percent(honestyGainBonus(1))} per Honesty rank, ${percent(honestyGainBonus(0))} at rank 0)`,
   rounding: "nearest",
 };
 
 const HONESTY_INPUT: CalculationInput = {
   key: "honestyRank",
-  label: "Honesty blessing",
+  label: "Honesty Blessing",
   choices: [
     { value: -1, label: "None" },
     ...[0, 1, 2, 3, 4, 5].map((rank) => ({
@@ -61,7 +61,7 @@ function withHonesty(
             ? base.working
             : [
                 ...base.working.slice(0, -1),
-                `With an Honesty blessing: ${formatNumber(gain)} × ${percent(1 + honestyGainBonus(rank))} = ${formatNumber(blessed)}, rounded`,
+                `With an Honesty Blessing: ${formatNumber(gain)} × ${percent(1 + honestyGainBonus(rank))} = ${formatNumber(blessed)}, rounded`,
                 base.working.at(-1)!,
               ],
       };
@@ -84,21 +84,21 @@ export function reputationExample(
   return withHonesty(
     [
       {
-        name: `${statName("health")} contribution`,
+        name: `${statName("health")} Contribution`,
         expression: `Monster's maximum Hit Points ÷ ${formatNumber(2000)}`,
         rounding: "nearest",
       },
       {
-        name: "Base gain",
-        expression: "Monster level + Hit Points contribution",
+        name: "Base Gain",
+        expression: "Monster level + Hit Points Contribution",
       },
       {
-        name: "Reputation gained",
+        name: "Reputation Gained",
         expression:
-          "Base gain × 20 for a boss, × 10 for an elite, or unchanged for a normal monster",
+          "Base Gain × 20 for a boss, × 10 for an elite, or unchanged for a normal monster",
       },
       {
-        name: "Reputation lost",
+        name: "Reputation Lost",
         expression:
           "Monster level × 2 for a boss, × 1 for an elite, or × 75% for a normal monster, not rounded",
       },
@@ -111,10 +111,10 @@ export function reputationExample(
       ],
       result: `+${formatNumber(blessed)} reputation with each faction it raises, −${formatNumber(loss)} with each faction it lowers`,
       working: [
-        `${statName("health")} contribution: ${formatNumber(health)} ÷ ${formatNumber(2000)} = ${formatNumber(healthContribution)}, rounded`,
-        `Base gain: ${level} + ${formatNumber(healthContribution)} = ${formatNumber(base)}`,
-        `Reputation gained: ${formatNumber(base)} × ${factor} = ${formatNumber(gain)}`,
-        `Reputation lost: ${level} × ${lossFactor === 0.75 ? "75%" : lossFactor} = ${formatNumber(loss)}`,
+        `${statName("health")} Contribution: ${formatNumber(health)} ÷ ${formatNumber(2000)} = ${formatNumber(healthContribution)}, rounded`,
+        `Base Gain: ${level} + ${formatNumber(healthContribution)} = ${formatNumber(base)}`,
+        `Reputation Gained: ${formatNumber(base)} × ${factor} = ${formatNumber(gain)}`,
+        `Reputation Lost: ${level} × ${lossFactor === 0.75 ? "75%" : lossFactor} = ${formatNumber(loss)}`,
       ],
     }),
   );
@@ -128,14 +128,14 @@ export function npcReputation(level = 60, notable = true): Calculation {
   const loss = multiplyF32(level, 5);
   return withHonesty(
     [
-      { name: "Base reputation gain", expression: "150% of NPC level" },
+      { name: "Base Reputation Gain", expression: "150% of NPC level" },
       {
-        name: "Reputation gained",
+        name: "Reputation Gained",
         expression:
-          "Base reputation gain × 60 for a Notable NPC, otherwise unchanged",
+          "Base Reputation Gain × 60 for a Notable NPC, otherwise unchanged",
       },
       {
-        name: "Reputation lost",
+        name: "Reputation Lost",
         expression: "5 reputation points per NPC level",
       },
     ],
@@ -144,9 +144,9 @@ export function npcReputation(level = 60, notable = true): Calculation {
       given: [`Level ${level} ${notable ? "Notable" : "ordinary"} NPC`],
       result: `+${formatNumber(blessed)} reputation with each faction it raises, −${formatNumber(loss)} with each faction it lowers`,
       working: [
-        `Base reputation gain: 150% × ${level} = ${formatNumber(baseGain)}`,
-        `Reputation gained: ${formatNumber(baseGain)} × ${notable ? 60 : "100%"} = ${formatNumber(gain)}`,
-        `Reputation lost: 5 × ${level} = ${formatNumber(loss)}`,
+        `Base Reputation Gain: 150% × ${level} = ${formatNumber(baseGain)}`,
+        `Reputation Gained: ${formatNumber(baseGain)} × ${notable ? 60 : "100%"} = ${formatNumber(gain)}`,
+        `Reputation Lost: 5 × ${level} = ${formatNumber(loss)}`,
       ],
     }),
   );

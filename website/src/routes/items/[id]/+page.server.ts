@@ -155,7 +155,7 @@ export const load: PageServerLoad = async ({
 
   const fishingEffect = FISHERMAN_COSTUME_IDS.has(item.id)
     ? {
-        title: "Fishing bonus",
+        title: "Fishing Bonus",
         description_paragraphs: [
           "Each Fisherman set piece adds 2% to the catch chance of every fish available at the Fishing Spot.",
           "This bonus applies only after you get a bite. Bite chance is determined by your Fishing skill, the Fishing Spot tier, and your rod.",

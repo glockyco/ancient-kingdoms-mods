@@ -25,7 +25,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         source:
           "Source: server-scripts/Combat.cs:1115-1128,1114-1149,1176-1181 — Rage gain from targeted physical melee hits and auto attacks",
         href: "/mechanics/combat#rage-generation",
-        linkText: "Rage formulas",
+        linkText: "Rage Formulas",
       },
     ],
   },
@@ -46,14 +46,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         source:
           "Source: server-scripts/TargetHealSkill.cs:CorrectedTarget — resurrection target selection",
         href: "/mechanics/death#death",
-        linkText: "Death and remains",
+        linkText: "Death and Remains",
       },
       {
         text: "Cleanse removes only poison and disease effects. A debuff with Cleanse Resist above 0% can need more than one cast. At 100% Cleanse Resist it cannot be cleansed.",
         source:
           "Source: server-scripts/TargetBuffSkill.cs:153-178,338-358 — matching debuff types and cleanse counters; server-scripts/BuffSkill.cs:GetCleanseCountersRemoved — resistance changes counters removed",
         href: "/mechanics/combat#cleanse",
-        linkText: "Cleanse rules",
+        linkText: "Cleanse Rules",
       },
     ],
   },
@@ -79,7 +79,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         source:
           "Source: server-scripts/SummonSkill.cs:44-61,112-119 — an occupied active-pet slot prevents Druid summoning",
         href: "/summons#how-summons-work",
-        linkText: "Pet rules",
+        linkText: "Pet Rules",
       },
     ],
   },
@@ -105,7 +105,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         source:
           "Source: server-scripts/DamageSkill.cs:49-65 — a Ranger follow-up attack consumes Wild Strike and becomes Magic damage",
         href: "/mechanics/combat#wild-strike",
-        linkText: "Wild Strike damage",
+        linkText: "Wild Strike Damage",
       },
     ],
   },
@@ -131,7 +131,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         source:
           "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:448-466; server-scripts/Combat.cs:1115-1128,1114-1149,1176-1181 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
         href: "/mechanics/character#resources",
-        linkText: "Resource rules",
+        linkText: "Resource Rules",
       },
     ],
   },
@@ -183,7 +183,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         source:
           "Source: server-scripts/PlayerSkills.cs:1706-1721 — base two-song limit plus passive slots, removed by an unlimited passive",
         href: "/mechanics/bard#songs",
-        linkText: "Song rules",
+        linkText: "Song Rules",
       },
       {
         text: "Without Polyphony, a new song replaces the oldest one when both slots are full.",
@@ -216,7 +216,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         source:
           "Source: server-scripts/SummonSkill.cs:12-32,56,106-118 — Necromancer UsesPetAttackCommand checks MatchesPet; a different non-familiar summon destroys and replaces NetworkactivePet",
         href: "/summons#how-summons-work",
-        linkText: "Pet rules",
+        linkText: "Pet Rules",
       },
       {
         // Source: server-scripts/NecromancerPetStats.cs:38; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in the export's pets.json.
@@ -224,7 +224,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         source:
           "Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — RefreshFromOwner caps pet level at Level.max and veteran points at 200; damage and magic damage use 0.01 and the other base stats 0.0025, each with RoundToInt",
         href: "/summons?summons.class=necromancer",
-        linkText: "Undead companions",
+        linkText: "Undead Companions",
       },
       {
         // Exported skills.blood_pact: max_level 5; health_cost_percent and mana_restored_percent each { base_value: 0.05, bonus_per_level: 0.05 }.
@@ -232,14 +232,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         source:
           "Source: server-scripts/NecromancerBloodPactSkill.cs:13-31,53-62 — GetHealthCost uses CeilToInt of health.max; GetManaRestored uses FloorToInt of mana.max; CanConvert requires health.current > healthCost; Apply caps mana gain but pays full health cost",
         href: "/skills/blood_pact",
-        linkText: "Blood Pact costs by rank",
+        linkText: "Blood Pact Costs by Rank",
       },
       {
         text: "Death Bloom spends 50% of your maximum Hit Points, rounded up, to heal another player, companion or mercenary. With a monster selected, it heals the one that monster is attacking. You must have more Hit Points than the cost. It cannot heal you or a familiar.",
         source:
           "Source: server-scripts/NecromancerDeathBloomSkill.cs:7-17,28-45,52-59; server-scripts/TargetHealSkill.cs:CorrectedTarget — healthCostPercent is 0.5; GetHealthCost rounds up; CheckSelf requires health above cost; CorrectedTarget follows a selected monster's target and excludes self and familiars",
         href: "/skills/death_bloom",
-        linkText: "Death Bloom healing",
+        linkText: "Death Bloom Healing",
       },
     ],
   },

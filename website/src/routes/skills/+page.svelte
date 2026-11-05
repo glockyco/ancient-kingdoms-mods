@@ -66,13 +66,11 @@
   const columns: ColumnDef<SkillRow>[] = [
     {
       accessorKey: "name",
-      header: "Skill",
       enableHiding: false,
       size: 240,
     },
     {
       accessorKey: "skill_type",
-      header: "Type",
       size: 200,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
@@ -83,7 +81,6 @@
     {
       id: "effect",
       accessorKey: "effect",
-      header: "Effect",
       enableSorting: false,
       minSize: 400,
     },
@@ -91,7 +88,6 @@
     {
       id: "class_ids",
       accessorKey: "class_ids",
-      header: "Class Filter",
       enableHiding: false,
       getUniqueValues: (row) => row.class_ids,
       filterFn: (row, columnId, filterValue: string[]) => {
@@ -103,7 +99,6 @@
     {
       id: "skill_categories",
       accessorKey: "skill_categories",
-      header: "Skill Categories",
       enableHiding: false,
       getUniqueValues: (row) => row.skill_categories,
       filterFn: (row, columnId, filterValue: string[]) => {

@@ -67,7 +67,7 @@ export function earnMethods(
   return {
     compassion: [
       {
-        name: "Spare a fleeing monster",
+        name: "Spare a Fleeing Monster",
         icon: Hand,
         steps: [
           {
@@ -95,7 +95,7 @@ export function earnMethods(
         ],
       },
       {
-        name: "Lead a stranded adventurer out",
+        name: "Lead a Stranded Adventurer Out",
         icon: DoorOpen,
         steps: [
           { icon: DoorOpen, text: "Enter a dungeon with the blessing active" },
@@ -117,7 +117,7 @@ export function earnMethods(
     ],
     honor: [
       {
-        name: "Win a fair fight",
+        name: "Win a Fair Fight",
         icon: Swords,
         steps: [
           {
@@ -148,7 +148,7 @@ export function earnMethods(
     ],
     sacrifice: [
       {
-        name: "Make an offering",
+        name: "Make an Offering",
         icon: Coins,
         steps: [
           { icon: Coins, text: "Bring gold and up to 3 pieces of equipment" },
@@ -173,7 +173,7 @@ export function earnMethods(
     ],
     humility: [
       {
-        name: "Fight with weaker defenses",
+        name: "Fight with Weaker Defenses",
         icon: ShieldOff,
         steps: [
           {
@@ -197,7 +197,7 @@ export function earnMethods(
     ],
     honesty: [
       {
-        name: "Return lost belongings",
+        name: "Return Lost Belongings",
         icon: Handshake,
         steps: [
           {
@@ -216,7 +216,7 @@ export function earnMethods(
     ],
     valor: [
       {
-        name: "Defeat your quarry",
+        name: "Defeat Your Quarry",
         icon: Crosshair,
         steps: [
           {
@@ -256,7 +256,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
     },
     {
       // Source: server-scripts/VirtueCombat.cs:CancelHonor,Assistance,ClearFinishedHonorFight,OnDeath — the fight is marked invalid or ends, so its later kills give no Honor.
-      title: "The rest of the fight gives no points",
+      title: "The Rest of the Fight Gives No Points",
       kind: "no",
       items: [
         "Active mercenaries",
@@ -266,7 +266,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
     },
     {
       // Source: server-scripts/VirtueCombat.cs:HostileAction,MonsterHit,BuffApplied,CrowdControl — that monster does not count.
-      title: "That monster gives no points",
+      title: "That Monster Gives No Points",
       kind: "no",
       items: [
         "Hitting it before it hits you",
@@ -277,7 +277,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
   ],
   sacrifice: [
     {
-      title: "Good to know",
+      title: "Good to Know",
       kind: "info",
       items: [
         "Common equipment and anything you cannot sell or destroy do not count.",
@@ -288,7 +288,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
   ],
   humility: [
     {
-      title: "Good to know",
+      title: "Good to Know",
       kind: "info",
       items: [
         // Source: server-scripts/VirtueCombat.cs:OnDeath — the kill counts within 40 yd of the monster.
@@ -298,7 +298,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
   ],
   honesty: [
     {
-      title: "Good to know",
+      title: "Good to Know",
       kind: "info",
       items: [
         // Source: server-scripts/VirtueEncounters.cs:LostItemsPerSearch,BeginHonestySearch — 10 belongings, 3 hours apart.
@@ -311,7 +311,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
   ],
   valor: [
     {
-      title: "Good to know",
+      title: "Good to Know",
       kind: "info",
       items: [
         // Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine,AssignValorTarget — after 5 minutes of the blessing, or once it has ended, the shrine names a quarry other than the current one.

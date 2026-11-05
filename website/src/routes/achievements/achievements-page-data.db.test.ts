@@ -58,11 +58,12 @@ describe("achievements page data", () => {
       label: "Quests",
       href: "/quests",
     });
-    expect(findAchievement("MAGIC_ITEM").relationships).toContainEqual({
-      kind: "item",
-      label: "Magic items",
-      href: "/items?items.quality=2",
-    });
+    expect(findAchievement("MAGIC_ITEM").relationships).toContainEqual(
+      expect.objectContaining({
+        kind: "item",
+        href: "/items?items.quality=2",
+      }),
+    );
     expect(
       findAchievement("KILL_ANCIENT_CYCLOPS").relationships,
     ).toContainEqual({

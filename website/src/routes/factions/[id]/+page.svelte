@@ -148,7 +148,7 @@
       },
       {
         id: "amount",
-        header: "On kill",
+        header: "On Kill",
         size: 130,
         accessorFn: (row) =>
           monsterKillReputation(row).find(
@@ -169,7 +169,7 @@
       { accessorKey: "level", header: "Level", size: 110 },
       {
         id: "amount",
-        header: "On kill",
+        header: "On Kill",
         size: 130,
         accessorFn: (row) =>
           npcKillReputation(row).find(
@@ -195,7 +195,7 @@
       minSize: 180,
       accessorFn: (row) => row.zone_name ?? "",
     },
-    { id: "amount", header: "On loot", size: 130, enableSorting: false },
+    { id: "amount", header: "On Loot", size: 130, enableSorting: false },
     { id: "location", header: "Map", size: 90, enableSorting: false },
   ];
 
@@ -203,10 +203,10 @@
     { accessorKey: "name", header: "Quest", minSize: 260 },
     {
       accessorKey: "level_recommended",
-      header: "Recommended level",
+      header: "Rec. Level",
       size: 180,
     },
-    { accessorKey: "gain", header: "On completion", size: 150 },
+    { accessorKey: "gain", header: "On Completion", size: 150 },
   ];
 
   const memberColumns: ColumnDef<FactionMemberRow>[] = [
@@ -250,7 +250,7 @@
     { accessorKey: "name", header: "Quest", minSize: 240 },
     {
       id: "giver",
-      header: "Quest giver",
+      header: "Quest Giver",
       minSize: 180,
       accessorFn: (row) => row.giver_name ?? "",
     },
@@ -672,7 +672,7 @@
       {#if data.faction.vendors.length > 0}
         <div>
           <h3 class="mb-3 text-lg font-medium">
-            Faction vendors ({formatNumber(data.faction.vendors.length)})
+            Faction Vendors ({formatNumber(data.faction.vendors.length)})
           </h3>
           <DataTable
             data={data.faction.vendors}
@@ -775,7 +775,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Skull class="h-5 w-5 text-red-500" />
-        Reputation gained by killing monsters ({data.faction.monstersImprove
+        Reputation Gained by Killing Monsters ({data.faction.monstersImprove
           .length})
       </h2>
       <DataTable
@@ -798,7 +798,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Scroll class="h-5 w-5 text-orange-500" />
-        Reputation gained by completing quests ({data.faction.questGrants
+        Reputation Gained by Completing Quests ({data.faction.questGrants
           .length})
       </h2>
       <DataTable
@@ -821,7 +821,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Users class="h-5 w-5 text-blue-500" />
-        Reputation gained by killing NPCs ({data.faction.npcKillsImprove
+        Reputation Gained by Killing NPCs ({data.faction.npcKillsImprove
           .length})
       </h2>
       <DataTable
@@ -844,7 +844,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Skull class="h-5 w-5 text-red-500" />
-        Reputation lost by killing monsters ({data.faction.monstersDecrease
+        Reputation Lost by Killing Monsters ({data.faction.monstersDecrease
           .length})
       </h2>
       <DataTable
@@ -867,7 +867,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Users class="h-5 w-5 text-blue-500" />
-        Reputation lost by killing NPCs ({data.faction.npcKillsDecrease.length})
+        Reputation Lost by Killing NPCs ({data.faction.npcKillsDecrease.length})
       </h2>
       <DataTable
         data={data.faction.npcKillsDecrease}
@@ -889,8 +889,8 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Box class="h-5 w-5 text-sky-500" />
-        Reputation {data.faction.id === "the_forsaken" ? "gained" : "lost"} by opening
-        chests ({data.faction.chests.length})
+        Reputation {data.faction.id === "the_forsaken" ? "Gained" : "Lost"} by Opening
+        Chests ({data.faction.chests.length})
       </h2>
       <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — faction changes happen on opening, even if the reward roll fails. -->
       <p class="mb-4 text-sm text-muted-foreground">

@@ -96,12 +96,12 @@
   const offering: CalculationDef = {
     steps: [
       {
-        name: "Offering value",
+        name: "Offering Value",
         expression: `the gold you offer, plus ${GOLD_PER_ITEM_LEVEL} gold for each item level of the equipment you offer`,
       },
       {
-        name: "Sacrifice points",
-        expression: `offering value divided by ${formatNumber(SACRIFICE_GOLD_PER_POINT)}`,
+        name: "Sacrifice Points",
+        expression: `Offering Value divided by ${formatNumber(SACRIFICE_GOLD_PER_POINT)}`,
         rounding: "down",
         limit: `at most the points left to ${formatNumber(MAX_VIRTUE_POINTS)}`,
       },
@@ -117,7 +117,7 @@
       },
       {
         key: "virtue-offering-item-1",
-        label: "First item level",
+        label: "First Item Level",
         value: 120,
         min: 0,
         max: 1000,
@@ -125,7 +125,7 @@
       },
       {
         key: "virtue-offering-item-2",
-        label: "Second item level",
+        label: "Second Item Level",
         value: 0,
         min: 0,
         max: 1000,
@@ -133,7 +133,7 @@
       },
       {
         key: "virtue-offering-item-3",
-        label: "Third item level",
+        label: "Third Item Level",
         value: 0,
         min: 0,
         max: 1000,
@@ -155,8 +155,8 @@
         ],
         result: `${formatNumber(points)} Sacrifice ${points === 1 ? "point" : "points"}`,
         working: [
-          `Offering value: ${[formatNumber(gold), ...items.map((itemLevel) => `${formatNumber(itemLevel)} × ${GOLD_PER_ITEM_LEVEL}`)].join(" + ")} = ${formatNumber(value)} gold`,
-          `Sacrifice points: ${formatNumber(value)} ÷ ${formatNumber(SACRIFICE_GOLD_PER_POINT)} = ${formatNumber(points)}, rounded down`,
+          `Offering Value: ${[formatNumber(gold), ...items.map((itemLevel) => `${formatNumber(itemLevel)} × ${GOLD_PER_ITEM_LEVEL}`)].join(" + ")} = ${formatNumber(value)} gold`,
+          `Sacrifice Points: ${formatNumber(value)} ÷ ${formatNumber(SACRIFICE_GOLD_PER_POINT)} = ${formatNumber(points)}, rounded down`,
         ],
       };
     },
@@ -350,7 +350,7 @@
 {#snippet quarryList()}
   <div id="quarries" class="space-y-3 border-t pt-5">
     <div class="flex flex-wrap items-center gap-3">
-      <h4 class="font-semibold text-foreground">Quarries at level</h4>
+      <h4 class="font-semibold text-foreground">Quarries at Level</h4>
       <Input
         type="number"
         inputmode="numeric"
@@ -407,7 +407,7 @@
 
 {#snippet escortList()}
   <div id="stranded-adventurers" class="space-y-3 border-t pt-5">
-    <h4 class="font-semibold text-foreground">Stranded adventurers</h4>
+    <h4 class="font-semibold text-foreground">Stranded Adventurers</h4>
     <ul class="grid grid-cols-2 gap-2 lg:grid-cols-3">
       {#each data.escorts as escort (escort.zone_id)}
         <li class="rounded-lg border bg-card px-3 py-2.5">
@@ -427,11 +427,11 @@
 
 {#snippet offeringCalculator()}
   <div id="offering" class="space-y-3 border-t pt-5">
-    <h4 class="font-semibold text-foreground">What an offering gives</h4>
+    <h4 class="font-semibold text-foreground">What an Offering Gives</h4>
     <Calculation calculation={offering} />
   </div>
   <div id="offer-or-sell" class="space-y-3 border-t pt-5">
-    <h4 class="font-semibold text-foreground">Offer or sell?</h4>
+    <h4 class="font-semibold text-foreground">Offer or Sell?</h4>
     <OfferOrSell items={data.offerable} />
   </div>
 {/snippet}
@@ -447,7 +447,7 @@
     </div>
     {@render shrineCards(virtue.id)}
     <div>
-      <h3 class="mb-4 text-lg font-semibold">How to earn it</h3>
+      <h3 class="mb-4 text-lg font-semibold">How to Earn It</h3>
       <div class="grid gap-4 lg:grid-cols-2">
         {#each earn[virtue.id] as method (method.name)}{@render methodCard(
             virtue.id,
@@ -464,7 +464,7 @@
     </div>
     <div>
       <h3 class="mb-4 text-lg font-semibold">
-        Ranks and blessing <span
+        Ranks and Blessing <span
           class="text-sm font-normal text-muted-foreground"
           >· {BLESSING_UNITS[virtue.id]}</span
         >
@@ -506,16 +506,16 @@
   <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing,RefreshMercenaryVirtueBlessing — receiving or renewing a blessing also gives it to each active mercenary that is alive, except Honesty's. -->
   <!-- Source: server-scripts/VirtuePersistence.cs:Read,Save,MigrateAccount — the account keeps each virtue's highest points, and every character on it reads them. -->
   <section class="space-y-4">
-    <h2 class="text-2xl font-semibold">Getting started</h2>
+    <h2 class="text-2xl font-semibold">Getting Started</h2>
     <ol class="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
       <li class="rounded-lg border bg-card p-4">
-        {@render stepTitle(1, "Choose a virtue")}
+        {@render stepTitle(1, "Choose a Virtue")}
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
           Each grows through its own deeds. Pick one below to see them.
         </p>
       </li>
       <li id="shrines" class="rounded-lg border bg-card p-4">
-        {@render stepTitle(2, "Receive its blessing")}
+        {@render stepTitle(2, "Receive Its Blessing")}
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
           Press <span class="font-medium text-foreground">Receive blessing</span
           > at one of its two shrines. Sacrifice asks for an offering instead, until
@@ -523,13 +523,13 @@
         </p>
       </li>
       <li class="rounded-lg border bg-card p-4">
-        {@render stepTitle(3, "Do its deeds")}
+        {@render stepTitle(3, "Do Its Deeds")}
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
           A blessing lasts 3 hours online. Renew it at a shrine to keep earning.
         </p>
       </li>
       <li id="ranks-and-titles" class="rounded-lg border bg-card p-4">
-        {@render stepTitle(4, "Rise in rank")}
+        {@render stepTitle(4, "Rise in Rank")}
         <p class="mt-2 text-sm text-pretty text-muted-foreground">
           All your characters share points and titles. Pick the title you show
           at that virtue's shrine. At rank&nbsp;5, its blessing lasts 10 hours
@@ -540,7 +540,7 @@
   </section>
 
   <section class="space-y-4">
-    <h2 class="text-2xl font-semibold">Choose a virtue</h2>
+    <h2 class="text-2xl font-semibold">Choose a Virtue</h2>
     <div class="grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {#each data.virtues as virtue (virtue.id)}
         <button

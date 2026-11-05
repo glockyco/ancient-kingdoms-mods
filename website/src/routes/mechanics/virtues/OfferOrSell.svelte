@@ -105,26 +105,26 @@
       <text
         x={x(0.03)}
         y={y(25)}
-        class="fill-pink-400 text-[17px] font-semibold">Offering wins</text
+        class="fill-pink-400 text-[17px] font-semibold">Offering Wins</text
       >
       <text
         x={x(7)}
         y={y(0.05)}
         text-anchor="end"
-        class="fill-amber-400 text-[17px] font-semibold">Selling wins</text
+        class="fill-amber-400 text-[17px] font-semibold">Selling Wins</text
       >
       <text
         x={(pad.l + W - pad.r) / 2}
         y={H - 6}
         text-anchor="middle"
         class="fill-muted-foreground text-[16px]"
-        >Points if you sell it and offer the gold</text
+        >Points If You Sell It and Offer the Gold</text
       >
       <text
         transform="translate(12 {(pad.t + H - pad.b) / 2}) rotate(-90)"
         text-anchor="middle"
         class="fill-muted-foreground text-[16px]"
-        >Points if you offer the item</text
+        >Points If You Offer the Item</text
       >
     </svg>
     <figcaption class="text-center text-sm text-muted-foreground">
@@ -136,7 +136,7 @@
   >
     <div>
       <dt class="text-sm text-balance text-muted-foreground">
-        items are worth more offered than sold
+        Items Are Worth More Offered Than Sold
       </dt>
       <dd class="order-first text-2xl font-semibold">
         {formatNumber(offerWins)} of {formatNumber(points.length)}
@@ -144,7 +144,7 @@
     </div>
     <div>
       <dt class="text-sm text-balance text-muted-foreground">
-        median: how much more an item is worth offered
+        Median: How Much More an Item Is Worth Offered
       </dt>
       <dd class="order-first text-2xl font-semibold">
         {formatNumber(median, { decimals: 1 })}×
@@ -152,7 +152,7 @@
     </div>
     <div>
       <dt class="text-sm text-balance text-muted-foreground">
-        exceptions: cheap augments, fishing rods and a few others
+        Exceptions: Cheap Augments, Fishing Rods and a Few Others
       </dt>
       <dd class="order-first text-2xl font-semibold">
         {formatNumber(points.length - offerWins)}

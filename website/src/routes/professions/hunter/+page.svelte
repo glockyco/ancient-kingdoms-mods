@@ -75,7 +75,7 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
-        <span>Max Level: {data.profession.max_level}%</span>
+        <span>Max. Level: {data.profession.max_level}%</span>
         {#if data.profession.achievement_id}
           <AchievementLink
             achievementId={data.profession.achievement_id}
@@ -87,7 +87,7 @@
   </div>
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Hunting works</h2>
+    <h2 class="text-xl font-semibold">How Hunting Works</h2>
     <!-- Source: server-scripts/Monster.cs:3031-3045 — only isHunt kills record Hunting and can improve the skill. -->
     <p class="text-muted-foreground">
       <span class="block">Only creatures in the Hunting journal count.</span>
@@ -150,14 +150,14 @@
         <span class="font-mono w-8">{monsterLevel}</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Skill gain chance:</span>
+        <span>Skill Gain Chance:</span>
         <span class="font-mono text-foreground"
           >{getSkillGainChance().toFixed(0)}%</span
         >
         <span class="text-xs">(per kill)</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Skill gain:</span>
+        <span>Skill Gain:</span>
         <span class="font-mono text-foreground">
           {#if getSkillGainChance() > 0}
             {formatRange(
@@ -183,8 +183,8 @@
         <thead class="bg-muted/50">
           <tr>
             <th class="text-left p-3 font-medium">Name</th>
-            <th class="text-right p-3 font-medium">Min Lv</th>
-            <th class="text-right p-3 font-medium">Max Lv</th>
+            <th class="text-right p-3 font-medium">Min. Level</th>
+            <th class="text-right p-3 font-medium">Max. Level</th>
             <th class="text-right p-3 font-medium">Skill Gain</th>
           </tr>
         </thead>

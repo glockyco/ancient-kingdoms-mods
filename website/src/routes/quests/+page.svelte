@@ -76,38 +76,33 @@
   const columns: ColumnDef<QuestRow>[] = [
     {
       accessorKey: "display_type",
-      header: "Type",
       size: 100,
     },
     {
       id: "flags",
-      header: "Categories",
       size: 130,
       enableSorting: false,
       accessorFn: (row) => {
         const flags: string[] = [];
         if (row.is_main_quest) flags.push("Main");
         if (row.is_epic_quest) flags.push("Epic");
-        if (row.is_adventurer_quest) flags.push("Daily");
+        if (row.is_adventurer_quest) flags.push("Adventurer");
         if (row.is_repeatable) flags.push("Repeatable");
         return flags.join(" ");
       },
     },
     {
       accessorKey: "name",
-      header: "Name",
       enableHiding: false,
       minSize: 270,
     },
     {
       id: "quest_giver",
-      header: "Quest Giver",
       size: 220,
       accessorFn: (row) => row.quest_giver_name || "",
     },
     {
       id: "class",
-      header: "Class",
       size: 220,
       enableSorting: false,
       accessorFn: (row) => row.class_requirements.join(", "),
@@ -120,7 +115,6 @@
     },
     {
       accessorKey: "level_required",
-      header: "Req. Level",
       size: 140,
       filterFn: (
         row,
@@ -147,13 +141,11 @@
     },
     {
       accessorKey: "level_recommended",
-      header: "Rec. Level",
       size: 140,
     },
     {
       id: "display_type_filter",
       accessorKey: "display_type_filter",
-      header: "Type Filter",
       enableHiding: false,
       filterFn: (row, columnId, filterValue: string[]) => {
         const type = row.getValue(columnId) as string;
@@ -164,7 +156,6 @@
     {
       id: "flags_filter",
       accessorKey: "flags_filter",
-      header: "Flags Filter",
       enableHiding: false,
       getUniqueValues: (row) => row.flags_filter,
       filterFn: (row, columnId, filterValue: string[]) => {
@@ -176,7 +167,6 @@
     {
       id: "season",
       accessorFn: (row) => row.seasons,
-      header: "Season",
       enableHiding: false,
       getUniqueValues: (row) => [...row.seasons],
       filterFn: (row, _columnId, values: string[]) =>
@@ -364,7 +354,7 @@
   />
 
   <section id="how-quests-work" class="space-y-4">
-    <h2 class="text-xl font-semibold">How quests work</h2>
+    <h2 class="text-xl font-semibold">How Quests Work</h2>
     <div
       class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
     >
@@ -422,7 +412,7 @@
   </section>
 
   <section id="quest-types" class="space-y-4">
-    <h2 class="text-xl font-semibold">Quest types</h2>
+    <h2 class="text-xl font-semibold">Quest Types</h2>
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <table class="w-full text-sm">
         <thead>
@@ -431,10 +421,10 @@
               >Type</th
             >
             <th class="h-10 whitespace-nowrap px-4 text-left font-medium"
-              >What counts</th
+              >What Counts</th
             >
             <th class="h-10 whitespace-nowrap px-4 text-left font-medium"
-              >At turn-in</th
+              >At Turn-In</th
             >
           </tr>
         </thead>

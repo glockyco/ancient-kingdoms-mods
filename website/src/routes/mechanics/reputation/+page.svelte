@@ -197,9 +197,9 @@
           <thead>
             <tr class="border-b border-border">
               <th class="py-2 pr-6 text-left font-medium">Tier</th>
-              <th class="py-2 pr-6 text-right font-medium">Starts at</th>
-              <th class="py-2 pr-8 text-right font-medium">Points to cross</th>
-              <th class="py-2 text-left font-medium">What changes here</th>
+              <th class="py-2 pr-6 text-right font-medium">Starts At</th>
+              <th class="py-2 pr-8 text-right font-medium">Points to Cross</th>
+              <th class="py-2 text-left font-medium">What Changes Here</th>
             </tr>
           </thead>
           <tbody>
@@ -282,8 +282,8 @@
           <thead>
             <tr class="border-b border-border">
               <th class="py-2 pr-4 text-left font-medium">Rank</th>
-              <th class="py-2 pr-4 text-left font-medium">Gain per kill</th>
-              <th class="py-2 text-left font-medium">Loss per kill</th>
+              <th class="py-2 pr-4 text-left font-medium">Gain per Kill</th>
+              <th class="py-2 text-left font-medium">Loss per Kill</th>
             </tr>
           </thead>
           <tbody>

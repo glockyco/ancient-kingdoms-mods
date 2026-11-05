@@ -82,8 +82,8 @@
   }
 
   const columnLabels: Record<string, string> = {
-    effect: "What it does",
-    obtain: "How to get it",
+    effect: "What It Does",
+    obtain: "How to Get It",
   };
 
   const columns: ColumnDef<SummonListView>[] = [
@@ -99,11 +99,11 @@
     },
     {
       id: "effect",
-      header: "What it does",
+      header: columnLabels.effect,
       accessorFn: (summon) => effectText(summon),
       enableSorting: false,
     },
-    { id: "obtain", header: "How to get it", enableSorting: false },
+    { id: "obtain", header: columnLabels.obtain, enableSorting: false },
     {
       id: "class",
       header: "Class",
@@ -271,7 +271,7 @@
   />
 
   <section id="how-summons-work" class="space-y-4">
-    <h2 class="text-xl font-semibold">How summons work</h2>
+    <h2 class="text-xl font-semibold">How Summons Work</h2>
     <div class="grid gap-4 lg:grid-cols-3">
       <div
         class="flex flex-col overflow-hidden rounded-lg border bg-muted/30 text-sm"
@@ -303,7 +303,7 @@
           </div>
           <!-- Source: server-scripts/Pet.cs:4124-4135 — a dead combat pet or familiar is removed. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
-            <dt class="text-muted-foreground">On death</dt>
+            <dt class="text-muted-foreground">On Death</dt>
             <dd class="text-right">Summon it again</dd>
           </div>
         </dl>
@@ -379,7 +379,7 @@
             <dd class="text-right">Summoning skill rank</dd>
           </div>
           <div class="flex justify-between gap-4 px-4 py-2.5">
-            <dt class="text-muted-foreground">On death</dt>
+            <dt class="text-muted-foreground">On Death</dt>
             <dd class="text-right">Summon it again</dd>
           </div>
         </dl>
@@ -413,7 +413,7 @@
             <dd class="text-right">None</dd>
           </div>
           <div class="flex justify-between gap-4 px-4 py-2.5">
-            <dt class="text-muted-foreground">On death</dt>
+            <dt class="text-muted-foreground">On Death</dt>
             <dd class="text-right">Cannot die</dd>
           </div>
         </dl>
@@ -442,7 +442,7 @@
     class="rounded-lg border bg-muted/30 p-5 space-y-4"
   >
     <h2 id="undead-title" class="text-xl font-semibold">
-      Necromancer undead summons
+      Necromancer Undead Summons
     </h2>
     <ul class="flex flex-wrap gap-x-5 gap-y-2">
       {#each undeadSummons as summon (summon.id)}

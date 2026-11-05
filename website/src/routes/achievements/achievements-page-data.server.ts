@@ -123,7 +123,7 @@ export function getAchievementsPageData(
   for (const row of rows) {
     const relationships = achievementRelationships[row.id] ?? [];
     const hidden = row.hidden === 1;
-    const name = hidden ? "Hidden achievement" : row.name;
+    const name = hidden ? "Hidden Achievement" : row.name;
     const description = hidden
       ? "Steam does not show the unlock condition."
       : row.description;

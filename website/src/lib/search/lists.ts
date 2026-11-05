@@ -31,49 +31,49 @@ const TABLES: Record<
     page: "/items",
     urlKey: "items",
     column: "slot",
-    label: "Item list",
+    label: "Item List",
   },
   "item-type": {
     page: "/items",
     urlKey: "items",
     column: "item_type",
-    label: "Item list",
+    label: "Item List",
   },
   "npc-role": {
     page: "/npcs",
     urlKey: "npcs",
     column: "role_keys",
-    label: "NPC list",
+    label: "NPC List",
   },
   "monster-class": {
     page: "/monsters",
     urlKey: "monsters",
     column: "classification",
-    label: "Monster list",
+    label: "Monster List",
   },
   "item-season": {
     page: "/items",
     urlKey: "items",
     column: "season",
-    label: "Item list",
+    label: "Item List",
   },
   "monster-season": {
     page: "/monsters",
     urlKey: "monsters",
     column: "season",
-    label: "Monster list",
+    label: "Monster List",
   },
   "npc-season": {
     page: "/npcs",
     urlKey: "npcs",
     column: "season",
-    label: "NPC list",
+    label: "NPC List",
   },
   "quest-season": {
     page: "/quests",
     urlKey: "quests",
     column: "season",
-    label: "Quest list",
+    label: "Quest List",
   },
 };
 
@@ -184,11 +184,11 @@ export const FILTERED_LISTS: readonly FilteredList[] = [
   monsterClass("elite", "Elite Monsters"),
   ...(
     [
-      ["halloween", "monster-season", "monsters"],
-      ["halloween", "item-season", "items"],
+      ["halloween", "monster-season", "Monsters"],
+      ["halloween", "item-season", "Items"],
       ["christmas", "npc-season", "NPCs"],
-      ["christmas", "quest-season", "quests"],
-      ["christmas", "item-season", "items"],
+      ["christmas", "quest-season", "Quests"],
+      ["christmas", "item-season", "Items"],
     ] as const
   ).map(([season, kind, family]) => ({
     name: `${SEASONS[season].name} ${family}`,

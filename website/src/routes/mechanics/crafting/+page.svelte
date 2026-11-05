@@ -27,7 +27,7 @@
 
   <Card.Root id="crafting" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Crafting at a station</Card.Title>
+      <Card.Title>Crafting at a Station</Card.Title>
       <Card.Description
         >Put materials into a Craft Station to craft the recipe they match.</Card.Description
       >
@@ -107,7 +107,7 @@
 
   <Card.Root id="augments" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Attaching and removing augments</Card.Title>
+      <Card.Title>Attaching and Removing Augments</Card.Title>
       <Card.Description
         >Each equipment piece holds one augment.</Card.Description
       >
@@ -158,8 +158,8 @@
           <table class="w-full border-collapse text-sm">
             <thead
               ><tr class="border-b border-border"
-                ><th class="py-2 pr-4 text-left font-medium">Augment quality</th
-                ><th class="py-2 text-right font-medium">Removal price</th></tr
+                ><th class="py-2 pr-4 text-left font-medium">Augment Quality</th
+                ><th class="py-2 text-right font-medium">Removal Price</th></tr
               ></thead
             >
             <tbody>

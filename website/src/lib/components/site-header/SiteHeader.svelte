@@ -199,7 +199,7 @@
             rel="noopener noreferrer"
           >
             <KofiIcon class="size-5" />
-            <span>Support the compendium on Ko-fi</span>
+            <span>Support the Compendium on Ko-fi</span>
           </a>
         </div>
       </details>

@@ -18,7 +18,7 @@ export function mercenaryPrice(resurrection = false): Calculation {
   return {
     steps: [
       {
-        name: "Level progress",
+        name: "Level Progress",
         expression: resurrection
           ? "(Your level − 1) ÷ 49"
           : "(Your level − 10) ÷ 40",
@@ -27,31 +27,31 @@ export function mercenaryPrice(resurrection = false): Calculation {
           : "counting your level as at least 10 and at most 50",
       },
       {
-        name: resurrection ? "Base fee" : "Base price",
+        name: resurrection ? "Base Fee" : "Base Price",
         expression: resurrection
-          ? "5 gold + 295 gold × level progress raised to 2.8 + 10 gold × total veteran points"
-          : "20 gold + 400 gold × level progress × level progress + 15 gold × total veteran points",
+          ? "5 gold + 295 gold × Level Progress raised to 2.8 + 10 gold × Total Veteran Points"
+          : "20 gold + 400 gold × Level Progress × Level Progress + 15 gold × Total Veteran Points",
         rounding: "nearest",
       },
       {
-        name: "Purchase discount",
+        name: "Purchase Discount",
         expression: "0.2% per point of Charisma above 0",
         limit: "at most 25%",
       },
       {
-        name: "Gold saved",
-        expression: `${resurrection ? "Base fee" : "Base price"} × purchase discount`,
+        name: "Gold Saved",
+        expression: `${resurrection ? "Base Fee" : "Base Price"} × Purchase Discount`,
         rounding: "up",
       },
       {
-        name: resurrection ? "Resurrection fee" : "Hire price",
-        expression: `${resurrection ? "Base fee" : "Base price"} − gold saved`,
+        name: resurrection ? "Resurrection Fee" : "Hire Price",
+        expression: `${resurrection ? "Base Fee" : "Base Price"} − Gold Saved`,
         limit: "at least 1 gold",
       },
     ],
     inputs: [
       {
-        ...situational("level", "Your level", 50),
+        ...situational("level", "Your Level", 50),
         min: resurrection ? 1 : 10,
         max: 50,
         remember: true,
@@ -78,13 +78,13 @@ export function mercenaryPrice(resurrection = false): Calculation {
         ],
         result: `${formatNumber(total)} gold ${resurrection ? "resurrection fee" : "hire price"}`,
         working: [
-          `Level progress: (${level} − ${resurrection ? 1 : 10}) ÷ ${resurrection ? 49 : 40} = ${formatPercent(progress, { decimals: 2, preserveNonzero: true })}`,
+          `Level Progress: (${level} − ${resurrection ? 1 : 10}) ÷ ${resurrection ? 49 : 40} = ${formatPercent(progress, { decimals: 2, preserveNonzero: true })}`,
           resurrection
-            ? `Base fee: 5 + 295 × ${formatPercent(progress, { decimals: 2, preserveNonzero: true })} raised to 2.8 + 10 × ${veteran} = ${formatNumber(base)} gold, rounded`
-            : `Base price: 20 + 400 × ${formatPercent(progress, { decimals: 2, preserveNonzero: true })} × ${formatPercent(progress, { decimals: 2, preserveNonzero: true })} + 15 × ${veteran} = ${formatNumber(base)} gold, rounded`,
-          `Purchase discount: 0.2% × ${formatNumber(Math.max(0, charisma))} = ${formatPercent(uncappedDiscount, { decimals: 2, preserveNonzero: true })}${discount < uncappedDiscount ? `, limited to ${formatPercent(discount, { decimals: 2, preserveNonzero: true })}` : ""}`,
-          `Gold saved: ${formatNumber(base)} × ${formatPercent(discount, { decimals: 2, preserveNonzero: true })} = ${formatNumber(saved)} gold, rounded up`,
-          `${resurrection ? "Resurrection fee" : "Hire price"}: ${formatNumber(base)} − ${formatNumber(saved)} = ${formatNumber(total)} gold`,
+            ? `Base Fee: 5 + 295 × ${formatPercent(progress, { decimals: 2, preserveNonzero: true })} raised to 2.8 + 10 × ${veteran} = ${formatNumber(base)} gold, rounded`
+            : `Base Price: 20 + 400 × ${formatPercent(progress, { decimals: 2, preserveNonzero: true })} × ${formatPercent(progress, { decimals: 2, preserveNonzero: true })} + 15 × ${veteran} = ${formatNumber(base)} gold, rounded`,
+          `Purchase Discount: 0.2% × ${formatNumber(Math.max(0, charisma))} = ${formatPercent(uncappedDiscount, { decimals: 2, preserveNonzero: true })}${discount < uncappedDiscount ? `, limited to ${formatPercent(discount, { decimals: 2, preserveNonzero: true })}` : ""}`,
+          `Gold Saved: ${formatNumber(base)} × ${formatPercent(discount, { decimals: 2, preserveNonzero: true })} = ${formatNumber(saved)} gold, rounded up`,
+          `${resurrection ? "Resurrection Fee" : "Hire Price"}: ${formatNumber(base)} − ${formatNumber(saved)} = ${formatNumber(total)} gold`,
         ],
       };
     },
@@ -100,24 +100,24 @@ export function mercenaryRank(
     note: TOTAL_VETERAN_POINTS_NOTE,
     steps: [
       {
-        name: "Level contribution",
-        expression: "Your level ÷ 5",
+        name: "Level Contribution",
+        expression: "Your Level ÷ 5",
         rounding: "down",
       },
       {
-        name: "Veteran contribution",
-        expression: "Total veteran points ÷ 10",
+        name: "Veteran Contribution",
+        expression: "Total Veteran Points ÷ 10",
         rounding: "down",
       },
       {
-        name: "Skill rank",
-        expression: "Level contribution + Veteran contribution",
+        name: "Skill Rank",
+        expression: "Level Contribution + Veteran Contribution",
         limit: "at most the skill's maximum rank",
       },
     ],
     inputs: [
       {
-        ...situational("level", "Your level", 50),
+        ...situational("level", "Your Level", 50),
         min: 10,
         max: 50,
         remember: true,
@@ -128,7 +128,7 @@ export function mercenaryRank(
             {
               ...situational(
                 "maximumRank",
-                "Skill's maximum rank (Max rank on the mercenary's page)",
+                "Skill's Maximum Rank (Max. Rank on the Mercenary's Page)",
                 5,
               ),
               min: 1,
@@ -154,9 +154,9 @@ export function mercenaryRank(
         ],
         result: `Skill rank ${rank}`,
         working: [
-          `Level contribution: ${level} ÷ 5 = ${fromLevel}, rounded down`,
-          `Veteran contribution: ${veteran} ÷ 10 = ${fromVeteran}, rounded down`,
-          `Skill rank: ${fromLevel} + ${fromVeteran} = ${uncappedRank}${rank !== uncappedRank ? `, limited to rank ${rank}` : ""}`,
+          `Level Contribution: ${level} ÷ 5 = ${fromLevel}, rounded down`,
+          `Veteran Contribution: ${veteran} ÷ 10 = ${fromVeteran}, rounded down`,
+          `Skill Rank: ${fromLevel} + ${fromVeteran} = ${uncappedRank}${rank !== uncappedRank ? `, limited to rank ${rank}` : ""}`,
         ],
       };
     },

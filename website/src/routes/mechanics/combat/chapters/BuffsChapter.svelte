@@ -60,7 +60,7 @@
       <li>Different damage-over-time skills stack their layers separately.</li>
     </ul>
     <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff; PlayerSkills.cs:RefreshBardSongAura: categorized songs compare strength, while other songs replace another Bard's copy by name at each cast. -->
-    <SeeAlso links={[{ href: "/mechanics/bard#songs", label: "Bard songs" }]} />
+    <SeeAlso links={[{ href: "/mechanics/bard#songs", label: "Bard Songs" }]} />
   </Topic>
 
   <Topic id="buffs">
@@ -70,26 +70,26 @@
       adds.
     </p>
     <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — players and mercenaries use Wisdom or Intelligence, Rangers triple it for targeted buffs, and other casters add nothing. -->
-    <RefTable caption="Buff attribute by caster">
+    <RefTable caption="Buff Attribute by Caster">
       <thead>
         <tr>
-          <th scope="col">Caster or buff</th>
-          <th scope="col">Buff attribute</th>
+          <th scope="col">Caster or Buff</th>
+          <th scope="col">Buff Attribute</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <th scope="row">Players and mercenaries</th>
+          <th scope="row">Players and Mercenaries</th>
           <td>Wisdom, or Intelligence for buffs that scale with it</td>
         </tr>
         <tr>
-          <th scope="row">A player Ranger's targeted buffs</th>
+          <th scope="row">A Player Ranger's Targeted Buffs</th>
           <td>Triple Wisdom or Intelligence</td>
         </tr>
         <!-- Source: server-scripts/AreaBuffSkill.cs:Apply,GetLeadershipAttributeBonus — player mercenary-area buffs halve and round Wisdom plus Constitution, adding Charisma before halving for Leadership. -->
         <tr>
           <th scope="row">
-            A player's area buffs for mercenaries, such as
+            A Player's Area Buffs for Mercenaries, Such as
             <a href="/skills/blessing_of_the_zealot">Blessing of the Zealot</a>
           </th>
           <td>(Wisdom + Constitution) ÷ 2, <RoundedTerm /></td>
@@ -101,13 +101,13 @@
         <!-- Source: server-scripts/AreaBuffSkill.cs:Apply — relic area buffs use caster level × 10 as their stored attribute. -->
         <tr>
           <th scope="row">
-            Relic area buffs, such as
+            Relic Area Buffs, Such as
             <a href="/skills/staff_of_flowers">Staff of Flowers</a>
           </th>
           <td>10 × your level</td>
         </tr>
         <tr>
-          <th scope="row">Monsters, NPCs, companions and familiars</th>
+          <th scope="row">Monsters, NPCs, Companions and Familiars</th>
           <td>None</td>
         </tr>
       </tbody>
@@ -115,24 +115,24 @@
     <!-- Source: server-scripts/Buff.cs:56-237; Wisdom.cs:118-129; Combat.cs:984-997 — positive non-song effects add the selected attribute, with per-effect rounding. -->
     <!-- Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus — Leadership adds its stored buff attribute to both listed damage bonuses. -->
     <!-- Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity. -->
-    <RefTable caption="What the buff attribute adds to each effect">
+    <RefTable caption="What the Buff Attribute Adds to Each Effect">
       <thead>
         <tr>
           <th scope="col">Effect</th>
-          <th scope="col">Value received</th>
+          <th scope="col">Value Received</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <th scope="row">Maximum {statName("health")} bonus</th>
+          <th scope="row">Maximum {statName("health")} Bonus</th>
           <td>Listed bonus + 200% of buff attribute</td>
         </tr>
         <tr>
-          <th scope="row">Ward capacity</th>
+          <th scope="row">Ward Capacity</th>
           <td>Listed capacity + 200% of buff attribute</td>
         </tr>
         <tr>
-          <th scope="row">Armor Class and each resist</th>
+          <th scope="row">Armor Class and Each Resist</th>
           <td>Listed bonus + 15% of buff attribute, <RoundedTerm /></td>
         </tr>
         <tr>
@@ -148,7 +148,7 @@
         </tr>
         <tr>
           <th scope="row">
-            Healing each second, base duration below {seconds(60)}
+            Healing Each Second, Base Duration Below {seconds(60)}
           </th>
           <td>
             Listed healing + listed healing × 0.4% per buff attribute point
@@ -157,7 +157,7 @@
         </tr>
         <tr>
           <th scope="row">
-            Healing each second, base duration at least {seconds(60)}
+            Healing Each Second, Base Duration at Least {seconds(60)}
           </th>
           <td
             >Listed healing + 30% of buff attribute above 0, <RoundedTerm /></td
@@ -186,7 +186,7 @@
     </p>
     <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier; BuffSkill.cs:ScaleWithCharisma,ScaleFearResistChanceBonus,ScaleHealingPerSecondBonus; Buff.cs:ScaleWithCharisma — song power scales whole-number and percentage effects, but not Movement Speed or primary attributes. -->
     <Formula calculation={songCalculation()} />
-    <RefTable caption="What song power changes">
+    <RefTable caption="What Song Power Changes">
       <thead>
         <tr>
           <th scope="col">Effect</th>
@@ -195,7 +195,7 @@
       </thead>
       <tbody>
         <tr>
-          <th scope="row">Whole numbers, <RoundedTerm /></th>
+          <th scope="row">Whole Numbers, <RoundedTerm text="Rounded" /></th>
           <td>
             Ward, Armor Class, resists, flat Attack Power and Spell Power, flat
             Mana Regeneration and Rage Regeneration
@@ -209,7 +209,7 @@
           </td>
         </tr>
         <tr>
-          <th scope="row">Not changed</th>
+          <th scope="row">Not Changed</th>
           <td>Movement Speed, primary attributes</td>
         </tr>
       </tbody>
@@ -266,7 +266,7 @@
     <!-- Source: server-scripts/Monster.cs:469-481 — bosses and monsters flagged immune to debuffs ignore every slow. -->
     <p>Bosses and monsters with Immune to Debuffs ignore the slow.</p>
     <SeeAlso
-      links={[{ href: "#root", label: "Root, for bosses and slowing debuffs" }]}
+      links={[{ href: "#root", label: "Root, for Bosses and Slowing Debuffs" }]}
     />
   </Topic>
 
@@ -276,35 +276,35 @@
       depending on their damage type. Bard debuff songs use song power.
     </p>
     <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — Charisma-scaled debuffs use Charisma, melee debuffs Strength, poison and disease debuffs that do not scale with Intelligence Dexterity, and others Intelligence; non-mercenary casters other than players add nothing. -->
-    <RefTable caption="Debuff attribute by debuff type">
+    <RefTable caption="Debuff Attribute by Debuff Type">
       <thead>
         <tr>
-          <th scope="col">Debuff type</th>
-          <th scope="col">Debuff attribute</th>
+          <th scope="col">Debuff Type</th>
+          <th scope="col">Debuff Attribute</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th scope="row">
-            Physical, such as <a href="/skills/hurt">Hurt</a> and
+            Physical, Such as <a href="/skills/hurt">Hurt</a> and
             <a href="/skills/rupture">Rupture</a>
           </th>
           <td>Strength</td>
         </tr>
         <tr>
-          <th scope="row">Poison and disease that scale with Intelligence</th>
+          <th scope="row">Poison and Disease That Scale with Intelligence</th>
           <td>Intelligence</td>
         </tr>
         <tr>
-          <th scope="row">Other poison and disease</th>
+          <th scope="row">Other Poison and Disease</th>
           <td>Dexterity</td>
         </tr>
         <tr>
-          <th scope="row">Magic, fire, cold and no damage type</th>
+          <th scope="row">Magic, Fire, Cold and No Damage Type</th>
           <td>Intelligence</td>
         </tr>
         <tr>
-          <th scope="row">Bard debuff songs</th>
+          <th scope="row">Bard Debuff Songs</th>
           <td><a href="#songs">Song power</a> instead</td>
         </tr>
       </tbody>
@@ -316,11 +316,11 @@
     </p>
     <!-- Source: server-scripts/Buff.cs:78-237; BuffSkill.cs:501-543; Skills.cs:GetFinalDamageDoT — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
     <!-- Source: server-scripts/BuffSkill.cs:14-35,536-543 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
-    <RefTable caption="What the debuff attribute adds to each effect">
+    <RefTable caption="What the Debuff Attribute Adds to Each Effect">
       <thead>
         <tr>
           <th scope="col">Effect</th>
-          <th scope="col">Value applied</th>
+          <th scope="col">Value Applied</th>
         </tr>
       </thead>
       <tbody>
@@ -333,7 +333,7 @@
           </td>
         </tr>
         <tr>
-          <th scope="row">Each resist</th>
+          <th scope="row">Each Resist</th>
           <td>Listed reduction + 40% of debuff attribute, <RoundedTerm /></td>
         </tr>
         <tr>
@@ -342,17 +342,17 @@
         </tr>
       </tbody>
       <tbody>
-        <tr><th colspan="2" scope="rowgroup">Damage each second</th></tr>
+        <tr><th colspan="2" scope="rowgroup">Damage Each Second</th></tr>
         <tr>
           <th scope="row">Physical</th>
           <td>Listed damage + 50% of Strength, <RoundedTerm /></td>
         </tr>
         <tr>
-          <th scope="row">Poison and disease that scale with Dexterity</th>
+          <th scope="row">Poison and Disease That Scale with Dexterity</th>
           <td>Listed damage + 150% of Dexterity, <RoundedTerm /></td>
         </tr>
         <tr>
-          <th scope="row">Every other type</th>
+          <th scope="row">Every Other Type</th>
           <td>
             Listed damage + 125% of Intelligence, <RoundedTerm />.
             <a href="/skills/ensnare">Ensnare</a> adds 115%
@@ -447,11 +447,11 @@
       <a href="#debuff-landing">resists them</a>. Bard songs and virtue
       blessings cannot be dispelled.
     </p>
-    <RefTable caption="What a dispel removes">
+    <RefTable caption="What a Dispel Removes">
       <thead>
         <tr>
           <th scope="col">Target</th>
-          <th scope="col">Buffs removed</th>
+          <th scope="col">Buffs Removed</th>
         </tr>
       </thead>
       <tbody>
@@ -462,7 +462,7 @@
           </td>
         </tr>
         <tr>
-          <th scope="row">Mercenary, companion or familiar</th>
+          <th scope="row">Mercenary, Companion or Familiar</th>
           <td>Every targeted and area buff, including Rest</td>
         </tr>
         <tr>

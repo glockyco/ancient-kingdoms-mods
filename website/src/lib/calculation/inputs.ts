@@ -108,7 +108,7 @@ export const TOTAL_VETERAN_POINTS_NOTE =
   'Total veteran points (Veteran Level) are your unspent veteran points plus your learned veteran skill ranks. The character window shows them as the VT number beside your level, as in "Level 50 (VT 20)". Use 0 if no VT number appears.';
 
 export const TOTAL_VETERAN_POINTS: CalculationInput = {
-  ...situational("veteran", "Total veteran points", 20),
+  ...situational("veteran", "Total Veteran Points", 20),
   max: 200,
   remember: true,
 };

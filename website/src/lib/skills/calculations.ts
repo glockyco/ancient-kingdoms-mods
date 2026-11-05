@@ -57,33 +57,33 @@ export function deathBloomCalculation(skill: SkillDetailView): Calculation {
   return {
     steps: [
       {
-        name: `${statName("health")} cost percentage`,
+        name: `${statName("health")} Cost Percentage`,
         expression: describeRankScaling(cost, skill.max_level, (value) =>
           percent(value, { decimals: 2, preserveNonzero: true }),
         ),
       },
       {
-        name: `${statName("health")} spent`,
-        expression: "Maximum Hit Points × Hit Points cost percentage",
+        name: `${statName("health")} Spent`,
+        expression: "Maximum Hit Points × Hit Points Cost Percentage",
         rounding: "up",
       },
       {
-        name: "Skill heal percentage",
+        name: "Skill Heal Percentage",
         expression: describeRankScaling(healing, skill.max_level, (value) =>
           percent(value, { decimals: 2, preserveNonzero: true }),
         ),
       },
       {
-        name: `${statName("intelligence")} heal percentage`,
+        name: `${statName("intelligence")} Heal Percentage`,
         expression: `${percent(perIntelligence, { decimals: 2, preserveNonzero: true })} per point of Intelligence above 0`,
       },
       {
-        name: "Heal percentage",
-        expression: "Skill heal percentage + Intelligence heal percentage",
+        name: "Heal Percentage",
+        expression: "Skill Heal Percentage + Intelligence Heal Percentage",
       },
       {
         name: "Healing",
-        expression: "Hit Points spent × Heal percentage",
+        expression: "Hit Points Spent × Heal Percentage",
         rounding: "nearest",
       },
     ],
@@ -106,17 +106,17 @@ export function deathBloomCalculation(skill: SkillDetailView): Calculation {
         result: `Heals ${number(healed)} Hit Points before critical heals. Healing cannot exceed the recipient's missing Hit Points`,
         working: [
           ...rankWorkingLines(
-            "Hit Points cost percentage",
+            "Hit Points Cost Percentage",
             cost,
             rank,
             (value) => percent(value, { decimals: 2, preserveNonzero: true }),
           ),
-          `${statName("health")} spent: ${formatStat("health", maxHealth)} × ${percent(costShare, { decimals: 2, preserveNonzero: true })} = ${number(spent)}, rounded up`,
-          ...rankWorkingLines("Skill heal percentage", healing, rank, (value) =>
+          `${statName("health")} Spent: ${formatStat("health", maxHealth)} × ${percent(costShare, { decimals: 2, preserveNonzero: true })} = ${number(spent)}, rounded up`,
+          ...rankWorkingLines("Skill Heal Percentage", healing, rank, (value) =>
             percent(value, { decimals: 2, preserveNonzero: true }),
           ),
-          `${statName("intelligence")} heal percentage: ${formatStat("intelligence", Math.max(0, intelligence))} × ${percent(perIntelligence, { decimals: 2, preserveNonzero: true })} = ${percent(intelligenceShare, { decimals: 2, preserveNonzero: true })}`,
-          `Heal percentage: ${percent(atRank(healing, rank), { decimals: 2, preserveNonzero: true })} + ${percent(intelligenceShare, { decimals: 2, preserveNonzero: true })} = ${percent(healPercentage, { decimals: 2, preserveNonzero: true })}`,
+          `${statName("intelligence")} Heal Percentage: ${formatStat("intelligence", Math.max(0, intelligence))} × ${percent(perIntelligence, { decimals: 2, preserveNonzero: true })} = ${percent(intelligenceShare, { decimals: 2, preserveNonzero: true })}`,
+          `Heal Percentage: ${percent(atRank(healing, rank), { decimals: 2, preserveNonzero: true })} + ${percent(intelligenceShare, { decimals: 2, preserveNonzero: true })} = ${percent(healPercentage, { decimals: 2, preserveNonzero: true })}`,
           `Healing: ${number(spent)} × ${percent(healPercentage, { decimals: 2, preserveNonzero: true })} = ${number(healed)}, rounded`,
         ],
       };
@@ -143,7 +143,7 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
   const percentageSteps = shared
     ? [
         {
-          name: "Conversion percentage",
+          name: "Conversion Percentage",
           expression: describeRankScaling(cost, skill.max_level, (value) =>
             percent(value, { decimals: 2, preserveNonzero: true }),
           ),
@@ -151,13 +151,13 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
       ]
     : [
         {
-          name: `${statName("health")} percentage`,
+          name: `${statName("health")} Percentage`,
           expression: describeRankScaling(cost, skill.max_level, (value) =>
             percent(value, { decimals: 2, preserveNonzero: true }),
           ),
         },
         {
-          name: `${statName("mana")} percentage`,
+          name: `${statName("mana")} Percentage`,
           expression: describeRankScaling(restore, skill.max_level, (value) =>
             percent(value, { decimals: 2, preserveNonzero: true }),
           ),
@@ -168,13 +168,13 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
     steps: [
       ...percentageSteps,
       {
-        name: `${statName("health")} spent`,
-        expression: `${shared ? "Conversion" : "Hit Points"} percentage × your maximum Hit Points`,
+        name: `${statName("health")} Spent`,
+        expression: `${shared ? "Conversion" : "Hit Points"} Percentage × your maximum Hit Points`,
         rounding: "up",
       },
       {
-        name: `${statName("mana")} from conversion`,
-        expression: `${shared ? "Conversion" : "Mana"} percentage × your maximum Mana`,
+        name: `${statName("mana")} from Conversion`,
+        expression: `${shared ? "Conversion" : "Mana"} Percentage × your maximum Mana`,
         rounding: "down",
       },
       {
@@ -182,8 +182,8 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
         expression: "Your maximum Mana − current Mana",
       },
       {
-        name: `${statName("mana")} restored`,
-        expression: "Smaller of Mana from conversion and your missing Mana",
+        name: `${statName("mana")} Restored`,
+        expression: "Smaller of Mana from Conversion and your Missing Mana",
       },
     ],
     inputs: [rankInput(skill.max_level), MAX_HEALTH, MAX_MANA, CURRENT_MANA],
@@ -202,29 +202,29 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
         result: `Spends ${number(spent)} Hit Points and restores ${number(restored)} Mana`,
         working: [
           ...(shared
-            ? rankWorkingLines("Conversion percentage", cost, rank, (value) =>
+            ? rankWorkingLines("Conversion Percentage", cost, rank, (value) =>
                 percent(value, { decimals: 2, preserveNonzero: true }),
               )
             : [
                 ...rankWorkingLines(
-                  "Hit Points percentage",
+                  "Hit Points Percentage",
                   cost,
                   rank,
                   (value) =>
                     percent(value, { decimals: 2, preserveNonzero: true }),
                 ),
                 ...rankWorkingLines(
-                  `${statName("mana")} percentage`,
+                  `${statName("mana")} Percentage`,
                   restore,
                   rank,
                   (value) =>
                     percent(value, { decimals: 2, preserveNonzero: true }),
                 ),
               ]),
-          `${statName("health")} spent: ${percent(atRank(cost, rank), { decimals: 2, preserveNonzero: true })} × ${formatStat("health", maxHealth)} = ${number(spent)}, rounded up`,
-          `${statName("mana")} from conversion: ${percent(atRank(restore, rank), { decimals: 2, preserveNonzero: true })} × ${formatStat("mana", maxMana)} = ${number(rolled)}, rounded down`,
+          `${statName("health")} Spent: ${percent(atRank(cost, rank), { decimals: 2, preserveNonzero: true })} × ${formatStat("health", maxHealth)} = ${number(spent)}, rounded up`,
+          `${statName("mana")} from Conversion: ${percent(atRank(restore, rank), { decimals: 2, preserveNonzero: true })} × ${formatStat("mana", maxMana)} = ${number(rolled)}, rounded down`,
           `Missing ${statName("mana")}: ${formatStat("mana", maxMana)} − ${formatStat("mana", currentMana)} = ${number(missing)}`,
-          `${statName("mana")} restored: smaller of ${number(rolled)} and ${number(missing)} = ${number(restored)}`,
+          `${statName("mana")} Restored: smaller of ${number(rolled)} and ${number(missing)} = ${number(restored)}`,
         ],
       };
     },
@@ -244,19 +244,19 @@ export function channelCalculation(skill: SkillDetailView): Calculation {
   return {
     steps: [
       {
-        name: "Base cast time",
+        name: "Base Cast Time",
         expression: describeRankScaling(castTime, skill.max_level, seconds),
       },
       {
-        name: "Channel time",
+        name: "Channel Time",
         expression: skill.is_spell
-          ? "Base cast time × (100% − Spell Casting Haste)"
-          : "Base cast time",
+          ? "Base Cast Time × (100% − Spell Casting Haste)"
+          : "Base Cast Time",
         limit: `at least ${seconds(0.05)}`,
       },
       {
-        name: "Pulse interval",
-        expression: `Channel time ÷ ${pulses}`,
+        name: "Pulse Interval",
+        expression: `Channel Time ÷ ${pulses}`,
       },
     ],
     ...(inputs.length > 0 ? { inputs } : {}),
@@ -285,17 +285,17 @@ export function channelCalculation(skill: SkillDetailView): Calculation {
             ? `Pulses land at ${times.slice(0, -1).join(", ")} and ${times.at(-1)}`
             : `The pulse lands at ${times[0]}`,
         working: [
-          ...rankWorkingLines("Base cast time", castTime, rank, seconds),
+          ...rankWorkingLines("Base Cast Time", castTime, rank, seconds),
           ...(skill.is_spell
             ? [
-                `Channel time: ${seconds(baseCast)} × (100% − ${percent(spellHaste, { decimals: 2, preserveNonzero: true })}) = ${seconds(rawChannelTime)}${channelTime !== rawChannelTime ? `, raised to the ${seconds(channelTime)} minimum` : ""}`,
+                `Channel Time: ${seconds(baseCast)} × (100% − ${percent(spellHaste, { decimals: 2, preserveNonzero: true })}) = ${seconds(rawChannelTime)}${channelTime !== rawChannelTime ? `, raised to the ${seconds(channelTime)} minimum` : ""}`,
               ]
             : channelTime !== baseCast
               ? [
-                  `Channel time: larger of ${seconds(baseCast)} and ${seconds(0.05)} = ${seconds(channelTime)}`,
+                  `Channel Time: larger of ${seconds(baseCast)} and ${seconds(0.05)} = ${seconds(channelTime)}`,
                 ]
               : []),
-          `Pulse interval: ${seconds(channelTime)} ÷ ${pulses} = ${seconds(channelTime / pulses)}`,
+          `Pulse Interval: ${seconds(channelTime)} ÷ ${pulses} = ${seconds(channelTime / pulses)}`,
         ],
       };
     },

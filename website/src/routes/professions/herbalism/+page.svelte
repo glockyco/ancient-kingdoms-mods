@@ -120,7 +120,7 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
-        <span>Max Level: {data.profession.max_level}%</span>
+        <span>Max. Level: {data.profession.max_level}%</span>
         {#if data.profession.achievement_id}
           <AchievementLink
             achievementId={data.profession.achievement_id}
@@ -132,7 +132,7 @@
   </div>
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Gathering Plants works</h2>
+    <h2 class="text-xl font-semibold">How Gathering Plants Works</h2>
     <!-- Source: server-scripts/GatherItem.cs:208-250,327-350 — a growing plant is not ready and a low-skill attempt is refused. -->
     <p class="text-muted-foreground">
       <span class="block">A growing plant cannot be gathered.</span>
@@ -180,7 +180,7 @@
         <span class="font-mono w-12">{skillLevel}%</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Skill gain chance:</span>
+        <span>Skill Gain Chance:</span>
         <span class="font-mono text-foreground"
           >{getSkillGainChance().toFixed(0)}%</span
         >

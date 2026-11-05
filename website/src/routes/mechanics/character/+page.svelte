@@ -325,7 +325,7 @@
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Resource</th>
               <th class="p-2 font-medium text-foreground">Classes</th>
-              <th class="p-2 font-medium text-foreground">Pool and recovery</th>
+              <th class="p-2 font-medium text-foreground">Pool and Recovery</th>
             </tr>
           </thead>
           <tbody>
@@ -433,7 +433,7 @@
         >
       </p>
       <div class="space-y-2">
-        <h3 class="font-semibold text-foreground">Learning skills</h3>
+        <h3 class="font-semibold text-foreground">Learning Skills</h3>
         <!-- Source: server-scripts/ScriptableSkill.cs:53-70 — requirements include spent points, up to two ranked predecessors, level, and tier. -->
         <!-- Source: server-scripts/PlayerSkills.cs:2010-2068 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
         <p>
@@ -454,7 +454,7 @@
         </p>
       </div>
       <div class="space-y-2">
-        <h3 class="font-semibold text-foreground">Veteran skills</h3>
+        <h3 class="font-semibold text-foreground">Veteran Skills</h3>
         <!-- Source: server-scripts/Experience.cs:38-38,45-53,366-408 — at the level cap filled XP bars grant Veteran Points with a separate maximum. -->
         <!-- Source: server-scripts/PlayerSkills.cs:59-68,2023-2034,2581-2604 — veteran upgrades spend Veteran Points, not class skill points. -->
         <!-- Source: server-scripts/PlayerSkills.cs:CanLearnTierSkill; website/data/compendium.db skills.tier — all veteran skills have tier 0, which allows every choice. -->
@@ -475,7 +475,7 @@
         </p>
       </div>
       <div class="space-y-2">
-        <h3 class="font-semibold text-foreground">Second specialization</h3>
+        <h3 class="font-semibold text-foreground">Second Specialization</h3>
         <!-- Source: server-scripts/UISkills.cs:DualSpecButton2 — second specialization unlocks at level 50 for 10,000 gold. -->
         <!-- Source: server-scripts/UISkills.cs:295-326 — switching requires no unspent class skill points, no combat, an idle living player, and a 10-minute interval. -->
         <p>
@@ -593,7 +593,7 @@
     </Card.Header>
     <Card.Content class="space-y-6 text-sm text-muted-foreground">
       <div class="space-y-2">
-        <h3 class="font-semibold text-foreground">Create and save</h3>
+        <h3 class="font-semibold text-foreground">Create and Save</h3>
         <!-- Source: server-scripts/UISkillbar.cs:Awake,OpenMacroMenu; server-scripts/UISkillbarSlot.cs:OnPointerClick; server-scripts/UISkillbarMacros.cs:Open,OpenEditor,Save,Delete — right-click an empty slot to create a macro or an existing macro to edit or delete it. -->
         <!-- Source: server-scripts/UISkillbarMacros.cs:BuildIconSelector,Save — the editor's icon button opens a searchable icon list with a no-icon choice, and Save stores the choice. -->
         <p>
@@ -737,7 +737,7 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="font-semibold text-foreground">Timing and limits</h3>
+        <h3 class="font-semibold text-foreground">Timing and Limits</h3>
         <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/SkillbarMacroSequence.cs:Tick — a pause-prefixed combined line executes one command before its delay. -->
         <p>
           <code>/pause 10</code> waits 1 second. To combine a command and a
@@ -765,7 +765,7 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="font-semibold text-foreground">Stopping a macro</h3>
+        <h3 class="font-semibold text-foreground">Stopping a Macro</h3>
         <!-- Source: server-scripts/GameManager.cs:OnCancelActionKeyPressed; server-scripts/UISkillbar.cs:TryRunMacro; server-scripts/SkillbarMacroSequence.cs:Start,Stop — Cancel stops the sequence, the same macro toggles it off, and a different macro replaces it. -->
         <p>
           Use your Cancel action to stop the remaining commands. Activating the

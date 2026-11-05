@@ -178,7 +178,7 @@
         ? {
             season,
             gist: `${names(data.monsters)} spawn at night in ${formatNumber(data.huntZones.length)} zones and drop tokens and ${formatNumber(costumePieces.length)} costume pieces.`,
-            more: "Spawns, drops and treats",
+            more: "Spawns, Drops and Treats",
           }
         : {
             season,
@@ -188,7 +188,7 @@
                   `${npc.name} offers ${formatNumber(data.quests.length)} quests in ${npc.zone_name} that reward tokens and coins.`,
               )
               .join(" "),
-            more: "Quests and treats",
+            more: "Quests and Treats",
           },
     ),
   );
@@ -237,7 +237,7 @@
 {#snippet mapLinks(links: { href: string; label: string }[])}
   <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
     <span class="inline-flex items-center gap-1"
-      ><MapPin class="size-4" aria-hidden="true" />Show on the map:</span
+      ><MapPin class="size-4" aria-hidden="true" />Show on the Map:</span
     >
     {#each links as link (link.href)}<a href={link.href} class={LINK}
         >{link.label}</a
@@ -361,7 +361,7 @@
   </Card.Root>
 
   <section id="both-events" class="space-y-4">
-    <h2 class="text-2xl font-semibold">Both events</h2>
+    <h2 class="text-2xl font-semibold">Both Events</h2>
 
     <Card.Root id="double-xp" class="bg-muted/30">
       <Card.Header><Card.Title>Double XP</Card.Title></Card.Header>
@@ -401,7 +401,7 @@
           <thead
             ><tr class="border-b"
               ><th class="text-left font-medium text-foreground">Currency</th
-              ><th class="text-left font-medium text-foreground">Earned from</th
+              ><th class="text-left font-medium text-foreground">Earned From</th
               ><th class="text-left font-medium text-foreground">Buys</th></tr
             ></thead
           >
@@ -425,7 +425,7 @@
     </Card.Root>
 
     <Card.Root id="seasonal-shop" class="bg-muted/30">
-      <Card.Header><Card.Title>Seasonal shop</Card.Title></Card.Header>
+      <Card.Header><Card.Title>Seasonal Shop</Card.Title></Card.Header>
       <Card.Content class="space-y-4 text-muted-foreground">
         <!-- Source: server-scripts/NpcTrading.cs:VisibleSaleItemsFor; server-scripts/PlayerNpcTrading.cs:UserCode_CmdBuyItem__Int32__Int32__Int64 — repair merchants add the running season's items, and pack offers deliver their contents directly. -->
         <p>
@@ -450,7 +450,7 @@
           {/each}
         </div>
         {@render mapLinks([
-          { href: REPAIR_MERCHANTS_MAP, label: "Repair merchants" },
+          { href: REPAIR_MERCHANTS_MAP, label: "Repair Merchants" },
         ])}
       </Card.Content>
     </Card.Root>
@@ -534,7 +534,7 @@
           </tbody>
         </table>
         <h3 class="pt-2 text-sm font-semibold text-foreground">
-          Costume pieces
+          Costume Pieces
         </h3>
         <div class="grid gap-3 sm:grid-cols-2">
           {#each costumeSets as set (set.monster.id)}
@@ -568,7 +568,7 @@
     {@render seasonHeading("christmas")}
     {#each data.npcs as npc (npc.id)}
       <Card.Root class="bg-muted/30">
-        <Card.Header><Card.Title>{npc.name}'s quests</Card.Title></Card.Header>
+        <Card.Header><Card.Title>{npc.name}'s Quests</Card.Title></Card.Header>
         <Card.Content class="space-y-4 text-muted-foreground">
           <!-- Source: server-scripts/Npc.cs:Start,UpdateServer_IDLE,UpdateServer_DEAD — Santa is available only during the Winter Festival. -->
           <!-- Source: server-scripts/PlayerQuests.cs:CanAcceptInternal — repeatable quests can be accepted again eight hours after completion. -->
@@ -614,7 +614,7 @@
                           name={zone.name}
                         />{/each}
                     </dd>
-                    <dt>Turn in</dt>
+                    <dt>Turn In</dt>
                     <dd class="text-foreground">
                       <EntityLink
                         href="/npcs/{quest.completer_id}"
@@ -625,7 +625,7 @@
                 </div>
                 <div class="space-y-3 text-sm sm:border-l sm:pl-4">
                   <p class="text-foreground">
-                    Recommended level {quest.level_recommended}
+                    Rec. Level {quest.level_recommended}
                   </p>
                   <p class="font-medium text-foreground">
                     {formatNumber(quest.xp)} XP

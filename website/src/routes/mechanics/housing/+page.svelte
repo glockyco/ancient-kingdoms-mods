@@ -27,7 +27,7 @@
 
   <Card.Root id="furniture" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Furniture and home workstations</Card.Title>
+      <Card.Title>Furniture and Home Workstations</Card.Title>
       <Card.Description
         >Buy furniture for your account's house. Moving it costs no gold.</Card.Description
       >
@@ -128,7 +128,7 @@
 
   <Card.Root id="appearance" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Barbers and appearance</Card.Title>
+      <Card.Title>Barbers and Appearance</Card.Title>
       <Card.Description
         >Change your appearance at a barber or select saved outfits from your
         wardrobe.</Card.Description

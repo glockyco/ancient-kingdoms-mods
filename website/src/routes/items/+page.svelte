@@ -208,7 +208,6 @@
   const statColumns = $derived<ColumnDef<ItemRow>[]>(
     selectedStats.map((stat) => ({
       id: `stat_${stat}`,
-      header: statFieldName(statField("item", stat), "item"),
       accessorFn: (row) => list.itemStatValues[row.id]?.[stat] ?? 0,
       sortDescFirst: true,
       size: 120,
@@ -218,7 +217,6 @@
   const columns = $derived<ColumnDef<ItemRow>[]>([
     {
       accessorKey: "quality",
-      header: "Quality",
       size: 120,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as number;
@@ -228,7 +226,6 @@
     },
     {
       accessorKey: "name",
-      header: "Name",
       enableHiding: false,
       sortingFn: ITEMS_NAME_SORTING_FN,
       minSize: 350,
@@ -237,12 +234,10 @@
     ...statColumns,
     {
       accessorKey: "item_level",
-      header: "iLvl",
       size: 150,
     },
     {
       accessorKey: "level_required",
-      header: "Level",
       size: 100,
       filterFn: (
         row,
@@ -261,7 +256,6 @@
     },
     {
       accessorKey: "slot",
-      header: "Slot",
       size: 160,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string | null;
@@ -271,7 +265,6 @@
     },
     {
       id: "class",
-      header: "Class",
       size: 250,
       enableSorting: false,
       accessorFn: (row) => (itemClassKeys[row.id] ?? []).join(", "),
@@ -284,7 +277,6 @@
     },
     {
       id: "notes",
-      header: "Notes",
       size: 150,
       enableSorting: false,
       accessorFn: (row) => getNotes(row),
@@ -292,7 +284,6 @@
     // Hidden - for filtering only
     {
       accessorKey: "item_type",
-      header: "Type",
       enableHiding: false,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
@@ -304,7 +295,6 @@
     {
       id: "stats",
       accessorKey: "stats",
-      header: "Stats",
       enableHiding: false,
       enableSorting: false,
       filterFn: (
@@ -329,7 +319,6 @@
     {
       id: "zone_ids",
       accessorKey: "zone_ids",
-      header: "Zone Filter",
       enableHiding: false,
       getUniqueValues: (row) => row.zone_ids,
       filterFn: (row, columnId, filterValue: string[]) => {
@@ -341,7 +330,6 @@
     {
       id: "season",
       accessorFn: (row) => row.seasons,
-      header: "Season",
       enableHiding: false,
       getUniqueValues: (row) => [...row.seasons],
       filterFn: (row, _columnId, values: string[]) =>
@@ -354,7 +342,7 @@
     quality: "Quality",
     name: "Name",
     item_level: "Item Level",
-    level_required: "Level",
+    level_required: "Req. Level",
     slot: "Slot",
     class: "Class",
     notes: "Notes",
@@ -479,7 +467,7 @@
     />
   {/if}
   {#if levelCol}
-    <DataTableRangeFilter column={levelCol} title="Level" />
+    <DataTableRangeFilter column={levelCol} title="Req. Level" />
   {/if}
   {#if slotCol}
     <DataTableFacetedFilter

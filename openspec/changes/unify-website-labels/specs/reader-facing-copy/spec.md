@@ -20,7 +20,7 @@ Every website label and title SHALL use title-style capitalization: table column
 
 - **WHEN** a label contains an article, a coordinating conjunction, "as", "to" before a verb or a preposition of four letters or fewer
 - **THEN** that word is lowercase unless it is the label's first or last word, as in "Heal on Hit" and "Chase Limits and Resets"
-- **AND** a preposition of five letters or more is capitalized, as in "Damage Before Defenses"
+- **AND** a preposition of five letters or more is capitalized, as in "Skill Gain Chance After Gathering"
 
 #### Scenario: A label quotes game text
 

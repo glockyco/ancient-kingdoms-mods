@@ -163,7 +163,7 @@ export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
   seasonal: {
     icon: PartyPopper,
     color: "text-orange-500",
-    label: "Seasonal shop",
+    label: "Seasonal Shop",
     linkPrefix: `${SEASONAL_EVENTS_HREF}#`,
   },
 };

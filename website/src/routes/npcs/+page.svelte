@@ -93,23 +93,19 @@
   const columns: ColumnDef<NpcRow>[] = [
     {
       accessorKey: "name",
-      header: "Name",
       enableHiding: false,
       minSize: 180,
     },
     {
       accessorKey: "faction",
-      header: "Faction",
       size: 170,
     },
     {
       accessorKey: "race",
-      header: "Race",
       size: 120,
     },
     {
       id: "roles",
-      header: "Roles",
       size: 330,
       enableSorting: false,
       accessorFn: (row) =>
@@ -119,7 +115,6 @@
     },
     {
       id: "zones",
-      header: "Zone",
       size: 200,
       enableSorting: false,
       accessorFn: (row) => row.zones.map((z) => z.zone_name).join(" "),
@@ -127,7 +122,6 @@
     {
       id: "zone_ids",
       accessorKey: "zone_ids",
-      header: "Zone Filter",
       enableHiding: false,
       getUniqueValues: (row) => row.zone_ids,
       filterFn: (row, columnId, filterValue: string[]) => {
@@ -139,7 +133,6 @@
     {
       id: "role_keys",
       accessorKey: "role_keys",
-      header: "Role Filter",
       enableHiding: false,
       getUniqueValues: (row) => row.role_keys,
       filterFn: (row, columnId, filterValue: string[]) => {
@@ -151,7 +144,6 @@
     {
       id: "classification",
       accessorKey: "classification",
-      header: "Classification",
       enableHiding: false,
       filterFn: (row, columnId, filterValue: string[]) => {
         const classification = row.getValue(columnId) as string;
@@ -162,7 +154,6 @@
     {
       id: "faction_filter",
       accessorKey: "faction_filter",
-      header: "Faction Filter",
       enableHiding: false,
       filterFn: (row, columnId, filterValue: string[]) => {
         const faction = row.getValue(columnId) as string;
@@ -172,7 +163,6 @@
     },
     {
       accessorKey: "season",
-      header: "Season",
       enableHiding: false,
       filterFn: (row, columnId, values: string[]) =>
         !values?.length || values.includes(row.getValue(columnId)),

@@ -99,25 +99,25 @@
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.map_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Treasure maps</div>
+        <div class="text-sm text-muted-foreground">Treasure Maps</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.relic_reward_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Relic rewards</div>
+        <div class="text-sm text-muted-foreground">Relic Rewards</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
           {formatNumber(data.stats.zone_count)}
         </div>
-        <div class="text-sm text-muted-foreground">Destination zones</div>
+        <div class="text-sm text-muted-foreground">Destination Zones</div>
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
           +{data.stats.skill_gain_percent.toFixed(1)}%
         </div>
-        <div class="text-sm text-muted-foreground">Skill per treasure</div>
+        <div class="text-sm text-muted-foreground">Skill per Treasure</div>
       </div>
     </div>
   </section>
@@ -235,7 +235,7 @@
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
           >
-            <span>Max Level: {data.profession.max_level}%</span>
+            <span>Max. Level: {data.profession.max_level}%</span>
             {#if data.profession.achievement_id}
               <AchievementLink
                 achievementId={data.profession.achievement_id}
@@ -273,17 +273,17 @@
 
       <div class="mt-4 grid gap-3 sm:grid-cols-3">
         <div class="rounded-lg border bg-background p-3">
-          <div class="text-sm text-muted-foreground">Relic chance bonus</div>
+          <div class="text-sm text-muted-foreground">Relic Chance Bonus</div>
           <div class="text-xl font-semibold">
             +{formatPercentagePoints(relicRollBonus)}
           </div>
         </div>
         <div class="rounded-lg border bg-background p-3">
-          <div class="text-sm text-muted-foreground">Treasures to cap</div>
+          <div class="text-sm text-muted-foreground">Treasures to Cap</div>
           <div class="text-xl font-semibold">{successfulDigsToCap}</div>
         </div>
         <div class="rounded-lg border bg-background p-3">
-          <div class="text-sm text-muted-foreground">Skill gain</div>
+          <div class="text-sm text-muted-foreground">Skill Gain</div>
           <!-- Source: server-scripts/TreasureLocation.cs:87-90 — successful digs grant +0.5% Treasure Hunter until the 100% cap. -->
           <div class="text-xl font-semibold">+0.5% per treasure until 100%</div>
         </div>
@@ -298,7 +298,7 @@
               <th class="p-3 text-left font-medium">Reward</th>
               <th class="p-3 text-left font-medium">Effect</th>
               <th class="p-3 text-right font-medium">Baseline</th>
-              <th class="p-3 text-right font-medium">At selected skill</th>
+              <th class="p-3 text-right font-medium">At Selected Skill</th>
               <th class="p-3 text-right font-medium">
                 Change<sup class="ml-0.5 font-normal text-muted-foreground"
                   >*</sup

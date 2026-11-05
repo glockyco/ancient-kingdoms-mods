@@ -74,11 +74,11 @@ export function statFieldName(
 ): string {
   if ((damageType || drain) && field.stat === "health_regen") {
     const quantity = drain
-      ? `${statName("health", context)} drained`
-      : `${damageType} damage`;
+      ? `${statName("health", context)} Drained`
+      : `${damageType} Damage`;
     return field.modifier === "percent_of_max_per_second"
-      ? `${quantity}, % of maximum ${poolName(field, context)} per second`
-      : `${quantity} per second`;
+      ? `${quantity}, % of Maximum ${poolName(field, context)} per Second`
+      : `${quantity} per Second`;
   }
   const stat = STATS[field.stat];
   const name =
@@ -89,7 +89,7 @@ export function statFieldName(
     case "percent":
       return `${name} %`;
     case "percent_of_max_per_second":
-      return `${name}, % of maximum ${poolName(field, context)} per second`;
+      return `${name}, % of Maximum ${poolName(field, context)} per Second`;
     default:
       return name;
   }

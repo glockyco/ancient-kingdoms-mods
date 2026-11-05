@@ -1,8 +1,8 @@
-## Get the files
+## Get the Files
 
 Download the fixed MelonLoader (40 MB zip) and Pocket Compendium (PocketCompendium.dll). The official MelonLoader doesn't work with the current game.
 
-## Open the game folder
+## Open the Game Folder
 
 - Windows, Steam Deck or Linux: close the game. In Steam, right-click Ancient Kingdoms, then choose Manage, then Browse local files.
 - Mac with CrossOver: close the game. In CrossOver, click Open C: Drive on the game's bottle, then open Program Files (x86), Steam, steamapps, common, Ancient Kingdoms.
@@ -20,7 +20,7 @@ Extract the zip and copy everything inside it into the game folder, so that Melo
 
 Copy PocketCompendium.dll into the Mods folder. The zip already put FieldDefaultValueHookFix.dll there, which stops a crash when you enter the world, so keep it. If the Mods folder has BossTracker.dll, BossSkillTracker.dll or BetterBestiary.dll, delete them.
 
-## Start the game
+## Start the Game
 
 The first start takes about a minute longer, and so does the first start after a game update. A MelonLoader window opens next to the game. On the start screen, Pocket Compendium asks once whether to install its updates for you. In the world, the boss list appears on its own, and F8 opens Pocket Compendium's settings.
 

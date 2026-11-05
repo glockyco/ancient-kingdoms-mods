@@ -18,22 +18,22 @@ export function slayerMasteryCalculation(): Calculation {
   return {
     steps: [
       {
-        name: "Target contribution",
+        name: "Target Contribution",
         expression:
           "Adds 0.02% Slayer mastery per kill of that target on your account",
         limit: "at most 1% per target, reached at 50 kills",
       },
       {
-        name: "Slayer mastery",
-        expression: "Every target's contribution added together",
+        name: "Slayer Mastery",
+        expression: "Every Target Contribution added together",
         limit: "at most 100%",
       },
     ],
     inputs: [
-      situational("cappedTargets", "Targets with 50 or more kills", 30),
+      situational("cappedTargets", "Targets with 50 or More Kills", 30),
       situational(
         "otherKills",
-        "Kills on targets with fewer than 50 kills",
+        "Kills on Targets with Fewer Than 50 Kills",
         120,
       ),
     ],
@@ -48,7 +48,7 @@ export function slayerMasteryCalculation(): Calculation {
         working: [
           `Targets at the limit: ${formatNumber(cappedTargets)} × 1% = ${formatPercent(mastery.capped, { decimals: 2, preserveNonzero: true })}`,
           `Other kills: ${formatNumber(otherKills)} × 0.02% = ${formatPercent(mastery.other, { decimals: 2, preserveNonzero: true })}`,
-          `Slayer mastery: ${formatPercent(mastery.capped, { decimals: 2, preserveNonzero: true })} + ${formatPercent(mastery.other, { decimals: 2, preserveNonzero: true })} = ${formatPercent(mastery.total, { decimals: 2, preserveNonzero: true })}, at most 100%`,
+          `Slayer Mastery: ${formatPercent(mastery.capped, { decimals: 2, preserveNonzero: true })} + ${formatPercent(mastery.other, { decimals: 2, preserveNonzero: true })} = ${formatPercent(mastery.total, { decimals: 2, preserveNonzero: true })}, at most 100%`,
         ],
       };
     },

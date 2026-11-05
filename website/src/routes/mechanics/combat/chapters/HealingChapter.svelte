@@ -27,7 +27,7 @@
     <VariantPicker
       label="Healer"
       options={[
-        { value: "ordinary", label: "Mercenaries and non-Ranger players" },
+        { value: "ordinary", label: "Mercenaries and Non-Ranger Players" },
         { value: "ranger", label: "Player Ranger" },
       ]}
       bind:value={healer}
@@ -71,7 +71,7 @@
       links={[
         {
           href: "/mechanics/bard#cadence",
-          label: "Final Cadence song power and Melody",
+          label: "Final Cadence Song Power and Melody",
         },
       ]}
     />
