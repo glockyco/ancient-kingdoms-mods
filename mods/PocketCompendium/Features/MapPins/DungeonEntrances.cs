@@ -36,6 +36,9 @@ internal sealed class DungeonEntrances
         _zone = -1;
     }
 
+    /// <summary>Closes the card, for when the local map is not showing.</summary>
+    public void Close() => _card?.Close();
+
     /// <summary>Places the entrances, shows the card of the hovered one and returns a monster clicked on it.</summary>
     public TrackedMonster Update(RectTransform container, Camera camera, Rect map, Tracker tracker, Watchlist watchlist, int zone, int layer)
     {
@@ -217,6 +220,12 @@ internal sealed class DungeonCard
         int second = Mathf.FloorToInt((float)tracker.Now);
         if (second != _shownSecond || tracker.Version != _shownVersion) Fill(tracker, watchlist);
         return _grid.UpdateInput(true);
+    }
+
+    /// <summary>Closes the card at once, without its linger.</summary>
+    public void Close()
+    {
+        if (_dungeon >= 0) Hide();
     }
 
     private void Hide()

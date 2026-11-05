@@ -43,7 +43,13 @@ public sealed class DungeonEntrancesFeature : Feature
     {
         bool open = MapOverlay.Open(out var tracker, out var player, out var map, out var camera);
         if (_layer != null && _layer.gameObject.activeSelf != open) _layer.gameObject.SetActive(open);
-        if (!open) return;
+        // The card lies beside the layer on a canvas of its own, and the world map only disables the
+        // local map's image, so the card closes here.
+        if (!open)
+        {
+            _entrances.Close();
+            return;
+        }
 
         if (_layer == null) _layer = MapOverlay.CreateLayer(map.localMap, "PC_DungeonEntrances");
         var watchlist = Watchlist.Current;
