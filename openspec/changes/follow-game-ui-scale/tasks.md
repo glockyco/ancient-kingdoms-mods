@@ -8,8 +8,7 @@
 
 ## 2. Panels
 
-- [ ] 2.1 Keep each panel inside the visible canvas when the factor changes, without saving the clamped position
-- [ ] 2.2 Check that drags and resizes still follow the pointer at the slider's ends
+- [ ] 2.1 Check that drags and resizes still follow the pointer at the slider's ends, and that a panel near an edge stays reachable after the factor grows
 
 ## 3. Verification
 

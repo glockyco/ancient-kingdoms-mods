@@ -26,4 +26,4 @@ The game applies "Scaling UI" in `UISettings.SetScalingUI` by setting the `local
 ## Risks / Trade-offs
 
 - [The game renames or drops a scaled window] → The factor falls back to 1, today's size, and the log names the missing window once.
-- [A panel saved near a screen edge at a small scale can reach past the edge at a large one] → `PanelHost` clamps only sizes today, so this change keeps each panel's position inside the visible canvas when the factor changes, without saving the clamped position.
+- [A panel saved near a screen edge at a small scale can reach past the edge at a large one] → `PanelHost.KeepOnScreen` already moves an idle panel back until at least its header shows, on every update and without saving the moved position, so it covers a factor change too.
