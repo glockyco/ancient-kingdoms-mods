@@ -3,8 +3,10 @@ import {
   type GameVersionResult,
 } from "../steam-news-parser";
 
+// The parameter order differs from the URL Cloudflare's cache held a Steam 403
+// for, which kept answering after the cause was gone.
 const STEAM_NEWS_RSS_URL =
-  "https://store.steampowered.com/feeds/news/app/2241380/?cc=US&l=en";
+  "https://store.steampowered.com/feeds/news/app/2241380/?l=en&cc=US";
 
 /**
  * Fetches the latest game version from the Steam News RSS feed.
@@ -25,8 +27,8 @@ const STEAM_NEWS_RSS_URL =
 export async function fetchGameVersion(): Promise<GameVersionResult> {
   try {
     const upstream = await fetch(STEAM_NEWS_RSS_URL, {
-      // Steam's store answers 403 to a request without a User-Agent, and a
-      // Worker's fetch sends none.
+      // Steam's store has refused requests from Cloudflare without a User-Agent,
+      // and a Worker's fetch sends none.
       headers: {
         "user-agent":
           "Mozilla/5.0 (compatible; AncientKingdomsCompendium/1.0; +https://ancient-kingdoms.compendiums.org)",
