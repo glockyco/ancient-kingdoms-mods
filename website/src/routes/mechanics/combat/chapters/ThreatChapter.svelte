@@ -5,10 +5,10 @@
 </script>
 
 <Chapter id="threat">
-  <!-- Source: server-scripts/Combat.cs:DealDamageAt — hit threat combines skill threat, damage and control threat, capped at the victim's current Health. -->
+  <!-- Source: server-scripts/Combat.cs:DealDamageAt — hit threat adds the skill threat in full to damage and control threat capped at the victim's current Health. -->
   <p>
-    A hit adds threat from the skill's threat, starting damage, stun and fear,
-    up to the target's current Hit Points.
+    A hit adds the skill's threat. Starting damage, stun and fear add threat up
+    to the target's current Hit&nbsp;Points.
   </p>
   <!-- Source: server-scripts/Combat.cs:628-643,746-752 — the monster's threat list is updated before the avoidance roll. -->
   <p>

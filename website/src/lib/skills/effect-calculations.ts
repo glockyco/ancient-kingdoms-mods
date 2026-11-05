@@ -811,7 +811,7 @@ export function effectScalingCalculation(
 /** The hit the threat example adds, standing in for the skill's damage before defenses. */
 const EXAMPLE_HIT_DAMAGE = 200;
 
-// Source: server-scripts/Combat.cs:DealDamageAt; TargetDamageSkill.cs:ApplyDamage — positive explicit threat adds one third of the caster's maximum Health, rounded, plus hit damage and separately rounded control terms, capped at target current Health.
+// Source: server-scripts/Combat.cs:DealDamageAt; TargetDamageSkill.cs:ApplyDamage — positive explicit threat adds one third of the caster's maximum Health, rounded, and counts in full, while hit damage and separately rounded control terms are capped at target current Health.
 // Source: server-scripts/AreaDamageSkill.cs:Apply — projectile delivery omits the Health contribution.
 export function aggroCalculation(
   skill: SkillDetailView,
@@ -856,13 +856,21 @@ export function aggroCalculation(
     ],
     caster === "mercenary",
   );
-  const terms = [
+  const skillTerms = [
     "Skill threat",
     ...(direct ? ["Hit Points contribution"] : []),
-    ...(dealsDamage ? ["damage before defenses"] : []),
+  ];
+  const cappedTerms = [
+    ...(dealsDamage ? ["Damage before defenses"] : []),
     ...(stuns ? ["Stun threat"] : []),
     ...(fears ? ["Fear threat"] : []),
   ];
+  const cappedName =
+    dealsDamage && (stuns || fears)
+      ? "Damage and control threat"
+      : dealsDamage
+        ? "Damage threat"
+        : "Control threat";
   return {
     steps: [
       {
@@ -896,10 +904,21 @@ export function aggroCalculation(
             },
           ]
         : []),
+      ...(cappedTerms.length > 0
+        ? [
+            {
+              name: cappedName,
+              expression: cappedTerms.join(" + "),
+              limit: "at most the target's current Hit Points",
+            },
+          ]
+        : []),
       {
         name: "Threat added",
-        expression: terms.join(" + "),
-        limit: "at most the target's current Hit Points",
+        expression: [
+          ...skillTerms,
+          ...(cappedTerms.length > 0 ? [cappedName] : []),
+        ].join(" + "),
       },
     ],
     note:
@@ -931,13 +950,22 @@ export function aggroCalculation(
         fearTime,
         Infinity,
       );
-      const amounts = [
-        aggro,
-        ...(direct ? [threat.health] : []),
+      const cappedAmounts = [
         ...(dealsDamage ? [damage] : []),
         ...(stuns ? [threat.stun] : []),
         ...(fears ? [threat.fear] : []),
       ];
+      const amounts = [
+        aggro,
+        ...(direct ? [threat.health] : []),
+        ...(cappedTerms.length > 0 ? [threat.capped] : []),
+      ];
+      const healthyTarget =
+        cappedTerms.length > 0
+          ? [
+              `a target with at least ${number(threat.capped)} current Hit Points`,
+            ]
+          : [];
       return {
         given:
           caster === "other"
@@ -951,6 +979,7 @@ export function aggroCalculation(
                       `the caster's ${formatStat("health", values.maxHealth)} maximum Hit Points`,
                     ]
                   : []),
+                ...healthyTarget,
               ]
             : [
                 ...inputs.map((input) =>
@@ -959,8 +988,9 @@ export function aggroCalculation(
                 ...(dealsDamage
                   ? [`a ${number(damage)}-damage hit before defenses`]
                   : []),
+                ...healthyTarget,
               ],
-        result: `${number(threat.total)} threat, at most the target's current Hit Points`,
+        result: `${number(threat.total)} threat`,
         working: [
           ...rankWorkingLines("Skill threat", skill.aggro!, rank, number),
           ...(stuns
@@ -978,6 +1008,11 @@ export function aggroCalculation(
                 aggro > 0
                   ? `${statName("health")} contribution: ${number(health)} ÷ 3 = ${number(threat.health)}, rounded`
                   : `${statName("health")} contribution: 0, because the skill threat is not positive`,
+              ]
+            : []),
+          ...(cappedAmounts.length > 1
+            ? [
+                `${cappedName}: ${cappedAmounts.map((value) => number(value)).join(" + ")} = ${number(threat.capped)}`,
               ]
             : []),
           `Threat added: ${amounts.map((value) => number(value)).join(" + ")} = ${number(threat.total)}`,

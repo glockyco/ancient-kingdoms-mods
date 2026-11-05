@@ -367,7 +367,7 @@ export const damageOverTimeCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/TargetDamageSkill.cs:249,291; AreaDamageSkill.cs:141,155-160; Combat.cs:633-644 — targeted and direct area hits add one third of maximum Health, rounded, to positive listed threat, while threat uses pre-pipeline damage and is capped by current victim Health.
+// Source: server-scripts/TargetDamageSkill.cs:249,291; AreaDamageSkill.cs:141,155-160; Combat.cs:633-644 — targeted and direct area hits add one third of maximum Health, rounded, to positive listed threat. That skill threat counts in full, while pre-pipeline damage and control threat are capped by current victim Health.
 export function hitThreat(
   aggro: number,
   maximumHealth: number,
@@ -381,11 +381,13 @@ export function hitThreat(
   const health = aggro > 0 ? iround(divideF32(maximumHealth, 3)) : 0;
   const stun = iround(multiplyF32(multiplyF32(stunChance, stunTime), 10));
   const fear = iround(multiplyF32(multiplyF32(fearChance, fearTime), 10));
+  const capped = Math.min(victimHealth, damage + stun + fear);
   return {
     health,
     stun,
     fear,
-    total: Math.min(victimHealth, aggro + health + damage + stun + fear),
+    capped,
+    total: aggro + health + capped,
   };
 }
 export const threatCalculation: Calculation = {
@@ -410,14 +412,19 @@ export const threatCalculation: Calculation = {
       expression: "Stun threat + fear threat",
     },
     {
-      name: "Threat gained",
-      expression: "Skill threat + starting damage + control threat",
+      name: "Damage and control threat",
+      expression: "Starting damage + control threat",
       limit: "at most the target's current Hit Points",
+    },
+    {
+      name: "Threat gained",
+      expression: "Skill threat + damage and control threat",
     },
   ],
   example: () => {
-    const result = hitThreat(10, 2000, 201, 0.5, 3, 0.1, 5, 5000);
+    const result = hitThreat(10, 2000, 201, 0.5, 3, 0.1, 5, 150);
     const skillThreat = 10 + result.health;
+    const control = result.stun + result.fear;
     return {
       given: [
         "10 extra threat from a single-target skill",
@@ -425,15 +432,16 @@ export const threatCalculation: Calculation = {
         "201 starting damage",
         `50% stun chance for ${seconds(3)}`,
         `10% fear chance for ${seconds(5)}`,
-        `${number(5000)} target current Hit Points`,
+        "150 target current Hit Points",
       ],
       result: `${number(result.total)} threat gained`,
       working: [
         `Skill threat: 10 + ${number(2000)} ÷ 3 = 10 + ${number(result.health)} = ${number(skillThreat)}, with the Hit Points share rounded`,
         `Stun threat: 50% × ${seconds(3)} × 10 = ${number(result.stun)}, rounded`,
         `Fear threat: 10% × ${seconds(5)} × 10 = ${number(result.fear)}, rounded`,
-        `Control threat: ${number(result.stun)} + ${number(result.fear)} = ${number(result.stun + result.fear)}`,
-        `Threat gained: ${number(skillThreat)} + 201 + ${number(result.stun + result.fear)} = ${number(result.total)}`,
+        `Control threat: ${number(result.stun)} + ${number(result.fear)} = ${number(control)}`,
+        `Damage and control threat: 201 + ${number(control)} = ${number(201 + control)}, limited to ${number(result.capped)}`,
+        `Threat gained: ${number(skillThreat)} + ${number(result.capped)} = ${number(result.total)}`,
       ],
     };
   },
