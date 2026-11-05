@@ -12,4 +12,4 @@
 
 ## 3. Release
 
-- [ ] 3.1 Release Pocket Compendium 1.1.1 with a changelog line for the empty tooltips
+- [x] 3.1 Release Pocket Compendium 1.1.1 with a changelog line for the empty tooltips
