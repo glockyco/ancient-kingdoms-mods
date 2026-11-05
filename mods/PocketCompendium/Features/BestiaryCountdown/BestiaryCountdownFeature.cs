@@ -16,11 +16,16 @@ namespace PocketCompendium.Features.BestiaryCountdown;
 /// </summary>
 public sealed class BestiaryCountdownFeature : Feature
 {
-    private readonly Dictionary<int, SlotOverlay> _slots = new();
+    // The Journal's tabs share one list of slots, so the grid's countdowns belong to this tab only.
+    private const string BestiaryTab = "Bestiary";
+
+    // One overlay per slot, by the slot's place in the list.
+    private readonly List<SlotOverlay> _slots = new();
     private RespawnPlate _plate;
     private int _version = -1;
     private bool _gridShown;
     private bool _pageShown;
+    private bool _gridDrawn;
 
     public BestiaryCountdownFeature()
         : base("BestiaryCountdown", "Bestiary countdown", "Shows respawn timers for dead monsters in the Bestiary.")
@@ -41,8 +46,9 @@ public sealed class BestiaryCountdownFeature : Feature
 
     protected internal override void Disable()
     {
-        foreach (var slot in _slots.Values) slot.Destroy();
+        foreach (var slot in _slots) slot?.Destroy();
         _slots.Clear();
+        _gridDrawn = false;
         _plate?.Destroy();
         _plate = null;
     }
@@ -52,6 +58,7 @@ public sealed class BestiaryCountdownFeature : Feature
     {
         if (sceneName != "World") return;
         _slots.Clear();
+        _gridDrawn = false;
         _plate = null;
     }
 
@@ -61,29 +68,40 @@ public sealed class BestiaryCountdownFeature : Feature
         var journal = UIJournal.singleton;
         var detail = UIBestiaryDetail.singleton;
         bool open = tracker != null && tracker.Ready && !tracker.Failed && journal != null && journal.content != null
-                    && journal.content.gameObject.activeInHierarchy;
+                    && journal.content.gameObject.activeInHierarchy && journal.currentTab == BestiaryTab;
         if (!open)
         {
+            HideGrid();
             _plate?.SetActive(false);
             return;
         }
 
-        // A switch turned back on redraws its countdowns at once instead of at the next tracker change.
+        // A switch turned back on redraws its countdowns at once instead of at the next tracker change,
+        // and so does a grid shown again after another tab.
         bool grid = Grid.Value, page = Page.Value;
         bool refresh = tracker.Version != _version || grid != _gridShown || page != _pageShown;
         _version = tracker.Version;
         _gridShown = grid;
         _pageShown = page;
 
-        if (grid) UpdateGrid(tracker, journal, refresh);
-        else foreach (var slot in _slots.Values) slot.Hide();
+        if (!grid) HideGrid();
+        else if (refresh || !_gridDrawn) UpdateGrid(tracker, journal);
 
         if (page) UpdatePage(tracker, detail, refresh);
         else _plate?.SetActive(false);
     }
 
-    // The grid's slots follow the Bestiary's list one to one.
-    private void UpdateGrid(Tracker tracker, UIJournal journal, bool refresh)
+    private void HideGrid()
+    {
+        if (!_gridDrawn) return;
+        foreach (var slot in _slots) slot?.Hide();
+        _gridDrawn = false;
+    }
+
+    // The grid's slots follow the Bestiary's list one to one. The game destroys and creates slots as
+    // the Journal's tabs change, and a new slot can take a destroyed one's instance ID, so an overlay
+    // belongs to a place in the list and is made again once it is no longer on that slot's portrait.
+    private void UpdateGrid(Tracker tracker, UIJournal journal)
     {
         var definitions = GameManager.singleton.elitesBosses;
         int count = Mathf.Min(definitions.Count, journal.content.childCount);
@@ -92,17 +110,18 @@ public sealed class BestiaryCountdownFeature : Feature
             var slot = journal.content.GetChild(index).GetComponent<UIJournalSlot>();
             if (slot == null || slot.image == null || definitions[index] == null) continue;
 
-            int id = slot.GetInstanceID();
-            bool created = false;
-            if (!_slots.TryGetValue(id, out var overlay))
+            while (_slots.Count <= index) _slots.Add(null);
+            var portrait = slot.image.rectTransform;
+            if (_slots[index] == null || !_slots[index].On(portrait))
             {
-                overlay = new SlotOverlay(slot.image.rectTransform);
-                _slots[id] = overlay;
-                created = true;
+                _slots[index]?.Destroy();
+                _slots[index] = new SlotOverlay(portrait);
             }
 
-            if (refresh || created) overlay.Show(tracker.Find(definitions[index].name), tracker.Now);
+            _slots[index].Show(tracker.Find(definitions[index].name), tracker.Now);
         }
+
+        _gridDrawn = true;
     }
 
     private void UpdatePage(Tracker tracker, UIBestiaryDetail detail, bool refresh)
@@ -161,6 +180,8 @@ internal sealed class SlotOverlay
         _root.gameObject.SetActive(false);
     }
 
+    public bool On(RectTransform portrait) => _root != null && _root.parent == portrait;
+
     public void Show(TrackedMonster monster, double now)
     {
         var state = monster?.State ?? default;
@@ -174,7 +195,7 @@ internal sealed class SlotOverlay
 
     public void Hide()
     {
-        if (_root.gameObject.activeSelf) _root.gameObject.SetActive(false);
+        if (_root != null && _root.gameObject.activeSelf) _root.gameObject.SetActive(false);
     }
 
     public void Destroy()
