@@ -45,6 +45,9 @@ export const BASELINE_ASSUMPTIONS: ProbabilityAssumptions = Object.freeze({
 export interface ProbabilityScenario {
   readonly assumptions?: ProbabilityAssumptions;
   readonly neededQuestItemIds?: ReadonlySet<string>;
+  // When set, only these items' results come back, so a boss kill does not
+  // calculate the chances of its other drops.
+  readonly itemIds?: ReadonlySet<string>;
 }
 
 export function professionAttempt(
@@ -366,6 +369,11 @@ export function calculateMethodProbabilities(
     expectedQuantity: number | null,
     quantityMeaning: ProbabilityResult["quantityMeaning"] = "at_least_one",
   ): void {
+    if (
+      scenario.itemIds &&
+      !(target.kind === "item" && scenario.itemIds.has(target.itemId))
+    )
+      return;
     if (applicable === false) {
       probability = 0;
       expectedQuantity = 0;
@@ -678,6 +686,7 @@ export function calculateMethodProbabilities(
           );
     }
     for (const itemId of publicTargets) {
+      if (scenario.itemIds && !scenario.itemIds.has(itemId)) continue;
       let chance: number | null;
       if (isBoss) {
         chance = calculateBossLootChance(drops, itemId, {
@@ -716,7 +725,7 @@ export function calculateMethodProbabilities(
     // item is still needed. The target names the item's first entry in the pool,
     // because the item's identity is gone and pool keys are opaque.
     const withheldGroups = new Map<number, PoolEntry[]>();
-    for (const entry of entries)
+    for (const entry of scenario.itemIds ? [] : entries)
       if (entry.withheld && entry.resolution === "direct")
         withheldGroups.set(entry.duplicate_group, [
           ...(withheldGroups.get(entry.duplicate_group) ?? []),

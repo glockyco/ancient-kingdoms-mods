@@ -66,6 +66,7 @@ export function contextualMonsterDrops(
           questNeed: "specified" as const,
         },
         neededQuestItemIds,
+        itemIds: new Set([itemId]),
       };
       const chance =
         calculateMethodProbabilities(

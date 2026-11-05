@@ -249,6 +249,7 @@ export function itemSourcesFromModel(
           {
             assumptions: { ...BASELINE_ASSUMPTIONS, questNeed: "specified" },
             neededQuestItemIds: new Set([itemId]),
+            itemIds: new Set([itemId]),
           },
         ),
         itemId,
@@ -271,6 +272,7 @@ export function itemSourcesFromModel(
                     fatecharm: true,
                   },
                   neededQuestItemIds: new Set([itemId]),
+                  itemIds: new Set([itemId]),
                 },
               ),
               itemId,
