@@ -6,8 +6,10 @@ namespace PocketCompendium.Core.Ui;
 /// <summary>
 /// The screen-space canvases Pocket Compendium draws on, created on first use. Markers and panels
 /// sit below the game's interface, so its HUD, windows, menus and tooltips cover them. The
-/// settings window sits above it. Every layer scales with the screen against a 1920x1080
-/// reference, like the game's own HUD. <see cref="Tooltip"/> keeps a canvas of its own.
+/// settings window sits above it. Panels and windows scale like the game's windows: the game's
+/// canvas scale for the screen, times its Scaling UI setting relative to the default. Markers keep
+/// a 1920x1080 reference, as the game's names in the world ignore Scaling UI. <see cref="Tooltip"/>
+/// keeps a canvas of its own.
 /// </summary>
 public static class Overlay
 {
@@ -44,6 +46,50 @@ public static class Overlay
         // Inactive panels also ignore the pointer, so a click on the map never reaches one.
         Show(_panels, !mapOpen);
         Show(_markers, !mapOpen);
+        FollowGameScale();
+    }
+
+    /// <summary>
+    /// The game's Scaling UI setting relative to its default, as the game applies it to its
+    /// windows. Panels, windows and hovers multiply their scale by it, so the default keeps their size.
+    /// </summary>
+    public static float InterfaceFactor { get; private set; } = 1f;
+
+    private static CanvasScaler _gameScaler;
+    private static bool _factorMissingLogged;
+
+    private static void FollowGameScale()
+    {
+        InterfaceFactor = ReadInterfaceFactor();
+        if (_gameScaler == null)
+        {
+            var canvas = GameObject.Find("Canvas");
+            _gameScaler = canvas != null ? canvas.GetComponent<CanvasScaler>() : null;
+        }
+
+        var reference = _gameScaler != null ? _gameScaler.referenceResolution : new Vector2(ReferenceWidth, ReferenceHeight);
+        float match = _gameScaler != null ? _gameScaler.matchWidthOrHeight : 0.5f;
+        _panels?.Follow(reference / InterfaceFactor, match);
+        _windows?.Follow(reference / InterfaceFactor, match);
+    }
+
+    // Source: UISettings.cs:SetScalingUI sets the localScale of every window in scalingUIRects,
+    // also while the slider moves and before the value is saved, so a window's scale is the
+    // setting as the player sees it.
+    private static float ReadInterfaceFactor()
+    {
+        var settings = Il2Cpp.UISettings.singleton;
+        if (settings == null || settings.scalingUIRects == null) return 1f;
+        foreach (var rect in settings.scalingUIRects)
+            if (rect != null && rect.localScale.x > 0f)
+                return rect.localScale.x / Il2Cpp.GameManager.defaultscalingUI;
+
+        if (!_factorMissingLogged)
+        {
+            _factorMissingLogged = true;
+            Log.Warning("No window of the game's Scaling UI setting was found, so the panels keep their own size");
+        }
+        return 1f;
     }
 
     private static void Show(Layer layer, bool shown)
@@ -80,6 +126,7 @@ public static class Overlay
     private sealed class Layer
     {
         private readonly GameObject _canvas;
+        private readonly CanvasScaler _scaler;
 
         public Layer(string name, int order, bool raycasts)
         {
@@ -91,10 +138,10 @@ public static class Overlay
             canvas.pixelPerfect = false;
             canvas.sortingOrder = order;
 
-            var scaler = _canvas.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
-            scaler.matchWidthOrHeight = 0.5f;
+            _scaler = _canvas.AddComponent<CanvasScaler>();
+            _scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            _scaler.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
+            _scaler.matchWidthOrHeight = 0.5f;
 
             if (raycasts) _canvas.AddComponent<GraphicRaycaster>();
 
@@ -107,6 +154,12 @@ public static class Overlay
         }
 
         public RectTransform Root { get; }
+
+        public void Follow(Vector2 reference, float match)
+        {
+            if (_scaler.referenceResolution != reference) _scaler.referenceResolution = reference;
+            if (!Mathf.Approximately(_scaler.matchWidthOrHeight, match)) _scaler.matchWidthOrHeight = match;
+        }
 
         public void Destroy()
         {

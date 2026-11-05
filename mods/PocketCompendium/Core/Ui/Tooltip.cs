@@ -190,10 +190,14 @@ public static class Tooltip
         var game = shortcuts != null ? shortcuts.toolTip : null;
         if (_frame != null)
         {
-            // The copy draws at the scale of the game's interface.
+            // The game's look draws exactly as the game's tooltip, Scaling UI included. The panels'
+            // look follows Scaling UI as the panels do.
             var gameCanvas = game != null ? game.GetComponentInParent<Canvas>(true) : null;
-            if (gameCanvas != null) _canvas.scaleFactor = gameCanvas.rootCanvas.scaleFactor;
-            return gameCanvas != null;
+            if (gameCanvas == null) return false;
+            _canvas.scaleFactor = gameCanvas.rootCanvas.scaleFactor;
+            if (_frame.localScale != game.transform.localScale) _frame.localScale = game.transform.localScale;
+            _panel.localScale = Vector3.one * Overlay.InterfaceFactor;
+            return true;
         }
 
         if (game == null)
