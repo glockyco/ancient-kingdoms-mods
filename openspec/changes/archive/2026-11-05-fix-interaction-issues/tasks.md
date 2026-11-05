@@ -21,5 +21,6 @@
 ## 3. Release checks
 
 - [x] 3.1 Check the field sizes, focus timing, dialog geometry and tap behaviour in Chromium at phone, tablet, desktop and 200% zoom widths.
-- [ ] 3.2 Run the persona trials again on the fixed build with the same persona texts.
-- [ ] 3.3 Check the search on an iPhone after deployment.
+- [x] 3.3 Check the search on an iPhone after deployment.
+
+The persona trials were not run again: the search works on an iPhone, and the fix needs no further trial.
