@@ -58,7 +58,7 @@ While drop chances are on, an item the monster's table lists several times SHALL
 
 ### Requirement: Found drops are marked
 
-A drop the game records as found for this character SHALL be marked on the page. While undiscovered drops show, a drop not found yet SHALL keep its full colour and its tooltip.
+A drop the game records as found SHALL be marked on the page. The game's record holds the drops that any character in the save has found. While undiscovered drops show, a drop not found yet SHALL keep its full colour and its tooltip.
 
 #### Scenario: A drop found earlier
 

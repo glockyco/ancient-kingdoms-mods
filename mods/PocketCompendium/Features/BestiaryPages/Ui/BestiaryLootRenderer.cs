@@ -187,7 +187,8 @@ internal static class BestiaryLootRenderer
         return Fatecharm.ForZone(tracked != null ? tracked.Zone : monster.idZone);
     }
 
-    // Source: UIBestiaryDetail.cs:153. The game's record of this character's found drops.
+    // Source: UIBestiaryDetail.cs:153. The game's record of found drops. Database.cs:getBossesLootDiscovered
+    // loads it for every character in the save, not only the one playing.
     private static bool IsFound(Monster monster, string itemName)
     {
         var record = UIJournal.singleton != null ? UIJournal.singleton.listBossesLootDiscovered : null;
