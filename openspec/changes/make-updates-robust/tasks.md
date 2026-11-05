@@ -25,4 +25,4 @@
 - [x] 4.3 In game: a renamed-only 1.2.1 became `PocketCompendium.dll` 1.2.2 in one start
 - [x] 4.4 In game: an older copy loading first, with a newer one beside it and no updater, settles at the next start
 - [x] 4.5 In game: a waiting download with no updater shows "Couldn't install", and the next start with the updater installs it
-- [ ] 4.6 On Windows: a renamed install updates in one start
+- [x] 4.6 On Windows: a renamed install updates in one start, the running mod removes an older copy MelonLoader skipped, and an older copy loading first settles at the next start
