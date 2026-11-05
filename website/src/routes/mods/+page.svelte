@@ -29,9 +29,15 @@
     },
     {
       title: "Bestiary",
-      text: "Shows every monster's Bestiary page, with the chance of each drop, its skills and its respawn timer.",
+      text: "Shows every monster's Bestiary page, with the chance of each drop and its respawn timer. A bar on each monster fills as you find its drops.",
       image: "/mod-pictures/card-bestiary.webp",
-      alt: "Troll King Grimlok's Bestiary page with drop chances, a drop's tooltip and his skills.",
+      alt: "Ancient Cyclops's Bestiary page with his drop chances, beside the list of monsters with a bar on each that fills as you find its drops.",
+    },
+    {
+      title: "Skills Panel",
+      text: "Shows a monster's skills beside its Bestiary page, with what each does, its cast time and cooldown.",
+      image: "/mod-pictures/card-skills-panel.webp",
+      alt: "Ancient Cyclops's Bestiary page with his Skills panel beside it, listing Earthshatter Slam, Strong Knockback and Grasping Roots.",
     },
     {
       title: "Map Pins",
@@ -44,6 +50,12 @@
       text: "Warns you on the target frame when killing a boss would use the Fatecharm in your main inventory.",
       image: "/mod-pictures/card-fatecharms.webp",
       alt: "The Catacombs Fatecharm beside Captain Aerendyl's level, with its tooltip.",
+    },
+    {
+      title: "Settings",
+      text: "Switch each feature on or off and change how it looks. Press F8 to open the settings.",
+      image: "/mod-pictures/card-settings.webp",
+      alt: "The Boss list's settings, with its style, direction, tiers and levels.",
     },
   ];
 </script>

@@ -37,7 +37,7 @@ Marks respawn timers on the map and on spawn points, and points to monsters off 
 
 ### Bestiary
 
-Shows every monster's page, with drop chances, skills and respawn timers.
+Shows every monster's page, with drop chances, skills and respawn timers. A bar on each monster fills as you find its drops.
 
 ![Troll King Grimlok's Bestiary page with drop chances raised by the Troll Fatecharm, a drop's tooltip, and his skills beside it.](../../assets/pocket-compendium-bestiary.webp)
 
