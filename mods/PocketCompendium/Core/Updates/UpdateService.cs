@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using AncientKingdomsMods.Shared;
 using AncientKingdomsMods.Shared.Updates;
@@ -53,6 +54,11 @@ internal sealed class UpdateService
     private ModList _list;
     private bool _busy;
 
+    // Cancelled when the answer changes, so a check or download for the old answer stops and its
+    // result is dropped instead of contacting the website, staging a file or showing a card.
+    private CancellationTokenSource _work = new();
+    private int _generation;
+
     public UpdateService(string version)
     {
         Current = this;
@@ -69,7 +75,18 @@ internal sealed class UpdateService
             _settings.LastVersion = Running;
             Save();
         }
-        if (_settings.Answer != null) Begin();
+
+        // A newer copy that MelonLoader passed over loads at the next start, and this start checks nothing.
+        var waiting = Housekeep();
+        if (waiting != null)
+        {
+            WriteUpdater();
+            Status = UpdateStatus.Downloaded;
+            Version = waiting;
+            Card = UpdateCard.Downloaded;
+            return;
+        }
+        if (_settings.Answer != null) Begin(atStart: true);
     }
 
     public static UpdateService Current { get; private set; }
@@ -96,12 +113,15 @@ internal sealed class UpdateService
     public void Choose(UpdateAnswer answer)
     {
         if (_settings.Answer == answer) return;
+        _work.Cancel();
+        _work = new CancellationTokenSource();
+        _generation++;
         _settings.Answer = answer;
         Save();
         if (Card is UpdateCard.Out) Card = UpdateCard.None;
         Status = UpdateStatus.None;
         Changed();
-        Begin();
+        Begin(atStart: false);
     }
 
     public void DismissCard()
@@ -127,12 +147,13 @@ internal sealed class UpdateService
         if (_busy || offered == null || offered.Version <= Running) return;
         _busy = true;
         Changed();
-        Run(async () =>
+        Run(async token =>
         {
             try
             {
                 using var client = new UpdateClient(UpdateSite.Address, _publicKey);
-                byte[] file = await client.FetchFileAsync(offered).ConfigureAwait(false);
+                byte[] file = await client.FetchFileAsync(offered, token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
                 Staging.Stage(_files, file, offered.Sha256);
                 WriteUpdater();
                 Log.Msg($"Downloaded Pocket Compendium {offered.Version}. It loads the next time the game starts.");
@@ -163,7 +184,7 @@ internal sealed class UpdateService
             ApplyReport(report);
     }
 
-    private void Begin()
+    private void Begin(bool atStart)
     {
         if (_settings.Answer is null or UpdateAnswer.Off) return;
         if (_settings.Answer == UpdateAnswer.Install) WriteUpdater();
@@ -173,17 +194,18 @@ internal sealed class UpdateService
         // list for the status and the card's lines is still to come.
         var report = UpdateHandoff.Read();
         if (report != null) ApplyReport(report);
+        if (atStart && NotInstalled(report)) return;
         if (report != null && (report.List != null || report.Outcome == UpdateOutcome.CheckFailed)) return;
 
         Status = UpdateStatus.Checking;
         Changed();
         var answer = _settings.Answer.Value;
-        Run(async () =>
+        Run(async token =>
         {
             try
             {
                 using var client = new UpdateClient(UpdateSite.Address, _publicKey);
-                var verified = await client.FetchListAsync().ConfigureAwait(false);
+                var verified = await client.FetchListAsync(token).ConfigureAwait(false);
                 var listed = verified.List.Find(ModList.PocketCompendiumId);
                 if (listed == null || listed.Version <= Running)
                     return () => Listed(verified.List, UpdateStatus.UpToDate, null, UpdateCard.None);
@@ -191,7 +213,8 @@ internal sealed class UpdateService
                     return () => Listed(verified.List, UpdateStatus.Out, listed.Version, UpdateCard.Out);
 
                 // Installing, but the updater didn't run this start: the version loads at the next one.
-                byte[] file = await client.FetchFileAsync(listed).ConfigureAwait(false);
+                byte[] file = await client.FetchFileAsync(listed, token).ConfigureAwait(false);
+                token.ThrowIfCancellationRequested();
                 Staging.Stage(_files, file, listed.Sha256);
                 Log.Msg($"Downloaded Pocket Compendium {listed.Version}. It loads the next time the game starts.");
                 return () => Listed(verified.List, UpdateStatus.Downloaded, listed.Version, UpdateCard.None);
@@ -208,6 +231,64 @@ internal sealed class UpdateService
             }
         }, null);
     }
+
+    // MelonLoader loads one copy of Pocket Compendium, the first by name, and passes over the others.
+    // Older copies go now, while nothing holds them. A newer one is returned, for the updater to put
+    // in place before mods load at the next start. A copy without a readable version stays for it too.
+    private ModVersion? Housekeep()
+    {
+        ModVersion? newer = null;
+        IReadOnlyList<string> copies;
+        try { copies = _files.Copies(); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; }
+
+        foreach (var copy in copies)
+        {
+            if (!ModVersion.TryParse(MelonInfoReader.TryVersion(copy), out var version)) continue;
+            if (version > Running)
+            {
+                if (newer == null || version > newer.Value) newer = version;
+                continue;
+            }
+            if (version == Running) continue;
+            try
+            {
+                File.Delete(copy);
+                Log.Msg($"Removed an older copy of Pocket Compendium, {Path.GetFileName(copy)}.");
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                Log.Warning($"Could not remove the older copy {Path.GetFileName(copy)}: {e.Message}");
+            }
+        }
+
+        if (newer != null) Log.Warning($"Pocket Compendium {newer} is in the Mods folder, but MelonLoader loaded {Running}. It loads at the next start.");
+        return newer;
+    }
+
+    // The updater settles the Mods folder before mods load, so a download still waiting when this start
+    // begins was not installed, unless it finished after that wait. The card then says so, instead of
+    // promising the next start.
+    private bool NotInstalled(UpdateReport report)
+    {
+        if (!Staging.HasStaged(_files) || report?.Outcome is UpdateOutcome.Downloading or UpdateOutcome.Downloaded or UpdateOutcome.InstallFailed)
+            return false;
+        var staged = StagedVersion();
+        if (staged == null || staged.Value <= Running)
+        {
+            // The player installed this version or a newer one some other way.
+            try { Staging.Discard(_files); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            return false;
+        }
+
+        Log.Warning($"Pocket Compendium {staged} was downloaded at an earlier start, but the updater did not install it.");
+        Show(UpdateStatus.InstallFailed, staged, UpdateCard.InstallFailed);
+        return true;
+    }
+
+    private ModVersion? StagedVersion() =>
+        ModVersion.TryParse(MelonInfoReader.TryVersion(_files.Staged), out var version) ? version : null;
 
     private void ApplyReport(UpdateReport report)
     {
@@ -235,7 +316,8 @@ internal sealed class UpdateService
                 Show(UpdateStatus.CheckFailed, null, Card);
                 break;
             case UpdateOutcome.InstallFailed:
-                Show(UpdateStatus.InstallFailed, version ?? listed?.Version, Card);
+                // An install the player counts on that didn't happen gets its card, with the website as the way out.
+                Show(UpdateStatus.InstallFailed, version ?? StagedVersion() ?? listed?.Version, UpdateCard.InstallFailed);
                 break;
         }
     }
@@ -258,15 +340,20 @@ internal sealed class UpdateService
 
     private void Changed() => Revision++;
 
-    private void Run(Func<Task<Action>> work, Action always) => _ = RunAsync(work, always);
+    private void Run(Func<CancellationToken, Task<Action>> work, Action always) => _ = RunAsync(work, always, _generation, _work.Token);
 
-    private async Task RunAsync(Func<Task<Action>> work, Action always)
+    // A result from before the answer changed is dropped. The click's busy flag clears either way.
+    private async Task RunAsync(Func<CancellationToken, Task<Action>> work, Action always, int generation, CancellationToken token)
     {
         await Task.Yield();
         Action apply;
         try
         {
-            apply = await work().ConfigureAwait(false);
+            apply = await work(token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            apply = null;
         }
         catch (Exception e)
         {
@@ -274,7 +361,7 @@ internal sealed class UpdateService
             apply = CheckFailed;
         }
         if (always != null) _results.Enqueue(always);
-        _results.Enqueue(apply);
+        if (apply != null) _results.Enqueue(() => { if (generation == _generation) apply(); });
     }
 
     private void CheckFailed() => Show(UpdateStatus.CheckFailed, null, UpdateCard.None);

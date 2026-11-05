@@ -122,7 +122,11 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                     var version = ReadVersion(sourcePath, fileName);
                     if (version != release.Version)
                         throw new InvalidDataException($"{fileName} built from {release.Tag} names version {version}.");
+                    // The website's buttons link the usual name, and the signed list names an address
+                    // per version, so a cached file can never pair with a newer list.
                     File.Copy(sourcePath, Path.Combine(stagingDir, fileName));
+                    Directory.CreateDirectory(Path.Combine(stagingDir, version));
+                    File.Copy(sourcePath, Path.Combine(stagingDir, version, fileName));
 
                     using var stream = File.OpenRead(sourcePath);
                     var sha256 = Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
@@ -132,7 +136,7 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                         version,
                         mod.Description,
                         fileName,
-                        $"/mods/{fileName}",
+                        $"/mods/{version}/{fileName}",
                         stream.Length,
                         sha256,
                         releases));

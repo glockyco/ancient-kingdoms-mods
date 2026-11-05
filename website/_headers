@@ -30,3 +30,14 @@
 /icons/*
   ! Cache-Control
   Cache-Control: public, max-age=604800
+
+# The mod list and its signature are read together and must come from the same
+# deploy, so no cache keeps either. Each version's DLL has an address of its
+# own and never changes, so the default above suits it.
+/mods/manifest.json
+  ! Cache-Control
+  Cache-Control: no-cache
+
+/mods/manifest.json.sig
+  ! Cache-Control
+  Cache-Control: no-cache

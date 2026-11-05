@@ -19,6 +19,19 @@ internal static class MelonInfoReader
 
     public static string Version(string path) => Argument(path, VersionArgument);
 
+    /// <summary>The mod's version, or null for a file that names none or can't be read.</summary>
+    public static string TryVersion(string path)
+    {
+        try
+        {
+            return Argument(path, VersionArgument);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or BadImageFormatException)
+        {
+            return null;
+        }
+    }
+
     /// <summary>The mod's name, or null for a file that is no MelonLoader mod or can't be read.</summary>
     public static string Name(string path)
     {

@@ -64,7 +64,8 @@ public class PublishModsCommandTests
             Assert.Equal("Better Bestiary", mod.GetProperty("name").GetString());
             Assert.Equal("2.3.4", mod.GetProperty("version").GetString());
             Assert.Equal("BetterBestiary.dll", mod.GetProperty("fileName").GetString());
-            Assert.Equal("/mods/BetterBestiary.dll", mod.GetProperty("downloadPath").GetString());
+            Assert.Equal("/mods/2.3.4/BetterBestiary.dll", mod.GetProperty("downloadPath").GetString());
+            Assert.Equal(File.ReadAllBytes(ThisAssembly), File.ReadAllBytes(Path.Combine(tempRoot, "website", "static", "mods", "2.3.4", "BetterBestiary.dll")));
             Assert.Equal(new FileInfo(publishedDll).Length, mod.GetProperty("sizeBytes").GetInt64());
             Assert.Matches("^[0-9a-f]{64}$", mod.GetProperty("sha256").GetString());
             Assert.False(mod.TryGetProperty("releases", out _));
