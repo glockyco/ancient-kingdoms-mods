@@ -33,10 +33,11 @@ type Builder = (db: Database.Database) => EntityText[] | Promise<EntityText[]>;
 
 const tableColumnsCache = new Map<string, Set<string>>();
 
-// The game names some sub-zones like their zone in other letter case, such as
-// The Lone-Lands in The Lone-lands, so the comparison ignores case.
+// The game names some sub-zones like their zone in other letter case or without its
+// leading "The", such as The Lone-Lands in The Lone-lands and Molten Summit in The
+// Molten Summit, so the comparison ignores both.
 const LOCATION_SQL =
-  "CASE WHEN t.name IS NOT NULL AND lower(t.name) != lower(z.name) THEN t.name || ', ' ELSE '' END || z.name";
+  "CASE WHEN t.name IS NOT NULL AND lower(t.name) != lower(z.name) AND 'the ' || lower(t.name) != lower(z.name) THEN t.name || ', ' ELSE '' END || z.name";
 
 function tableColumns(db: Database.Database, table: string): Set<string> {
   const cached = tableColumnsCache.get(table);
@@ -199,11 +200,10 @@ const builders: Record<SearchableEntityId, Builder> = {
       .prepare(
         `
       SELECT r.id, r.name, r.keywords, r.description AS content, r.is_fishing_spot,
-        (SELECT group_concat(location, ', ') FROM (
-          SELECT DISTINCT ${LOCATION_SQL} AS location
+        (SELECT group_concat(name, ', ') FROM (
+          SELECT DISTINCT z.name AS name
           FROM gathering_resource_spawns s JOIN zones z ON z.id = s.zone_id
-          LEFT JOIN zone_triggers t ON t.id = s.sub_zone_id
-          WHERE s.resource_id = r.id ORDER BY location
+          WHERE s.resource_id = r.id ORDER BY z.name
         )) AS detail
       FROM gathering_resources r ORDER BY r.id
     `,
