@@ -9,6 +9,7 @@ export interface ScalingColumn {
   field: LinearValue;
   isPercent: boolean;
   suffix: string;
+  signed?: boolean;
   stat?: StatField;
 }
 
@@ -186,6 +187,17 @@ export function scalingColumns(
     });
   }
 
+  // Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — the empowered auto attack deals 10% more damage per buff rank, a constant in code rather than a skill field.
+  if (skill.id === "wild_strike") {
+    cols.push({
+      label: "Auto Attack Damage Bonus",
+      field: { base_value: 0.1, bonus_per_level: 0.1 },
+      isPercent: true,
+      suffix: "",
+      signed: true,
+    });
+  }
+
   for (const def of SCALING_FIELDS) {
     // Source: server-scripts/ScrollItem.cs:UseAfterCast; server-scripts/PlayerInventory.cs:StartScrollCast — scrolls apply directly, without skill costs or timers.
     if (
@@ -247,7 +259,8 @@ export function computeScalingValue(col: ScalingColumn, level: number): string {
   const raw = col.field.base_value + col.field.bonus_per_level * (level - 1);
   if (col.stat) return formatStatField(col.stat, raw, { signed: true });
   if (col.isPercent) {
-    return formatPercent(raw, { decimals: 2, preserveNonzero: true });
+    const percent = formatPercent(raw, { decimals: 2, preserveNonzero: true });
+    return col.signed && raw > 0 ? `+${percent}` : percent;
   }
   return `${formatNumber(col.suffix === "s" ? Math.max(0, raw) : raw)}${col.suffix}`;
 }
