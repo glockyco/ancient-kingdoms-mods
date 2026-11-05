@@ -7,8 +7,6 @@ import {
   type SearchResult,
 } from "$lib/search/search";
 import { loadBrowserAcquisition, itemMapLocations } from "$lib/map/acquisition";
-import { browserAcquisitionQuery } from "$lib/acquisition/browser";
-import type { AcquisitionQuery } from "$lib/acquisition/types";
 import { projectMonsterLoot } from "$lib/acquisition/projections";
 
 export interface MapSearchBounds {
@@ -285,12 +283,8 @@ function parseRoles(
 
 async function itemBoundsQuery(
   itemIds: readonly string[],
-  execute: AcquisitionQuery = browserAcquisitionQuery,
 ): Promise<GeometryRow[]> {
-  const model = await loadBrowserAcquisition(
-    { kind: "items", itemIds },
-    execute,
-  );
+  const model = await loadBrowserAcquisition({ kind: "items", itemIds });
   return [...new Set(itemIds)].map((id) => {
     const locations = itemMapLocations(model, id);
     const positions = locations.flatMap((location) =>
@@ -313,9 +307,8 @@ async function itemBoundsQuery(
 /** Physical locations available when the map selects this item. */
 export async function getItemMapBounds(
   itemId: string,
-  execute: AcquisitionQuery = browserAcquisitionQuery,
 ): Promise<MapSearchBounds | null> {
-  const [row] = await itemBoundsQuery([itemId], execute);
+  const [row] = await itemBoundsQuery([itemId]);
   if (
     row?.min_x == null ||
     row.max_x == null ||

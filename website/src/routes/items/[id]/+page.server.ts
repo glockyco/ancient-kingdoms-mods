@@ -22,7 +22,6 @@ import { itemDescription, itemTitle } from "$lib/server/meta-description";
 import { itemUsagesFromModel } from "$lib/server/item-usages";
 import { getRecipeDefinitions } from "$lib/server/obtainability";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
-import { getItemMapBounds } from "$lib/queries/map-search";
 import { itemMapLocations, MAP_PROVIDER_CATEGORY } from "$lib/map/acquisition";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
@@ -222,12 +221,8 @@ export const load: PageServerLoad = async ({
     sourceView.inspection.parentAwards.length > 0 ||
     sourceView.inspection.offeredAssets.some((method) => method.rooted) ||
     redactedRecipes.result > 0;
-  const hasMapLocation =
-    (await getItemMapBounds(
-      params.id,
-      async (sql, bindings) =>
-        db.prepare(sql).all(...bindings) as Record<string, unknown>[],
-    )) !== null;
+  const mapLocations = itemMapLocations(model, params.id);
+  const hasMapLocation = mapLocations.length > 0;
 
   // A row links to the map only where the map can show it for this item: the same
   // visible locations the item's own map link highlights.
@@ -240,7 +235,7 @@ export const load: PageServerLoad = async ({
     resource: [],
     quest: [],
   };
-  for (const location of itemMapLocations(model, params.id)) {
+  for (const location of mapLocations) {
     const category = MAP_PROVIDER_CATEGORY[location.provider.kind];
     // A spawn location links its template, which the map selects as a group.
     const id =

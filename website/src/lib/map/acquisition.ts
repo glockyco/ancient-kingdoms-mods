@@ -7,7 +7,6 @@ import {
   projectItemUsages,
 } from "$lib/acquisition/projections";
 import type {
-  AcquisitionQuery,
   AcquisitionRequest,
   AcquisitionModel,
   DirectLocation,
@@ -30,9 +29,10 @@ export const MAP_PROVIDER_CATEGORY = {
 
 export async function loadBrowserAcquisition(
   request: AcquisitionRequest,
-  execute: AcquisitionQuery = browserAcquisitionQuery,
 ): Promise<AcquisitionModel> {
-  return assembleAcquisitionModel(await queryAcquisitionRows(execute, request));
+  return assembleAcquisitionModel(
+    await queryAcquisitionRows(browserAcquisitionQuery, request),
+  );
 }
 
 /** Award, offer and use locations stay distinct, but all can be selected on the map. */
