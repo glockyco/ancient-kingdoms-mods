@@ -52,6 +52,12 @@
       alt: "The Catacombs Fatecharm beside Captain Aerendyl's level, with its tooltip.",
     },
     {
+      title: "Augment Marks",
+      text: "Marks each item that has an augment with the augment's icon.",
+      image: "/mod-pictures/card-augment-marks.webp",
+      alt: "A Warrior's equipment in Dreadguard armor, with an augment's icon on every piece.",
+    },
+    {
       title: "Settings",
       text: "Switch each feature on or off and change how it looks. Press F8 to open the settings.",
       image: "/mod-pictures/card-settings.webp",
