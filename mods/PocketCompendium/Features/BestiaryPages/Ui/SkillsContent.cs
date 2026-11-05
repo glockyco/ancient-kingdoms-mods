@@ -253,12 +253,14 @@ internal static class SkillsContent
         return cast + "    " + Utils.PrettySeconds((float)facts.Delivery.cooldown) + " cooldown";
     }
 
-    // The full mechanics show on hover and on gamepad focus.
+    // The full mechanics show on hover and on gamepad focus, in the game's tooltip like the page's
+    // drops, because the Skills window is a copy of the game's own window.
     private static void AddDetails(Image target, Entry entry, string monsterName, List<Selectable> entries)
     {
         target.raycastTarget = true;
         _ = new HoverText(target.rectTransform)
         {
+            Look = TooltipLook.Game,
             Text = Wrapping.KeepLastWordsTogether(SkillCardDetails.Hover(entry.Facts, entry.Name, monsterName)),
         };
 

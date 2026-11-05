@@ -114,6 +114,7 @@ public sealed class FatecharmsFeature : Feature
         iconRect.sizeDelta = new Vector2(24f, 24f);
         iconRect.anchoredPosition = Vector2.zero;
 
-        _tooltip = new HoverText(rect);
+        // The socket sits on the game's target frame, so its hover uses the game's tooltip.
+        _tooltip = new HoverText(rect) { Look = TooltipLook.Game };
     }
 }

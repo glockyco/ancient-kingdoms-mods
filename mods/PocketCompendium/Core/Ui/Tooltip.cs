@@ -7,6 +7,16 @@ using UnityEngine.UI;
 
 namespace PocketCompendium.Core.Ui;
 
+/// <summary>Which tooltip a hover text shows in: Pocket Compendium's panel look or the game's frame.</summary>
+public enum TooltipLook
+{
+    /// <summary>The look of Pocket Compendium's panels, for elements on its own panels and the map.</summary>
+    Panel,
+
+    /// <summary>The game's tooltip frame, for elements inside the game's windows.</summary>
+    Game,
+}
+
 /// <summary>
 /// The hover text of one of Pocket Compendium's own elements, shown in <see cref="Tooltip"/>.
 /// </summary>
@@ -22,11 +32,15 @@ public sealed class HoverText
 
     /// <summary>The text to show. Null or empty shows nothing.</summary>
     public string Text { get; set; }
+
+    /// <summary>The look of the surface the element belongs to.</summary>
+    public TooltipLook Look { get; init; }
 }
 
 /// <summary>
-/// Pocket Compendium's tooltip: a copy of the game's tooltip frame on a canvas of its own, shown for
-/// the hovered or gamepad-focused <see cref="HoverText"/> with the game's delays and placement.
+/// Pocket Compendium's tooltip, shown for the hovered or gamepad-focused <see cref="HoverText"/>
+/// with the game's delays and placement. It has two looks: the panels' own, and a copy of the
+/// game's tooltip frame for elements inside the game's windows.
 /// </summary>
 /// <remarks>
 /// The game keeps one tooltip object and moves it under the top canvas of whatever shows it. Shown
@@ -54,6 +68,16 @@ public static class Tooltip
     private static float _showAt;
     private static bool _visible;
 
+    // The panel look: a panel's background, fully opaque so the text under a tooltip stays hidden,
+    // its edge and gold accent, and the panels' text.
+    private const float PanelInner = 260f;
+    private const float PanelPadX = 12f;
+    private const float PanelPadY = 9f;
+    private static readonly Color PanelBackground = new(Theme.Panel.r, Theme.Panel.g, Theme.Panel.b, 1f);
+    private static readonly Color PanelEdge = new(1f, 1f, 1f, 0.07f);
+    private static RectTransform _panel;
+    private static TextMeshProUGUI _panelText;
+
     internal static void Register(HoverText source) => Sources.Add(source);
 
     /// <summary>Shows, moves or hides the tooltip for this frame. Runs after the features update.</summary>
@@ -76,20 +100,38 @@ public static class Tooltip
             return;
         }
 
-        if (_text.text != target.Text)
+        bool panel = target.Look == TooltipLook.Panel;
+        var frame = panel ? _panel : _frame;
+        var other = panel ? _frame : _panel;
+        if (other.gameObject.activeSelf) other.gameObject.SetActive(false);
+
+        if (panel)
+        {
+            SetPanelText(target.Text);
+        }
+        else if (_text.text != target.Text)
         {
             _text.text = target.Text;
             LayoutRebuilder.ForceRebuildLayoutImmediate(_frame);
         }
 
-        if (!_visible)
+        if (!frame.gameObject.activeSelf)
         {
-            _frame.gameObject.SetActive(true);
-            _visible = true;
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_frame);
+            frame.gameObject.SetActive(true);
+            if (!panel) LayoutRebuilder.ForceRebuildLayoutImmediate(_frame);
         }
 
-        Place(target.Rect, gamepad);
+        _visible = true;
+        Place(frame, target.Rect, gamepad);
+    }
+
+    // The panel look sizes itself: the text's own width up to a limit, then wraps.
+    private static void SetPanelText(string value)
+    {
+        if (_panelText.text != value) _panelText.text = value;
+        float inner = Mathf.Min(PanelInner, Mathf.Ceil(_panelText.GetPreferredValues(value).x));
+        float height = Mathf.Ceil(_panelText.GetPreferredValues(value, inner, 0f).y);
+        _panel.sizeDelta = new Vector2(inner + 2f * PanelPadX, height + 2f * PanelPadY);
     }
 
     public static void Dispose()
@@ -98,6 +140,8 @@ public static class Tooltip
         _layer = null;
         _frame = null;
         _text = null;
+        _panel = null;
+        _panelText = null;
         _target = null;
         _visible = false;
         Sources.Clear();
@@ -134,6 +178,7 @@ public static class Tooltip
     {
         if (!_visible) return;
         _frame.gameObject.SetActive(false);
+        _panel.gameObject.SetActive(false);
         _visible = false;
     }
 
@@ -189,8 +234,28 @@ public static class Tooltip
         foreach (var graphic in copy.GetComponentsInChildren<Graphic>(true)) graphic.raycastTarget = false;
 
         _frame = copy.GetComponent<RectTransform>();
+        BuildPanel();
         _visible = false;
         return true;
+    }
+
+    private static void BuildPanel()
+    {
+        _panel = HudFactory.Rect("PC_TooltipPanel", _layer.transform).GetComponent<RectTransform>();
+        _panel.anchorMin = _panel.anchorMax = new Vector2(0.5f, 0.5f);
+        var background = HudFactory.Box("background", _panel, PanelBackground);
+        HudFactory.Stretch(background, Vector2.zero, Vector2.zero);
+        HudFactory.Frame(background.transform, PanelEdge, 1f);
+        var accent = HudFactory.Tinted("accent", _panel, Shapes.Fade, Theme.Gold);
+        accent.type = Image.Type.Simple;
+        accent.preserveAspect = false;
+        HudFactory.Place(accent, new Vector2(0f, 1f), Vector2.one, new Vector2(0f, -2f), Vector2.zero);
+        var label = HudFactory.Label("text", _panel, 13f, Theme.Text, Align.Left);
+        _panelText = label.Text;
+        _panelText.enableWordWrapping = true;
+        _panelText.overflowMode = TextOverflowModes.Overflow;
+        HudFactory.Place(label.Rect, Vector2.zero, Vector2.one, new Vector2(PanelPadX, PanelPadY), new Vector2(-PanelPadX, -PanelPadY));
+        _panel.gameObject.SetActive(false);
     }
 
     // The text the game writes a tooltip into, found the way UIShowToolTip finds it.
@@ -208,10 +273,10 @@ public static class Tooltip
 
     // UIShowToolTip's placement: beside the element with a gamepad, otherwise above or below it,
     // whichever first fits on screen without covering the element.
-    private static void Place(RectTransform anchor, bool beside)
+    private static void Place(RectTransform target, RectTransform anchor, bool beside)
     {
         var around = ScreenRect(anchor);
-        var frame = ScreenRect(_frame);
+        var frame = ScreenRect(target);
         var size = frame.size;
 
         var right = OnScreen(new Rect(around.xMax + Gap, around.center.y - size.y * 0.5f, size.x, size.y));
@@ -220,7 +285,7 @@ public static class Tooltip
         var below = OnScreen(new Rect(around.center.x - size.x * 0.5f, around.yMin - Gap - size.y, size.x, size.y));
         var chosen = beside ? Choose(around, right, left, above, below) : Choose(around, above, below, right, left);
 
-        _frame.position += (Vector3)(chosen.min - frame.min);
+        target.position += (Vector3)(chosen.min - frame.min);
     }
 
     // A rect's extent in screen pixels, which on an overlay canvas are world units. GetWorldCorners
