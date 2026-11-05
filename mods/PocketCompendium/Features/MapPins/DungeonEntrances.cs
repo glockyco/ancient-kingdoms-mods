@@ -20,8 +20,9 @@ internal sealed class DungeonEntrances
     // The game names the map icon of every dungeon entrance this way.
     private const string IconName = "DungeonMinimapIcon";
 
-    // An entrance icon sits within a few yd of the portal into its dungeon.
-    private const float PortalReach = 6f;
+    // An entrance icon sits within a few yd of the portal into its dungeon: Temple of Valaark's
+    // within 10 yd, one of Winterforge's within 11 yd, the others within 5 yd.
+    private const float PortalReach = 12f;
 
     private readonly List<Entrance> _entrances = new();
     private DungeonCard _card;
@@ -63,26 +64,31 @@ internal sealed class DungeonEntrances
         foreach (var icon in Object.FindObjectsOfType<UIMapIcon>())
         {
             if (icon.name != IconName) continue;
-            int dungeon = DungeonOf(icon.transform.position, portals);
+            int dungeon = DungeonOf(icon, portals);
             if (dungeon >= 0) _entrances.Add(new Entrance(container, icon, dungeon, layer));
         }
     }
 
-    // The icon's legend text is the dungeon's name in the player's language, so the portal beside
-    // the icon names the dungeon instead.
-    private static int DungeonOf(Vector2 icon, Il2CppArrayBase<Portal> portals)
+    // The portal beside the icon names the dungeon. Old Valorath's icon has no portal beside it, and
+    // its authored legend is the zone's own name, which the other icons are not always.
+    private static int DungeonOf(UIMapIcon icon, Il2CppArrayBase<Portal> portals)
     {
         int dungeon = -1;
         float nearest = PortalReach;
+        Vector2 at = icon.transform.position;
         foreach (var portal in portals)
         {
-            float distance = Vector2.Distance(icon, portal.transform.position);
+            float distance = Vector2.Distance(at, portal.transform.position);
             if (distance >= nearest || !ZoneInfo.zones.ContainsKey(portal.idZone) || !ZoneInfo.zones[portal.idZone].isDungeon) continue;
             nearest = distance;
             dungeon = portal.idZone;
         }
 
-        return dungeon;
+        if (dungeon >= 0) return dungeon;
+        foreach (var zone in ZoneInfo.zones)
+            if (zone.Value.isDungeon && zone.Value.name == icon.legendText)
+                return zone.Key;
+        return -1;
     }
 
     /// <summary>An invisible spot over an entrance icon, which takes the pointer like a map pin.</summary>
