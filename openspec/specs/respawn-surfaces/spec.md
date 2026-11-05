@@ -147,14 +147,28 @@ In the Bestiary grid, a dead monster's portrait SHALL be dimmed, with a dark swe
 - **WHEN** the player switches off the grid's countdowns and opens Xylevis's page with 4:19 left
 - **THEN** the grid portrait shows no time and the page still shows "Respawns in 4:19"
 
+### Requirement: The grid counts down only on the Bestiary tab
+
+The grid's countdowns SHALL show only while the Journal shows the Bestiary, and SHALL keep working after the player switches to another Journal tab and back.
+
+#### Scenario: Another Journal tab and back
+
+- **WHEN** a dead monster counts down in the Bestiary grid and the player opens Herbalism and then the Bestiary again
+- **THEN** Herbalism shows no countdowns, and the Bestiary shows the monster's countdown again
+
 ### Requirement: Alerts use the game's message
 
-When a watched monster spawns, the mod SHALL raise the game's own important message and chat line naming it. A monster that is not watched SHALL NOT raise an alert.
+When a watched monster spawns, the mod SHALL raise the game's own important message and chat line naming it. While the General setting Undiscovered monsters is off, a watched monster the player has not discovered SHALL be named ??? in its alert, as on every other surface. A monster that is not watched SHALL NOT raise an alert.
 
 #### Scenario: Watched boss spawns
 
 - **WHEN** watched Xylevis respawns
 - **THEN** the game's important message band and a chat line announce it
+
+#### Scenario: Watched undiscovered monster spawns while hidden
+
+- **WHEN** Undiscovered monsters is off and watched Vyriss the Withered, not yet discovered, spawns in Crescent Coast
+- **THEN** the chat line reads "??? has spawned in Crescent Coast."
 
 ### Requirement: Watching a monster
 
@@ -169,3 +183,26 @@ Clicking a row, tile or pin SHALL toggle whether the monster is watched. Shift-c
 
 - **WHEN** the player clicks Watch on Forsaken Skeleton's Bestiary page
 - **THEN** the button reads "Watching", and Forsaken Skeleton's list row carries the gold corner
+
+### Requirement: Dungeon entrances list their monsters
+
+Hovering a dungeon's entrance on the local map SHALL show a card beside it with the dungeon's tracked bosses, elites and fabled monsters in the boss list's compact style: the dungeon's name, how many are up, and their tiles four to a line in the boss list's state order. A dungeon without tracked monsters SHALL get no card. Dungeon entrances SHALL be a feature with its own switch, apart from map pins.
+
+#### Scenario: Hovering Sunken Temple's entrance
+
+- **WHEN** the player hovers the Sunken Temple gate on Crescent Coast's map
+- **THEN** a card titled Sunken Temple shows its eight bosses and elites, those that are up first
+
+### Requirement: A dungeon card works like the boss list
+
+A dungeon card SHALL stay while the pointer is on the entrance, on the card or between them, and SHALL close as soon as the local map stops showing, such as when the player switches to the world map. Its tiles SHALL work as the boss list's tiles do: hovering one gives its tooltip, clicking it toggles the watch and Shift-clicking it opens its Bestiary page.
+
+#### Scenario: Watching from the card
+
+- **WHEN** the player moves from Lost Archives's gate onto Archivist Phaendar's tile and clicks it
+- **THEN** Archivist Phaendar is watched
+
+#### Scenario: Switching to the world map
+
+- **WHEN** Sunken Temple's card is open and the player switches to the world map
+- **THEN** the card is gone from the world map
