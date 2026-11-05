@@ -81,6 +81,9 @@ internal sealed class SkillsWindow
         _rect.pivot = new Vector2(0f, 1f);
         _rect.sizeDelta = new Vector2(Width, journalRect.rect.height);
         _rect.anchoredPosition = new Vector2(Gap, 0f);
+        // The Quest Log carries the game's Scaling UI setting in its own scale, and the copy sits
+        // inside the Journal, which carries it too. At its own scale of 1 it draws as the Journal does.
+        _rect.localScale = Vector3.one;
 
         _title = copy.transform.Find("Title/TitleText").GetComponent<TextMeshProUGUI>();
         Pin(copy.transform.Find("Title"), new Vector2(0.5f, 1f), new Vector2(0f, -6f));
