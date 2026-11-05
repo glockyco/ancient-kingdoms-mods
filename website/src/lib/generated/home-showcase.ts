@@ -94,7 +94,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Equipment",
       href: "/items?items.item_type=equipment",
-      count: 847,
+      count: 852,
       icon: {
         src: "/images/items/valorathian_minstrel_breastplate/icon.webp",
         width: 30,
@@ -246,7 +246,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       type: "Crafting",
       href: "/recipes?recipes.type=Crafting",
-      count: 72,
+      count: 77,
       icon: {
         src: "/images/skills/crafting/icon.webp",
         width: 32,
