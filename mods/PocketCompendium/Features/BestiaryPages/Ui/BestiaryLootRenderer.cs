@@ -105,23 +105,46 @@ internal static class BestiaryLootRenderer
         public string Lines;
     }
 
-    private static List<ShownDrop> BuildDisplayItems(Monster monster, bool chances)
+    /// <summary>
+    /// How many of the drops a monster's page shows, one per item, the game records as found, and
+    /// how many it shows.
+    /// </summary>
+    internal static (int Found, int Total) CountFound(Monster monster)
     {
-        // One slot per item while chances show: a chance of at least one copy belongs to the
-        // item, not to an entry. Without chances, every entry in the game's order.
+        int found = 0, total = 0;
+        foreach (var source in PageItems(monster, onePerItem: true, out _))
+        {
+            if (!TryBuildVisibleItem(source, out var item)) continue;
+            total++;
+            if (IsFound(monster, item.data.nameItem)) found++;
+        }
+        return (found, total);
+    }
+
+    // The items a page lists before it leaves out what the game's page hides. One per item while
+    // chances show: a chance of at least one copy belongs to the item, not to an entry. Without
+    // chances, every entry in the game's order. Forgotten Altar variants come after the table's.
+    private static List<ScriptableItem> PageItems(Monster monster, bool onePerItem, out int tableItems)
+    {
         var items = new List<ScriptableItem>();
         var seen = new HashSet<string>();
         if (monster.dropChances != null && monster.dropChances.Count > 0)
         {
             foreach (var drop in monster.dropChances)
             {
-                if (drop?.item != null && (!chances || seen.Add(drop.item.name)))
+                if (drop?.item != null && (!onePerItem || seen.Add(drop.item.name)))
                     items.Add(drop.item);
             }
         }
 
-        int tableItems = items.Count;
+        tableItems = items.Count;
         AddForgottenAltarVariants(monster, items);
+        return items;
+    }
+
+    private static List<ShownDrop> BuildDisplayItems(Monster monster, bool chances)
+    {
+        var items = PageItems(monster, onePerItem: chances, out int tableItems);
 
         var table = DropTableReader.Read(monster);
         var fatecharm = ZoneFatecharm(monster);

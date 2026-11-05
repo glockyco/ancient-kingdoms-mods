@@ -83,6 +83,7 @@ public sealed class BestiaryPagesFeature : Feature
         if (_patched) return;
 
         Patching.Apply(typeof(UIBestiaryDetailPatch));
+        Patching.Apply(typeof(UIJournalPatch));
         GamepadLootNavigation.Patch(Patching.Harmony);
         _patched = true;
     }
