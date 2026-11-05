@@ -10,7 +10,7 @@ When a feature stops after an error, a line flashes in the middle of the screen 
 - The card appears bottom left above the chat, on the same side as the start screen's update card. It moves like a panel, keeps its place, follows "Lock all panels" and returns to its default place with the panels' Reset.
 - The General page gets a "Notices" row with a "Show example" button and the help "Shows an example card so you can move it where you want it." The example card reads "Example: notices show here" over "Drag this card where you want it." in the gold look, with one Done button.
 - The feature's settings row reads "Stopped after an error." with a Report button, and its switch works again: switching it on turns the feature on again.
-- **BREAKING**: the stop notice shows every time a feature stops, instead of once per session, because a feature can now stop again after it is turned on again.
+- The card shows once per feature per session, as the stop notice does today, and again only after the player turns that feature back on and it stops again.
 
 ## Capabilities
 

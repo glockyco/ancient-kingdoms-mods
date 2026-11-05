@@ -4,7 +4,7 @@
 
 - [ ] 1.1 Let a stop clear: a method on `Feature` clears `Failed` and `Failure`, and the registry enables the feature on its next update, except a feature whose `Disable` threw
 - [ ] 1.2 Draw a stopped feature's settings row as "Stopped after an error." with a Report button, and let its switch turn the feature on again
-- [ ] 1.3 Add tests for the registry: a stop disables the feature, clearing it enables it again, and a second stop raises a second notice
+- [ ] 1.3 Add tests for the registry: a stop disables the feature and raises one notice however many errors led to it, turning it on enables it again, and a stop after that raises a second notice
 
 ## 2. Report
 
