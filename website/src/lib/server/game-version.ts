@@ -15,11 +15,12 @@ const STEAM_NEWS_RSS_URL =
  * gets bundled into client code.
  *
  * The `cf` field on RequestInit is a Cloudflare Workers extension that lets
- * workerd cache the upstream response at the colo for ~10 minutes, capping
- * Steam hits regardless of home page traffic. svelte-check uses DOM fetch
- * types which don't know about `cf`; Node's fetch (Vite dev) silently ignores
- * unknown init fields. Both paths therefore work, only prod gets the colo
- * cache.
+ * workerd cache a good upstream response at the colo for ~10 minutes, capping
+ * Steam hits regardless of home page traffic. Errors are not cached, so one
+ * refusal doesn't hide the version for the whole window. svelte-check uses DOM
+ * fetch types which don't know about `cf`; Node's fetch (Vite dev) silently
+ * ignores unknown init fields. Both paths therefore work, only prod gets the
+ * colo cache.
  */
 export async function fetchGameVersion(): Promise<GameVersionResult> {
   try {
@@ -35,7 +36,10 @@ export async function fetchGameVersion(): Promise<GameVersionResult> {
       // @ts-expect-error - `cf` is a Cloudflare Workers extension to RequestInit;
       // DOM fetch (svelte-check tsconfig) does not know about it, but Node's fetch
       // (Vite dev) silently ignores unknown init fields.
-      cf: { cacheTtl: 600, cacheEverything: true },
+      cf: {
+        cacheEverything: true,
+        cacheTtlByStatus: { "200-299": 600, "300-599": 0 },
+      },
     });
     if (!upstream.ok) {
       console.warn(`Steam news feed answered ${upstream.status}`);
