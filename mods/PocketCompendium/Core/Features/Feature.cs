@@ -30,8 +30,17 @@ public abstract class Feature
 
     public bool Running { get; internal set; }
 
-    /// <summary>Set after the feature threw. It stays stopped until the game restarts.</summary>
+    /// <summary>Set after the feature threw. It stays stopped until the player turns it on again.</summary>
     public bool Failed { get; internal set; }
+
+    /// <summary>
+    /// Set when the feature also threw while cleaning up after it stopped. Its state is then unknown,
+    /// so it can't be turned on again in the session.
+    /// </summary>
+    public bool CleanupFailed { get; internal set; }
+
+    /// <summary>Whether the player can turn the stopped feature on again.</summary>
+    public bool CanTurnOnAgain => Failed && !CleanupFailed;
 
     /// <summary>Whether the feature reads the respawn tracker, which runs while any such feature runs.</summary>
     public virtual bool UsesTracker => false;
@@ -75,5 +84,18 @@ public abstract class Feature
         if (Failed) return;
         Failed = true;
         Failure = exception;
+    }
+
+    /// <summary>
+    /// Clears a stop, so the registry starts the feature on its next update and a later stop
+    /// reports again. Its switch is set on, because the player asked for the feature.
+    /// </summary>
+    public bool TurnOnAgain()
+    {
+        if (!CanTurnOnAgain) return false;
+        Failed = false;
+        Failure = null;
+        Switch.Value = true;
+        return true;
     }
 }

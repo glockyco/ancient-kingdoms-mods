@@ -57,6 +57,8 @@ Warns you when killing your target would use your Fatecharm.
 
 Use **Report a problem** or **Suggest an idea** on the About page of the settings. Without a GitHub account, post in the compendium channel on the [game's Discord](https://discord.gg/8MkSWjXwab).
 
+When a feature stops after an error, a card names it. **Report** opens the problem form with your setup's details, and **Turn on again** restarts the feature. The feature's settings row also has **Report**, and its switch turns the feature on again.
+
 ## License
 
 MIT. See [LICENSE](../../LICENSE).

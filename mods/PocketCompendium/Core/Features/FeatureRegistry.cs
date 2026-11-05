@@ -16,7 +16,10 @@ public sealed class FeatureRegistry
 
     public void Add(Feature feature) => _features.Add(feature);
 
-    /// <summary>Raised once when a feature stops after an error.</summary>
+    /// <summary>
+    /// Raised once for each stop after an error. A stopped feature runs no code, so it stops again,
+    /// and this is raised again, only after the player turned it on again.
+    /// </summary>
     public event Action<Feature> StoppedAfterError;
 
     public string SwitchedOn() =>
@@ -113,6 +116,7 @@ public sealed class FeatureRegistry
         catch (Exception exception)
         {
             Log.Error($"{feature.Title} could not clean up after stopping", exception);
+            if (reportFailure) feature.CleanupFailed = true;
         }
 
         feature.Running = false;

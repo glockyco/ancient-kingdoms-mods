@@ -313,11 +313,11 @@ public sealed class SettingsWindow
 
         y += 24f;
         y += WrappedText("summary", feature.Summary, Pad, y, width - controls, 12.5f, Theme.Muted, out _) + 4f;
-        float failedHeight = WrappedText("failed", "Stopped after an error. Please report it on the About page.", Pad, y, width, 12.5f, Theme.Cast, out var failed);
+        float failedHeight = FailedLine(Pad, y, out var failed, out var report);
         y += feature.Failed ? failedHeight + 2f : 0f;
         failed.SetActive(feature.Failed);
 
-        _featureRows.Add(new FeatureRow(feature, toggle, gear, failed, null));
+        _featureRows.Add(new FeatureRow(feature, toggle, gear, failed, report, null));
         return y + 10f;
     }
 
@@ -347,8 +347,7 @@ public sealed class SettingsWindow
         y += 26f;
 
         y += WrappedText("summary", feature.Summary, Pad, y, width - SwitchView.Width - 12f, 12.5f, Theme.Muted, out _) + 4f;
-        // The note wraps, because one line runs out of the window.
-        float failedHeight = WrappedText("failed", "Stopped after an error. Please report it on the About page.", Pad, y, width, 12.5f, Theme.Cast, out var failed);
+        float failedHeight = FailedLine(Pad, y, out var failed, out var report);
         y += feature.Failed ? failedHeight + 2f : 0f;
         failed.SetActive(feature.Failed);
 
@@ -363,7 +362,7 @@ public sealed class SettingsWindow
         float height = Rows(feature.Settings.Rows, rowsRect, 0f, width, 0f);
         rowsRect.sizeDelta = new Vector2(_content.sizeDelta.x, height);
 
-        _featureRows.Add(new FeatureRow(feature, toggle, null, failed, rowsGroup));
+        _featureRows.Add(new FeatureRow(feature, toggle, null, failed, report, rowsGroup));
         return y + height;
     }
 
@@ -479,6 +478,23 @@ public sealed class SettingsWindow
         return HelpGap + WrappedText("help", help, Pad + LabelWidth, y + HelpGap, width - LabelWidth, 12f, Theme.Dim, out _, parent);
     }
 
+    // A stopped feature's note with the report action beside it. Switching the feature on turns it
+    // on again, so the note names only what the switch can't do.
+    private float FailedLine(float x, float y, out GameObject line, out ButtonView report)
+    {
+        const float Height = 24f;
+        var rect = HudFactory.Rect("failed", _content).GetComponent<RectTransform>();
+        var label = HudFactory.Label("text", rect, 12.5f, Theme.Cast, Align.Left);
+        label.Value = "Stopped after an error.";
+        float textWidth = Mathf.Ceil(label.PreferredWidth);
+        HudFactory.TopLeft(label.Rect, 0f, 0f, textWidth, Height);
+        report = new ButtonView(rect, "Report", ButtonStyle.Primary, 76f, Height);
+        HudFactory.TopLeft(report.Rect, textWidth + 14f, 0f, 76f, Height);
+        HudFactory.TopLeft(rect, x, y, textWidth + 14f + 76f, Height);
+        line = rect.gameObject;
+        return Height;
+    }
+
     private float WrappedText(string name, string text, float x, float y, float width, float size, Color color, out Label label, RectTransform parent = null)
     {
         label = HudFactory.Label(name, parent ?? _content, size, color, Align.Left);
@@ -502,7 +518,7 @@ public sealed class SettingsWindow
         foreach (var row in _featureRows)
         {
             bool on = row.Feature.Switch.Value && !row.Feature.Failed;
-            row.Switch.Set(on, enabled: !row.Feature.Failed);
+            row.Switch.Set(on, enabled: !row.Feature.Failed || row.Feature.CanTurnOnAgain);
             row.Failed.SetActive(row.Feature.Failed);
             if (row.Rows != null) row.Rows.alpha = on ? 1f : 0.5f;
         }
@@ -554,8 +570,12 @@ public sealed class SettingsWindow
 
             foreach (var row in _featureRows)
             {
-                if (!row.Feature.Failed && Pointer.Clicked(row.Switch.Rect))
-                    row.Feature.Switch.Value = !row.Feature.Switch.Value;
+                if (Pointer.Clicked(row.Switch.Rect))
+                {
+                    if (row.Feature.Failed) row.Feature.TurnOnAgain();
+                    else row.Feature.Switch.Value = !row.Feature.Switch.Value;
+                }
+                if (row.Feature.Failed && row.Report.Update()) Feedback.ReportAction.Open();
                 if (row.Gear != null && row.Gear.Update())
                 {
                     Show(_selected, row.Feature);
@@ -687,12 +707,13 @@ public sealed class SettingsWindow
 
     private sealed class FeatureRow
     {
-        public FeatureRow(Feature feature, SwitchView toggle, IconButton gear, Label failed, CanvasGroup rows)
+        public FeatureRow(Feature feature, SwitchView toggle, IconButton gear, GameObject failed, ButtonView report, CanvasGroup rows)
         {
             Feature = feature;
             Switch = toggle;
             Gear = gear;
             Failed = failed;
+            Report = report;
             FailedLaidOut = feature.Failed;
             Rows = rows;
         }
@@ -700,7 +721,10 @@ public sealed class SettingsWindow
         public Feature Feature { get; }
         public SwitchView Switch { get; }
         public IconButton Gear { get; }
-        public Label Failed { get; }
+        public GameObject Failed { get; }
+
+        /// <summary>The report action beside the stopped note.</summary>
+        public ButtonView Report { get; }
 
         /// <summary>Whether the page left room for the failure notice when it was laid out.</summary>
         public bool FailedLaidOut { get; }

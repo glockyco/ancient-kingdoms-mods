@@ -22,7 +22,6 @@ public sealed class AboutPage : ISettingsContent
 
     private readonly string _version;
     private readonly string _build;
-    private readonly IReadOnlyList<Feature> _features;
     private readonly List<LinkRow> _links = new();
 
     private ButtonView _report;
@@ -37,7 +36,7 @@ public sealed class AboutPage : ISettingsContent
     {
         _version = version;
         _build = build.Length > 7 ? build.Substring(0, 7) : build;
-        _features = features;
+        ReportAction.Configure(_version, _build, features);
     }
 
     public string Title => "About";
@@ -110,9 +109,7 @@ public sealed class AboutPage : ISettingsContent
 
     private void Report()
     {
-        var facts = SetupReader.Read(_version, _build, _features);
-        GUIUtility.systemCopyBuffer = ProblemReport.Details(facts);
-        Application.OpenURL(ProblemReport.Link(facts));
+        ReportAction.Open();
         ShowReported(true);
     }
 

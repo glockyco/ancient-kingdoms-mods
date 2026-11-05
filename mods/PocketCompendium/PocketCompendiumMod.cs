@@ -29,7 +29,7 @@ namespace PocketCompendium;
 
 public sealed class PocketCompendiumMod : MelonMod
 {
-    private readonly Queue<Feature> _stoppedNotices = new();
+    private NoticeCard _noticeCard;
     private FeatureRegistry _features;
     private SettingsWindow _settings;
     private LayoutSettings _layout;
@@ -70,11 +70,17 @@ public sealed class PocketCompendiumMod : MelonMod
         _features.Add(dropsFound);
         _features.Add(fatecharms);
         _features.Add(sharing);
-        _features.StoppedAfterError += _stoppedNotices.Enqueue;
 
         string build = ModBuild.Commit(typeof(PocketCompendiumMod).Assembly);
         var general = new GeneralSettings(bestiaryPages.EarlierUndiscoveredMonsters);
         _layout = new LayoutSettings();
+        _noticeCard = new NoticeCard(_layout.Page);
+        _layout.Page.Action(
+            "Notices",
+            "Show example",
+            "Shows an example card so you can move it where you want it.",
+            _noticeCard.ShowExample);
+        _features.StoppedAfterError += _noticeCard.Add;
         _updates = new UpdateService(Info.Version);
         _startScreen = new StartScreen(_updates, _layout);
         _settings = new SettingsWindow(new[]
@@ -106,11 +112,10 @@ public sealed class PocketCompendiumMod : MelonMod
         // After the features, which set this frame's hover texts.
         Tooltip.Update();
 
-        if (GameAccess.InWorld && GameAccess.LocalPlayer != null)
-        {
-            LogWorldEntry();
-            ShowStoppedNotices();
-        }
+        // A feature can stop before the player exists, so its card waits for the player.
+        bool inWorld = GameAccess.InWorld && GameAccess.LocalPlayer != null;
+        _noticeCard.Update(inWorld);
+        if (inWorld) LogWorldEntry();
     }
 
     // A log then shows the world and setting of the errors that follow.
@@ -119,20 +124,6 @@ public sealed class PocketCompendiumMod : MelonMod
         if (_worldLogged) return;
         _worldLogged = true;
         LoggerInstance.Msg($"Entered world {SessionRecord.WorldsEntered}. Playing: {ProblemReport.SettingText(SetupReader.Setting())}.");
-    }
-
-    // A feature can stop before the player exists, so the notice waits for the player. The game
-    // adds the closing period to the chat line itself.
-    private void ShowStoppedNotices()
-    {
-        while (_stoppedNotices.Count > 0)
-        {
-            var feature = _stoppedNotices.Dequeue();
-            GameAccess.LocalPlayer.ShowImportantMessage(
-                $"{ModText.Name}: {feature.Title} stopped after an error. Please report it from the About page in its settings ({_layout.SettingsKey.Value})",
-                Il2Cpp.Utils.colorImportantGolden,
-                showChat: true);
-        }
     }
 
     public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
