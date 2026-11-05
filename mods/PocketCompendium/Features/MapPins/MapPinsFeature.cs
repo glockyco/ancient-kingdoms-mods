@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Il2Cpp;
 using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Game;
+using PocketCompendium.Core.Settings;
 using PocketCompendium.Core.Tracking;
 using PocketCompendium.Core.Ui;
 using UnityEngine;
@@ -12,7 +13,8 @@ namespace PocketCompendium.Features.MapPins;
 /// <summary>
 /// Portrait pins for the tracked monsters of the player's zone on the game's local map, placed
 /// the way the game places its map notes. Dead monsters carry a time tag, monsters that are up
-/// glow, and the game's tooltip gives the details.
+/// glow, and a tooltip gives the details. Hovering a dungeon's entrance shows that dungeon's
+/// monsters in a card beside it.
 /// </summary>
 public sealed class MapPinsFeature : Feature
 {
@@ -20,13 +22,18 @@ public sealed class MapPinsFeature : Feature
     private const int MaplessZone = 23;
 
     private readonly Dictionary<string, PinView> _pins = new();
+    private readonly DungeonEntrances _dungeons = new();
     private RectTransform _container;
     private int _version = -1;
 
     public MapPinsFeature()
         : base("MapPins", "Map pins", "Marks the bosses, elites and fabled monsters in your zone on the map, with their respawn timers.")
     {
+        DungeonEntrances = Settings.Toggle("DungeonEntrances", true, "Dungeon entrances",
+            "Hover over a dungeon's entrance on the map to see its bosses, elites and fabled monsters and when they spawn.");
     }
+
+    public ToggleSetting DungeonEntrances { get; }
 
     public override Sprite Icon => Icons.MapPin;
 
@@ -39,6 +46,7 @@ public sealed class MapPinsFeature : Feature
         if (_container != null) Object.Destroy(_container.gameObject);
         _container = null;
         _pins.Clear();
+        _dungeons.Clear();
     }
 
     // The pins live inside the game's map, which goes with the World scene.
@@ -47,6 +55,7 @@ public sealed class MapPinsFeature : Feature
         if (sceneName != "World") return;
         _container = null;
         _pins.Clear();
+        _dungeons.Clear();
     }
 
     protected internal override void Update()
@@ -96,6 +105,10 @@ public sealed class MapPinsFeature : Feature
         foreach (var pin in _pins.Values)
             if (!pin.Used)
                 pin.SetActive(false);
+        if (DungeonEntrances.Value)
+            clicked ??= _dungeons.Update(_container, camera, rect, tracker, watchlist, player.idZone, map.localMap.gameObject.layer);
+        else
+            _dungeons.Clear();
 
         if (clicked == null) return;
         if (Pointer.Shift) BestiaryPages.BestiaryPageOpener.Open(clicked.Definition);
