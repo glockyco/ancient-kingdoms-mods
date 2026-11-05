@@ -105,9 +105,9 @@ public class SkillEffectFormatterTests
     public void MonsterContextOmitsThreatThatOnlyPlayersRaise()
     {
         var skill = LoadCases().Single(c => c.monster_id == null && c.skill_id == "taunt").input;
-        Assert.Contains("aggro", SkillEffectFormatter.Format(skill));
+        Assert.Contains("threat", SkillEffectFormatter.Format(skill));
         skill.monster = new MonsterDamageContext();
-        Assert.DoesNotContain("aggro", SkillEffectFormatter.Format(skill));
+        Assert.DoesNotContain("threat", SkillEffectFormatter.Format(skill));
     }
 
     [Theory]

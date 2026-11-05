@@ -366,7 +366,7 @@ internal static class SkillEffectFormatter
             var directHit = skill.skill_type == "target_damage"
                 || (skill.skill_type == "area_damage" && !skill.area_projectile);
             var healthThreat = aggro.base_value > 0 && directHit ? " plus caster max hp" : "";
-            parts.Add($"{(aggro.base_value > 0 ? "+" : "")}{FormatLinearValue(aggro)} aggro{healthThreat}");
+            parts.Add($"{(aggro.base_value > 0 ? "+" : "")}{FormatLinearValue(aggro)} threat{healthThreat}");
         }
     }
 

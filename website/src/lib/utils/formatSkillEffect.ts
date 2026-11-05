@@ -681,7 +681,7 @@ function formatCrowdControl(
     const healthThreat =
       aggro.base_value > 0 && directHit ? " plus caster max hp" : "";
     parts.push(
-      `${aggro.base_value > 0 ? "+" : ""}${formatLinearValue(aggro, options)} aggro${healthThreat}`,
+      `${aggro.base_value > 0 ? "+" : ""}${formatLinearValue(aggro, options)} threat${healthThreat}`,
     );
   }
 
