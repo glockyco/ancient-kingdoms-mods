@@ -527,7 +527,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:14663-14667, Monster.cs:3253-3265, Npc.cs:1646-1656, PlayerQuests.cs:454-457, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:14645-14649, Monster.cs:3253-3265, Npc.cs:1646-1656, PlayerQuests.cs:454-457, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         Your reputation can keep rising above Exalted or falling below Hated.

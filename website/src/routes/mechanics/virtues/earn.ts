@@ -258,7 +258,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       ],
     },
     {
-      // Source: server-scripts/VirtueCombat.cs:CancelHonor,Assistance,SettleHonorIfFinished — the fight's points are lost.
+      // Source: server-scripts/VirtueCombat.cs:CancelHonor,Assistance,ClearFinishedHonorFight,OnDeath — the fight is marked invalid or ends, so its later kills give no Honor.
       title: "The fight gives no points",
       kind: "no",
       items: [

@@ -47,7 +47,7 @@ export function executeTick(bonus: LinearValue, rank: number): number {
   return damageOverTimeBonuses(EXAMPLE_HIT, 3, 0, atRank(bonus, rank)).total;
 }
 
-// Source: server-scripts/Combat.cs:1295-1311 — lifetap healing is FloorToInt(share × damage × (1 + summed bonuses)).
+// Source: server-scripts/Combat.cs:1291-1307 — lifetap healing is FloorToInt(share × damage × (1 + summed bonuses)).
 export function lifetapFromHit(share: LinearValue, rank: number): number {
   return lifetapHeal(EXAMPLE_HIT, atRank(share, rank), 0);
 }
@@ -57,7 +57,7 @@ export function lifetapWithBonus(bonus: LinearValue, rank: number): number {
   return lifetapHeal(EXAMPLE_HIT, 1, atRank(bonus, rank));
 }
 
-// Source: server-scripts/Combat.cs:956-971 — each victim effect heals the attacker RoundToInt(share × damage after mitigation and critical hits).
+// Source: server-scripts/Combat.cs:952-967 — each victim effect heals the attacker RoundToInt(share × damage after mitigation and critical hits).
 export function healOnHit(share: LinearValue, rank: number): number {
   return iround(multiplyF32(atRank(share, rank), EXAMPLE_HIT));
 }

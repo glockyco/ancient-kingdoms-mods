@@ -366,7 +366,7 @@ export function computeMechanicsSpec(
   }> = [];
 
   if (isHealSkill && !skill.is_necromancer_death_bloom) {
-    // Source: server-scripts/TargetHealSkill.cs:307-310; AreaHealSkill.cs:114-116 — target healing requires canHealOthers, area healing always rolls for critical healing.
+    // Source: server-scripts/TargetHealSkill.cs:308-311; AreaHealSkill.cs:114-116 — target healing requires canHealOthers, area healing always rolls for critical healing.
     const canCrit = skill.skill_type === "area_heal" || skill.can_heal_others;
 
     // Source: server-scripts/ScrollItem.cs:UseAfterCast; TargetHealSkill.cs:Apply — scrolls call Apply as a player; pet/mercenary restoration keeps the player's Wisdom bonus.
@@ -483,7 +483,7 @@ export function computeMechanicsSpec(
   // ---------- timing ----------
   // Populated for follow-up attacks and non-spell combat-pet skill 0.
   // Source: server-scripts/Skills.cs:1149-1167; Combat.cs:340-346 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
-  // Source: server-scripts/Player.cs:3771-3808 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
+  // Source: server-scripts/Player.cs:3712-3749 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ caster: Caster; model: TimingModel }> = [];
 
@@ -579,7 +579,7 @@ export function computeMechanicsSpec(
         bonusAttrKind: playerMercKind,
       });
     }
-    // Source: server-scripts/TargetDamageSkill.cs:246-288; ProjectileSkillEffect.cs:196; TargetDebuffSkill.cs:284-288; BuffSkill.cs:GetDebuffPowerAttribute — weapon procs apply at rank one using their caster's debuff attribute, except scrolls use zero.
+    // Source: server-scripts/TargetDamageSkill.cs:246-288; ProjectileSkillEffect.cs:196; TargetDebuffSkill.cs:343-347; BuffSkill.cs:GetDebuffPowerAttribute — weapon procs apply at rank one using their caster's debuff attribute, except scrolls use zero.
     // Proc skills need no player_classes entries for that attribute scaling.
     if (isWeaponProc) {
       debuffPairs.push({

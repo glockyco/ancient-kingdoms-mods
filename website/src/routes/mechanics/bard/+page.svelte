@@ -135,7 +135,7 @@
         </table>
       </div>
 
-      <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; Combat.cs:1235-1254; website/data/compendium.db skills.buff_category — categorized songs apply fresh effects, a Ward song applies once per cast and restores a suspended Ward with time and absorption left, and other songs restore suspended effects. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; Combat.cs:1231-1250; website/data/compendium.db skills.buff_category — categorized songs apply fresh effects, a Ward song applies once per cast and restores a suspended Ward with time and absorption left, and other songs restore suspended effects. -->
       <p>
         Leaving range removes the aura. Most songs resume with the same strength
         and time left when you return, including any weakening from cleansing.<br

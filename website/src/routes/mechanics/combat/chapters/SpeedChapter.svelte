@@ -8,7 +8,7 @@
 
 <Chapter id="timing">
   <Topic id="haste">
-    <!-- Source: server-scripts/Player.cs:GetSkillRefractoryPeriod,3228-3233; Pet.cs:2333-2338; Skills.cs:StartCast,FinishCast,FinishCastMeleeAttackMonster — Haste changes player weapon waits and selected non-spell cooldowns, while spell haste changes player and mercenary casts. -->
+    <!-- Source: server-scripts/Player.cs:GetSkillRefractoryPeriod,3169-3174; Pet.cs:2334-2339; Skills.cs:StartCast,FinishCast,FinishCastMeleeAttackMonster — Haste changes player weapon waits and selected non-spell cooldowns, while spell haste changes player and mercenary casts. -->
     <p>
       Haste changes weapon waits or non-spell cooldowns, depending on the
       attacker. Spell Casting Haste changes player and mercenary spell casts.
@@ -26,14 +26,14 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Source: server-scripts/Player.cs:3771-3808; Combat.cs:340-346 — weapon auto attacks use cast time plus a Haste-adjusted weapon wait bounded to 0.25–2 seconds. -->
+        <!-- Source: server-scripts/Player.cs:3712-3749; Combat.cs:340-346 — weapon auto attacks use cast time plus a Haste-adjusted weapon wait bounded to 0.25–2 seconds. -->
         <tr>
           <th scope="row">Player weapon auto attack</th>
           <td>Cast time + <a href="#attack-speed">weapon wait</a></td>
           <td>Shortens weapon wait</td>
           <td>No effect</td>
         </tr>
-        <!-- Source: server-scripts/Skills.cs:932-941; Player.cs:3228-3233,GetSkillRefractoryPeriod — player spell casts subtract the bounded spell haste, followed by a fixed auto-attack wait. -->
+        <!-- Source: server-scripts/Skills.cs:932-941; Player.cs:3169-3174,GetSkillRefractoryPeriod — player spell casts subtract the bounded spell haste, followed by a fixed auto-attack wait. -->
         <tr>
           <th scope="row">
             Player spell auto attack, such as
@@ -50,14 +50,14 @@
           <td>No effect</td>
           <td>Shortens spell casts</td>
         </tr>
-        <!-- Source: server-scripts/Skills.cs:1149-1181; Pet.cs:2333-2338: Haste shortens a companion's first skill's cooldown only if that skill is not a spell, and non-mercenary casts receive no spell haste. -->
+        <!-- Source: server-scripts/Skills.cs:1149-1181; Pet.cs:2334-2339: Haste shortens a companion's first skill's cooldown only if that skill is not a spell, and non-mercenary casts receive no spell haste. -->
         <tr>
           <th scope="row">Companion's first skill, if it is not a spell</th>
           <td>Cast time + cooldown × (100% − Haste)</td>
           <td>Shortens cooldown</td>
           <td>No effect</td>
         </tr>
-        <!-- Source: server-scripts/Skills.cs:1149-1181; Pet.cs:2333-2338 — other companion and familiar skills keep their cooldowns and receive no spell haste. -->
+        <!-- Source: server-scripts/Skills.cs:1149-1181; Pet.cs:2334-2339 — other companion and familiar skills keep their cooldowns and receive no spell haste. -->
         <tr>
           <th scope="row">Other companion and familiar skills</th>
           <td>Cast time + cooldown</td>
@@ -71,7 +71,7 @@
           <td>Shortens cooldown</td>
           <td>No effect</td>
         </tr>
-        <!-- Source: server-scripts/Skills.cs:932-941,1149-1181; Pet.cs:2333-2338 — mercenary spells use the bounded spell haste for casts and keep their cooldowns. -->
+        <!-- Source: server-scripts/Skills.cs:932-941,1149-1181; Pet.cs:2334-2339 — mercenary spells use the bounded spell haste for casts and keep their cooldowns. -->
         <tr>
           <th scope="row">Mercenary spell</th>
           <td><a href="#cast-speed">Shortened cast</a> + cooldown</td>
@@ -97,19 +97,19 @@
   </Topic>
 
   <Topic id="attack-speed">
-    <!-- Source: server-scripts/Player.cs:3721-3732 — a finished cast calls StartSkillRefractoryPeriod. -->
+    <!-- Source: server-scripts/Player.cs:3662-3673 — a finished cast calls StartSkillRefractoryPeriod. -->
     <!-- Source: server-scripts/Player.cs:GetSkillRefractoryPeriod — the wait is 0.75 seconds for a spell or a skill without a weapon requirement, otherwise the weapon wait. -->
     <p>
       Every skill you finish starts a wait before your next auto attack: 0.75
       seconds after a spell or a skill that needs no weapon, or the weapon wait
       below after a weapon skill.
     </p>
-    <!-- Source: server-scripts/Combat.cs:336-347; Player.cs:3771-3808 — player Haste is bounded to −80%–80% before changing the weapon wait. -->
+    <!-- Source: server-scripts/Combat.cs:336-347; Player.cs:3712-3749 — player Haste is bounded to −80%–80% before changing the weapon wait. -->
     <p>
       Haste shortens the weapon wait. Haste above 80% counts as 80%, and below
       −80% as −80%.
     </p>
-    <!-- Source: server-scripts/Player.cs:3771-3808 — the wait is weapon delay minus its Haste share, divided by 25 and bounded to 0.25–2 seconds, then added to cast time. -->
+    <!-- Source: server-scripts/Player.cs:3712-3749 — the wait is weapon delay minus its Haste share, divided by 25 and bounded to 0.25–2 seconds, then added to cast time. -->
     <Formula calculation={timingCalculation()} />
     <!-- Source: server-scripts/Player.cs:EventRefractoryPeriod,GetSkillRefractoryPeriod; Skills.cs:FinishCast — the recovery wait gates auto attacks only, and other player skill cooldowns use their listed duration. -->
     <p>
@@ -119,12 +119,12 @@
   </Topic>
 
   <Topic id="cast-speed">
-    <!-- Source: server-scripts/Skills.cs:StartCast,FinishCast; Player.cs:3228-3233; Pet.cs:2333-2338 — spell haste shortens player and mercenary spell casts without changing cooldowns. -->
+    <!-- Source: server-scripts/Skills.cs:StartCast,FinishCast; Player.cs:3169-3174; Pet.cs:2334-2339 — spell haste shortens player and mercenary spell casts without changing cooldowns. -->
     <p>
       Spell Casting Haste shortens player and mercenary spell casts without
       changing cooldowns.
     </p>
-    <!-- Source: server-scripts/Combat.cs:350-360; Player.cs:3228-3233; Pet.cs:2333-2338 — player and mercenary spell casts use the summed spell haste bounded to −50%–50%, the value the character window shows. -->
+    <!-- Source: server-scripts/Combat.cs:350-360; Player.cs:3169-3174; Pet.cs:2334-2339 — player and mercenary spell casts use the summed spell haste bounded to −50%–50%, the value the character window shows. -->
     <p>Spell Casting Haste above 50% counts as 50%, and below −50% as −50%.</p>
     <!-- Source: server-scripts/Skills.cs:932-941; Player.cs:GetSkillRefractoryPeriod — spell auto attacks use the shortened cast plus a fixed 0.75-second wait. -->
     <Formula calculation={timingCalculation(true)} />

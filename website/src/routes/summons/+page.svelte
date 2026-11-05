@@ -63,7 +63,7 @@
     levelCaps(data.summons.filter((summon) => summon.kind === "Companion")),
   );
   const undeadCaps = $derived(levelCaps(undeadSummons));
-  // Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/Buff.cs:90,239,253; the export's skills.json — each familiar's buff per rank and its maximum rank.
+  // Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/Buff.cs:100,249,263; the export's skills.json — each familiar's buff per rank and its maximum rank.
   const FAMILIAR_EFFECTS: Record<string, string> = {
     blue_fairy: "+2 Mana Regeneration per rank, up to rank 8",
     red_fairy: "+1% Accuracy per rank, up to rank 8",
@@ -301,7 +301,7 @@
             <dt class="text-muted-foreground">Level</dt>
             <dd class="text-right">Your level, up to {companionCaps}</dd>
           </div>
-          <!-- Source: server-scripts/Pet.cs:4123-4134 — a dead combat pet or familiar is removed. -->
+          <!-- Source: server-scripts/Pet.cs:4124-4135 — a dead combat pet or familiar is removed. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">On death</dt>
             <dd class="text-right">Summon it again</dd>
@@ -398,7 +398,7 @@
           >
         </div>
         <dl class="divide-y">
-          <!-- Source: server-scripts/Player.cs:4581-4613 — up to three followers, keyed by whistle item, outside the summon slot. -->
+          <!-- Source: server-scripts/Player.cs:4522-4554 — up to three followers, keyed by whistle item, outside the summon slot. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Slot</dt>
             <dd class="text-right">Own pet slots</dd>
@@ -424,7 +424,7 @@
           <li>Use the whistle again to dismiss the pet.</li>
           <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454 — a follower without its inventory whistle is removed. -->
           <li>The pet leaves if its whistle is not in your inventory.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:14663-14667 — petting grants 1–4 faction standing every 30 seconds per animal. -->
+          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:14645-14649 — petting grants 1–4 faction standing every 30 seconds per animal. -->
           <li>
             <a
               href="/mechanics/reputation#pets"

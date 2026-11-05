@@ -157,7 +157,7 @@
         You have 2 minutes to answer. The roll resolves when everyone answers or
         time runs out. No answer counts as Pass.
       </p>
-      <!-- Source: server-scripts/Player.cs:15193-15199 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
+      <!-- Source: server-scripts/Player.cs:15175-15181 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -278,13 +278,13 @@
         Local, party, guild, and whisper messages longer than 120 characters are
         not sent.
       </p>
-      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:4290-4310,4373-4394 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
+      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:4231-4251,4314-4335 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
       <p>
         Select a living player in your zone and enter <code>/follow</code>. You
         follow within 1 yd, without attacking. You do not need to be in their
         party.
       </p>
-      <!-- Source: server-scripts/Player.cs:4313-4336,4340-4372 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
+      <!-- Source: server-scripts/Player.cs:4254-4277,4281-4313 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
       <p>
         Moving or using a skill cancels follow. It also ends if either player
         dies, the target disappears or changes zone, or they move more than 8 yd

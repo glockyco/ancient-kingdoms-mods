@@ -95,7 +95,7 @@
         Equipment and skills add Fear Resist up to 100%, which makes you immune.
         Fear dismounts a player.
       </li>
-      <!-- Source: server-scripts/Combat.cs:1396-1401; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
+      <!-- Source: server-scripts/Combat.cs:1392-1397; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
       <li>
         A monster or NPC feared by a Necromancer player runs at half its
         Movement Speed.

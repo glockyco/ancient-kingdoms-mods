@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   applyHonestyGain,
   escortStats,
-  honorFightPoints,
   honorPoints,
   honorPointsAtLevel,
   isEligibleLevel,
@@ -32,13 +31,6 @@ describe("Honor", () => {
         isElite: false,
       }),
     ).toBe(1);
-  });
-
-  it("counts an additional normal foe as a tenth and pays whole points", () => {
-    const first = { points: 12, full: true };
-    const add = { points: 7, full: false };
-    expect(honorFightPoints([first, add])).toBe(12);
-    expect(honorFightPoints([first, add, add])).toBe(13);
   });
 });
 

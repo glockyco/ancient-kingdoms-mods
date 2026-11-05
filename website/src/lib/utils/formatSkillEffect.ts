@@ -801,7 +801,7 @@ function formatBuffDebuffStats(
   }
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
   // Source: server-scripts/BuffSkill.cs:illusionRace,90-100 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:7260-7270 (ReSkinPlayer picks the illusion race)
+  // server-scripts/Player.cs:7201-7211 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
   // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Skills.cs — undeadIlussion redraws a player as undead.
@@ -853,7 +853,7 @@ function formatBuffDebuffStats(
   );
 
   const lifetapHealing = parseLinearValue(skill.lifetap_healing_percent_bonus);
-  // Source: server-scripts/Combat.cs:1295-1306 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
+  // Source: server-scripts/Combat.cs:1291-1302 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
   if (lifetapHealing) {
     parts.push(
       `+${formatLinearPercent(lifetapHealing, options)} lifetap healing`,
@@ -1107,7 +1107,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-199,204-217;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:9480-9497 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:9421-9438 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — while active, a Rogue's
   // followupDefaultAttack skill, Stab, switches to Poison damage and adds the rounded 250% Dexterity
@@ -1266,7 +1266,7 @@ export function formatSkillEffect(
   // Only monsters enrage from a passive: DealDamageAt scans monster and NPC skill
   // lists alone, and no NPC carries a skill, so a player passive with the flag
   // changes no damage.
-  // Source: server-scripts/Combat.cs:863-906 (enrage scan and damage bonus, non-spell hits only)
+  // Source: server-scripts/Combat.cs:859-902 (enrage scan and damage bonus, non-spell hits only)
   if (skill.skill_type === "passive" && skill.is_enrage) {
     parts.push(`+${formatRange("50%", "75%")} non-spell dmg below 10% hp`);
   }

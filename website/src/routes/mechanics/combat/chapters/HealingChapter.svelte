@@ -113,7 +113,7 @@
   </Topic>
 
   <Topic id="lifetap">
-    <!-- Source: server-scripts/Combat.cs:1291-1311 — lifetap heals without reducing damage, and damage is not capped by the victim's remaining Health. -->
+    <!-- Source: server-scripts/Combat.cs:1287-1307 — lifetap heals without reducing damage, and damage is not capped by the victim's remaining Health. -->
     <p>
       Lifetap restores Hit Points without reducing the hit's damage. Overkill
       damage counts toward the healing.
@@ -122,7 +122,7 @@
       The attacker's <a href={virtueHref("compassion")}>Compassion</a>
       blessing adds {bonusRange(compassionHealingBonus)} to the result, rounded.
     </p>
-    <!-- Source: server-scripts/Combat.cs:1291-1311 — lifetap healing rounds down after multiplying remaining damage by its percentage and summed active or permanent healing bonuses. -->
+    <!-- Source: server-scripts/Combat.cs:1287-1307 — lifetap healing rounds down after multiplying remaining damage by its percentage and summed active or permanent healing bonuses. -->
     <Formula calculation={lifetapCalculation()} />
   </Topic>
 </Chapter>

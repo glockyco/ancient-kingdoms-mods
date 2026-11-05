@@ -13,7 +13,7 @@
 </script>
 
 <div class="space-y-1">
-  <!-- Source: server-scripts/TargetDebuffSkill.cs:106-156 (resist gate), 181-214,218-243,247-260 (removal); AreaDebuffSkill.cs:121-167 (resist gate), 192-225,229-254,258-270 (removal); Combat.cs:1638-1665 GetProbResistMagic/Disease -->
+  <!-- Source: server-scripts/TargetDebuffSkill.cs:106-156 (resist gate), 181-234,237-283,286-326 (removal); AreaDebuffSkill.cs:121-167 (resist gate), 192-245,248-294,297-336 (removal); Combat.cs:1634-1661 GetProbResistMagic/Disease -->
   <h3 class="font-semibold">
     <a
       href="/mechanics/combat#dispel"

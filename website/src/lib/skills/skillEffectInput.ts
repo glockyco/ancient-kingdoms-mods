@@ -289,7 +289,7 @@ function cadenceNote(mercenary: boolean): string {
   return `${songPower} CHA, then ${melody[0]}, ${melody[1]} or ${melody[2]} more with 4, 5 or 6+ songs`;
 }
 
-// Source: server-scripts/BuffSkill.cs:ScaleWithCharisma,ScaleHealingPerSecondBonus; Buff.cs:46-283; BardSongSkill.cs:28; BardCharmSongSkill.cs:GetCharmedDamageMultiplier — song power scales a song's values, but not speed, attributes or an additive Charisma damage over time.
+// Source: server-scripts/BuffSkill.cs:ScaleWithCharisma,ScaleHealingPerSecondBonus; Buff.cs:56-293; BardSongSkill.cs:28; BardCharmSongSkill.cs:GetCharmedDamageMultiplier — song power scales a song's values, but not speed, attributes or an additive Charisma damage over time.
 /**
  * Move a song's notes onto its "Bard song" fragment when every value it shows
  * carries the same song power note.

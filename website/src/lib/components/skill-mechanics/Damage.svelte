@@ -93,9 +93,9 @@
       <Calculation calculation={block.calculation} />
     </div>
   {/each}
-  <!-- Source: server-scripts/Combat.cs:725-734,915-932 — physical hits use block/miss and Defense, elemental hits use the matching resist. -->
+  <!-- Source: server-scripts/Combat.cs:721-730,911-928 — physical hits use block/miss and Defense, elemental hits use the matching resist. -->
   {#if skill.is_manaburn_skill}
-    <!-- Source: server-scripts/Combat.cs:750-753,907-946 — Mana Burn and Rageblow skip avoidance and mitigation, not variance, combat advantage, level adjustment or critical scaling. -->
+    <!-- Source: server-scripts/Combat.cs:746-749,903-942 — Mana Burn and Rageblow skip avoidance and mitigation, not variance, combat advantage, level adjustment or critical scaling. -->
     <p class="text-muted-foreground">
       This skill bypasses avoidance, Armor Class and resistance. It still gets
       random variance, Combat Advantage, the level adjustment and critical hits.
@@ -105,7 +105,7 @@
       >.
     </p>
   {:else if damageMechanics}
-    <!-- Source: server-scripts/Combat.cs:308-320,915-932,1637-1678 — the matching stat reduces damage by 0.0005 per point, at most 0.9, rounded up; Defense adds 0.0001 per point to blockChance, at most 0.8; a resist stat adds 0.0005 per point to the resist chance. -->
+    <!-- Source: server-scripts/Combat.cs:308-320,911-928,1633-1674 — the matching stat reduces damage by 0.0005 per point, at most 0.9, rounded up; Defense adds 0.0001 per point to blockChance, at most 0.8; a resist stat adds 0.0005 per point to the resist chance. -->
     <p class="text-muted-foreground">
       {#if damageMechanics.avoidance === "block"}
         The target's Armor Class reduces this damage by {DEFENSE_RATES.reductionPerPoint}

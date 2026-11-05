@@ -126,21 +126,6 @@ export function honorPointsAtLevel(foe: HonorFoe): number {
   return honorPoints(foe, foe.level);
 }
 
-export interface HonorKill {
-  points: number;
-  /** The first foe, an elite or a boss counts fully. Another normal foe counts a tenth. */
-  full: boolean;
-}
-
-// Source: server-scripts/VirtueCombat.cs:OnDeath,SettleHonorIfFinished — kills add tenths of points, capped at 150,000 tenths, and the fight pays the whole points it holds.
-export function honorFightPoints(kills: readonly HonorKill[]): number {
-  let tenths = 0;
-  for (const kill of kills) {
-    tenths = Math.min(150000, tenths + kill.points * (kill.full ? 10 : 1));
-  }
-  return Math.floor(tenths / 10);
-}
-
 // Source: server-scripts/Player.cs:AssignValorTarget — a shrine names a living dungeon elite or boss from 2 levels below you to 5 above.
 export function valorQuarryLevels(playerLevel: number): [number, number] {
   return [playerLevel - 2, playerLevel + 5];

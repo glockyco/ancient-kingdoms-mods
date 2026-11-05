@@ -408,7 +408,7 @@ export function songCalculation(): Calculation {
   };
 }
 
-// Source: server-scripts/Buff.cs:46-227; Wisdom.cs:118-129; Combat.cs:988-1001 — positive non-song effects add the selected attribute, with per-effect rounding.
+// Source: server-scripts/Buff.cs:56-237; Wisdom.cs:118-129; Combat.cs:984-997 — positive non-song effects add the selected attribute, with per-effect rounding.
 export function attributeBuff(
   baseValue: number,
   attribute: number,
@@ -602,7 +602,7 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
   };
 }
 
-// Source: server-scripts/Player.cs:3767-3808; Combat.cs:336-360; Skills.cs:932-941 — float32 cast and recovery durations are added on separate double deadlines, without narrowing their total to float32.
+// Source: server-scripts/Player.cs:3708-3749; Combat.cs:336-360; Skills.cs:932-941 — float32 cast and recovery durations are added on separate double deadlines, without narrowing their total to float32.
 export function attackInterval(castTime: number, delay: number, haste: number) {
   const effective = clamp(f32(haste), f32(-0.8), f32(0.8));
   const rawWait = divideF32(addF32(delay, -multiplyF32(delay, effective)), 25);
@@ -761,7 +761,7 @@ export function wildStrikeDamage(damage: number, rank: number) {
   return iround(multiplyF32(damage, addF32(1, multiplyF32(rank, 0.1))));
 }
 
-// Source: server-scripts/Combat.cs:1322-1340,1695-1701 — parry requires remaining positive health damage, rage on being hit returns zero for non-positive damage.
+// Source: server-scripts/Combat.cs:1318-1336,1691-1697 — parry requires remaining positive health damage, rage on being hit returns zero for non-positive damage.
 export function parryDamage(damage: number) {
   return damage > 0 ? clamp(iround(multiplyF32(damage, 0.5)), 1, 5000) : 0;
 }

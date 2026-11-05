@@ -256,7 +256,7 @@
       <p>
         Equipment, augments, passive skills, and buffs can also change your
         attributes.
-        <!-- Source: server-scripts/Player.cs:13624-13659 — reading attribute books permanently raises their listed attributes. -->
+        <!-- Source: server-scripts/Player.cs:13606-13641 — reading attribute books permanently raises their listed attributes. -->
         Reading certain
         <a
           href="/professions/lore_keeping"
@@ -293,7 +293,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Health.cs:32-58,73-85 — Constitution, equipment, augments, passive skills, and buffs raise maximum health; equipment, augments, passive skills, and healing-over-time buffs raise recovery. -->
+      <!-- Source: server-scripts/Health.cs:32-59,74-86 — Constitution, equipment, augments, passive skills, and buffs raise maximum health; equipment, augments, passive skills, and healing-over-time buffs raise recovery. -->
       <!-- Source: server-scripts/EnergyResource.cs:84-95 — resources recover only while the entity is alive. -->
       <p>
         <span class="block">Every class has Hit Points.</span>
@@ -331,7 +331,7 @@
           <tbody>
             <!-- Source: server-scripts/Mana.cs:28-54 — max mana and mana recovery have distinct calculations. -->
             <!-- Source: server-scripts/Intelligence.cs:21-28,96-99 and server-scripts/Wisdom.cs:29-37,104-107 — Intelligence adds pool but neither attribute adds recovery. -->
-            <!-- Source: server-scripts/Player.cs:1770-1781 — Cleric, Druid, Ranger, Wizard and Necromancer use Mana. -->
+            <!-- Source: server-scripts/Player.cs:1711-1722 — Cleric, Druid, Ranger, Wizard and Necromancer use Mana. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Mana</th>
               <td class="p-2">Cleric, Druid, Necromancer, Ranger, Wizard</td>
@@ -346,7 +346,7 @@
               </td>
             </tr>
             <!-- Source: server-scripts/Energy.cs:12-17,27-51 and server-scripts/Strength.cs:80-87 — rage capacity scales with Strength and baseline recovery is zero. -->
-            <!-- Source: server-scripts/Combat.cs:1077-1088,1117-1134,1118-1153,1180-1185 — damaging auto attacks and received single-target physical skill hits generate rage, with no melee-range check. -->
+            <!-- Source: server-scripts/Combat.cs:1073-1084,1113-1130,1114-1149,1176-1181 — damaging auto attacks and received single-target physical skill hits generate rage, with no melee-range check. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Rage</th>
               <td class="p-2">Warrior, Rogue</td>
@@ -385,8 +385,8 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Combat.cs:1200-1208 — Wizard Mystic Spark restores floor(35% times min(hit damage, target health before hit)) as mana. -->
-      <!-- Source: server-scripts/Combat.cs:1259-1289 — Mana Shield spends one mana per point of damage absorbed. -->
+      <!-- Source: server-scripts/Combat.cs:1196-1204 — Wizard Mystic Spark restores floor(35% times min(hit damage, target health before hit)) as mana. -->
+      <!-- Source: server-scripts/Combat.cs:1255-1285 — Mana Shield spends one mana per point of damage absorbed. -->
       <p>
         <span class="block"
           ><a
@@ -512,7 +512,7 @@
             >Veteran point counting and reset losses</a
           > explains how the game miscounts ranks that cost 2 veteran points.
         </p>
-        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16465-16468 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
+        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16447-16450 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
           On some saved characters, the first specialization switch resets
           assigned attributes for free.
@@ -547,7 +547,7 @@
           resets your assigned attribute points for the same price, but not while
           a debuff is on you.
         </p>
-        <!-- Source: server-scripts/Player.cs:12249-12255,12281-12315 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
+        <!-- Source: server-scripts/Player.cs:12231-12237,12263-12297 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
         <!-- Source: server-scripts/PlayerSkills.cs:1880-1973 — each reset returns points only for its own skill pool. -->
         <p>
           <span class="block"
