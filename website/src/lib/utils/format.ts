@@ -11,6 +11,19 @@ export function distinctSubzoneName(
     : subZoneName;
 }
 
+// Building a number format costs far more than using one, and a page formats
+// thousands of numbers, so each set of options keeps its format.
+const numberFormats = new Map<string, Intl.NumberFormat>();
+function numberFormat(options: Intl.NumberFormatOptions): Intl.NumberFormat {
+  const key = JSON.stringify(options);
+  let format = numberFormats.get(key);
+  if (!format) {
+    format = new Intl.NumberFormat("en-US", options);
+    numberFormats.set(key, format);
+  }
+  return format;
+}
+
 /** Format a fraction at the caller's displayed precision. */
 export function formatPercent(
   value: number,
@@ -30,8 +43,8 @@ export function formatPercent(
     percent !== 0 &&
     Math.abs(percent) < 0.5 * 10 ** -decimals
   ) {
-    return `${percent
-      .toLocaleString("en-US", { maximumSignificantDigits: 2 })
+    return `${numberFormat({ maximumSignificantDigits: 2 })
+      .format(percent)
       .replace(/^-/, "−")}%`;
   }
   const rounded = Number(percent.toFixed(decimals));
@@ -59,12 +72,12 @@ export function formatNumber(
 ): string {
   const formatted =
     decimals === undefined
-      ? value.toLocaleString("en-US", { useGrouping: grouping })
+      ? numberFormat({ useGrouping: grouping }).format(value)
       : grouping
-        ? value.toLocaleString("en-US", {
+        ? numberFormat({
             minimumFractionDigits: trailingZeros ? decimals : 0,
             maximumFractionDigits: decimals,
-          })
+          }).format(value)
         : trailingZeros
           ? value.toFixed(decimals)
           : String(Number(value.toFixed(decimals)));
