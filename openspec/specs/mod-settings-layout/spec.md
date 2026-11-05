@@ -21,12 +21,17 @@ Each feature SHALL have its own on and off switch, shown as a row in its group o
 
 ### Requirement: Features sit in three groups
 
-The groups SHALL be Respawns, with the boss list, map pins, dungeon entrances, world markers, edge arrows, alerts and sharing, Bestiary, with full Bestiary pages and Bestiary countdowns, and Combat, with boss skills and Fatecharms.
+The groups SHALL be Respawns, with the boss list, map pins, dungeon entrances, world markers, edge arrows, alerts and sharing, Bestiary, with full Bestiary pages, Bestiary countdowns and drops found, and Combat, with boss skills and Fatecharms.
 
 #### Scenario: Finding edge arrows
 
 - **WHEN** the player opens Respawns in the settings window
 - **THEN** edge arrows has its own row, apart from world markers
+
+#### Scenario: Finding drops found
+
+- **WHEN** the player opens Bestiary in the settings window
+- **THEN** a row reads "Drops found" with "Shows a bar on each monster in the Bestiary that fills as you find its drops."
 
 ### Requirement: A feature's settings sit behind a gear
 
@@ -39,12 +44,17 @@ A feature with settings SHALL keep them on a page of its own, reached from a gea
 
 ### Requirement: One feature's failure does not stop the others
 
-When a feature fails, Pocket Compendium SHALL switch that feature off for the session, record the failure once in the MelonLoader log, and keep every other feature running.
+When a feature fails, Pocket Compendium SHALL switch that feature off, record the failure once in the MelonLoader log, and keep every other feature running. The feature's settings row SHALL read "Stopped after an error." with a Report button, and its switch SHALL show it off. Switching it on SHALL turn the feature on again in the same session.
 
 #### Scenario: Map pins fail
 
 - **WHEN** drawing map pins throws
-- **THEN** map pins stop for the session, the log holds one error, and the boss list keeps updating
+- **THEN** map pins stop, the log holds one error, and the boss list keeps updating
+
+#### Scenario: Turning a stopped feature on in the settings
+
+- **WHEN** Map pins has stopped and the player switches it on in Respawns
+- **THEN** map pins draw again and the row no longer reads "Stopped after an error."
 
 ### Requirement: Filters decide what the boss list shows
 
@@ -75,17 +85,17 @@ The settings window SHALL have a General group for settings that apply across fe
 
 ### Requirement: Undiscovered monsters show in full or as the game shows them
 
-While Undiscovered monsters is on, the boss list, map pins, dungeon cards, world markers and spawn alerts SHALL name a monster without an entry in the game's Bestiary record and show its portrait, and its Bestiary page SHALL show in full. While it is off, they SHALL show it as a silhouette named ???, and its Bestiary page SHALL show as the game shows it.
+While Undiscovered monsters is on, the boss list, map pins, dungeon cards, world markers and spawn alerts SHALL name a monster without an entry in the game's Bestiary record and show its portrait, its Bestiary page SHALL show in full, and its tile in the Bestiary's list SHALL show its portrait in the game's grey for monsters seen but never killed. While it is off, they SHALL show it as a silhouette named ???, and its Bestiary page and tile SHALL show as the game shows them.
 
 #### Scenario: Undiscovered boss
 
 - **WHEN** the player has not discovered Vyriss the Withered and the default applies
-- **THEN** its boss list row shows its portrait and name
+- **THEN** its boss list row shows its portrait and name, and its tile in the Bestiary's list shows its portrait in grey
 
 #### Scenario: Keeping monsters hidden
 
 - **WHEN** the player switches Undiscovered monsters off
-- **THEN** Vyriss the Withered's row shows a silhouette named ???, and its Bestiary page shows "???" as the game does
+- **THEN** Vyriss the Withered's row shows a silhouette named ???, its Bestiary page shows "???" as the game does, and its tile is a black silhouette
 
 ### Requirement: Panels are placed by the player
 
@@ -118,3 +128,40 @@ In the settings window, every option of a picker SHALL have the same width, and 
 
 - **WHEN** the Sort by picker shows State, Distance and Level
 - **THEN** the three options are equally wide
+
+### Requirement: The interface follows the game's interface scale
+
+Pocket Compendium's panels, windows, start-screen cards and hovers SHALL take the scale of the game's own interface: the game's canvas scale for the screen, multiplied by the game's "Scaling UI" setting relative to its default. They SHALL follow the setting while its slider moves, without a restart. World markers and edge arrows SHALL keep their size. A panel's own size SHALL apply on top of the interface scale.
+
+#### Scenario: A larger interface
+
+- **WHEN** the player moves Scaling UI from its default of 0.9 to 1.2
+- **THEN** the boss list, the settings window and the mod's hovers grow by a third, as the game's windows do, and world markers keep their size
+
+#### Scenario: The default on a 16:9 screen
+
+- **WHEN** Scaling UI is at its default on a 1920 by 1080 screen
+- **THEN** the mod's panels and windows have the size they had before they followed the setting
+
+#### Scenario: A screen that is not 16:9
+
+- **WHEN** the game runs in a window of 1800 by 1169
+- **THEN** the settings window's text has the size of the game's own settings window text at every slider value
+
+### Requirement: The notice card can be placed in advance
+
+The General page SHALL have a "Notices" row with a "Show example" button and the help "Shows an example card so you can move it where you want it." The button SHALL show an example card in the place a stop's card uses, in the gold look, reading "Example: notices show here" over "Drag this card where you want it.", with a Done button that closes it.
+
+#### Scenario: Showing the example
+
+- **WHEN** the player clicks "Show example" on the General page
+- **THEN** a gold card reads "Example: notices show here" over "Drag this card where you want it." with a Done button
+
+### Requirement: The notice card is placed like a panel
+
+The notice card, the example included, SHALL first appear bottom left above the chat. It SHALL move, keep its place across sessions and lock like a panel, and return to its first place with the panels' Reset.
+
+#### Scenario: Placing the card
+
+- **WHEN** the player clicks "Show example", drags the example card to the top right and clicks Done
+- **THEN** the next card for a stopped feature shows at the top right

@@ -62,12 +62,17 @@ The level SHALL use the game's colour for the monster's level minus the player's
 
 ### Requirement: Dead portraits show progress
 
-A dead monster's portrait SHALL be darkened, with a sweep that clears as its respawn time runs out.
+In the boss list's list style, a dead monster's portrait SHALL be dimmed in full while its row shows the time or state. In the compact style, a dead monster's portrait SHALL stay as it is, with only its time or state on the tile. No portrait SHALL show a sweep of the share of time still to run.
 
 #### Scenario: Recently killed boss
 
-- **WHEN** Xylevis has 12% of its respawn time left
-- **THEN** its portrait is darkened except for 88% that has cleared
+- **WHEN** Xylevis is dead with 12% of its respawn time left and the boss list shows the list style
+- **THEN** its portrait is dimmed in full and its row shows the time left
+
+#### Scenario: Recently killed boss in the compact style
+
+- **WHEN** Xylevis is dead with 12% of its respawn time left and the boss list shows the compact style
+- **THEN** its portrait shows as it does while it is up, with the time left on the tile
 
 ### Requirement: Compact style shows portraits with times
 
@@ -135,12 +140,12 @@ A day or night monster's hover text SHALL give its hours as "Only at night, from
 
 ### Requirement: The Bestiary counts down
 
-In the Bestiary grid, a dead monster's portrait SHALL be dimmed, with a dark sweep over the share of its time still to run and its remaining time in bold on top. On its page, a plate on the split between the facts and the lore SHALL say "Respawns in" with the time and a bar that fills, without covering the lore or the facts. The grid's countdowns and the page's plate SHALL each have their own switch, both on at first start.
+In the Bestiary grid, a dead monster's portrait SHALL stay as it is, with its remaining time in bold on a shade at the bottom of the tile and no dim or sweep. On its page, a plate on the split between the facts and the lore SHALL say "Respawns in" with the time and a bar that fills, without covering the lore or the facts. The grid's countdowns and the page's plate SHALL each have their own switch, both on at first start.
 
 #### Scenario: Opening a dead boss's page
 
 - **WHEN** the player opens Xylevis's Bestiary page with 4:19 left
-- **THEN** the grid portrait shows 4:19 and the page shows "Respawns in 4:19"
+- **THEN** the grid portrait shows 4:19 without a dim or a sweep, and the page shows "Respawns in 4:19"
 
 #### Scenario: Only the page counts down
 

@@ -93,13 +93,32 @@ The README SHALL have its own section on problems and ideas that names the About
 
 ### Requirement: A stopped feature makes itself known
 
-When a feature stops after an error, the game's message band SHALL say once per session that the feature stopped and name the report action. The other features SHALL keep running.
+When a feature stops after an error, a card SHALL show until the player closes it, titled with the feature, such as "World markers stopped", over "An error turned it off.", with a Report button that takes the report action and a "Turn on again" button. Neither the game's message band nor the chat SHALL carry a line about the stop. The other features SHALL keep running.
 
 #### Scenario: Map pins stop
 
 - **WHEN** Map pins throws during an update
-- **THEN** one message names Map pins and the report action
+- **THEN** a card reads "Map pins stopped" over "An error turned it off." with Report and "Turn on again"
 - **AND** the boss list keeps updating
+
+#### Scenario: Turning a feature on again
+
+- **WHEN** the player clicks "Turn on again" on the card for Map pins
+- **THEN** the card closes and map pins draw again
+
+### Requirement: A stop shows one card
+
+The card SHALL show once per feature per session, and again only after the player turned that feature back on and it stopped again.
+
+#### Scenario: Stopping again after turning it on
+
+- **WHEN** Map pins stops, the player turns it on again, and it throws again
+- **THEN** one new card shows for Map pins
+
+#### Scenario: Repeated errors of one stop
+
+- **WHEN** Map pins' code throws in several places before Map pins stops
+- **THEN** one card shows for Map pins
 
 ### Requirement: The log names where the player plays
 
