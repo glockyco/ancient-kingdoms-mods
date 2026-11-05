@@ -17,20 +17,14 @@ namespace PocketCompendium.Features.BossList.Ui;
 /// </summary>
 internal sealed class BossListPanel
 {
-    private const float AccentHeight = 2f;
-    private const float BarHeight = 30f;
-    private const float HeaderHeight = AccentHeight + BarHeight;
+    private const float HeaderHeight = PanelChrome.HeaderHeight;
     private const float ControlSize = 22f;
     private const float ControlIconSize = 15f;
-    private const float TilePad = 6f;
-    private const float TileGap = 6f;
     private const float EmptyHeight = 40f;
     private const float ScrollStep = 46f;
 
     // The compact header keeps room for its title, count and controls over a short row of tiles.
     private const float CompactMinWidth = 210f;
-
-    private static readonly Color PanelEdge = new(1f, 1f, 1f, 0.07f);
 
     private readonly BossListSettings _settings;
     private readonly Feature _feature;
@@ -41,13 +35,11 @@ internal sealed class BossListPanel
     private readonly List<RowView> _rows = new();
     private readonly List<GroupHeaderView> _headers = new();
     private readonly List<MoreLineView> _mores = new();
-    private readonly List<TileView> _tiles = new();
     private readonly List<RectTransform> _dragHandles = new();
 
-    private Image _background;
+    private PanelChrome _chrome;
+    private TileGrid _grid;
     private RectTransform _header;
-    private Label _title;
-    private Label _count;
     private Image _chip;
     private Label _chipText;
     private IconButton _settingsButton;
@@ -81,13 +73,12 @@ internal sealed class BossListPanel
         Host.Create();
         var root = Host.Rect;
 
-        _background = HudFactory.Box("background", root, Theme.Panel);
-        HudFactory.Stretch(_background, Vector2.zero, Vector2.zero);
-        HudFactory.Frame(_background.transform, PanelEdge, 1f);
+        _chrome = new PanelChrome(root);
 
         _viewport = HudFactory.Rect("viewport", root).GetComponent<RectTransform>();
         _viewport.gameObject.AddComponent<RectMask2D>();
         _content = HudFactory.Rect("content", _viewport).GetComponent<RectTransform>();
+        _grid = new TileGrid(_content);
         _content.anchorMin = _content.anchorMax = new Vector2(0f, 1f);
         _content.pivot = new Vector2(0f, 1f);
 
@@ -107,7 +98,7 @@ internal sealed class BossListPanel
         _rows.Clear();
         _headers.Clear();
         _mores.Clear();
-        _tiles.Clear();
+        _grid.Clear();
         _dragHandles.Clear();
     }
 
@@ -154,7 +145,8 @@ internal sealed class BossListPanel
         int headerCount = 0;
         int moreCount = 0;
         float y = 0f;
-        int columns = Mathf.Max(1, Mathf.FloorToInt((width - 2f * TilePad + TileGap) / (TileView.Size + TileGap)));
+        int columns = TileGrid.ColumnsFor(width);
+        _grid.Begin();
 
         foreach (var group in _groups)
         {
@@ -177,11 +169,7 @@ internal sealed class BossListPanel
 
                 if (_compact)
                 {
-                    var tile = Pooled(_tiles, rowCount, () => new TileView(_content));
-                    tile.Set(data, watched);
-                    tile.SetTooltip(tooltip);
-                    HudFactory.TopLeft(tile.Rect, TilePad + rowCount % columns * (TileView.Size + TileGap),
-                        TilePad + rowCount / columns * (TileView.Size + TileGap), TileView.Size, TileView.Size);
+                    _grid.Add(data, watched, tooltip, columns);
                 }
                 else
                 {
@@ -208,15 +196,14 @@ internal sealed class BossListPanel
         Hide(_headers, headerCount, header => header.SetActive(false));
         Hide(_mores, moreCount, more => more.SetActive(false));
         Hide(_rows, _compact ? 0 : rowCount, row => row.SetActive(false));
-        Hide(_tiles, _compact ? rowCount : 0, tile => tile.SetActive(false));
+        _grid.End();
 
         float panelWidth = width;
         if (_compact && rowCount > 0)
         {
-            int lines = (rowCount + columns - 1) / columns;
             int used = Mathf.Min(columns, rowCount);
-            y = 2f * TilePad + lines * TileView.Size + (lines - 1) * TileGap;
-            panelWidth = Mathf.Max(CompactMinWidth, 2f * TilePad + used * TileView.Size + (used - 1) * TileGap);
+            y = TileGrid.Height(rowCount, columns);
+            panelWidth = Mathf.Max(CompactMinWidth, TileGrid.Width(used));
         }
         else if (_compact)
         {
@@ -232,7 +219,7 @@ internal sealed class BossListPanel
         }
 
         _contentHeight = y;
-        _count.Value = up > 0 ? up + " up" : "";
+        _chrome.Count.Value = up > 0 ? up + " up" : "";
         Layout(panelWidth);
     }
 
@@ -268,9 +255,7 @@ internal sealed class BossListPanel
         TrackedMonster clicked = null;
         if (_compact)
         {
-            foreach (var tile in _tiles)
-                if (tile.Monster != null && tile.UpdateHover() && inView && Pointer.Clicked(tile.Rect))
-                    clicked = tile.Monster;
+            clicked = _grid.UpdateInput(inView);
         }
         else
         {
@@ -300,22 +285,10 @@ internal sealed class BossListPanel
 
     private void BuildHeader(RectTransform root)
     {
-        var bar = HudFactory.Box("header", root, Theme.Header);
-        _header = bar.rectTransform;
-        _header.anchorMin = _header.anchorMax = new Vector2(0f, 1f);
-        _header.pivot = new Vector2(0f, 1f);
-        bar.raycastTarget = true;
-
-        var accent = HudFactory.Tinted("accent", _header, Shapes.Fade, Theme.Gold);
-        accent.type = Image.Type.Simple;
-        accent.preserveAspect = false;
-        HudFactory.Place(accent, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -AccentHeight), Vector2.zero);
-        var line = HudFactory.Box("line", _header, Theme.Line);
-        HudFactory.Place(line, new Vector2(0f, 0f), new Vector2(1f, 0f), Vector2.zero, new Vector2(0f, 1f));
-
-        _title = HudFactory.Label("title", _header, 14f, Theme.Gold, Align.Left, bold: true);
-        _title.Value = "Bosses";
-        _count = HudFactory.Label("count", _header, 12f, Theme.Muted, Align.Left);
+        // The chrome built the header first. It goes above the rows, which come later.
+        _header = _chrome.Header;
+        _header.SetAsLastSibling();
+        _chrome.Title.Value = "Bosses";
 
         _chip = HudFactory.Sliced("chip", _header, Shapes.Rounded, Theme.ReadyBg, cornerScale: 1.4f);
         var chipIcon = HudFactory.Tinted("icon", _chip.rectTransform, Icons.Sliders, Theme.Ready);
@@ -334,7 +307,7 @@ internal sealed class BossListPanel
         var rect = button.Rect;
         rect.anchorMin = rect.anchorMax = new Vector2(1f, 0.5f);
         rect.pivot = new Vector2(1f, 0.5f);
-        rect.anchoredPosition = new Vector2(-8f - slot * (ControlSize + 4f), -AccentHeight / 2f);
+        rect.anchoredPosition = new Vector2(-8f - slot * (ControlSize + 4f), -PanelChrome.AccentHeight / 2f);
         tooltip = new HoverText(rect);
         return button;
     }
@@ -342,14 +315,9 @@ internal sealed class BossListPanel
     private void Layout(float width)
     {
         // The header: title, count and level filter chip, with the controls on the right.
-        _header.sizeDelta = new Vector2(width, HeaderHeight);
+        float x = _chrome.LayoutHeader(width, 70f);
         _header.anchoredPosition = new Vector2(0f, _compact ? HeaderHeight : 0f);
-        float x = 10f;
-        float barMiddle = AccentHeight;
-        HudFactory.TopLeft(_title.Rect, x, barMiddle, 70f, BarHeight);
-        x += Mathf.Ceil(_title.PreferredWidth) + 8f;
-        HudFactory.TopLeft(_count.Rect, x, barMiddle, 50f, BarHeight);
-        x += _count.PreferredWidth > 0f ? Mathf.Ceil(_count.PreferredWidth) + 8f : 0f;
+        float barMiddle = PanelChrome.AccentHeight;
 
         string chip = ChipText();
         float controlsLeft = width - 8f - 3f * (ControlSize + 4f);
@@ -442,7 +410,6 @@ internal sealed class BossListPanel
         switch (view)
         {
             case RowView row: row.SetActive(true); break;
-            case TileView tile: tile.SetActive(true); break;
             case GroupHeaderView header: header.SetActive(true); break;
             case MoreLineView more: more.SetActive(true); break;
         }
