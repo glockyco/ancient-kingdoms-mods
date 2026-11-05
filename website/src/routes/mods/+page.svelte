@@ -35,9 +35,9 @@
     },
     {
       title: "Map pins",
-      text: "Marks the bosses, elites, and fabled monsters in your zone on the map, with their respawn timers.",
+      text: "Marks the bosses, elites, and fabled monsters in your zone on the map, with their respawn timers. Hover over a dungeon's entrance to see its bosses.",
       image: "/mod-pictures/card-map-pins.webp",
-      alt: "The map of Twilight Forest with a pin for each monster and Nivalis's spawn rules.",
+      alt: "The map of Crescent Coast with a pin for each monster and the Sunken Temple's bosses beside its entrance.",
     },
     {
       title: "Fatecharms",

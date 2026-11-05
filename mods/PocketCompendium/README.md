@@ -31,9 +31,9 @@ Lists the bosses, elites, and fabled monsters in your zone and when they spawn. 
 
 ### Map pins and world markers
 
-Marks respawn timers on the map and on spawn points, and points to monsters off screen.
+Marks respawn timers on the map and on spawn points, and points to monsters off screen. Hover over a dungeon's entrance to see its bosses.
 
-![The map of Twilight Forest with a pin for each monster and Nivalis's spawn rules in a tooltip.](../../assets/pocket-compendium-map.webp)
+![The map of Crescent Coast with a pin for each monster and the Sunken Temple's bosses beside its entrance.](../../assets/pocket-compendium-map.webp)
 
 ### Bestiary
 
