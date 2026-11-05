@@ -115,8 +115,8 @@ public class ProfessionExporter : BaseExporter
                 achievement_id = "EXPLORING_MASTER",
                 max_level = 100,
                 tracking_type = "count_based",
-                // Source: server-scripts/ZoneTrigger.cs:190 — Exploring progress is zonesDiscovered.Count / 46
-                tracking_denominator = 46
+                // Source: server-scripts/ZoneTrigger.cs:190 — Exploring progress is zonesDiscovered.Count / 47
+                tracking_denominator = 47
             },
             new ProfessionData
             {
