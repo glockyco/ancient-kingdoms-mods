@@ -165,8 +165,7 @@ internal sealed class SlotOverlay
 
         _time = HudFactory.Label("time", _root, 14f, Color.white, Align.Center, bold: true, monospaced: true);
         _time.Text.extraPadding = true;
-        _time.Text.outlineWidth = 0.28f;
-        _time.Text.outlineColor = new Color32(0, 0, 0, 255);
+        HudFactory.Outline(_time.Text);
         HudFactory.Place(_time.Rect, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(-4f, -1f), new Vector2(4f, 19f));
         _root.gameObject.SetActive(false);
     }

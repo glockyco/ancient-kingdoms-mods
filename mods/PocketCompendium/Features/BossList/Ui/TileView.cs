@@ -49,8 +49,7 @@ internal sealed class TileView
 
         _caption = HudFactory.Label("caption", Rect, 12f, Color.white, Align.Center, bold: true, monospaced: true);
         _caption.Text.extraPadding = true;
-        _caption.Text.outlineWidth = 0.28f;
-        _caption.Text.outlineColor = new Color32(0, 0, 0, 255);
+        HudFactory.Outline(_caption.Text);
         HudFactory.Place(_caption.Rect, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(-3f, -2f), new Vector2(3f, 17f));
     }
 

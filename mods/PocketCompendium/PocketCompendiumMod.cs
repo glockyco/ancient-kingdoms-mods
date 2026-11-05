@@ -143,6 +143,7 @@ public sealed class PocketCompendiumMod : MelonMod
         Tooltip.Dispose();
         Icons.Dispose();
         Shapes.Dispose();
+        HudFactory.Dispose();
         Theme.Dispose();
     }
 }

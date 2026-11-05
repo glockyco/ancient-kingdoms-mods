@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using PocketCompendium.Core.Text;
 using Il2CppTMPro;
 using UnityEngine;
@@ -100,6 +101,38 @@ public sealed class Label
 
 public static class HudFactory
 {
+    private static readonly Dictionary<int, Material> OutlinedMaterials = new();
+
+    /// <summary>
+    /// Gives a label a thin black outline, for times drawn over portraits. The outline lives in a
+    /// material shared per font, because TextMeshPro's <c>outlineWidth</c> throws on a label that
+    /// has not woken yet, as one created under a hidden panel.
+    /// </summary>
+    public static void Outline(TextMeshProUGUI text)
+    {
+        var source = text.font.material;
+        var key = source.GetInstanceID();
+        if (!OutlinedMaterials.TryGetValue(key, out var material) || material == null)
+        {
+            material = new Material(source) { name = "PC_Outlined" };
+            material.EnableKeyword(ShaderUtilities.Keyword_Outline);
+            material.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.28f);
+            material.SetColor(ShaderUtilities.ID_OutlineColor, Color.black);
+            UnityEngine.Object.DontDestroyOnLoad(material);
+            OutlinedMaterials[key] = material;
+        }
+
+        text.fontSharedMaterial = material;
+    }
+
+    public static void Dispose()
+    {
+        foreach (var material in OutlinedMaterials.Values)
+            if (material != null)
+                UnityEngine.Object.Destroy(material);
+        OutlinedMaterials.Clear();
+    }
+
     /// <summary>A nine-sliced image, such as a rounded panel from <see cref="Shapes.Rounded"/>.</summary>
     public static Image Sliced(string name, Transform parent, Sprite sprite, Color color, float cornerScale = 1f)
     {
