@@ -598,15 +598,16 @@
         <!-- Source: server-scripts/UISkillbarMacros.cs:BuildIconSelector,Save — the editor's icon button opens a searchable icon list with a no-icon choice, and Save stores the choice. -->
         <p>
           Right-click an empty skillbar slot and choose Create Macro. Enter a
-          name and commands, optionally pick an icon, then Save. Right-click an
-          existing macro to open its editor, where you can change it or choose
-          Delete.
+          name and commands, optionally pick an icon and a cooldown, then Save.
+          Right-click an existing macro to open its editor, where you can change
+          it or choose Delete.
         </p>
         <!-- Source: server-scripts/SkillbarMacro.cs:Validate; server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/UISkillbarMacros.cs:Build — names allow 1-24 characters, with up to 5 lines of 240 characters each and at least one nonblank command. -->
+        <!-- Source: server-scripts/UISkillbarMacros.cs:Save; server-scripts/SkillbarMacro.cs:Validate; server-scripts/SkillbarMacroSequence.cs:Start — the cooldown takes whole seconds from 0, meaning none, to 86400, and a macro on cooldown does not start. -->
         <p>
           Use a name of 1 to 24 characters and up to 5 command lines, each up to
           240 characters. Blank lines are ignored. At least one command is
-          required.
+          required. Cooldowns go up to 24 hours.
         </p>
         <!-- Source: server-scripts/UISkillbar.cs:HandleSlotClick,ApplySkillbarSlotDragState; server-scripts/GameManager.cs:SkillbarKeyPressed,ExtraSkillbarKeyPressed; server-scripts/PlayerSkillbar.cs:SaveMacro,Load,OnDragAndDrop_SkillbarSlot_SkillbarSlot — clicks and slot shortcuts run macros, unlocked slots allow moving them, and local skillbar preferences separate characters and specializations. -->
         <p>
