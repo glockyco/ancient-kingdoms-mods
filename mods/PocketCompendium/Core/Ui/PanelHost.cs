@@ -79,7 +79,7 @@ public sealed class PanelHost
         Hosts.Add(this);
     }
 
-    /// <summary>Locks every panel. Set from the Layout settings page.</summary>
+    /// <summary>Locks every panel. Set from Lock all panels in the General settings.</summary>
     public static Func<bool> LockAll { get; set; } = () => false;
 
     public string Name { get; }

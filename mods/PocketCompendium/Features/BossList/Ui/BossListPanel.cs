@@ -381,7 +381,7 @@ internal sealed class BossListPanel
         _lockButton.Icon = locked ? Icons.Lock : Icons.LockOpen;
         _lockButton.Active = locked;
         _lockTooltip.Text = PanelHost.LockAll()
-            ? "<b>Panels locked</b>\nEvery panel is locked. Click to open the Layout settings."
+            ? "<b>Panels locked</b>\nEvery panel is locked. Click to open the General settings."
             : locked
                 ? "<b>Unlock panel</b>\nAllow dragging from the header and resizing from the corner."
                 : "<b>Lock panel</b>\nPrevent dragging and resizing.";

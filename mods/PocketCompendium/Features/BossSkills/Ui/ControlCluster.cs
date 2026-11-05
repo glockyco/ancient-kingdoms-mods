@@ -55,7 +55,7 @@ public sealed class ControlCluster
         _lockOpen.SetActive(!locked);
         _lockClosed.SetActive(locked);
         _lockTooltip.Text = lockedByLayout
-            ? "<b>Panels locked</b>\nEvery panel is locked. Click to open the Layout settings."
+            ? "<b>Panels locked</b>\nEvery panel is locked. Click to open the General settings."
             : locked
                 ? "<b>Unlock panel</b>\nAllow dragging from the header and resizing from the corner."
                 : "<b>Lock panel</b>\nPrevent dragging and resizing.";
