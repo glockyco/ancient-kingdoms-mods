@@ -34,11 +34,7 @@ export async function loadItemSourceModel(
   db: Database.Database,
   itemIds: readonly string[],
 ): Promise<AcquisitionModel> {
-  return loadAcquisition(
-    async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[],
-    { kind: "items", itemIds },
-  );
+  return loadAcquisition(db, { kind: "items", itemIds });
 }
 
 export function sourceEntity(

@@ -1,5 +1,5 @@
-import Database from "better-sqlite3";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { getDb } from "$lib/db.server";
+import type Database from "better-sqlite3";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import type { ItemSourceType } from "$lib/constants/source-types";
 import { HOUSE_CHEST_SLOT_RANGES } from "$lib/inventory/house-chests";
@@ -155,56 +155,52 @@ function compareBackpacks(a: BackpackListItem, b: BackpackListItem): number {
 
 export const load: PageServerLoad =
   async (): Promise<InventoryMechanicsPageData> => {
-    const db = new Database(DB_SOURCE_PATH, { readonly: true });
+    const db = getDb();
 
-    try {
-      const rows = getBackpackRows(db);
-      const sourcesByItemId = groupItemSourceSummaries(
-        await getItemSourceSummaries(
-          db,
-          rows.map((row) => row.id),
-        ),
-      );
-
-      const backpacks = rows
-        .map((row) => {
-          const sources = sourcesByItemId.get(row.id) ?? [];
-
-          return {
-            ...row,
-            min_source_level: getMinimumSourceLevel(sources),
-            sources,
-          };
-        })
-        .sort(compareBackpacks);
-
-      const houseChests = getHouseChests(db);
-      const itemIconPaths = getItemIconPaths(
+    const rows = getBackpackRows(db);
+    const sourcesByItemId = groupItemSourceSummaries(
+      await getItemSourceSummaries(
         db,
-        [...backpacks, ...houseChests].map((item) => item.id),
-      );
-      return {
-        backpacks,
-        houses: getHouseLocations(db),
-        houseChests,
-        itemIconPaths,
-        reputationTiers: db
-          .prepare("SELECT * FROM reputation_tiers ORDER BY id")
-          .all() as ReputationTier[],
-        // Source: server-scripts/Combat.cs:DealDamageAt — DamageSkill.breakArmorProb gates the random equipment-slot durability loss.
-        armorBreakingSkills: db
-          .prepare(
-            "SELECT id, name, break_armor_prob FROM skills WHERE break_armor_prob > 0 ORDER BY name",
-          )
-          .all() as InventoryMechanicsPageData["armorBreakingSkills"],
-        // Source: server-scripts/PotionItem.cs:Use — a buff potion whose buff disallows dungeons is refused there.
-        dungeonRefusedPotions: db
-          .prepare(
-            "SELECT id, name FROM items WHERE potion_buff_id IS NOT NULL AND potion_buff_allow_dungeon = 0 ORDER BY name",
-          )
-          .all() as InventoryMechanicsPageData["dungeonRefusedPotions"],
-      };
-    } finally {
-      db.close();
-    }
+        rows.map((row) => row.id),
+      ),
+    );
+
+    const backpacks = rows
+      .map((row) => {
+        const sources = sourcesByItemId.get(row.id) ?? [];
+
+        return {
+          ...row,
+          min_source_level: getMinimumSourceLevel(sources),
+          sources,
+        };
+      })
+      .sort(compareBackpacks);
+
+    const houseChests = getHouseChests(db);
+    const itemIconPaths = getItemIconPaths(
+      db,
+      [...backpacks, ...houseChests].map((item) => item.id),
+    );
+    return {
+      backpacks,
+      houses: getHouseLocations(db),
+      houseChests,
+      itemIconPaths,
+      reputationTiers: db
+        .prepare("SELECT * FROM reputation_tiers ORDER BY id")
+        .all() as ReputationTier[],
+      // Source: server-scripts/Combat.cs:DealDamageAt — DamageSkill.breakArmorProb gates the random equipment-slot durability loss.
+      armorBreakingSkills: db
+        .prepare(
+          "SELECT id, name, break_armor_prob FROM skills WHERE break_armor_prob > 0 ORDER BY name",
+        )
+        .all() as InventoryMechanicsPageData["armorBreakingSkills"],
+      // Source: server-scripts/PotionItem.cs:Use — a buff potion whose buff disallows dungeons is refused there.
+      dungeonRefusedPotions: db
+        .prepare(
+          "SELECT id, name FROM items WHERE potion_buff_id IS NOT NULL AND potion_buff_allow_dungeon = 0 ORDER BY name",
+        )
+        .all() as InventoryMechanicsPageData["dungeonRefusedPotions"],
+    };
   };

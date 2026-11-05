@@ -1,6 +1,5 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import {
   getRecipeDefinitions,
@@ -195,7 +194,7 @@ function toScrollEffect(row: RawScrollEffect): ScrollEffect {
 
 export const load: PageServerLoad =
   async (): Promise<ScrollMasteryPageData> => {
-    const db = new Database(DB_SOURCE_PATH, { readonly: true });
+    const db = getDb();
 
     const profession = db
       .prepare(
@@ -290,8 +289,6 @@ export const load: PageServerLoad =
   `,
       )
       .all() as StationLocation[];
-
-    db.close();
 
     return {
       profession,

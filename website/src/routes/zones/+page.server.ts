@@ -1,13 +1,12 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ZonesPageData, ZoneListView } from "$lib/types/zones";
 import { fishingSpotBaseId } from "../../../scripts/gathering-resource-ids.mjs";
 
 export const prerender = true;
 
 export const load: PageServerLoad = (): ZonesPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   // Bosses and elites count world placements, altar wave members and placeholder spawns
   // near their parent placement, as the zone page lists them. Zone levels and medians
@@ -76,8 +75,6 @@ export const load: PageServerLoad = (): ZonesPageData => {
   for (const zone of zones) {
     zone.gather_count = resourceFamilies.get(zone.id)?.size ?? 0;
   }
-
-  db.close();
 
   return { zones };
 };

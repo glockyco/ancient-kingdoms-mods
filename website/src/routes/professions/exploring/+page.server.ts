@@ -1,7 +1,5 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
-
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 
 export const prerender = true;
 
@@ -31,7 +29,7 @@ interface ExploringPageData {
 }
 
 export const load: PageServerLoad = (): ExploringPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const profession = db
     .prepare(
@@ -85,8 +83,6 @@ export const load: PageServerLoad = (): ExploringPageData => {
   `,
     )
     .all() as ExploringArea[];
-
-  db.close();
 
   return { profession, areas };
 };

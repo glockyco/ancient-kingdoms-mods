@@ -1,10 +1,9 @@
+import { getDb } from "$lib/db.server";
 /**
  * Server-side map queries using better-sqlite3 for prerendering.
  * Acquisition-backed counts are assembled before serializing the map entities.
  */
-import Database from "better-sqlite3";
-import { resolve } from "path";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import type Database from "better-sqlite3";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import type { Season } from "$lib/data/seasonal-events";
 import type {
@@ -29,7 +28,6 @@ import { parseTrapAreaRings } from "$lib/utils/trapArea";
 import { loadAcquisition } from "$lib/server/acquisition";
 import type {
   AcquisitionModel,
-  AcquisitionQuery,
   MethodView,
   ProviderRef,
 } from "$lib/acquisition/types";
@@ -62,91 +60,86 @@ function computeLevelRanges(
  * Load all map entities for prerendering
  */
 export async function loadAllMapEntitiesServer(): Promise<MapEntityData> {
-  const db = new Database(resolve(DB_SOURCE_PATH), { readonly: true });
+  const db = getDb();
 
-  try {
-    const monsters = loadMonsterSpawnsServer(db);
-    const npcs = loadNpcSpawnsServer(db);
-    const portals = loadPortalsServer(db);
-    const chests = loadChestsServer(db);
-    const treasure = loadTreasureServer(db);
-    const altars = loadAltarsServer(db);
-    const traps = loadTrapsServer(db);
-    const gathering = loadGatheringSpawnsServer(db);
-    const crafting = loadCraftingStationsServer(db);
-    const houses = loadHousesServer(db);
-    const shrines = loadShrinesServer(db);
-    const subZones = loadZoneTriggersServer(db);
-    const parentZones = loadZoneBoundsServer(db);
-    const execute: AcquisitionQuery = async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[];
-    const providers = db
-      .prepare(
-        `
+  const monsters = loadMonsterSpawnsServer(db);
+  const npcs = loadNpcSpawnsServer(db);
+  const portals = loadPortalsServer(db);
+  const chests = loadChestsServer(db);
+  const treasure = loadTreasureServer(db);
+  const altars = loadAltarsServer(db);
+  const traps = loadTrapsServer(db);
+  const gathering = loadGatheringSpawnsServer(db);
+  const crafting = loadCraftingStationsServer(db);
+  const houses = loadHousesServer(db);
+  const shrines = loadShrinesServer(db);
+  const subZones = loadZoneTriggersServer(db);
+  const parentZones = loadZoneBoundsServer(db);
+
+  const providers = db
+    .prepare(
+      `
       SELECT 'monster_spawns' AS kind, id FROM monster_spawns
       UNION ALL SELECT 'resource_spawns', id FROM gathering_resource_spawns
       UNION ALL SELECT 'chests', id FROM chests
       UNION ALL SELECT 'altars', id FROM altars
       UNION ALL SELECT 'npcs', id FROM npcs
     `,
-      )
-      .all() as ProviderRef[];
-    const model = await loadAcquisition(execute, {
-      kind: "providers",
-      providers,
+    )
+    .all() as ProviderRef[];
+  const model = await loadAcquisition(db, {
+    kind: "providers",
+    providers,
+  });
+  applyAcquisitionCounts(model, monsters, gathering, chests);
+  appendEventMonsterMarkers(model, monsters);
+  for (const npc of npcs) {
+    const methods = projectProviderMethods(model, {
+      kind: "npcs",
+      id: npc.id,
     });
-    applyAcquisitionCounts(model, monsters, gathering, chests);
-    appendEventMonsterMarkers(model, monsters);
-    for (const npc of npcs) {
-      const methods = projectProviderMethods(model, {
-        kind: "npcs",
-        id: npc.id,
-      });
-      npc.itemsSoldCount = new Set(
-        methods
-          .filter(
-            (method) =>
-              method.kind === "vendor" &&
-              !method.costGroups.some((group) =>
-                group.inputs.some((input) => input.withheld),
-              ),
-          )
-          .map((method) => {
-            const inputs = method.costGroups.flatMap((group) => group.inputs);
-            const cost =
-              inputs.find((input) => input.resource_kind === "item") ??
-              inputs.find((input) => input.resource_kind === "gold");
-            return JSON.stringify([
-              method.detail.offered_item_id,
-              cost?.amount ?? 0,
-              cost?.item_id ?? null,
-              projectMethodSeasons(model, method),
-            ]);
-          }),
-      ).size;
-    }
-
-    const levelRanges = computeLevelRanges(monsters, gathering);
-
-    return {
-      monsters,
-      npcs,
-      portals,
-      chests,
-      treasure,
-      altars,
-      traps,
-      gathering,
-      crafting,
-      houses,
-      shrines,
-      subZones,
-      parentZones,
-      levelRanges,
-    };
-  } finally {
-    db.close();
+    npc.itemsSoldCount = new Set(
+      methods
+        .filter(
+          (method) =>
+            method.kind === "vendor" &&
+            !method.costGroups.some((group) =>
+              group.inputs.some((input) => input.withheld),
+            ),
+        )
+        .map((method) => {
+          const inputs = method.costGroups.flatMap((group) => group.inputs);
+          const cost =
+            inputs.find((input) => input.resource_kind === "item") ??
+            inputs.find((input) => input.resource_kind === "gold");
+          return JSON.stringify([
+            method.detail.offered_item_id,
+            cost?.amount ?? 0,
+            cost?.item_id ?? null,
+            projectMethodSeasons(model, method),
+          ]);
+        }),
+    ).size;
   }
+
+  const levelRanges = computeLevelRanges(monsters, gathering);
+
+  return {
+    monsters,
+    npcs,
+    portals,
+    chests,
+    treasure,
+    altars,
+    traps,
+    gathering,
+    crafting,
+    houses,
+    shrines,
+    subZones,
+    parentZones,
+    levelRanges,
+  };
 }
 
 function methodDropCounts(
@@ -317,16 +310,15 @@ function appendEventMonsterMarkers(
  * Load zone list for the zone focus dropdown
  */
 export function loadZoneListServer(): ZoneListItem[] {
-  const db = new Database(resolve(DB_SOURCE_PATH), { readonly: true });
+  const db = getDb();
 
-  try {
-    // A zone the map cannot focus on does not belong in the focus dropdown.
-    // The build removes an unreleased zone entirely, and it removes the
-    // geometry of a zone whose positions the compendium leaves out at the
-    // developers' request, so the data says which zones those are.
-    const rows = db
-      .prepare(
-        `
+  // A zone the map cannot focus on does not belong in the focus dropdown.
+  // The build removes an unreleased zone entirely, and it removes the
+  // geometry of a zone whose positions the compendium leaves out at the
+  // developers' request, so the data says which zones those are.
+  const rows = db
+    .prepare(
+      `
       SELECT id, name
       FROM zones
       WHERE bounds_min_x IS NOT NULL
@@ -335,16 +327,13 @@ export function loadZoneListServer(): ZoneListItem[] {
         AND bounds_max_y IS NOT NULL
       ORDER BY name
     `,
-      )
-      .all() as Array<{ id: string; name: string }>;
+    )
+    .all() as Array<{ id: string; name: string }>;
 
-    return rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-    }));
-  } finally {
-    db.close();
-  }
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+  }));
 }
 
 // --- Helper functions ---

@@ -1,18 +1,41 @@
 import Database from "better-sqlite3";
-import { resolve } from "path";
+import { statSync } from "node:fs";
+import { resolve } from "node:path";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 
-let db: Database.Database | null = null;
+let shared: { db: Database.Database; file: string } | null = null;
 
 /**
- * Get the server-side database connection.
- * Used during build/prerendering.
+ * The server's read-only connection to the compendium database, shared by
+ * every page a build prerenders.
+ *
+ * It compiles each SQL text once and hands the same statement to every caller,
+ * because every prerendered page runs the same few thousand statements. That
+ * is safe while server code only reads statements with `get` and `all` and
+ * never switches one to raw or pluck mode or binds it. A rebuilt database file
+ * gets a new connection, so the dev server shows the new data without a
+ * restart.
  */
 export function getDb(): Database.Database {
-  if (!db) {
-    const dbPath = resolve(DB_SOURCE_PATH);
-    db = new Database(dbPath, { readonly: true });
-  }
+  const path = resolve(DB_SOURCE_PATH);
+  const stat = statSync(path);
+  const file = `${stat.ino}:${stat.mtimeMs}:${stat.size}`;
+  if (shared?.file !== file) shared = { db: openCached(path), file };
+  return shared.db;
+}
+
+function openCached(path: string): Database.Database {
+  const db = new Database(path, { readonly: true });
+  const prepare = db.prepare.bind(db);
+  const statements = new Map<string, Database.Statement>();
+  db.prepare = ((sql: string) => {
+    let statement = statements.get(sql);
+    if (!statement) {
+      statement = prepare(sql);
+      statements.set(sql, statement);
+    }
+    return statement;
+  }) as Database.Database["prepare"];
   return db;
 }
 

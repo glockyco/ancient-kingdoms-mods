@@ -1,8 +1,7 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import { altarDescription } from "$lib/server/meta-description";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getAchievementsLinkingTo } from "$lib/queries/achievements.server";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import { distinctSubzoneName } from "$lib/utils/format";
@@ -20,11 +19,10 @@ import type {
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const altars = db.prepare("SELECT id FROM altars").all() as Array<{
     id: string;
   }>;
-  db.close();
 
   return altars.map((altar) => ({ id: altar.id }));
 };
@@ -32,7 +30,7 @@ export const entries: EntryGenerator = () => {
 export const load: PageServerLoad = async ({
   params,
 }): Promise<AltarDetailPageData> => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const altarRaw = db
     .prepare(
@@ -50,7 +48,6 @@ export const load: PageServerLoad = async ({
     .get(params.id) as Record<string, unknown> | undefined;
 
   if (!altarRaw) {
-    db.close();
     throw error(404, `Altar not found: ${params.id}`);
   }
 
@@ -58,11 +55,8 @@ export const load: PageServerLoad = async ({
   const waves: AltarWave[] = altarRaw.waves
     ? JSON.parse(altarRaw.waves as string)
     : [];
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
-  const acquisition = await loadAcquisition(execute, {
+
+  const acquisition = await loadAcquisition(db, {
     kind: "providers",
     providers: [{ kind: "altars", id: params.id }],
   });
@@ -248,7 +242,6 @@ export const load: PageServerLoad = async ({
     ...(altar.requiredActivationItemId ? [altar.requiredActivationItemId] : []),
     ...bosses.flatMap((boss) => boss.drops.map((drop) => drop.itemId)),
   ]);
-  db.close();
 
   // Generate meta description
   const rewardCommonName =

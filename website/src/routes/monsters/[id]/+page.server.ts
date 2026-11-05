@@ -1,11 +1,8 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import {
-  DB_SOURCE_PATH,
-  WORLD_BOSS_DUNGEON_ID,
-} from "$lib/constants/constants";
+import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import type {
   MonsterDetailData,
   MonsterInfo,
@@ -51,11 +48,10 @@ import type { LinkedAchievement } from "$lib/types/achievements";
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const monsters = db.prepare("SELECT id FROM monsters").all() as Array<{
     id: string;
   }>;
-  db.close();
 
   return monsters.map((monster) => ({ id: monster.id }));
 };
@@ -69,7 +65,7 @@ export const load: PageServerLoad = async ({
     achievements: LinkedAchievement[];
   }
 > => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   // Get monster basic data with placeholder name
   const monsterRaw = db
@@ -88,7 +84,6 @@ export const load: PageServerLoad = async ({
     | undefined;
 
   if (!monsterRaw) {
-    db.close();
     throw error(404, `Monster not found: ${params.id}`);
   }
 
@@ -108,11 +103,7 @@ export const load: PageServerLoad = async ({
         ? "nowhere"
         : "outside_dungeons";
 
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
-  const acquisition = await loadAcquisition(execute, {
+  const acquisition = await loadAcquisition(db, {
     kind: "monsters",
     monsterIds: [params.id],
   });
@@ -831,7 +822,7 @@ export const load: PageServerLoad = async ({
     )
     .all(params.id) as SummonsInfo[];
 
-  // Query renewal sages for world bosses (must be before db.close())
+  // Query renewal sages for world bosses
   let renewalSages: Array<{
     id: string;
     name: string;
@@ -894,8 +885,6 @@ export const load: PageServerLoad = async ({
     `,
       )
       .get(params.id) as EntityVisualAsset | undefined) ?? null;
-
-  db.close();
 
   // Generate meta description
   const zoneNames = spawns.regular.map((s) => s.zone_name);

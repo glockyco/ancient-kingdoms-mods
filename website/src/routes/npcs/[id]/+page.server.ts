@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import type {
@@ -10,10 +10,7 @@ import type {
   NpcSpawnLocation,
   NpcSkill,
 } from "$lib/types/npcs";
-import {
-  WORLD_BOSS_DUNGEON_ID,
-  DB_SOURCE_PATH,
-} from "$lib/constants/constants";
+import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import { npcDescription } from "$lib/server/meta-description";
 import { npcKillReputation } from "$lib/utils/killReputation";
 import { distinctSubzoneName, formatNumber } from "$lib/utils/format";
@@ -30,9 +27,8 @@ import {
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const npcs = db.prepare("SELECT id FROM npcs").all() as Array<{ id: string }>;
-  db.close();
 
   return npcs.map((npc) => ({ id: npc.id }));
 };
@@ -65,14 +61,13 @@ const defaultRoles: NpcRoles = {
 export const load: PageServerLoad = async ({
   params,
 }): Promise<NpcDetailPageData> => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const npcRaw = db
     .prepare("SELECT * FROM npcs WHERE id = ?")
     .get(params.id) as Record<string, unknown> | undefined;
 
   if (!npcRaw) {
-    db.close();
     throw error(404, `NPC not found: ${params.id}`);
   }
 
@@ -114,11 +109,8 @@ export const load: PageServerLoad = async ({
     .prepare("SELECT role, quests FROM redacted_quest_npcs WHERE npc_id = ?")
     .all(params.id) as Array<{ role: "offer" | "complete"; quests: number }>)
     redactedQuests[row.role] = row.quests;
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
-  const acquisition = await loadAcquisition(execute, {
+
+  const acquisition = await loadAcquisition(db, {
     kind: "providers",
     providers: [{ kind: "npcs", id: params.id }],
   });
@@ -433,8 +425,6 @@ export const load: PageServerLoad = async ({
   `,
     )
     .all(params.id) as NpcDetailPageData["summonTriggers"];
-
-  db.close();
 
   const zoneNames = [...new Set(spawns.map((spawn) => spawn.zone_name))];
   const description = npcDescription(

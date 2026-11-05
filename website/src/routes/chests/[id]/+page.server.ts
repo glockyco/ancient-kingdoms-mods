@@ -1,7 +1,6 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
 import { getChestById, getChestDrops } from "$lib/queries/gather-items.server";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
@@ -12,9 +11,8 @@ import { queryOne } from "$lib/db.server";
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const chests = db.prepare("SELECT id FROM chests").all() as { id: string }[];
-  db.close();
   return chests.map((c) => ({ id: c.id }));
 };
 
@@ -31,7 +29,7 @@ export const load: PageServerLoad = async ({ params }) => {
   // Build obtainability tree for key if one is required
   let keyObtainabilityTree: ObtainabilityNode | null = null;
   if (chest.key_required_id) {
-    const db = new Database(DB_SOURCE_PATH, { readonly: true });
+    const db = getDb();
     const visited = new Set<string>();
     keyObtainabilityTree = await buildObtainabilityTree(
       db,
@@ -41,7 +39,6 @@ export const load: PageServerLoad = async ({ params }) => {
       visited,
       true,
     );
-    db.close();
   }
 
   const description = chestDescription({

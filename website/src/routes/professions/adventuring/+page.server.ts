@@ -1,7 +1,6 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
 
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { adventuringSkillGain } from "$lib/calculation/adventuring";
 
 export const prerender = true;
@@ -82,7 +81,7 @@ interface AdventuringPageData {
 }
 
 export const load = (async (): Promise<AdventuringPageData> => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const profession = db
     .prepare(
@@ -333,8 +332,6 @@ export const load = (async (): Promise<AdventuringPageData> => {
   }
 
   const vendorUnlocks = Array.from(vendorUnlockMap.values());
-
-  db.close();
 
   return {
     profession,

@@ -11,7 +11,6 @@ import type { IndexedDoc } from "$lib/search/engine";
 import { FILTERED_LISTS, listHref, listTableLabel } from "$lib/search/lists";
 import { nameKey } from "$lib/search/normalize";
 import { loadAcquisition } from "$lib/server/acquisition";
-import type { AcquisitionQuery } from "$lib/acquisition/types";
 import { SEASONS, seasonHref, type Season } from "$lib/data/seasonal-events";
 import {
   projectItemSeasons,
@@ -218,9 +217,8 @@ const builders: Record<SearchableEntityId, Builder> = {
     `,
       )
       .all() as { id: string; resource_id: string }[];
-    const execute: AcquisitionQuery = async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[];
-    const model = await loadAcquisition(execute, {
+
+    const model = await loadAcquisition(db, {
       kind: "providers",
       providers: spawns.map((spawn) => ({
         kind: "resource_spawns",
@@ -483,12 +481,11 @@ async function entityDocs(db: Database.Database): Promise<IndexedDoc[]> {
       )
       .all() as Array<{ quest_id: string }>
   ).map((row) => row.quest_id);
-  const execute: AcquisitionQuery = async (sql, params) =>
-    db.prepare(sql).all(...params) as Record<string, unknown>[];
-  const itemModel = await loadAcquisition(execute, { kind: "items", itemIds });
+
+  const itemModel = await loadAcquisition(db, { kind: "items", itemIds });
   for (const id of itemIds)
     seasonsByEntity.set(`item:${id}`, projectItemSeasons(itemModel, id));
-  const questModel = await loadAcquisition(execute, {
+  const questModel = await loadAcquisition(db, {
     kind: "requirements",
     entities: questIds.map((id) => ({ kind: "quest", id })),
   });

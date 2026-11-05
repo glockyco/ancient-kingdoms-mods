@@ -7,10 +7,7 @@ afterAll(() => db.close());
 
 describe("Seasonal Events page data", () => {
   test("shares seasonal acquisition prices, chances, quest rewards and hunt levels", async () => {
-    const data = await getSeasonalEvents(
-      async (sql, params) =>
-        db.prepare(sql).all(...params) as Record<string, unknown>[],
-    );
+    const data = await getSeasonalEvents(db);
     expect(data.seasons).toEqual([
       {
         id: "halloween",

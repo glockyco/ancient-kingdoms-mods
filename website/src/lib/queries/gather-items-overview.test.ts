@@ -245,21 +245,26 @@ describe("gather item overview queries", () => {
       await expect(getChestByIdFromDb(db, "chest")).rejects.toThrow(
         "Conflicting chest opening chances",
       );
-      db.exec(
-        "UPDATE acquisition_world_chest_details SET outer_success = 0.75",
-      );
-      const detail = await getChestByIdFromDb(db, "chest");
-      const overview = (await getChestsListFromDb(db)).find(
-        (chest) => chest.id === "chest",
-      );
-      for (const chest of [detail, overview]) {
-        expect(chest).toMatchObject({
-          gold_min: 10,
-          gold_max: 20,
-          item_reward_id: "lily_item",
-          item_reward_amount: 4,
-          chest_reward_probability: 0.75,
-        });
+      const consistentDb = new Database(db.serialize());
+      try {
+        consistentDb.exec(
+          "UPDATE acquisition_world_chest_details SET outer_success = 0.75",
+        );
+        const detail = await getChestByIdFromDb(consistentDb, "chest");
+        const overview = (await getChestsListFromDb(consistentDb)).find(
+          (chest) => chest.id === "chest",
+        );
+        for (const chest of [detail, overview]) {
+          expect(chest).toMatchObject({
+            gold_min: 10,
+            gold_max: 20,
+            item_reward_id: "lily_item",
+            item_reward_amount: 4,
+            chest_reward_probability: 0.75,
+          });
+        }
+      } finally {
+        consistentDb.close();
       }
     } finally {
       db.close();

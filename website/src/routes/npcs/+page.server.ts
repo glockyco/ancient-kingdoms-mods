@@ -1,7 +1,6 @@
+import { getDb } from "$lib/db.server";
 import { createListPagination } from "$lib/server/list-pagination";
-import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type {
   NpcsPageData,
   NpcListView,
@@ -12,7 +11,7 @@ import type {
 export const prerender = true;
 
 const loadData = (): NpcsPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const npcsRaw = db
     .prepare(
@@ -70,8 +69,6 @@ const loadData = (): NpcsPageData => {
   `,
     )
     .all() as NpcZoneInfo[];
-
-  db.close();
 
   return {
     npcs,

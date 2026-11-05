@@ -1,7 +1,6 @@
+import { getDb } from "$lib/db.server";
 import { createListPagination } from "$lib/server/list-pagination";
-import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type {
   AltarsPageData,
   AltarListView,
@@ -23,7 +22,7 @@ interface AltarRaw {
 }
 
 const loadData = (): AltarsPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const altarsRaw = db
     .prepare(
@@ -76,8 +75,6 @@ const loadData = (): AltarsPageData => {
       bossNames: bosses.map((b) => b.monster_name),
     };
   });
-
-  db.close();
 
   return {
     altars,

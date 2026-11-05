@@ -1,6 +1,5 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 
 export const prerender = true;
 
@@ -83,7 +82,7 @@ const ZONES_FOR_MONSTER = `
 `;
 
 export const load: PageServerLoad = (): RespawnMechanicsPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const bosses = db
     .prepare(
@@ -188,8 +187,6 @@ export const load: PageServerLoad = (): RespawnMechanicsPageData => {
     `,
     )
     .all() as RenewalSage[];
-
-  db.close();
 
   return {
     bosses,

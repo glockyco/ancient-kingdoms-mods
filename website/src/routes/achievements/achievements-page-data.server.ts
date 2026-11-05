@@ -1,5 +1,5 @@
-import Database from "better-sqlite3";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { getDb } from "$lib/db.server";
+import type Database from "better-sqlite3";
 import { entityImageUrl } from "$lib/utils/entityImage";
 import {
   achievementGroupDetails,
@@ -53,14 +53,11 @@ interface AchievementRow {
 }
 
 export function getAchievementsPageData(
-  dbPath = DB_SOURCE_PATH,
+  db: Database.Database = getDb(),
 ): AchievementsPageData {
-  const db = new Database(dbPath, { readonly: true });
-  let rows: AchievementRow[];
-  try {
-    rows = db
-      .prepare(
-        `
+  const rows = db
+    .prepare(
+      `
         SELECT
           id,
           name,
@@ -75,11 +72,8 @@ export function getAchievementsPageData(
          AND va.kind = 'icon'
         ORDER BY a.display_order
       `,
-      )
-      .all() as AchievementRow[];
-  } finally {
-    db.close();
-  }
+    )
+    .all() as AchievementRow[];
 
   if (rows.length !== 38) {
     throw new Error(`Expected 38 achievements, found ${rows.length}`);

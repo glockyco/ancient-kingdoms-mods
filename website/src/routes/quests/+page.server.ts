@@ -1,7 +1,6 @@
+import { getDb } from "$lib/db.server";
 import { createListPagination } from "$lib/server/list-pagination";
-import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { QuestsPageData, QuestListView } from "$lib/types/quests";
 import { loadAcquisition } from "$lib/server/acquisition";
 import { projectQuestSeasons } from "$lib/acquisition/projections";
@@ -9,7 +8,7 @@ import { projectQuestSeasons } from "$lib/acquisition/projections";
 export const prerender = true;
 
 const loadData = async (): Promise<QuestsPageData> => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const memberships = db
     .prepare(
       `
@@ -35,14 +34,10 @@ const loadData = async (): Promise<QuestsPageData> => {
       | "quest_giver_count"
     >
   >;
-  const model = await loadAcquisition(
-    async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[],
-    {
-      kind: "requirements",
-      entities: rows.map((row) => ({ kind: "quest", id: row.id })),
-    },
-  );
+  const model = await loadAcquisition(db, {
+    kind: "requirements",
+    entities: rows.map((row) => ({ kind: "quest", id: row.id })),
+  });
   const quests: QuestListView[] = rows.map((q) => ({
     ...q,
     seasons: projectQuestSeasons(model, q.id),
@@ -62,7 +57,6 @@ const loadData = async (): Promise<QuestsPageData> => {
       memberships.filter((row) => row.quest_id === q.id).map((row) => row.id),
     ).size,
   }));
-  db.close();
   return { quests };
 };
 

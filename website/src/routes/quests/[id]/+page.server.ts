@@ -1,7 +1,8 @@
-import Database from "better-sqlite3";
+import { acquisitionQuery } from "$lib/server/acquisition";
+import { getDb } from "$lib/db.server";
+import type Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type {
   QuestDetailPageData,
   QuestInfo,
@@ -31,11 +32,10 @@ import type { Season } from "$lib/data/seasonal-events";
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const quests = db.prepare("SELECT id FROM quests").all() as Array<{
     id: string;
   }>;
-  db.close();
 
   return quests.map((quest) => ({ id: quest.id }));
 };
@@ -43,14 +43,13 @@ export const entries: EntryGenerator = () => {
 export const load: PageServerLoad = async ({
   params,
 }): Promise<QuestDetailPageData> => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const questRaw = db
     .prepare("SELECT * FROM quests WHERE id = ?")
     .get(params.id) as Record<string, unknown> | undefined;
 
   if (!questRaw) {
-    db.close();
     throw error(404, `Quest not found: ${params.id}`);
   }
 
@@ -95,11 +94,8 @@ export const load: PageServerLoad = async ({
       };
     });
 
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
-  const acquisition = await loadAcquisition(execute, {
+  const execute = acquisitionQuery(db);
+  const acquisition = await loadAcquisition(db, {
     kind: "requirements",
     entities: [{ kind: "quest", id: params.id }],
   });
@@ -574,7 +570,6 @@ export const load: PageServerLoad = async ({
       book.withheld || !book.item_id ? [] : [book.item_id],
     ),
   ]);
-  db.close();
 
   return {
     quest,

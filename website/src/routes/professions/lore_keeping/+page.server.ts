@@ -1,7 +1,7 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
+import type Database from "better-sqlite3";
 import { formatNumber } from "$lib/utils/format";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import { getMonsterSources, getQuestSources } from "$lib/server/item-sources";
@@ -65,7 +65,7 @@ interface RawBook {
 }
 
 export const load: PageServerLoad = async (): Promise<LoreKeepingPageData> => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const profession = db
     .prepare(
@@ -150,8 +150,6 @@ export const load: PageServerLoad = async (): Promise<LoreKeepingPageData> => {
     }),
   );
 
-  db.close();
-
   return { profession, books };
 };
 
@@ -210,11 +208,7 @@ async function getMonsterZone(
   itemId: string,
   monsterId: string,
 ): Promise<string | null> {
-  const model = await loadAcquisition(
-    async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[],
-    { kind: "items", itemIds: [itemId] },
-  );
+  const model = await loadAcquisition(db, { kind: "items", itemIds: [itemId] });
   const zoneIds = new Set(
     projectItemSources(model, itemId)
       .methods.filter(

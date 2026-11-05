@@ -1,6 +1,5 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import { loadAcquisition } from "$lib/server/acquisition";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
@@ -103,7 +102,7 @@ interface RawOre {
 }
 
 export const load: PageServerLoad = async (): Promise<MiningPageData> => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const profession = db
     .prepare(
@@ -142,17 +141,13 @@ export const load: PageServerLoad = async (): Promise<MiningPageData> => {
       "SELECT spawn.id FROM gathering_resource_spawns spawn JOIN gathering_resources resource ON resource.id = spawn.resource_id WHERE resource.is_mineral = 1",
     )
     .all() as { id: string }[];
-  const oreAcquisition = await loadAcquisition(
-    async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[],
-    {
-      kind: "providers",
-      providers: mineralSpawns.map(({ id }) => ({
-        kind: "resource_spawns",
-        id,
-      })),
-    },
-  );
+  const oreAcquisition = await loadAcquisition(db, {
+    kind: "providers",
+    providers: mineralSpawns.map(({ id }) => ({
+      kind: "resource_spawns",
+      id,
+    })),
+  });
 
   const zoneStatement = db.prepare(
     `
@@ -356,7 +351,6 @@ export const load: PageServerLoad = async (): Promise<MiningPageData> => {
     ...pickaxes.map((pickaxe) => pickaxe.id),
     ...ores.flatMap((ore) => ore.gems.map((gem) => gem.item_id)),
   ]);
-  db.close();
 
   return {
     profession,

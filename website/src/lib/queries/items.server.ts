@@ -4,7 +4,6 @@ import type { ItemListView, ItemZoneInfo } from "$lib/types/items";
 import { itemListType } from "$lib/utils/format";
 import type { ItemListPayload } from "$lib/utils/item-list";
 import { loadAcquisition } from "$lib/server/acquisition";
-import type { AcquisitionQuery } from "$lib/acquisition/types";
 import {
   projectDirectGeometry,
   projectItemSeasons,
@@ -127,10 +126,9 @@ export async function getItemZones(): Promise<ItemZoneInfo[]> {
 
 async function computeItemLocations() {
   const db = getDb();
-  const execute: AcquisitionQuery = async (sql, params) =>
-    db.prepare(sql).all(...params) as Record<string, unknown>[];
+
   const items = query<{ id: string }>("SELECT id FROM items ORDER BY id");
-  const model = await loadAcquisition(execute, {
+  const model = await loadAcquisition(db, {
     kind: "items",
     itemIds: items.map((item) => item.id),
   });

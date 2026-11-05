@@ -1,6 +1,6 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
+import type Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getAchievementsLinkingTo } from "$lib/queries/achievements.server";
 import type { LinkedAchievement } from "$lib/types/achievements";
 
@@ -54,7 +54,7 @@ function getItem(db: Database.Database, id: string): ItemRef | null {
 }
 
 export const load: PageServerLoad = (): ExperiencePageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const redemptionToken = getItem(db, REDEMPTION_TOKEN_ID);
   const maxLevelReward = getItem(db, MAX_LEVEL_REWARD_ID);
@@ -159,8 +159,6 @@ export const load: PageServerLoad = (): ExperiencePageData => {
   });
   if (attributeGains.length === 0)
     throw new Error("Missing class_level_progression");
-
-  db.close();
 
   return {
     redemptionToken,

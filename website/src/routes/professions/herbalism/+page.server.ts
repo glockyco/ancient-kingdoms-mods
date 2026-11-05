@@ -1,6 +1,5 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 
 export const prerender = true;
 
@@ -38,7 +37,7 @@ interface HerbalismPageData {
 }
 
 export const load: PageServerLoad = (): HerbalismPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const profession = db
     .prepare(
@@ -99,8 +98,6 @@ export const load: PageServerLoad = (): HerbalismPageData => {
   `,
     )
     .all() as TierXp[];
-
-  db.close();
 
   return {
     profession,

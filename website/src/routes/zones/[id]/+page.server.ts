@@ -1,8 +1,8 @@
+import { acquisitionQuery } from "$lib/server/acquisition";
+import { getDb } from "$lib/db.server";
 import { loadDungeonEscorts } from "$lib/queries/virtues.server";
-import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type {
   ZoneDetailData,
   ZoneMonster,
@@ -32,11 +32,10 @@ export const prerender = true;
 
 // Generate entries for all zones at build time
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const zones = db.prepare("SELECT id FROM zones").all() as Array<{
     id: string;
   }>;
-  db.close();
 
   return zones.map((zone) => ({ id: zone.id }));
 };
@@ -44,7 +43,7 @@ export const entries: EntryGenerator = () => {
 export const load: PageServerLoad = async ({
   params,
 }): Promise<ZoneDetailData> => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   // Get zone basic info with pre-computed level range
   const zone = db
@@ -70,7 +69,6 @@ export const load: PageServerLoad = async ({
     .get(params.id) as ZoneDetailData["zone"] | undefined;
 
   if (!zone) {
-    db.close();
     throw error(404, `Zone not found: ${params.id}`);
   }
 
@@ -306,11 +304,8 @@ export const load: PageServerLoad = async ({
       "id" | "visual_public_path" | "respawn_time" | "position_x" | "position_y"
     >
   >;
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
-  const chestAcquisition = await loadAcquisition(execute, {
+  const execute = acquisitionQuery(db);
+  const chestAcquisition = await loadAcquisition(db, {
     kind: "providers",
     providers: chestRows.map((chest) => ({ kind: "chests", id: chest.id })),
   });
@@ -460,8 +455,6 @@ export const load: PageServerLoad = async ({
   `,
     )
     .get(params.id) as ZoneRenewalSage | undefined;
-
-  db.close();
 
   // Count bosses and elites
   const bossCount = monsters.filter((m) => m.is_boss).length;

@@ -1,6 +1,5 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import {
   CHEST_REWARDS_QUERY,
@@ -84,7 +83,7 @@ interface RawTreasureMap {
 
 export const load: PageServerLoad =
   async (): Promise<TreasureHunterPageData> => {
-    const db = new Database(DB_SOURCE_PATH, { readonly: true });
+    const db = getDb();
 
     const profession = db
       .prepare(
@@ -216,7 +215,6 @@ export const load: PageServerLoad =
       ...treasureMaps.flatMap((map) => [map.id, map.reward_item_id]),
       ...buriedChestRewards.map((reward) => reward.item_id),
     ]);
-    db.close();
 
     return {
       profession,

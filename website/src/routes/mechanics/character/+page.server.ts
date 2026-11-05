@@ -1,6 +1,5 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { loadHumilityMultipliers } from "$lib/queries/virtues.server";
 
 export const prerender = true;
@@ -12,7 +11,7 @@ interface MasterRef {
 }
 
 export const load: PageServerLoad = () => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const masters = db
     .prepare(
       `
@@ -47,7 +46,6 @@ export const load: PageServerLoad = () => {
         visual_public_path: string | null;
       }
     | undefined;
-  db.close();
   return {
     humilityMultipliers: loadHumilityMultipliers(),
     skillMaster: namedMasters.find((npc) => npc.roles.is_skill_master) ?? null,

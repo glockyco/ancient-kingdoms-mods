@@ -1,8 +1,6 @@
-import type {
-  AcquisitionQuery,
-  DataRow,
-  MethodView,
-} from "../acquisition/types";
+import { acquisitionQuery } from "$lib/server/acquisition";
+import type Database from "better-sqlite3";
+import type { DataRow, MethodView } from "../acquisition/types";
 import { loadAcquisition } from "../server/acquisition";
 import {
   projectDefinitionInspection,
@@ -32,7 +30,8 @@ export interface SeasonalShopOffer {
 }
 
 /** Read the page's acquisition relationships through the same model as item pages. */
-export async function getSeasonalEvents(execute: AcquisitionQuery) {
+export async function getSeasonalEvents(db: Database.Database) {
+  const execute = acquisitionQuery(db);
   const select = async <T>(
     sql: string,
     params: readonly (string | number | null)[] = [],
@@ -86,7 +85,7 @@ export async function getSeasonalEvents(execute: AcquisitionQuery) {
   const seasonalIds = await select<{ item_id: string }>(
     "SELECT DISTINCT item_id FROM item_seasons ORDER BY item_id",
   );
-  const model = await loadAcquisition(execute, {
+  const model = await loadAcquisition(db, {
     kind: "items",
     itemIds: [
       ...seasonalIds.map((i) => i.item_id),

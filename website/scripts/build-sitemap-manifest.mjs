@@ -932,9 +932,7 @@ async function addMechanicsHashes(db, addHash, context) {
         break;
       }
       case "seasonal-events": {
-        const data = await getSeasonalEvents(async (sql, params) =>
-          all(db, sql, ...params),
-        );
+        const data = await getSeasonalEvents(db);
         const itemIds = Object.keys(data.items);
         rows = {
           page: data,

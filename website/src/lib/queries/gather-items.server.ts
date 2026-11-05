@@ -51,11 +51,7 @@ async function canonicalMethods(
   db: Database.Database,
   providers: readonly ProviderRef[],
 ) {
-  const model = await loadAcquisition(
-    async (sql, values) =>
-      db.prepare(sql).all(...values) as Record<string, unknown>[],
-    { kind: "providers", providers },
-  );
+  const model = await loadAcquisition(db, { kind: "providers", providers });
   return {
     methods: [...model.methodViews.values()],
     items: Object.fromEntries(

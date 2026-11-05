@@ -1,9 +1,5 @@
 import type Database from "better-sqlite3";
-import type {
-  AcquisitionModel,
-  AcquisitionQuery,
-  MethodView,
-} from "../acquisition/types";
+import type { MethodView } from "../acquisition/types";
 import {
   projectItemSources,
   projectRecipeTeachers,
@@ -31,11 +27,6 @@ export interface RecipeDefinition extends RecipeDetailInfo {
     sub_zone_name: string | null;
   }>;
   method: MethodView;
-}
-
-function executor(db: Database.Database): AcquisitionQuery {
-  return async (sql, params) =>
-    db.prepare(sql).all(...params) as Record<string, unknown>[];
 }
 
 function itemData(db: Database.Database, id: string) {
@@ -110,7 +101,7 @@ export async function getRecipeDefinitions(
   db: Database.Database,
   recipeIds: readonly string[],
 ): Promise<RecipeDefinition[]> {
-  const model = await loadAcquisition(executor(db), {
+  const model = await loadAcquisition(db, {
     kind: "recipes",
     recipeIds,
   });
@@ -253,8 +244,6 @@ async function buildTree(
   maxDepth: number,
   rootMethod?: MethodView,
 ): Promise<ObtainabilityNode> {
-  const execute = executor(db);
-  const models = new Map<string, Promise<AcquisitionModel>>();
   const summaries = new Map<string, Promise<SourceSummary[]>>();
   const rod = db
     .prepare(
@@ -262,20 +251,12 @@ async function buildTree(
     )
     .get() as { quality: number | null };
   let expanded = 0;
-  const getModel = (id: string) => {
-    let result = models.get(id);
-    if (!result) {
-      result = loadAcquisition(execute, { kind: "items", itemIds: [id] });
-      models.set(id, result);
-    }
-    return result;
-  };
   const getSources = (id: string) => {
     let result = summaries.get(id);
     if (!result) {
       result = Promise.all([
         getItemSourceSummaries(db, [id]),
-        getModel(id),
+        loadAcquisition(db, { kind: "items", itemIds: [id] }),
       ]).then(([rows, model]) => {
         const seen = new Set<string>();
         const sources: SourceSummary[] = rows
@@ -377,7 +358,7 @@ async function buildTree(
     };
     if (!id || level >= maxDepth || expanded++ >= 200 || path.has(id))
       return base;
-    const model = await getModel(id);
+    const model = await loadAcquisition(db, { kind: "items", itemIds: [id] });
     const source = projectItemSources(model, id);
     const recipes = selected
       ? [selected]

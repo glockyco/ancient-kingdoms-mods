@@ -1,8 +1,8 @@
-import Database from "better-sqlite3";
+import { acquisitionQuery } from "$lib/server/acquisition";
+import { getDb } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
 import { formatNumber } from "$lib/utils/format";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ItemDetailPageData } from "$lib/types/items";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { ITEM_DETAIL_SELECT, type Item } from "$lib/queries/items";
@@ -49,11 +49,10 @@ export const prerender = true;
 
 // Generate entries for all items at build time
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const items = db.prepare("SELECT id FROM items").all() as Array<{
     id: string;
   }>;
-  db.close();
 
   return items.map((item) => ({ id: item.id }));
 };
@@ -86,20 +85,16 @@ export const load: PageServerLoad = async ({
     redactedQuests: number;
   }
 > => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const item = db
     .prepare(`${ITEM_DETAIL_SELECT} WHERE i.id = ?`)
     .get(params.id) as Item | undefined;
 
   if (!item) {
-    db.close();
     throw error(404, `Item not found: ${params.id}`);
   }
-  const execute = async (
-    sql: string,
-    bindings: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...bindings) as Record<string, unknown>[];
+  const execute = acquisitionQuery(db);
   const model = await loadItemSourceModel(db, [params.id]);
 
   const serviceNpcs = (kind: "essence" | "blessing") =>
@@ -510,7 +505,6 @@ export const load: PageServerLoad = async ({
         ).map((member) => member.item_id)
       : [],
   );
-  db.close();
 
   const description = itemDescription(item, {
     usages,

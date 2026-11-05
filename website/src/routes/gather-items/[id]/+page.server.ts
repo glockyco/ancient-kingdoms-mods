@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
 import {
   getFishingSpotVariantDetails,
@@ -6,7 +6,6 @@ import {
   getGatheringResourceDropsFromDb,
   getGatheringResourceSpawnsFromDb,
 } from "$lib/queries/gather-items.server";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { loadAcquisition } from "$lib/server/acquisition";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { ObtainabilityNode } from "$lib/types/recipes";
@@ -22,21 +21,19 @@ import { commonItemProbability } from "$lib/utils/primary-rewards";
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const resources = db
     .prepare("SELECT id, is_fishing_spot FROM gathering_resources")
     .all() as { id: string; is_fishing_spot: number }[];
-  db.close();
 
   return gatheringResourcePageIds(resources).map((id) => ({ id }));
 };
 
 export const load: PageServerLoad = async ({ params }) => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
   const resource = await getGatheringResourceByIdFromDb(db, params.id);
 
   if (!resource) {
-    db.close();
     throw error(404, "Gathering resource not found");
   }
 
@@ -105,10 +102,7 @@ export const load: PageServerLoad = async ({ params }) => {
   const spawns =
     selectedVariant?.spawns ??
     getGatheringResourceSpawnsFromDb(db, resource.id);
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+
   const resourceIds = fishingSpotVariants.length
     ? fishingSpotVariants.map((variant) => variant.resource.id)
     : [resource.id];
@@ -117,7 +111,7 @@ export const load: PageServerLoad = async ({ params }) => {
       `SELECT id FROM gathering_resource_spawns WHERE resource_id IN (${resourceIds.map(() => "?").join(",")})`,
     )
     .all(...resourceIds) as { id: string }[];
-  const acquisition = await loadAcquisition(execute, {
+  const acquisition = await loadAcquisition(db, {
     kind: "providers",
     providers: providerRows.map(({ id }) => ({ kind: "resource_spawns", id })),
   });
@@ -184,7 +178,6 @@ export const load: PageServerLoad = async ({ params }) => {
     },
     zoneNames,
   );
-  db.close();
 
   return {
     resource: selectedResource,

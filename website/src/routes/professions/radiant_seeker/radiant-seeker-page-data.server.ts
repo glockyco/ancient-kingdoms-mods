@@ -1,5 +1,6 @@
-import Database from "better-sqlite3";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { acquisitionQuery } from "$lib/server/acquisition";
+import { getDb } from "$lib/db.server";
+import type Database from "better-sqlite3";
 import { loadAcquisition } from "$lib/server/acquisition";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
 import { summarizePrimaryRewards } from "$lib/utils/primary-rewards";
@@ -39,10 +40,8 @@ export interface RadiantSeekerPageData {
 }
 
 export async function getRadiantSeekerPageData(
-  dbPath = DB_SOURCE_PATH,
+  db: Database.Database = getDb(),
 ): Promise<RadiantSeekerPageData> {
-  const db = new Database(dbPath, { readonly: true });
-
   const profession = db
     .prepare(
       `
@@ -99,14 +98,11 @@ export async function getRadiantSeekerPageData(
     )
     .all(rawResource.id) as SparkZone[];
 
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const execute = acquisitionQuery(db);
   const spawns = db
     .prepare("SELECT id FROM gathering_resource_spawns WHERE resource_id = ?")
     .all(rawResource.id) as { id: string }[];
-  const acquisition = await loadAcquisition(execute, {
+  const acquisition = await loadAcquisition(db, {
     kind: "providers",
     providers: spawns.map(({ id }) => ({ kind: "resource_spawns", id })),
   });
@@ -145,8 +141,6 @@ export async function getRadiantSeekerPageData(
   `,
     )
     .get(JSON.stringify(rewardIds)) as { count: number };
-
-  db.close();
 
   return {
     profession,

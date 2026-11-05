@@ -1,6 +1,5 @@
-import Database from "better-sqlite3";
+import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
-import { DB_SOURCE_PATH } from "$lib/constants/constants";
 
 export const prerender = true;
 
@@ -22,7 +21,7 @@ interface ProfessionsPageData {
 }
 
 export const load: PageServerLoad = (): ProfessionsPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const db = getDb();
 
   const professions = db
     .prepare(
@@ -50,8 +49,6 @@ export const load: PageServerLoad = (): ProfessionsPageData => {
     `,
     )
     .all() as ProfessionListView[];
-
-  db.close();
 
   return { professions };
 };

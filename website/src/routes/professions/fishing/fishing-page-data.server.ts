@@ -165,17 +165,13 @@ export async function loadFishingPageData(
     }
   >;
 
-  const spotAcquisition = await loadAcquisition(
-    async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[],
-    {
-      kind: "providers",
-      providers: spotRows.map((spot) => ({
-        kind: "resource_spawns",
-        id: spot.id,
-      })),
-    },
-  );
+  const spotAcquisition = await loadAcquisition(db, {
+    kind: "providers",
+    providers: spotRows.map((spot) => ({
+      kind: "resource_spawns",
+      id: spot.id,
+    })),
+  });
 
   const dropRows = db
     .prepare(
