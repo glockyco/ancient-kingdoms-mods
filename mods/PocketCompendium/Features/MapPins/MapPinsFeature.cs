@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using Il2Cpp;
 using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Game;
-using PocketCompendium.Core.Settings;
 using PocketCompendium.Core.Tracking;
 using PocketCompendium.Core.Ui;
 using UnityEngine;
@@ -13,29 +11,19 @@ namespace PocketCompendium.Features.MapPins;
 /// <summary>
 /// Portrait pins for the tracked monsters of the player's zone on the game's local map, placed
 /// the way the game places its map notes. Dead monsters carry a time tag, monsters that are up
-/// glow, and a tooltip gives the details. Hovering a dungeon's entrance shows that dungeon's
-/// monsters in a card beside it.
+/// glow, and a tooltip gives the details.
 /// </summary>
 public sealed class MapPinsFeature : Feature
 {
-    // The game closes the live map in Temple of Valaark.
-    private const int MaplessZone = 23;
-
     private readonly Dictionary<string, PinView> _pins = new();
-    private readonly DungeonEntrances _dungeons = new();
     private RectTransform _container;
     private int _version = -1;
+    private int _watchVersion = -1;
 
     public MapPinsFeature()
         : base("MapPins", "Map pins", "Marks the bosses, elites and fabled monsters in your zone on the map, with their respawn timers.")
     {
-        DungeonEntrances = Settings.Toggle("DungeonEntrances", true, "Dungeon entrances",
-            "Hover over a dungeon's entrance on the map to see its bosses, elites and fabled monsters and when they spawn.");
     }
-
-    public ToggleSetting DungeonEntrances { get; }
-
-    public override Sprite Icon => Icons.MapPin;
 
     public override bool UsesTracker => true;
 
@@ -46,7 +34,6 @@ public sealed class MapPinsFeature : Feature
         if (_container != null) Object.Destroy(_container.gameObject);
         _container = null;
         _pins.Clear();
-        _dungeons.Clear();
     }
 
     // The pins live inside the game's map, which goes with the World scene.
@@ -55,28 +42,22 @@ public sealed class MapPinsFeature : Feature
         if (sceneName != "World") return;
         _container = null;
         _pins.Clear();
-        _dungeons.Clear();
     }
 
     protected internal override void Update()
     {
-        var tracker = Tracker.Current;
-        var player = GameAccess.LocalPlayer;
-        var map = UIMap.singleton;
-        var questTracking = UIQuestTracking.singleton;
-        bool open = tracker != null && tracker.Ready && !tracker.Failed && player != null && map != null
-                    && map.localMap != null && map.panel.activeSelf && map.localMap.enabled && player.idZone != MaplessZone
-                    && questTracking != null && questTracking.mapCamera != null;
+        bool open = MapOverlay.Open(out var tracker, out var player, out var map, out var camera);
         if (_container != null && _container.gameObject.activeSelf != open) _container.gameObject.SetActive(open);
         if (!open) return;
 
-        if (_container == null) CreateContainer(map.localMap);
+        if (_container == null) _container = MapOverlay.CreateLayer(map.localMap, "PC_MapPins");
 
-        bool refresh = tracker.Version != _version;
-        _version = tracker.Version;
-        var camera = questTracking.mapCamera;
-        var rect = map.localMap.rectTransform.rect;
+        // A watch changed anywhere, such as on a dungeon card, shows on the pins at once.
         var watchlist = Watchlist.Current;
+        bool refresh = tracker.Version != _version || watchlist.Version != _watchVersion;
+        _version = tracker.Version;
+        _watchVersion = watchlist.Version;
+        var rect = map.localMap.rectTransform.rect;
         TrackedMonster clicked = null;
 
         foreach (var pin in _pins.Values) pin.Used = false;
@@ -105,35 +86,8 @@ public sealed class MapPinsFeature : Feature
         foreach (var pin in _pins.Values)
             if (!pin.Used)
                 pin.SetActive(false);
-        if (DungeonEntrances.Value)
-            clicked ??= _dungeons.Update(_container, camera, rect, tracker, watchlist, player.idZone, map.localMap.gameObject.layer);
-        else
-            _dungeons.Clear();
 
-        if (clicked == null) return;
-        if (Pointer.Shift) BestiaryPages.BestiaryPageOpener.Open(clicked.Definition);
-        else
-        {
-            watchlist.Toggle(clicked.Key);
-            _version = -1;
-        }
-    }
-
-    private void CreateContainer(RawImage localMap)
-    {
-        _container = HudFactory.Rect("PC_MapPins", localMap.rectTransform).GetComponent<RectTransform>();
-        _container.gameObject.layer = localMap.gameObject.layer;
-        HudFactory.Stretch(_container, Vector2.zero, Vector2.zero);
-        _container.SetAsLastSibling();
-
-        // The map window's frame lies over the map and takes every pointer event there. A nested
-        // canvas one step above the map's own draws the pins over the frame and lets them take
-        // hover and clicks first.
-        var parent = localMap.canvas;
-        var canvas = _container.gameObject.AddComponent<Canvas>();
-        canvas.overrideSorting = true;
-        canvas.sortingOrder = (parent != null ? parent.sortingOrder : 0) + 1;
-        _container.gameObject.AddComponent<GraphicRaycaster>();
+        if (clicked != null) MapOverlay.Click(clicked, watchlist);
     }
 }
 

@@ -8,7 +8,6 @@ using PocketCompendium.Core;
 using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Text;
 using PocketCompendium.Core.Tracking;
-using PocketCompendium.Core.Ui;
 using UnityEngine;
 
 namespace PocketCompendium.Features.Sharing;
@@ -59,8 +58,6 @@ public sealed class SharingFeature : Feature
         : base("Sharing", "Sharing", "Shares exact boss times with players in your world who also use " + ModText.Name + ".")
     {
     }
-
-    public override Sprite Icon => Icons.Users;
 
     public override bool UsesTracker => true;
 

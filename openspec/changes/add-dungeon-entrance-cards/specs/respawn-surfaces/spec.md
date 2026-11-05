@@ -2,7 +2,7 @@
 
 ### Requirement: Dungeon entrances list their monsters
 
-Hovering a dungeon's entrance on the local map SHALL show a card beside it with the dungeon's tracked bosses, elites and fabled monsters in the boss list's compact style: the dungeon's name, how many are up, and their tiles four to a line in the boss list's state order. A dungeon without tracked monsters SHALL get no card. A Map pins setting, Dungeon entrances, on at first start, SHALL switch the cards on and off.
+Hovering a dungeon's entrance on the local map SHALL show a card beside it with the dungeon's tracked bosses, elites and fabled monsters in the boss list's compact style: the dungeon's name, how many are up, and their tiles four to a line in the boss list's state order. A dungeon without tracked monsters SHALL get no card. Dungeon entrances SHALL be a feature with its own switch, apart from map pins.
 
 #### Scenario: Hovering Sunken Temple's entrance
 

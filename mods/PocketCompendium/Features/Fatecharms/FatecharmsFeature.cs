@@ -29,8 +29,6 @@ public sealed class FatecharmsFeature : Feature
     {
     }
 
-    public override Sprite Icon => Icons.Clover;
-
     protected internal override void Enable() => _shownFor = null;
 
     protected internal override void Disable()

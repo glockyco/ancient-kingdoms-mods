@@ -1,6 +1,5 @@
 using System;
 using PocketCompendium.Core.Settings;
-using UnityEngine;
 
 namespace PocketCompendium.Core.Features;
 
@@ -11,11 +10,13 @@ namespace PocketCompendium.Core.Features;
 /// </summary>
 public abstract class Feature
 {
-    protected Feature(string id, string title, string summary)
+    /// <param name="initialSwitch">Where the switch starts for a player without a saved value, when
+    /// that differs from on, such as a value carried over from the feature this one came out of.</param>
+    protected Feature(string id, string title, string summary, bool? initialSwitch = null)
     {
         Settings = new SettingsPage(id, title);
         Summary = summary;
-        Switch = Settings.Toggle("Enabled", true, title, summary, shown: false);
+        Switch = Settings.Toggle("Enabled", true, title, summary, shown: false, initial: initialSwitch);
     }
 
     public string Id => Settings.Id;
@@ -23,9 +24,6 @@ public abstract class Feature
 
     /// <summary>One sentence on what the feature shows, for the settings window.</summary>
     public string Summary { get; }
-
-    /// <summary>The icon beside the feature's name in the settings window.</summary>
-    public abstract Sprite Icon { get; }
 
     public SettingsPage Settings { get; }
     public ToggleSetting Switch { get; }
@@ -39,10 +37,10 @@ public abstract class Feature
     public virtual bool UsesTracker => false;
 
     /// <summary>
-    /// Whether the settings window gives the feature a page of its own, for more settings than fit
-    /// under its row in its group.
+    /// Whether the settings window gives the feature a page of its own, behind a gear on its row.
+    /// Every feature with settings has one, so each row in a group has a single switch.
     /// </summary>
-    public virtual bool OwnPage => false;
+    public bool OwnPage => Settings.Rows.Count > 0;
 
     internal Exception Failure { get; set; }
 

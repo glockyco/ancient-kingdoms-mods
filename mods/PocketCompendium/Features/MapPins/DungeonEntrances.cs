@@ -154,15 +154,15 @@ internal sealed class DungeonCard
     private int _shownVersion = -1;
     private float _keepUntil;
 
-    /// <param name="pins">The map pins' container. The card lies over it on a canvas of its own, so a
-    /// pin under the card does not take the pointer.</param>
-    public DungeonCard(RectTransform pins, int layer)
+    /// <param name="entrances">The entrances' layer over the map. The card lies over it, and over the
+    /// map pins, on a canvas of its own, so a spot or pin under the card does not take the pointer.</param>
+    public DungeonCard(RectTransform entrances, int layer)
     {
-        _root = HudFactory.Rect("PC_DungeonCard", pins.parent).GetComponent<RectTransform>();
+        _root = HudFactory.Rect("PC_DungeonCard", entrances.parent).GetComponent<RectTransform>();
         _root.gameObject.layer = layer;
         _root.anchorMin = _root.anchorMax = new Vector2(0.5f, 0.5f);
         _root.pivot = new Vector2(0f, 1f);
-        var below = pins.GetComponent<Canvas>();
+        var below = entrances.GetComponent<Canvas>();
         var canvas = _root.gameObject.AddComponent<Canvas>();
         canvas.overrideSorting = true;
         canvas.sortingOrder = (below != null ? below.sortingOrder : 0) + 1;

@@ -35,8 +35,6 @@ public sealed class BestiaryCountdownFeature : Feature
     /// <summary>Whether the open monster's page counts down.</summary>
     public ToggleSetting Page { get; }
 
-    public override Sprite Icon => Icons.Timer;
-
     public override bool UsesTracker => true;
 
     protected internal override void Enable() => _version = -1;

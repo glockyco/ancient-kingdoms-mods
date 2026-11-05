@@ -1,9 +1,7 @@
 using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Game;
 using PocketCompendium.Core.Tracking;
-using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.BossList.Ui;
-using UnityEngine;
 
 namespace PocketCompendium.Features.BossList;
 
@@ -25,12 +23,7 @@ public sealed class BossListFeature : Feature
         Settings.Changed += () => _settingsChanged = true;
     }
 
-    public override Sprite Icon => Icons.LayoutList;
-
     public override bool UsesTracker => true;
-
-    // The list's look, filters and order are too many for its row in Respawns.
-    public override bool OwnPage => true;
 
     protected internal override void Enable()
     {

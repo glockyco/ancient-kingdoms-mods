@@ -6,7 +6,8 @@ Undiscovered monsters also showed differently from surface to surface: the Besti
 
 ## What Changes
 
-- The sidebar holds a few groups: General, Respawns, Bestiary and Combat, then Updates and About. A group lists its features as rows, each with its switch, its one sentence, and its small settings indented below it. A feature with more settings than fit there has a page of its own, reached from a gear on its row and from its panel's settings button. Today that is the boss list.
+- The sidebar holds a few groups: General, Respawns, Bestiary and Combat, then Updates and About. A group lists its features as rows, each with one switch and its sentence. A feature with settings keeps them on a page of its own, reached from a gear on its row and from its panel's settings button, as in Leatrix Plus and RuneLite.
+- Dungeon entrances and edge arrows become features with their own switches instead of switches under map pins and world markers, so either works without the other. Edge arrows start from the value a player had set under world markers.
 - General holds the settings that apply across features: Undiscovered monsters, Lock all panels, the settings key and the panel reset.
 - Undiscovered monsters applies to every surface and is on at first: names and portraits in the boss list, on map pins, world markers and dungeon cards, in spawn alerts, and full Bestiary pages. Off, every surface shows such a monster as the game does, as ??? and a silhouette, and its alert names it ???. It starts from the value the Bestiary pages switch had saved.
 - The boss list keeps only Show or Hide for undiscovered monsters, a filter that leaves them out.

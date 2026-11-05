@@ -7,7 +7,7 @@
 
 - [x] 2.1 Find each dungeon entrance on the local map and its dungeon through the portal beside it
 - [x] 2.2 Show the card beside a hovered entrance, keep it while the pointer is on the entrance, the strip or the card
-- [x] 2.3 Add the Dungeon entrances switch under Map pins
+- [x] 2.3 Give the cards a switch of their own
 
 ## 3. Verification
 

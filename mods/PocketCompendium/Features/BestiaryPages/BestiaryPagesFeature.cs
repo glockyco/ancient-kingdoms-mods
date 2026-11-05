@@ -5,7 +5,6 @@ using PocketCompendium.Core;
 using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Settings;
 using PocketCompendium.Core.Tracking;
-using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.BestiaryPages.Patches;
 using PocketCompendium.Features.BestiaryPages.Ui;
 
@@ -69,8 +68,6 @@ public sealed class BestiaryPagesFeature : Feature
             _instance.Settings.Save();
         }
     }
-
-    public override UnityEngine.Sprite Icon => Icons.BookOpen;
 
     /// <summary>Whether the feature runs. Its patches pass through while it does not.</summary>
     internal static bool Active => _instance != null && _instance.Running && !_instance.Failed;

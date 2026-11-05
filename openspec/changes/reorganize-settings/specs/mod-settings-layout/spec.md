@@ -7,17 +7,22 @@
 
 ### Requirement: Every feature has its own switch
 
-Each feature SHALL have its own on and off switch, shown as a row in its group of the settings window with the feature's one sentence. The groups SHALL be Respawns, with the boss list, map pins, world markers, alerts and sharing, Bestiary, with full Bestiary pages and Bestiary countdowns, and Combat, with boss skills and Fatecharms. A feature's own settings SHALL sit indented under its row. A feature whose settings do not fit there SHALL have a page of its own, reached from a gear on its row and from its panel's settings button. Every feature SHALL be on at first start. Switching a feature off SHALL remove everything it draws and every change it makes to the game's interface, without a restart.
+Each feature SHALL have its own on and off switch, shown as a row in its group of the settings window with the feature's one sentence, and no row SHALL hold a second switch. The groups SHALL be Respawns, with the boss list, map pins, dungeon entrances, world markers, edge arrows, alerts and sharing, Bestiary, with full Bestiary pages and Bestiary countdowns, and Combat, with boss skills and Fatecharms. A feature with settings SHALL keep them on a page of its own, reached from a gear on its row and from its panel's settings button. Every feature SHALL be on at first start, except that edge arrows SHALL start as they were set while they were part of world markers. Switching a feature off SHALL remove everything it draws and every change it makes to the game's interface, without a restart.
 
 #### Scenario: Switching world markers off
 
 - **WHEN** the player switches world markers off during play
-- **THEN** every world marker and edge arrow disappears at once and the other features keep working
+- **THEN** every world marker disappears at once, and edge arrows and the other features keep working
 
 #### Scenario: Opening the boss list's settings
 
 - **WHEN** the player clicks the gear on the boss list's row in Respawns
 - **THEN** the window shows the boss list's own page, with the way back to Respawns above its title
+
+#### Scenario: Dungeon cards without map pins
+
+- **WHEN** the player switches map pins off and hovers the Sunken Temple gate on the map
+- **THEN** the dungeon's card shows
 
 ### Requirement: Filters decide what the boss list shows
 

@@ -26,8 +26,6 @@ public sealed class SettingsWindow
     private const float LabelWidth = 165f;
     private const float ControlHeight = 26f;
     private const float HelpGap = 5f;
-    // A feature's own settings sit indented under its row.
-    private const float FeatureIndent = 16f;
     private const float GearSize = 26f;
 
     // Opaque, because the game blends its interface in linear colour space, where even a 2%
@@ -233,10 +231,14 @@ public sealed class SettingsWindow
         if (_root == null) return;
         for (int item = 0; item < _nav.Count; item++)
             _nav[item].SetSelected(item == index);
-        // Groups that draw themselves hold no settings to reset.
-        _reset.Rect.gameObject.SetActive(_groups[index].Content == null);
+        _reset.Rect.gameObject.SetActive(HasSettings(_groups[index], open));
         BuildRows();
     }
+
+    // A page that draws itself, or a group of features, which keep their settings on their own
+    // pages, shows nothing that resets.
+    private static bool HasSettings(SettingsGroup group, Feature open) =>
+        open != null ? open.Settings.Rows.Count > 0 : group.Content == null && group.Pages.Count > 0;
 
     private void ClearRows()
     {
@@ -287,8 +289,7 @@ public sealed class SettingsWindow
         return y;
     }
 
-    // A feature's row: its name, sentence and switch, a gear to its own page if it has one, and
-    // otherwise its settings indented below.
+    // A feature's row: its name, sentence and switch, and a gear to its own page if it has settings.
     private float FeatureBlock(Feature feature, float y, float width)
     {
         var divider = HudFactory.Box("divider", _content, Theme.Line);
@@ -316,18 +317,7 @@ public sealed class SettingsWindow
         y += feature.Failed ? failedHeight + 2f : 0f;
         failed.SetActive(feature.Failed);
 
-        CanvasGroup rowsGroup = null;
-        if (!feature.OwnPage && feature.Settings.Rows.Count > 0)
-        {
-            var rows = HudFactory.Rect("rows", _content);
-            var rowsRect = HudFactory.TopLeft(rows.GetComponent<RectTransform>(), 0f, y + 6f, _content.sizeDelta.x, 0f);
-            rowsGroup = rows.AddComponent<CanvasGroup>();
-            float height = Rows(feature.Settings.Rows, rowsRect, 0f, width, FeatureIndent);
-            rowsRect.sizeDelta = new Vector2(_content.sizeDelta.x, height);
-            y += 6f + height;
-        }
-
-        _featureRows.Add(new FeatureRow(feature, toggle, gear, failed, rowsGroup));
+        _featureRows.Add(new FeatureRow(feature, toggle, gear, failed, null));
         return y + 10f;
     }
 
@@ -611,7 +601,7 @@ public sealed class SettingsWindow
     }
 
     // Returns what the page shows to its defaults: a feature's own page, or a group's shared
-    // settings and the settings under its features' rows. Feature switches keep their state.
+    // settings. Feature switches keep their state.
     private void ResetShown(SettingsGroup group)
     {
         if (_open != null)
@@ -621,9 +611,6 @@ public sealed class SettingsWindow
         }
 
         foreach (var page in group.Pages) page.ResetShown();
-        foreach (var feature in group.Features)
-            if (!feature.OwnPage)
-                feature.Settings.ResetShown();
     }
 
     private void Scroll()

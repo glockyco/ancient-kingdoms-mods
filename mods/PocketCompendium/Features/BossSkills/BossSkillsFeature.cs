@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using PocketCompendium.Core;
 using PocketCompendium.Core.Features;
-using PocketCompendium.Core.Ui;
 using PocketCompendium.Core.Game;
 using PocketCompendium.Features.BossSkills.Game;
 using PocketCompendium.Features.BossSkills.Model;
@@ -25,8 +24,6 @@ public sealed class BossSkillsFeature : Feature
     {
         _settings = new BossSkillsSettings(Settings);
     }
-
-    public override Sprite Icon => Icons.Swords;
 
     protected internal override void Enable()
     {

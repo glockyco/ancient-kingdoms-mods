@@ -47,7 +47,9 @@ public sealed class PocketCompendiumMod : MelonMod
         _features = new FeatureRegistry();
         var bossList = new BossListFeature();
         var worldMarkers = new WorldMarkersFeature();
+        var edgeArrows = new EdgeArrowsFeature(worldMarkers.EarlierEdgeArrows);
         var mapPins = new MapPinsFeature();
+        var dungeonEntrances = new DungeonEntrancesFeature();
         var bestiaryCountdown = new BestiaryCountdownFeature();
         var alerts = new AlertsFeature();
         var bossSkills = new BossSkillsFeature();
@@ -56,7 +58,9 @@ public sealed class PocketCompendiumMod : MelonMod
         var sharing = new SharingFeature();
         _features.Add(bossList);
         _features.Add(worldMarkers);
+        _features.Add(edgeArrows);
         _features.Add(mapPins);
+        _features.Add(dungeonEntrances);
         _features.Add(bestiaryCountdown);
         _features.Add(alerts);
         _features.Add(bossSkills);
@@ -73,7 +77,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _settings = new SettingsWindow(new[]
         {
             SettingsGroup.Shared(general.Page.Title, Icons.Sliders, general.Page, _layout.Page),
-            SettingsGroup.Of("Respawns", Icons.Timer, bossList, mapPins, worldMarkers, alerts, sharing),
+            SettingsGroup.Of("Respawns", Icons.Timer, bossList, mapPins, dungeonEntrances, worldMarkers, edgeArrows, alerts, sharing),
             SettingsGroup.Of("Bestiary", Icons.BookOpen, bestiaryPages, bestiaryCountdown),
             SettingsGroup.Of("Combat", Icons.Swords, bossSkills, fatecharms),
             SettingsGroup.Drawn(new UpdatesPage(_updates)),

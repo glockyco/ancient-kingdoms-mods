@@ -1,7 +1,8 @@
 ## 1. Window
 
 - [x] 1.1 Group the sidebar: General, Respawns, Bestiary, Combat, Updates, About
-- [x] 1.2 Show each feature as a row with its switch and sentence, and its settings indented below
+- [x] 1.2 Show each feature as a row with one switch and its sentence, its settings behind a gear
+- [x] 1.5 Give dungeon entrances and edge arrows their own switches, edge arrows starting from world markers' value
 - [x] 1.3 Give the boss list its own page, reached from a gear on its row, with the way back
 - [x] 1.4 Keep the panels' settings buttons leading to their feature's place
 

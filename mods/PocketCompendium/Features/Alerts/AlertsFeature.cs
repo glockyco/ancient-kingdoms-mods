@@ -5,7 +5,6 @@ using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Game;
 using PocketCompendium.Core.Text;
 using PocketCompendium.Core.Tracking;
-using PocketCompendium.Core.Ui;
 using UnityEngine;
 
 namespace PocketCompendium.Features.Alerts;
@@ -24,8 +23,6 @@ public sealed class AlertsFeature : Feature
         : base("Alerts", "Alerts", "Tells you on screen and in chat when a monster you watch spawns.")
     {
     }
-
-    public override Sprite Icon => Icons.Bell;
 
     public override bool UsesTracker => true;
 

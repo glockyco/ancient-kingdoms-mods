@@ -19,12 +19,10 @@ public static class Icons
     private static readonly List<Texture2D> Textures = new();
 
     public static Sprite Arrow => Get("arrow");
-    public static Sprite Bell => Get("bell");
     public static Sprite Check => Get("check");
     public static Sprite CircleAlert => Get("circle-alert");
     public static Sprite CircleArrowDown => Get("circle-arrow-down");
     public static Sprite CircleCheck => Get("circle-check");
-    public static Sprite Clover => Get("clover");
     public static Sprite BookOpen => Get("book-open");
     public static Sprite ChevronsDownUp => Get("chevrons-down-up");
     public static Sprite ChevronsUpDown => Get("chevrons-up-down");
@@ -39,10 +37,8 @@ public static class Icons
     public static Sprite Info => Get("info");
     public static Sprite LayoutGrid => Get("layout-grid");
     public static Sprite LayoutList => Get("layout-list");
-    public static Sprite LocateFixed => Get("locate-fixed");
     public static Sprite Lock => Get("lucide-lock");
     public static Sprite LockOpen => Get("lucide-lock-open");
-    public static Sprite MapPin => Get("map-pin");
     public static Sprite MessageCircle => Get("message-circle");
     public static Sprite Moon => Get("moon");
     public static Sprite Move => Get("move");
@@ -55,7 +51,6 @@ public static class Icons
     public static Sprite Sun => Get("sun");
     public static Sprite Swords => Get("swords");
     public static Sprite Timer => Get("timer");
-    public static Sprite Users => Get("users");
     public static Sprite X => Get("x");
 
     private static Sprite Get(string name)
