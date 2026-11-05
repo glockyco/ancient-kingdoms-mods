@@ -20,7 +20,7 @@
     })),
     {
       key: "stat-ranges",
-      label: "Stat Ranges",
+      label: "Stats",
       href: "/mechanics/mercenary-stats",
     },
   ]);

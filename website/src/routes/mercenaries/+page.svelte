@@ -1020,9 +1020,7 @@
         <Calculator class="h-6 w-6 text-teal-500" />
       </div>
       <div class="min-w-0 flex-1">
-        <div class="font-semibold group-hover:underline">
-          Stat Ranges and Hiring Odds
-        </div>
+        <div class="font-semibold group-hover:underline">Mercenary Stats</div>
         <p class="mt-1 text-sm text-muted-foreground">
           Compare Hit Points, Mana, Attack Power, and Spell Power for every
           class and race at any level. See how many hires it takes to roll a

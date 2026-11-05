@@ -53,20 +53,24 @@ const DESCRIPTIONS: Partial<Record<EntityId, string>> = {
 function entity(id: EntityId): NavigationLink {
   const def = entityRegistry[id];
   return {
-    label: id === "recipe" ? "Recipes" : def.pluralLabel,
+    label: id === "recipe" ? "Crafting Recipes" : def.pluralLabel,
     href: def.overviewHref,
     description: DESCRIPTIONS[id],
     icon: def.icon,
   };
 }
 
-/** The most visited destinations, in the order readers use them, shown directly in the bar. */
+/**
+ * The most visited destinations, in the order readers use them, shown directly in the bar.
+ * The bar uses short names, such as Map, Mods and Recipes, because a full page name such as
+ * "Crafting Recipes" wraps onto two lines at the narrowest widths that show the bar.
+ */
 export const PRIMARY_LINKS: readonly NavigationLink[] = [
   MAP,
   entity("item"),
   entity("monster"),
   { ...entity("zone"), wideOnly: true },
-  entity("recipe"),
+  { ...entity("recipe"), label: "Recipes" },
   entity("class"),
   { label: "Mods", href: "/mods" },
 ];

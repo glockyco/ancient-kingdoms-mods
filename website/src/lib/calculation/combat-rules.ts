@@ -417,7 +417,7 @@ export const threatCalculation: Calculation = {
       limit: "at most the target's current Hit Points",
     },
     {
-      name: "Threat Gained",
+      name: "Threat Added",
       expression: "Skill Threat + Damage and Control Threat",
     },
   ],
@@ -434,14 +434,14 @@ export const threatCalculation: Calculation = {
         `10% fear chance for ${seconds(5)}`,
         "150 target current Hit Points",
       ],
-      result: `${number(result.total)} threat gained`,
+      result: `${number(result.total)} threat added`,
       working: [
         `Skill Threat: 10 + ${number(2000)} ÷ 3 = 10 + ${number(result.health)} = ${number(skillThreat)}, with the Hit Points share rounded`,
         `Stun Threat: 50% × ${seconds(3)} × 10 = ${number(result.stun)}, rounded`,
         `Fear Threat: 10% × ${seconds(5)} × 10 = ${number(result.fear)}, rounded`,
         `Control Threat: ${number(result.stun)} + ${number(result.fear)} = ${number(control)}`,
         `Damage and Control Threat: 201 + ${number(control)} = ${number(201 + control)}, limited to ${number(result.capped)}`,
-        `Threat Gained: ${number(skillThreat)} + ${number(result.capped)} = ${number(result.total)}`,
+        `Threat Added: ${number(skillThreat)} + ${number(result.capped)} = ${number(result.total)}`,
       ],
     };
   },

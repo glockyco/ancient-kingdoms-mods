@@ -43,6 +43,8 @@ Each label is edited where it is written. A function that title-cases strings at
 - A skill calculator's result "Damage before defenses" becomes "Starting Damage". It is step 1 of the combat page's damage steps, before variance, the level adjustment and critical hits, which the combat page calls starting damage.
 - The quest list sorts and searches adventurer quests by "Adventurer", the badge they show, instead of "Daily".
 - The one-line skill summaries say "threat" instead of "aggro" on the website and in Pocket Compendium's port, whose parity test reads the website's output. Monster skills never show threat, so the mod's panels show no change.
+- A page carries the name its heading shows. The Mechanics index and menu write "and" where they wrote "&", such as "Party and Loot", while group and card titles such as "Cost & Timing" keep "&". The mercenary stat page is "Mercenary Stats" everywhere, with the tab "Stats". The recipe list is "Crafting Recipes" in its title, heading, breadcrumb, footer link and Browse panel, because "ancient kingdoms crafting recipes" is one of the site's most clicked search queries. The top bar keeps short names, such as "Map", "Mods" and "Recipes", because "Crafting Recipes" wraps onto two lines there at narrow widths. The home page's section stays "Recipes", because one of its four tiles is Crafting.
+- The threat a hit adds is "Threat Added" on the combat page and on skill pages.
 
 ### One definition per column label
 

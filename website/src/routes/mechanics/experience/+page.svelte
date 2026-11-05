@@ -1323,7 +1323,8 @@
       <p class="text-sm text-muted-foreground">
         Find scroll recipes in <a
           href="/recipes"
-          class="text-blue-600 dark:text-blue-400 hover:underline">Recipes</a
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Crafting Recipes</a
         >
         and their mastery requirements in
         <a

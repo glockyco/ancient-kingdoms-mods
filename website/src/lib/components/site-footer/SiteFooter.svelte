@@ -22,7 +22,7 @@
     { label: "Map", href: "/map" },
     { label: "Items", href: "/items" },
     { label: "Monsters", href: "/monsters" },
-    { label: "Recipes", href: "/recipes" },
+    { label: "Crafting Recipes", href: "/recipes" },
     { label: "Classes", href: "/classes" },
     { label: "Zones", href: "/zones" },
     { label: "Professions", href: "/professions" },

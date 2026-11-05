@@ -342,7 +342,7 @@
 </script>
 
 <Seo
-  title="Mercenary Stat Ranges - Ancient Kingdoms"
+  title="Mercenary Stats - Ancient Kingdoms"
   description="Compare possible maximum Hit Points, maximum Mana, Attack Power, and Spell Power for every mercenary race and class, by your level and total veteran points, plus hiring odds and expected costs."
   path="/mechanics/mercenary-stats"
 />
@@ -353,7 +353,7 @@
       items={[
         { label: "Home", href: "/" },
         { label: "Mechanics", href: "/mechanics" },
-        { label: "Mercenary Stat Ranges" },
+        { label: "Mercenary Stats" },
       ]}
     />
   </div>
@@ -362,7 +362,7 @@
     <MercenaryNav mercenaries={data.links} current="stat-ranges" />
   </div>
 
-  <h1>Mercenary Stat Ranges</h1>
+  <h1>Mercenary Stats</h1>
 
   <details class="howto">
     <summary>How to Read These Ranges</summary>

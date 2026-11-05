@@ -290,7 +290,7 @@
 {/snippet}
 
 <Seo
-  title="Recipes - Ancient Kingdoms"
+  title="Crafting Recipes - Ancient Kingdoms"
   pagination={data.crawlable}
   description={`Find ${formatNumber(data.recipes.length)} crafting, alchemy, cooking, and scribing recipes with ingredients, stations, tiers, and results.`}
   path="/recipes"

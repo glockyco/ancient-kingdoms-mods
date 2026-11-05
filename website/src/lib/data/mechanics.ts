@@ -42,7 +42,7 @@ export const MECHANICS_GROUPS = [
         featured: true,
       },
       {
-        title: "Housing & Appearance",
+        title: "Housing and Appearance",
         href: "/mechanics/housing",
         description: "Furniture, wardrobe, and barbers",
         summary: "Furniture and wardrobe",
@@ -67,7 +67,7 @@ export const MECHANICS_GROUPS = [
         summary: "Damage and mitigation",
       },
       {
-        title: "Death & Remains",
+        title: "Death and Remains",
         href: "/mechanics/death",
         description: "Death penalties, remains, and resurrection",
         summary: "Death costs and remains",
@@ -99,7 +99,7 @@ export const MECHANICS_GROUPS = [
         featured: true,
       },
       {
-        title: "Bard Songs & Charm",
+        title: "Bard Songs and Charm",
         href: "/mechanics/bard",
         description: "Song slots, auras, Final Cadence, and charm",
         summary: "Songs and charming",
@@ -110,7 +110,7 @@ export const MECHANICS_GROUPS = [
     title: "Party & Society",
     pages: [
       {
-        title: "Party & Loot",
+        title: "Party and Loot",
         href: "/mechanics/party",
         description: "Party size, shared rewards, and loot rolls",
         summary: "Shared rewards and rolls",
@@ -134,7 +134,7 @@ export const MECHANICS_GROUPS = [
     title: "World & Economy",
     pages: [
       {
-        title: "World & Travel",
+        title: "World and Travel",
         href: "/mechanics/world",
         description: "Game modes, maps, binding, travel, and portals",
         summary: "Binding, travel, and portals",
@@ -161,7 +161,7 @@ export const MECHANICS_GROUPS = [
         featured: true,
       },
       {
-        title: "Crafting & Augments",
+        title: "Crafting and Augments",
         href: "/mechanics/crafting",
         description:
           "Craft Stations, recipes, the Crafting journal, and augments",
