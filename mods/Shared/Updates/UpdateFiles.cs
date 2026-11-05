@@ -1,6 +1,8 @@
 // Oblivious, because Pocket Compendium's game references hide the compiler's nullable attributes.
 #nullable disable
+using System;
 using System.IO;
+using System.Linq;
 
 namespace AncientKingdomsMods.Shared.Updates;
 
@@ -8,14 +10,27 @@ namespace AncientKingdomsMods.Shared.Updates;
 internal sealed class UpdateFiles
 {
     public const string ModFile = "PocketCompendium.dll";
+    public const string ModName = "Pocket Compendium";
     public const string PluginFile = "PocketCompendiumUpdater.dll";
     public const string UpdateCodeFile = "PocketCompendium.UpdateCore.dll";
 
     public UpdateFiles(string userDataDirectory, string modsDirectory, string pluginsDirectory)
     {
         Folder = Path.Combine(userDataDirectory, "PocketCompendium", "Updates");
-        Installed = Path.Combine(modsDirectory, ModFile);
+        Installed = FindInstalled(modsDirectory);
         Plugin = Path.Combine(pluginsDirectory, PluginFile);
+    }
+
+    // A browser saves a second download as "PocketCompendium (1).dll", and MelonLoader loads a mod
+    // under any name, so the installed mod is the DLL that names itself Pocket Compendium. Its usual
+    // name comes first, and with no such DLL the usual name stands for a mod the player removed.
+    private static string FindInstalled(string modsDirectory)
+    {
+        string usual = Path.Combine(modsDirectory, ModFile);
+        if (File.Exists(usual) || !Directory.Exists(modsDirectory)) return usual;
+        return Directory.EnumerateFiles(modsDirectory, "*.dll")
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault(path => MelonInfoReader.Name(path) == ModName) ?? usual;
     }
 
     public string Folder { get; }

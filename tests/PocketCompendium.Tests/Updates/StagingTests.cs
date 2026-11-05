@@ -76,6 +76,23 @@ public sealed class StagingTests : IDisposable
     }
 
     [Fact]
+    public void A_mod_saved_under_another_name_is_updated_in_place()
+    {
+        // A browser saves a second download as "PocketCompendium (1).dll", and MelonLoader loads it.
+        string renamed = Path.Combine(_root, "Mods", "PocketCompendium (1).dll");
+        File.Copy(typeof(StagingTests).Assembly.Location, renamed);
+        var files = new UpdateFiles(Path.Combine(_root, "UserData"), Path.Combine(_root, "Mods"), Path.Combine(_root, "Plugins"));
+        byte[] staged = Encoding.UTF8.GetBytes("new");
+        Staging.Stage(files, staged, UpdateTestData.Sha256(staged));
+
+        var moved = Staging.Apply(files, path => path == renamed ? ModVersion.Parse("1.0.2") : ModVersion.Parse("1.0.3"));
+
+        Assert.Equal(renamed, files.Installed);
+        Assert.Equal((ModVersion.Parse("1.0.2"), ModVersion.Parse("1.0.3")), moved);
+        Assert.Equal("new", File.ReadAllText(renamed));
+    }
+
+    [Fact]
     public void A_staged_file_that_changed_after_download_is_refused()
     {
         Install("old", "1.0.2");

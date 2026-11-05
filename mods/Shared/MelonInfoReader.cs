@@ -8,15 +8,31 @@ using System.Reflection.PortableExecutable;
 namespace AncientKingdomsMods.Shared;
 
 /// <summary>
-/// Reads the version a MelonLoader mod names in its <c>MelonInfo</c> attribute, which is the
-/// version MelonLoader logs and the mod shows in game, from the DLL's metadata without loading it.
+/// Reads the name and version a MelonLoader mod gives in its <c>MelonInfo</c> attribute, which are
+/// what MelonLoader logs and the mod shows in game, from the DLL's metadata without loading it.
 /// </summary>
 internal static class MelonInfoReader
 {
     // MelonInfoAttribute(Type type, string name, string version, string author, string downloadLink = null)
+    private const int NameArgument = 1;
     private const int VersionArgument = 2;
 
-    public static string Version(string path)
+    public static string Version(string path) => Argument(path, VersionArgument);
+
+    /// <summary>The mod's name, or null for a file that is no MelonLoader mod or can't be read.</summary>
+    public static string Name(string path)
+    {
+        try
+        {
+            return Argument(path, NameArgument);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or BadImageFormatException)
+        {
+            return null;
+        }
+    }
+
+    private static string Argument(string path, int index)
     {
         using var stream = File.OpenRead(path);
         using var pe = new PEReader(stream);
@@ -29,7 +45,7 @@ internal static class MelonInfoReader
             if (!IsMelonInfo(reader, attribute)) continue;
 
             var arguments = attribute.DecodeValue(new TypeNames()).FixedArguments;
-            return arguments.Length > VersionArgument ? arguments[VersionArgument].Value as string : null;
+            return arguments.Length > index ? arguments[index].Value as string : null;
         }
 
         return null;
