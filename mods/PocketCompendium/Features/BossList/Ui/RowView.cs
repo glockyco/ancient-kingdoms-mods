@@ -64,8 +64,7 @@ internal sealed class RowView
     private readonly Label _distance;
     private readonly RectTransform _arrowCircle;
     private readonly RectTransform _arrow;
-    private readonly UIShowToolTip _tooltip;
-    private string _tooltipText;
+    private readonly HoverText _tooltip;
     private int _shownLevel = -1;
     private SpawnRules _shownRules;
 
@@ -74,7 +73,7 @@ internal sealed class RowView
         _background = HudFactory.Box("row", parent, Color.clear);
         _background.raycastTarget = true;
         Rect = _background.rectTransform;
-        _tooltip = _background.gameObject.AddComponent<UIShowToolTip>();
+        _tooltip = new HoverText(Rect);
 
         _line = HudFactory.Box("line", Rect, Theme.RowLine);
         _hoverBar = HudFactory.Box("hover", Rect, Theme.Gold);
@@ -193,9 +192,7 @@ internal sealed class RowView
 
     public void SetTooltip(string text)
     {
-        if (_tooltipText == text) return;
-        _tooltipText = text;
-        _tooltip.text = text;
+        _tooltip.Text = text;
     }
 
     /// <summary>Updates the hover look and reports whether the pointer is over the row.</summary>

@@ -7,7 +7,7 @@ namespace PocketCompendium.Core.Ui;
 /// The screen-space canvases Pocket Compendium draws on, created on first use. Markers and panels
 /// sit below the game's interface, so its HUD, windows, menus and tooltips cover them. The
 /// settings window sits above it. Every layer scales with the screen against a 1920x1080
-/// reference, like the game's own HUD.
+/// reference, like the game's own HUD. <see cref="Tooltip"/> keeps a canvas of its own.
 /// </summary>
 public static class Overlay
 {
@@ -18,13 +18,11 @@ public static class Overlay
     // camera, so a negative order still draws over the world, under the game's interface.
     private const int MarkerOrder = -10;
     private const int PanelOrder = -1;
-    private const int TooltipOrder = 32730;
     private const int WindowOrder = 32760;
 
     private static Layer _markers;
     private static Layer _panels;
     private static Layer _windows;
-    private static GameObject _raisedTooltip;
 
     /// <summary>World markers and edge arrows.</summary>
     public static RectTransform Markers => (_markers ??= new Layer("PC_Markers", MarkerOrder, raycasts: false)).Root;
@@ -36,7 +34,6 @@ public static class Overlay
     public static RectTransform Windows => (_windows ??= new Layer("PC_Windows", WindowOrder, raycasts: true)).Root;
 
     /// <summary>
-    /// Lifts the game's tooltip above the map pins, whose canvas sits one order above the map's.
     /// Hides the panels and markers while the game's map is open, because the map covers the
     /// whole play area.
     /// </summary>
@@ -47,16 +44,6 @@ public static class Overlay
         // Inactive panels also ignore the pointer, so a click on the map never reaches one.
         Show(_panels, !mapOpen);
         Show(_markers, !mapOpen);
-
-        var shortcuts = Il2Cpp.UIShortcuts.singleton;
-        var tooltip = shortcuts != null ? shortcuts.toolTip : null;
-        if (tooltip == null || tooltip == _raisedTooltip) return;
-
-        var tooltipCanvas = tooltip.GetComponent<Canvas>();
-        if (tooltipCanvas == null) tooltipCanvas = tooltip.AddComponent<Canvas>();
-        tooltipCanvas.overrideSorting = true;
-        tooltipCanvas.sortingOrder = TooltipOrder;
-        _raisedTooltip = tooltip;
     }
 
     private static void Show(Layer layer, bool shown)

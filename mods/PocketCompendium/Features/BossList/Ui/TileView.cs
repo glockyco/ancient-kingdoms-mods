@@ -20,8 +20,7 @@ internal sealed class TileView
     private readonly Image _icon;
     private readonly Label _caption;
     private readonly Image _hover;
-    private readonly UIShowToolTip _tooltip;
-    private string _tooltipText;
+    private readonly HoverText _tooltip;
 
     public TileView(Transform parent)
     {
@@ -29,7 +28,7 @@ internal sealed class TileView
         Rect = _portrait.Rect;
         var hit = Rect.GetComponent<Image>();
         hit.raycastTarget = true;
-        _tooltip = Rect.gameObject.AddComponent<UIShowToolTip>();
+        _tooltip = new HoverText(Rect);
 
         // A shade under the caption keeps a gold "Up" readable on light portraits.
         var shade = HudFactory.Box("shade", Rect, CaptionShade);
@@ -91,9 +90,7 @@ internal sealed class TileView
 
     public void SetTooltip(string text)
     {
-        if (_tooltipText == text) return;
-        _tooltipText = text;
-        _tooltip.text = text;
+        _tooltip.Text = text;
     }
 
     public bool UpdateHover()

@@ -53,8 +53,8 @@ internal sealed class BossListPanel
     private IconButton _settingsButton;
     private IconButton _styleButton;
     private IconButton _lockButton;
-    private UIShowToolTip _styleTooltip;
-    private UIShowToolTip _lockTooltip;
+    private HoverText _styleTooltip;
+    private HoverText _lockTooltip;
     private RectTransform _viewport;
     private RectTransform _content;
     private Label _empty;
@@ -325,17 +325,17 @@ internal sealed class BossListPanel
         _lockButton = ControlButton(Icons.LockOpen, 0, out _lockTooltip);
         _styleButton = ControlButton(Icons.LayoutGrid, 1, out _styleTooltip);
         _settingsButton = ControlButton(Icons.Sliders, 2, out var settingsTooltip);
-        settingsTooltip.text = "<b>Settings</b>\n" + ModText.Name + "'s settings, on the Boss list page.";
+        settingsTooltip.Text = "<b>Settings</b>\n" + ModText.Name + "'s settings, on the Boss list page.";
     }
 
-    private IconButton ControlButton(Sprite icon, int slot, out UIShowToolTip tooltip)
+    private IconButton ControlButton(Sprite icon, int slot, out HoverText tooltip)
     {
         var button = new IconButton(_header, icon, ControlSize, ControlIconSize);
         var rect = button.Rect;
         rect.anchorMin = rect.anchorMax = new Vector2(1f, 0.5f);
         rect.pivot = new Vector2(1f, 0.5f);
         rect.anchoredPosition = new Vector2(-8f - slot * (ControlSize + 4f), -AccentHeight / 2f);
-        tooltip = rect.gameObject.AddComponent<UIShowToolTip>();
+        tooltip = new HoverText(rect);
         return button;
     }
 
@@ -365,7 +365,7 @@ internal sealed class BossListPanel
         }
 
         _styleButton.Icon = _compact ? Icons.LayoutList : Icons.LayoutGrid;
-        _styleTooltip.text = _compact ? "<b>List</b>\nRows with names, levels and distances." : "<b>Compact</b>\nPortraits with times.";
+        _styleTooltip.Text = _compact ? "<b>List</b>\nRows with names, levels and distances." : "<b>Compact</b>\nPortraits with times.";
 
         // Below the header, or alone in the compact style, the rows scroll inside the panel's
         // maximum height. The client's note closes the list.
@@ -412,7 +412,7 @@ internal sealed class BossListPanel
         bool locked = Host.EffectivelyLocked;
         _lockButton.Icon = locked ? Icons.Lock : Icons.LockOpen;
         _lockButton.Active = locked;
-        _lockTooltip.text = PanelHost.LockAll()
+        _lockTooltip.Text = PanelHost.LockAll()
             ? "<b>Panels locked</b>\nEvery panel is locked. Click to open the Layout settings."
             : locked
                 ? "<b>Unlock panel</b>\nAllow dragging from the header and resizing from the corner."

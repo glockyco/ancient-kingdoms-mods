@@ -33,8 +33,8 @@ internal static class SkillsPanelController
         _window != null && _window.IsOpen ? _window.Entries : System.Array.Empty<Selectable>();
 
     /// <summary>
-    /// Shows the details of the card or line <paramref name="selected"/> and scrolls it into view.
-    /// Returns false when it is no card or line of the window.
+    /// Scrolls the card or line <paramref name="selected"/> into view, where Pocket Compendium's
+    /// tooltip shows its details. Returns false when it is no card or line of the window.
     /// </summary>
     internal static bool ShowFocused(GameObject selected)
     {
@@ -42,8 +42,6 @@ internal static class SkillsPanelController
         {
             if (entry == null || entry.gameObject != selected) continue;
             _window.ScrollIntoView(entry.GetComponent<RectTransform>());
-            var details = entry.GetComponent<UIShowToolTip>();
-            if (details != null && details.enabled) details.ShowToolTip();
             return true;
         }
 

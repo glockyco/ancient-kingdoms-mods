@@ -21,7 +21,7 @@ public sealed class FatecharmsFeature : Feature
     private GameObject _socket;
     private Image _socketImage;
     private Image _icon;
-    private UIShowToolTip _tooltip;
+    private HoverText _tooltip;
     private string _shownFor;
 
     public FatecharmsFeature()
@@ -62,7 +62,7 @@ public sealed class FatecharmsFeature : Feature
         _icon.sprite = charm.image;
         _icon.enabled = true;
         _socketImage.color = raises ? Color.white : NoGain;
-        _tooltip.text = Wrapping.KeepLastWordsTogether(HoverText(monster, charm, raises));
+        _tooltip.Text = Wrapping.KeepLastWordsTogether(Explanation(monster, charm, raises));
         _socket.SetActive(true);
         _shownFor = key;
     }
@@ -76,7 +76,7 @@ public sealed class FatecharmsFeature : Feature
         return Fatecharm.Carries(player, charm) ? charm : null;
     }
 
-    private static string HoverText(Monster monster, ScriptableItem charm, bool raises)
+    private static string Explanation(Monster monster, ScriptableItem charm, bool raises)
     {
         string name = charm.LocalizedName();
         string body = raises
@@ -114,7 +114,6 @@ public sealed class FatecharmsFeature : Feature
         iconRect.sizeDelta = new Vector2(24f, 24f);
         iconRect.anchoredPosition = Vector2.zero;
 
-        _tooltip = _socket.AddComponent<UIShowToolTip>();
-        _tooltip.enabled = true;
+        _tooltip = new HoverText(rect);
     }
 }

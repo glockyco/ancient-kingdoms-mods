@@ -136,7 +136,7 @@ internal sealed class PinView
     private readonly Image _hover;
     private readonly Image _tag;
     private readonly Label _time;
-    private readonly UIShowToolTip _tooltip;
+    private readonly HoverText _tooltip;
 
     public PinView(RectTransform parent, int layer)
     {
@@ -147,7 +147,7 @@ internal sealed class PinView
         Rect.sizeDelta = new Vector2(Size, Size);
         // A button takes the click, so the map underneath does not act on it.
         hit.gameObject.AddComponent<Button>().transition = Selectable.Transition.None;
-        _tooltip = hit.gameObject.AddComponent<UIShowToolTip>();
+        _tooltip = new HoverText(Rect);
 
         _hover = HudFactory.Tinted("hover", Rect, Shapes.Disc, HoverRing);
         _hover.rectTransform.sizeDelta = new Vector2(Size + 4f, Size + 4f);
@@ -191,7 +191,7 @@ internal sealed class PinView
             tag.anchoredPosition = new Vector2(0f, -Size / 2f + 3f);
         }
 
-        _tooltip.text = MonsterTooltip.Build(monster, now, named, watched, null, Vector2.zero);
+        _tooltip.Text = MonsterTooltip.Build(monster, now, named, watched, null, Vector2.zero);
     }
 
     public bool UpdateHover()

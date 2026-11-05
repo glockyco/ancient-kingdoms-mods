@@ -13,8 +13,9 @@ namespace PocketCompendium.Features.BestiaryPages.Ui;
 /// Lets a gamepad reach the Bestiary page's loot slots, the buttons below the page and the cards
 /// of the Skills window. The game gives loot slots no focus and shows their tooltips only on mouse
 /// hover. Each loot slot gets a Selectable, the right edge of the monster grid leads to the loot,
-/// the right edge of the page leads to the cards, and a focused slot or card shows its tooltip the
-/// way the game's own gamepad lists do (UINpcTradingSlot).
+/// the right edge of the page leads to the cards. A focused slot shows its item tooltip the way the
+/// game's own gamepad lists do (UINpcTradingSlot), and a focused card scrolls into view, where
+/// Pocket Compendium's tooltip shows its details.
 /// </summary>
 internal static class GamepadLootNavigation
 {
@@ -57,7 +58,7 @@ internal static class GamepadLootNavigation
         selectable.navigation = navigation;
     }
 
-    /// <summary>Shows the tooltip of a loot slot or skill card that just gained gamepad focus.</summary>
+    /// <summary>Shows the item tooltip of a focused loot slot, or scrolls a focused skill card into view.</summary>
     internal static void Update()
     {
         var selected = GameManager.isUsingGamepad ? CurrentSelection() : null;

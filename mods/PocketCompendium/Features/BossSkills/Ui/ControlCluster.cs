@@ -19,8 +19,8 @@ public sealed class ControlCluster
     private readonly GameObject _lockOpen;
     private readonly GameObject _lockClosed;
 
-    private readonly UIShowToolTip _compactTooltip;
-    private readonly UIShowToolTip _lockTooltip;
+    private readonly HoverText _compactTooltip;
+    private readonly HoverText _lockTooltip;
 
     public ControlCluster(Transform parent)
     {
@@ -54,7 +54,7 @@ public sealed class ControlCluster
     {
         _lockOpen.SetActive(!locked);
         _lockClosed.SetActive(locked);
-        _lockTooltip.text = lockedByLayout
+        _lockTooltip.Text = lockedByLayout
             ? "<b>Panels locked</b>\nEvery panel is locked. Click to open the Layout settings."
             : locked
                 ? "<b>Unlock panel</b>\nAllow dragging from the header and resizing from the corner."
@@ -65,7 +65,7 @@ public sealed class ControlCluster
     {
         _compactCollapse.SetActive(!compact);
         _compactExpand.SetActive(compact);
-        _compactTooltip.text = compact ? "<b>Full rows</b>\nShow skill names and larger icons." : "<b>Compact rows</b>\nSmaller rows and icons.";
+        _compactTooltip.Text = compact ? "<b>Full rows</b>\nShow skill names and larger icons." : "<b>Compact rows</b>\nSmaller rows and icons.";
     }
 
     // Slot 0 is the rightmost control, each further slot sits one control to the left.
@@ -78,18 +78,16 @@ public sealed class ControlCluster
         return HudFactory.Place(root.GetComponent<RectTransform>(), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(xMax - size, yMin), new Vector2(xMax, yMax));
     }
 
-    private static UIShowToolTip AddTooltip(GameObject root, string text)
+    private static HoverText AddTooltip(GameObject root, string text)
     {
+        // The hitbox lets the pointer test find the control above the panel behind it.
         var hitbox = root.AddComponent<Image>();
         hitbox.sprite = Theme.White;
         hitbox.type = Image.Type.Simple;
         hitbox.color = Color.clear;
         hitbox.raycastTarget = true;
 
-        var tooltip = root.AddComponent<UIShowToolTip>();
-        tooltip.enabled = true;
-        tooltip.text = text;
-        return tooltip;
+        return new HoverText(root.GetComponent<RectTransform>()) { Text = text };
     }
 
     private static GameObject ControlIcon(string name, Transform parent, Sprite sprite, Color color)

@@ -77,6 +77,8 @@ public sealed class PocketCompendiumMod : MelonMod
         // The tracker refreshes before the features that read it.
         _tracker.Update(_features.TrackerWanted);
         _features.Update();
+        // After the features, which set this frame's hover texts.
+        Tooltip.Update();
 
         if (GameAccess.InWorld && GameAccess.LocalPlayer != null)
         {
@@ -121,6 +123,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _settings.Destroy();
         _startScreen.Destroy();
         Overlay.Dispose();
+        Tooltip.Dispose();
         Icons.Dispose();
         Shapes.Dispose();
         Theme.Dispose();
