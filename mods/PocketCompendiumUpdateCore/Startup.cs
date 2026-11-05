@@ -27,7 +27,7 @@ public static class Startup
         _log = new MelonLogger.Instance("Pocket Compendium Updater");
         _files = new UpdateFiles(MelonEnvironment.UserDataDirectory, MelonEnvironment.ModsDirectory, MelonEnvironment.PluginsDirectory);
         // A player who deleted Pocket Compendium and left this plugin wants nothing checked or installed.
-        if (!System.IO.File.Exists(_files.Installed)) return;
+        if (_files.Copies().Count == 0) return;
         if (UpdateSettings.Load(_files.Settings).Answer == UpdateAnswer.Install)
             _download = Task.Run(Download);
     }
@@ -68,7 +68,7 @@ public static class Startup
             using var client = new UpdateClient(UpdateSite.Address, ListSignature.EmbeddedKey(typeof(Startup).Assembly));
             _list = await client.FetchListAsync().ConfigureAwait(false);
             var listed = _list.List.Find(ModList.PocketCompendiumId);
-            var installed = VersionOf(_files.Installed);
+            var installed = Staging.InstalledVersion(_files, VersionOf);
             if (listed == null || installed == null || listed.Version <= installed.Value)
             {
                 UpdateHandoff.Publish(UpdateOutcome.UpToDate, _list);

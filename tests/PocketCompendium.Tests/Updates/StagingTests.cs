@@ -76,20 +76,34 @@ public sealed class StagingTests : IDisposable
     }
 
     [Fact]
-    public void A_mod_saved_under_another_name_is_updated_in_place()
+    public void A_mod_saved_under_another_name_is_updated_under_the_usual_name()
     {
         // A browser saves a second download as "PocketCompendium (1).dll", and MelonLoader loads it.
         string renamed = Path.Combine(_root, "Mods", "PocketCompendium (1).dll");
         File.Copy(typeof(StagingTests).Assembly.Location, renamed);
-        var files = new UpdateFiles(Path.Combine(_root, "UserData"), Path.Combine(_root, "Mods"), Path.Combine(_root, "Plugins"));
-        byte[] staged = Encoding.UTF8.GetBytes("new");
-        Staging.Stage(files, staged, UpdateTestData.Sha256(staged));
+        Stage("new", "1.0.3");
 
-        var moved = Staging.Apply(files, path => path == renamed ? ModVersion.Parse("1.0.2") : ModVersion.Parse("1.0.3"));
+        var moved = Staging.Apply(_files, path => path == renamed ? ModVersion.Parse("1.0.2") : VersionOf(path));
 
-        Assert.Equal(renamed, files.Installed);
         Assert.Equal((ModVersion.Parse("1.0.2"), ModVersion.Parse("1.0.3")), moved);
-        Assert.Equal("new", File.ReadAllText(renamed));
+        Assert.Equal("new", File.ReadAllText(_files.Installed));
+        Assert.False(File.Exists(renamed));
+    }
+
+    [Fact]
+    public void An_update_leaves_one_copy_when_two_are_installed()
+    {
+        // MelonLoader loads only the first copy by name, here the older "(1)" one.
+        string renamed = Path.Combine(_root, "Mods", "PocketCompendium (1).dll");
+        File.Copy(typeof(StagingTests).Assembly.Location, renamed);
+        Install("manual", "1.0.3");
+        Stage("new", "1.0.4");
+
+        var moved = Staging.Apply(_files, path => path == renamed ? ModVersion.Parse("1.0.2") : VersionOf(path));
+
+        Assert.Equal((ModVersion.Parse("1.0.3"), ModVersion.Parse("1.0.4")), moved);
+        Assert.Equal("new", File.ReadAllText(_files.Installed));
+        Assert.False(File.Exists(renamed));
     }
 
     [Fact]

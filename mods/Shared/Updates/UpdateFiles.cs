@@ -1,6 +1,7 @@
 // Oblivious, because Pocket Compendium's game references hide the compiler's nullable attributes.
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -17,20 +18,25 @@ internal sealed class UpdateFiles
     public UpdateFiles(string userDataDirectory, string modsDirectory, string pluginsDirectory)
     {
         Folder = Path.Combine(userDataDirectory, "PocketCompendium", "Updates");
-        Installed = FindInstalled(modsDirectory);
+        ModsFolder = modsDirectory;
+        Installed = Path.Combine(modsDirectory, ModFile);
         Plugin = Path.Combine(pluginsDirectory, PluginFile);
     }
 
-    // A browser saves a second download as "PocketCompendium (1).dll", and MelonLoader loads a mod
-    // under any name, so the installed mod is the DLL that names itself Pocket Compendium. Its usual
-    // name comes first, and with no such DLL the usual name stands for a mod the player removed.
-    private static string FindInstalled(string modsDirectory)
+    public string ModsFolder { get; }
+
+    /// <summary>
+    /// Every copy of Pocket Compendium in the Mods folder: the usual file and any DLL that names
+    /// itself Pocket Compendium. A browser saves a second download as "PocketCompendium (1).dll", and
+    /// MelonLoader loads only one copy, the first by name, which can be the older one.
+    /// </summary>
+    public IReadOnlyList<string> Copies()
     {
-        string usual = Path.Combine(modsDirectory, ModFile);
-        if (File.Exists(usual) || !Directory.Exists(modsDirectory)) return usual;
-        return Directory.EnumerateFiles(modsDirectory, "*.dll")
+        if (!Directory.Exists(ModsFolder)) return Array.Empty<string>();
+        return Directory.EnumerateFiles(ModsFolder, "*.dll")
+            .Where(path => string.Equals(path, Installed, StringComparison.OrdinalIgnoreCase) || MelonInfoReader.Name(path) == ModName)
             .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault(path => MelonInfoReader.Name(path) == ModName) ?? usual;
+            .ToList();
     }
 
     public string Folder { get; }
@@ -45,6 +51,7 @@ internal sealed class UpdateFiles
     /// <summary>The update code the plugin loads, which Pocket Compendium keeps current.</summary>
     public string UpdateCode => Path.Combine(Folder, UpdateCodeFile);
 
+    /// <summary>Where an update puts Pocket Compendium, under its usual name.</summary>
     public string Installed { get; }
     public string Plugin { get; }
 
