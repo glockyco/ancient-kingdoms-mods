@@ -53,6 +53,12 @@ Warns you when killing your target would use your Fatecharm.
 
 ![The Catacombs Fatecharm beside Captain Aerendyl's level, with its tooltip.](../../assets/pocket-compendium-fatecharm.webp)
 
+### Augment marks
+
+Marks each item that has an augment with the augment's icon, in your inventory, backpack, bank and house chest. The frame takes the augment's quality colour.
+
+![The inventory with augment marks on the worn chestplate, sword and shield, and on a chestplate and an amulet in the bags.](../../assets/pocket-compendium-augments.webp)
+
 ## Problems and ideas
 
 Use **Report a problem** or **Suggest an idea** on the About page of the settings. Without a GitHub account, post in the compendium channel on the [game's Discord](https://discord.gg/8MkSWjXwab).

@@ -24,4 +24,4 @@ The game names an item's augment only in its tooltip, so a player who wants to k
 
 - New feature under `mods/PocketCompendium/Features/AugmentMarks/`, registered in `PocketCompendiumMod.cs` in the Combat group.
 - Reads the game's `ItemSlot.augmentName`, `AugmentItem` data and the slot views of `UIInventory`, `UIEquipment`, `UIBigBackpack`, `UIBank` and `UIChest`. It changes no game data.
-- `mods/PocketCompendium/README.md` and the /mods page gain the feature.
+- `mods/PocketCompendium/README.md` gains the feature.
