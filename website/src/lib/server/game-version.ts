@@ -24,6 +24,12 @@ const STEAM_NEWS_RSS_URL =
 export async function fetchGameVersion(): Promise<GameVersionResult> {
   try {
     const upstream = await fetch(STEAM_NEWS_RSS_URL, {
+      // Steam's store answers 403 to a request without a User-Agent, and a
+      // Worker's fetch sends none.
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (compatible; AncientKingdomsCompendium/1.0; +https://ancient-kingdoms.compendiums.org)",
+      },
       // Five seconds limits a stalled Steam request without holding the Worker's home-page response.
       signal: AbortSignal.timeout(5_000),
       // @ts-expect-error - `cf` is a Cloudflare Workers extension to RequestInit;
@@ -31,10 +37,15 @@ export async function fetchGameVersion(): Promise<GameVersionResult> {
       // (Vite dev) silently ignores unknown init fields.
       cf: { cacheTtl: 600, cacheEverything: true },
     });
-    if (!upstream.ok) return { ok: false };
-    const body = await upstream.text();
-    return parseGameVersionRss(body);
-  } catch {
+    if (!upstream.ok) {
+      console.warn(`Steam news feed answered ${upstream.status}`);
+      return { ok: false };
+    }
+    const result = parseGameVersionRss(await upstream.text());
+    if (!result.ok) console.warn("Steam news feed held no version title");
+    return result;
+  } catch (error) {
+    console.warn("Steam news feed request failed", error);
     return { ok: false };
   }
 }
