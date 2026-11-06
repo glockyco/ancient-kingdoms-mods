@@ -43,6 +43,7 @@ internal sealed class GatherListPanel
     private IconButton _respawningButton;
     private HoverText _respawningTooltip;
     private HoverText _lockTooltip;
+    private GatherTileView _hovered;
     private RectTransform _grid;
     private Label _empty;
 
@@ -177,11 +178,20 @@ internal sealed class GatherListPanel
             changed = true;
         }
 
-        foreach (var tile in _tiles)
+        // A tile's hover test costs a few calls into the game, so tiles are only tested while the
+        // pointer is over the panel, and the last hovered one once more after it leaves.
+        bool overPanel = Pointer.Over(Host.Rect);
+        if (overPanel || _hovered != null)
         {
-            if (tile.Type == null || !tile.UpdateHover() || !Pointer.Clicked(tile.Rect)) continue;
-            _settings.ToggleWatch(tile.Type.Key);
-            changed = true;
+            _hovered = null;
+            foreach (var tile in _tiles)
+            {
+                if (tile.Type == null || !tile.UpdateHover(overPanel)) continue;
+                _hovered = tile;
+                if (!Pointer.Clicked(tile.Rect)) continue;
+                _settings.ToggleWatch(tile.Type.Key);
+                changed = true;
+            }
         }
 
         Host.Update(_dragHandles);

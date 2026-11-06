@@ -22,5 +22,5 @@
 
 - [ ] 4.1 Show every new text in the built interface in Plannotator, apply the answers, and add the Gathering section to `mods/PocketCompendium/README.md`
 - [ ] 4.2 Take the README's and the `/mods` page's Gathering pictures in daylight: one in the world with the monster markers and arrows switched off, the list showing, the minimap's gathering icons and the gathering arrow, and one of the local map with the gathering pins, where boss pins may show too
-- [ ] 4.3 Measure frames as 1.0.2's stutter investigation did (`.local/research/2026-11-03-pocket-compendium-stutter/`): walk The Lone-Lands with every type watched and the list shown, then with the helper off, and verify that no frame over twice the median recurs from the helper and that Pocket Compendium's mean update rises by less than 0.3 ms
+- [x] 4.3 Measure frames as 1.0.2's stutter investigation did (`.local/research/2026-11-03-pocket-compendium-stutter/`): walk The Lone-Lands with every type watched and the list shown, then with the helper off, and verify that no frame over twice the median recurs from the helper and that Pocket Compendium's mean update rises by less than 0.3 ms
 - [ ] 4.4 Run every test project, and check the list with a virtual gamepad as the update question was checked

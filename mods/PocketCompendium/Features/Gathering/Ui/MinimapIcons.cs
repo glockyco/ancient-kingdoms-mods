@@ -21,7 +21,7 @@ internal sealed class MinimapIcons
     private static readonly Color Back = new(0f, 0f, 0f, 0.75f);
     private static readonly Color Growing = new(0.42f, 0.42f, 0.45f, 1f);
 
-    private readonly List<(Image Back, Image Icon)> _icons = new();
+    private readonly List<IconView> _icons = new();
     private readonly List<(GatherNode Node, Sprite Icon)> _near = new();
     private RectTransform _layer;
     private RectTransform _image;
@@ -53,7 +53,11 @@ internal sealed class MinimapIcons
         }
     }
 
-    /// <summary>Places the chosen nodes on the minimap, every frame.</summary>
+    /// <summary>
+    /// Places the chosen nodes on the minimap, every frame. Each call into the game costs time
+    /// under Il2Cpp, so the camera is read once, the projection is done here, and an icon is only
+    /// told what changed.
+    /// </summary>
     public void Update(double now)
     {
         var camera = Camera();
@@ -63,24 +67,19 @@ internal sealed class MinimapIcons
             return;
         }
 
+        // The minimap camera is orthographic and unrotated, as the map's projection assumes.
+        Vector3 centre = camera.transform.position;
+        float height = 2f * camera.orthographicSize, width = height * camera.aspect;
         var rect = _image.rect;
         int used = 0;
         foreach (var (node, sprite) in _near)
         {
-            Vector3 viewport = camera.WorldToViewportPoint(new Vector3(node.X, node.Y, 0f));
-            float dx = viewport.x - 0.5f, dy = viewport.y - 0.5f;
+            float x = (node.X - centre.x) / width + 0.5f, y = (node.Y - centre.y) / height + 0.5f;
+            float dx = x - 0.5f, dy = y - 0.5f;
             if (dx * dx + dy * dy > Radius * Radius) continue;
 
             if (used == _icons.Count) _icons.Add(Create());
-            var (back, icon) = _icons[used++];
-            if (!back.gameObject.activeSelf) back.gameObject.SetActive(true);
-            back.rectTransform.anchoredPosition = new Vector2(rect.xMin + viewport.x * rect.width, rect.yMin + viewport.y * rect.height);
-            if (icon.sprite != sprite)
-            {
-                icon.sprite = sprite;
-                icon.enabled = sprite != null;
-            }
-            icon.color = node.IsReady(now) ? Color.white : Growing;
+            _icons[used++].Show(new Vector2(rect.xMin + x * rect.width, rect.yMin + y * rect.height), sprite, node.IsReady(now));
         }
 
         Hide(used);
@@ -124,7 +123,7 @@ internal sealed class MinimapIcons
         return true;
     }
 
-    private (Image, Image) Create()
+    private IconView Create()
     {
         var back = HudFactory.Tinted("node", _layer, Shapes.Disc, Back);
         back.raycastTarget = false;
@@ -132,13 +131,56 @@ internal sealed class MinimapIcons
         var icon = HudFactory.Icon("icon", back.rectTransform, null);
         icon.raycastTarget = false;
         icon.rectTransform.sizeDelta = new Vector2(Size, Size);
-        return (back, icon);
+        return new IconView(back, icon);
     }
 
     private void Hide(int used)
     {
-        for (int index = used; index < _icons.Count; index++)
-            if (_icons[index].Back.gameObject.activeSelf)
-                _icons[index].Back.gameObject.SetActive(false);
+        for (int index = used; index < _icons.Count; index++) _icons[index].Hide();
+    }
+
+    /// <summary>One icon on the minimap, which remembers what it last showed.</summary>
+    private sealed class IconView
+    {
+        private readonly Image _back;
+        private readonly Image _icon;
+        private bool _active = true;
+        private Sprite _sprite;
+        private int _ready = -1;
+
+        public IconView(Image back, Image icon)
+        {
+            _back = back;
+            _icon = icon;
+        }
+
+        public void Show(Vector2 position, Sprite sprite, bool ready)
+        {
+            if (!_active)
+            {
+                _back.gameObject.SetActive(true);
+                _active = true;
+            }
+            _back.rectTransform.anchoredPosition = position;
+            if (!ReferenceEquals(_sprite, sprite))
+            {
+                _sprite = sprite;
+                _icon.sprite = sprite;
+                _icon.enabled = sprite != null;
+            }
+            int state = ready ? 1 : 0;
+            if (state != _ready)
+            {
+                _ready = state;
+                _icon.color = ready ? Color.white : Growing;
+            }
+        }
+
+        public void Hide()
+        {
+            if (!_active) return;
+            _back.gameObject.SetActive(false);
+            _active = false;
+        }
     }
 }

@@ -34,6 +34,7 @@ internal sealed class GatherTileView
 
         _hover = HudFactory.Box("hover", Rect, new Color(1f, 1f, 1f, 0.12f));
         HudFactory.Stretch(_hover, new Vector2(2f, 2f), new Vector2(-2f, -2f));
+        _hover.enabled = false;
 
         _caption = HudFactory.Label("caption", Rect, 12f, Color.white, Align.Center, bold: true, monospaced: true);
         _caption.Text.extraPadding = true;
@@ -63,10 +64,16 @@ internal sealed class GatherTileView
 
     public void SetTooltip(string text) => _tooltip.Text = text;
 
-    public bool UpdateHover()
+    public bool UpdateHover(bool overPanel)
     {
-        bool hovered = Pointer.Over(Rect);
-        _hover.enabled = hovered;
+        bool hovered = overPanel && Pointer.Over(Rect);
+        if (hovered != _hoverShown)
+        {
+            _hoverShown = hovered;
+            _hover.enabled = hovered;
+        }
         return hovered;
     }
+
+    private bool _hoverShown;
 }
