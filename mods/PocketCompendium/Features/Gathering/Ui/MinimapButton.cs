@@ -35,6 +35,9 @@ internal sealed class MinimapButton
         // The copy would open the game's help, so it gets a click event of its own, which stays empty.
         var button = _root.GetComponent<Button>();
         if (button != null) button.onClick = new Button.ButtonClickedEvent();
+        // The copy would also show the game's "Help" tooltip over the mod's own.
+        var gameTooltip = _root.GetComponent<UIShowToolTip>();
+        if (gameTooltip != null) Object.DestroyImmediate(gameTooltip);
         _rect = _root.GetComponent<RectTransform>();
         // Mirrored from the players-online button across the minimap's middle.
         var position = players.position;

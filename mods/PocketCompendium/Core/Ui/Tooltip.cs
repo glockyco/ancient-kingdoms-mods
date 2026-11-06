@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Il2Cpp;
 using Il2CppTMPro;
+using PocketCompendium.Core.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -105,13 +106,14 @@ public static class Tooltip
         var other = panel ? _frame : _panel;
         if (other.gameObject.activeSelf) other.gameObject.SetActive(false);
 
+        string text = Wrapped(target.Text);
         if (panel)
         {
-            SetPanelText(target.Text);
+            SetPanelText(text);
         }
-        else if (_text.text != target.Text)
+        else if (_text.text != text)
         {
-            _text.text = target.Text;
+            _text.text = text;
             LayoutRebuilder.ForceRebuildLayoutImmediate(_frame);
         }
 
@@ -132,6 +134,21 @@ public static class Tooltip
         float inner = Mathf.Min(PanelInner, Mathf.Ceil(_panelText.GetPreferredValues(value).x));
         float height = Mathf.Ceil(_panelText.GetPreferredValues(value, inner, 0f).y);
         _panel.sizeDelta = new Vector2(inner + 2f * PanelPadX, height + 2f * PanelPadY);
+    }
+
+    private static string _rawText;
+    private static string _wrappedText;
+
+    // No tooltip line ends with one word alone. Sources may set their text every frame, so the
+    // wrapped copy is made only when the text changes.
+    private static string Wrapped(string raw)
+    {
+        if (raw != _rawText)
+        {
+            _rawText = raw;
+            _wrappedText = raw == null ? null : Wrapping.KeepLastWordsTogether(raw);
+        }
+        return _wrappedText;
     }
 
     public static void Dispose()

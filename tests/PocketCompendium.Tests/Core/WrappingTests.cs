@@ -28,4 +28,12 @@ public class WrappingTests
         const string text = "Up now.\n<size=50%> </size>\n<b>???</b>\nDue ";
         Assert.Equal("Up\u00A0now.\n<size=50%> </size>\n<b>???</b>\nDue ", Wrapping.KeepLastWordsTogether(text));
     }
+
+    [Fact]
+    public void BoundWordsStayBoundOnASecondPass()
+    {
+        string once = Wrapping.KeepLastWordsTogether("Show the list of herbs, ores, fish and sparks.");
+        Assert.Equal("Show the list of herbs, ores, fish and\u00A0sparks.", once);
+        Assert.Equal(once, Wrapping.KeepLastWordsTogether(once));
+    }
 }

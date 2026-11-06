@@ -5,7 +5,7 @@ namespace PocketCompendium.Core.Text;
 /// <summary>
 /// Keeps the last two words of each line of a wrapping text together, so a wrapped line never
 /// ends with one word alone. TextMesh Pro does not break at a no-break space. Rich text tags
-/// count as part of their word.
+/// count as part of their word, and a line whose last words are already bound stays as it is.
 /// </summary>
 public static class Wrapping
 {
@@ -44,6 +44,11 @@ public static class Wrapping
             if (c == '>')
             {
                 inTag = true;
+                continue;
+            }
+            if (c == NoBreakSpace)
+            {
+                if (wordAfter) return;
                 continue;
             }
             if (c != ' ')
