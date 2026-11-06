@@ -99,6 +99,23 @@ Before relaunching, check for an orphaned `ancientkingdoms.exe` process.
 Quit with `game.quit` at the end of a session. A hard kill is safe for player data when the run
 redirected the database. The player save keeps its content hash and leaves no write-ahead sidecar.
 
+## Hover and click through the game's Input System
+
+Hover or click with `ui.pointer`, then take the screenshot while it holds the pointer:
+
+```sh
+pnpm exec hotrepl run ui.pointer '{"path":"PC_GatheringButton","action":"click"}' --json
+pnpm exec hotrepl run ui.pointer '{"x":1356,"y":785,"holdSeconds":6}' --json
+pnpm exec hotrepl run unity.screenshot.capture '{}' --json
+```
+
+It drives the Input System that the game and Pocket Compendium read (`mods/PocketCompendium/Core/Ui/Pointer.cs`). OS mouse events and `Mouse.WarpCursorPosition` set no pointer that lasts, because the next real cursor event replaces it. Two traps remain in an `eval` that places the pointer itself:
+
+- `GetWorldCorners` writes nothing into a managed array through Il2Cpp, so its corners stay (0,0). Take a rect's centre with `rect.TransformPoint(rect.rect.center)`.
+- A rect drawn in the same `eval` has no layout yet, so point at it in the next call.
+
+A tooltip that follows gamepad focus shows without any pointer: set `GameManager.isUsingGamepad = true` and `EventSystem.current.SetSelectedGameObject(button)`, and undo both afterwards.
+
 ## References
 
 Each entry states what goes wrong without it, because a reader who judges relevance from a topic

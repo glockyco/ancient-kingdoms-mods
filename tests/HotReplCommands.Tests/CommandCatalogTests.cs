@@ -21,6 +21,7 @@ namespace HotReplCommands.Tests
                     "compendium.preflight",
                     "game.quit",
                     "game.useScratchDatabase",
+                    "ui.pointer",
                     "world.enter",
                     "world.summary",
                 },
@@ -35,6 +36,7 @@ namespace HotReplCommands.Tests
         [InlineData("game.useScratchDatabase", 1, ControlCommandKind.Sync, true)]
         [InlineData("capture.zoneShots", 1, ControlCommandKind.Job, true)]
         [InlineData("character.create", 1, ControlCommandKind.Job, true)]
+        [InlineData("ui.pointer", 1, ControlCommandKind.Job, true)]
         public void Catalog_EntryHasExpectedMetadata(
             string name, int version, ControlCommandKind kind, bool mutates)
         {

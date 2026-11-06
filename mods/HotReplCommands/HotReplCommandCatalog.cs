@@ -33,6 +33,7 @@ namespace HotReplCommands
             new Entry("game.useScratchDatabase", 1, ControlCommandKind.Sync, true),
             new Entry("capture.zoneShots",    1, ControlCommandKind.Job, true),
             new Entry("character.create",     1, ControlCommandKind.Job, true),
+            new Entry("ui.pointer",           1, ControlCommandKind.Job, true),
         };
     }
 }

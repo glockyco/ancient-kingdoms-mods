@@ -14,6 +14,7 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 | `game.useScratchDatabase` | sync | `{}` |
 | `capture.zoneShots` | job | `{"focalPointsPath": string?, "zoneIds": string[]?, "includeCreatures": bool?, "frameScale": number?}` |
 | `character.create` | job | `{"characterName": string, "class": string, "race": string, "replaceCharacterName": string?}` |
+| `ui.pointer` | job | `{"path": string?, "x": number?, "y": number?, "action": "hover" \| "click", "holdSeconds": number}` |
 
 ## HotRepl Unity commands
 
@@ -24,6 +25,7 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 ## Caveats
 
 - `world.enter` selects the lowest name in ordinal order when `character` is absent.
+- `ui.pointer` returns once a hover has had time to show and keeps the pointer there until `holdSeconds`, so take the screenshot right after it. A later call replaces the hold. Its `topElement` names what takes the pointer at the point.
 - `compendium.export` enters the world when needed before it exports.
 - `character.create` opens character selection when needed. On a full roster, it removes only the
   named `replaceCharacterName` from an earlier run, then returns `rosterSlotFreed`. Relaunch before

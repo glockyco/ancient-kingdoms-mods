@@ -18,6 +18,7 @@ namespace HotReplCommands
         private IDisposable _useScratchDatabase;
         private IDisposable _zoneShots;
         private IDisposable _createCharacter;
+        private IDisposable _pointer;
 
         public override void OnLateInitializeMelon()
         {
@@ -33,9 +34,10 @@ namespace HotReplCommands
             _useScratchDatabase = registry.Register(new UseScratchDatabaseCommand());
             _zoneShots = registry.Register(new CaptureZoneShotsCommand(exportDir));
             _createCharacter = registry.Register(new CreateCharacterCommand());
+            _pointer = registry.Register(new UiPointerCommand());
 
             LoggerInstance.Msg(
-                $"HotReplCommands: registered 8 typed commands (exportDir={exportDir}).");
+                $"HotReplCommands: registered 9 typed commands (exportDir={exportDir}).");
         }
 
         public override void OnDeinitializeMelon()
@@ -48,6 +50,7 @@ namespace HotReplCommands
             _useScratchDatabase?.Dispose();
             _zoneShots?.Dispose();
             _createCharacter?.Dispose();
+            _pointer?.Dispose();
         }
     }
 }
