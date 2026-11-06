@@ -114,6 +114,8 @@ It drives the Input System that the game and Pocket Compendium read (`mods/Pocke
 - `GetWorldCorners` writes nothing into a managed array through Il2Cpp, so its corners stay (0,0). Take a rect's centre with `rect.TransformPoint(rect.rect.center)`.
 - A rect drawn in the same `eval` has no layout yet, so point at it in the next call.
 
+While it holds, `ui.pointer` overrides the real mouse. A person pressing the mouse in the game window then drags with their own cursor and ends at the held point, which can throw a panel across the screen. Keep holds short while someone else may use the game, and move the pointer aside with a hold of a second or less.
+
 A tooltip that follows gamepad focus shows without any pointer: set `GameManager.isUsingGamepad = true` and `EventSystem.current.SetSelectedGameObject(button)`, and undo both afterwards.
 
 ## References
