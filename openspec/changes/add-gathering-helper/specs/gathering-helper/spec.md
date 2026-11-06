@@ -18,7 +18,7 @@ The Gathering panel SHALL show one tab per category, herbs, ores, fishing and sp
 
 ### Requirement: A tile's tooltip says whether a type is worth the walk
 
-Hovering a tile, or focusing it with a gamepad, SHALL show Pocket Compendium's tooltip in the boss list's layout: the name, then the kind, level and zone in grey, then how many nodes here are ready, the respawn time and the player's chance from the game's own formula with their skill and best tool, then the click line. Below the game's floor it SHALL say that the skill is too low.
+Hovering a tile SHALL show Pocket Compendium's tooltip in the boss list's layout: the name, then the kind, level and zone in grey, then how many nodes here are ready, the respawn time and the player's chance from the game's own formula with their skill and best tool, then the click line. Below the game's floor it SHALL say that the skill is too low.
 
 #### Scenario: Chamomile in The Lone-Lands
 
