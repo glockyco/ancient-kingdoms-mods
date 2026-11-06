@@ -63,6 +63,12 @@ pnpm exec hotrepl run world.summary '{}' --json
 
 `launch --wait` returns once MelonLoader has loaded. HotReplCommands registers its commands a little later, so an early `run` can fail with `commandNotFound`. Never attach while an export holds the connection. The [HotRepl skill](.agent/skills/hotrepl-runtime-inspection/SKILL.md) covers the typed commands and how to measure live behaviour.
 
+If another session holds the game, ask for a turn in that session's Tern tab and return control afterwards. Do not take over its HotRepl connection.
+
+Leave scratch characters in the state a check produces rather than resetting them afterwards.
+
+Test updater changes on Windows as well as CrossOver. On Windows, launch through Steam in the console session rather than an SSH session.
+
 ### Update to a new game version
 
 The [update-game-version skill](.agent/skills/update-game-version/SKILL.md) gives the order and the gates.
