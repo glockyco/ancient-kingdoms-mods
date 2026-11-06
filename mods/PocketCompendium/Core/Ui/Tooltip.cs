@@ -114,6 +114,7 @@ public static class Tooltip
         else if (_text.text != text)
         {
             _text.text = text;
+            FitFrameWidth(text);
             LayoutRebuilder.ForceRebuildLayoutImmediate(_frame);
         }
 
@@ -134,6 +135,39 @@ public static class Tooltip
         float inner = Mathf.Min(PanelInner, Mathf.Ceil(_panelText.GetPreferredValues(value).x));
         float height = Mathf.Ceil(_panelText.GetPreferredValues(value, inner, 0f).y);
         _panel.sizeDelta = new Vector2(inner + 2f * PanelPadX, height + 2f * PanelPadY);
+    }
+
+    private static float _frameWidth;
+    private static float _textInset;
+
+    // The game's frame has one fixed width, which leaves a short text one long line and a few
+    // words below it. The frame takes the narrowest width that keeps the text's number of lines,
+    // found once per text, so its lines come out about even.
+    private static void FitFrameWidth(string text)
+    {
+        if (_textInset < 0f)
+        {
+            // The padding of the layout groups between the frame and its text, readable before the
+            // first layout, unlike the text's width.
+            _textInset = 0f;
+            for (var parent = _text.transform.parent; parent != null; parent = parent.parent)
+            {
+                var group = parent.GetComponent<LayoutGroup>();
+                if (group != null) _textInset += group.padding.left + group.padding.right;
+                if (parent == _frame.transform) break;
+            }
+        }
+        float max = _frameWidth - _textInset;
+        float height = _text.GetPreferredValues(text, max, 0f).y;
+        float high = Mathf.Min(max, Mathf.Ceil(_text.GetPreferredValues(text).x));
+        float low = high / 2f;
+        for (int step = 0; step < 8 && high - low > 2f; step++)
+        {
+            float mid = (low + high) / 2f;
+            if (_text.GetPreferredValues(text, mid, 0f).y > height + 0.5f) low = mid;
+            else high = mid;
+        }
+        _frame.sizeDelta = new Vector2(Mathf.Ceil(high) + _textInset, _frame.sizeDelta.y);
     }
 
     private static string _rawText;
@@ -213,6 +247,7 @@ public static class Tooltip
             if (gameCanvas == null) return false;
             _canvas.scaleFactor = gameCanvas.rootCanvas.scaleFactor;
             if (_frame.localScale != game.transform.localScale) _frame.localScale = game.transform.localScale;
+            MatchBorder();
             _panel.localScale = Vector3.one * Overlay.InterfaceFactor;
             return true;
         }
@@ -253,11 +288,41 @@ public static class Tooltip
             if (child != copy.transform && child != _text.transform && !_text.transform.IsChildOf(child))
                 Object.DestroyImmediate(child.gameObject);
         foreach (var graphic in copy.GetComponentsInChildren<Graphic>(true)) graphic.raycastTarget = false;
+        // The copy's sliced border follows the game frame's, whose scale the game's canvases settle
+        // only after this first frame, so EnsureFrame matches it on every show.
+        _frameImage = SlicedImage(copy);
+        _gameFrameImage = SlicedImage(game);
 
         _frame = copy.GetComponent<RectTransform>();
+        _frameWidth = _frame.sizeDelta.x;
+        _textInset = -1f;
         BuildPanel();
         _visible = false;
         return true;
+    }
+
+    private static Image _frameImage;
+    private static Image _gameFrameImage;
+
+    // This canvas counts Unity's 100 reference pixels per unit and the game's tooltip 48, which drew
+    // the copied border about twice as thick. The panels' look shares this canvas, so only the copy
+    // makes up the difference.
+    private static void MatchBorder()
+    {
+        if (_frameImage == null || _gameFrameImage == null) return;
+        // Image.pixelsPerUnit leaves out the multiplier, so the multiplier is set, not scaled.
+        float ours = _frameImage.pixelsPerUnit;
+        if (ours <= 0f) return;
+        float multiplier = _gameFrameImage.pixelsPerUnit * _gameFrameImage.pixelsPerUnitMultiplier / ours;
+        if (multiplier > 0f && Mathf.Abs(_frameImage.pixelsPerUnitMultiplier - multiplier) > 0.001f)
+            _frameImage.pixelsPerUnitMultiplier = multiplier;
+    }
+
+    private static Image SlicedImage(GameObject root)
+    {
+        foreach (var image in root.GetComponentsInChildren<Image>(true))
+            if (image.type == Image.Type.Sliced) return image;
+        return null;
     }
 
     private static void BuildPanel()
