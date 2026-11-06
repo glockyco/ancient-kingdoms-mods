@@ -115,7 +115,7 @@ public sealed class BestiaryPagesFeature : Feature
 
     /// <summary>
     /// Whether Pocket Compendium draws this monster's page, rather than the game. A monster the
-    /// player has not discovered keeps the game's ??? page while Undiscovered monsters is off.
+    /// player has not discovered keeps the game's ??? page while Undiscovered is off.
     /// </summary>
     internal static bool Draws(Monster monster) =>
         Active && monster != null && !FailedMonsters.Contains(monster.nameEntity ?? string.Empty) &&

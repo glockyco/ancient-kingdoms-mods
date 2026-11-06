@@ -16,6 +16,7 @@ using PocketCompendium.Features.BestiaryCollection;
 using PocketCompendium.Features.BestiaryCountdown;
 using PocketCompendium.Features.BestiaryPages;
 using PocketCompendium.Features.Fatecharms;
+using PocketCompendium.Features.Gathering;
 using PocketCompendium.Features.BossList;
 using PocketCompendium.Features.MapPins;
 using PocketCompendium.Features.BossSkills;
@@ -59,6 +60,7 @@ public sealed class PocketCompendiumMod : MelonMod
         var dropsFound = new DropsFoundFeature();
         var fatecharms = new FatecharmsFeature();
         var augmentMarks = new AugmentMarksFeature();
+        var gathering = new GatheringFeature();
         var sharing = new SharingFeature();
         _features.Add(bossList);
         _features.Add(worldMarkers);
@@ -72,6 +74,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _features.Add(dropsFound);
         _features.Add(fatecharms);
         _features.Add(augmentMarks);
+        _features.Add(gathering);
         _features.Add(sharing);
 
         string build = ModBuild.Commit(typeof(PocketCompendiumMod).Assembly);
@@ -91,6 +94,7 @@ public sealed class PocketCompendiumMod : MelonMod
             SettingsGroup.Shared(general.Page.Title, Icons.Sliders, general.Page, _layout.Page),
             SettingsGroup.Of("Respawns", Icons.Timer, bossList, mapPins, dungeonEntrances, worldMarkers, edgeArrows, alerts, sharing),
             SettingsGroup.Of("Bestiary", Icons.BookOpen, bestiaryPages, bestiaryCountdown, dropsFound),
+            SettingsGroup.Of("Gathering", Icons.Leaf, gathering),
             SettingsGroup.Of("Combat", Icons.Swords, bossSkills, fatecharms, augmentMarks),
             SettingsGroup.Drawn(new UpdatesPage(_updates)),
             SettingsGroup.Drawn(new AboutPage(Info.Version, build, _features.Features)),

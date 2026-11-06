@@ -11,7 +11,7 @@ namespace PocketCompendium.Features.MapPins;
 internal static class MapOverlay
 {
     // The game closes the live map in Temple of Valaark.
-    private const int MaplessZone = 23;
+    internal const int MaplessZone = 23;
 
     /// <summary>Whether the local map is open in a zone that has one, with a ready tracker.</summary>
     public static bool Open(out Tracker tracker, out Player player, out UIMap map, out Camera camera)

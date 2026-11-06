@@ -5,7 +5,7 @@ namespace PocketCompendium.Core.Tracking;
 
 /// <summary>
 /// Whether a monster shows with its name and portrait. The game hides a monster until its
-/// Bestiary has an entry for it. The General setting Undiscovered monsters shows such monsters
+/// Bestiary has an entry for it. The General setting Undiscovered shows such monsters
 /// anyway, on every surface.
 /// </summary>
 internal static class Discovery

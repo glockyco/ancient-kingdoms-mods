@@ -60,6 +60,7 @@
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\SkillText.cs" Link="Sources\BestiaryPages\SkillText.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\SkillCardText.cs" Link="Sources\BestiaryPages\SkillCardText.cs" />
     <Compile Include="..\..\mods\PocketCompendium\Features\BestiaryPages\Model\SkillCardDetails.cs" Link="Sources\BestiaryPages\SkillCardDetails.cs" />
+    <Compile Include="..\..\mods\PocketCompendium\Features\Gathering\Model\*.cs" Link="Sources\Gathering\%(Filename)%(Extension)" />
     <Compile Include="..\..\mods\Shared\Updates\*.cs" Link="Sources\Updates\%(Filename)%(Extension)" />
     <Compile Include="..\..\mods\Shared\MelonInfoReader.cs" Link="Sources\Updates\MelonInfoReader.cs" />
   </ItemGroup>

@@ -47,6 +47,9 @@ public static class Icons
     public static Sprite Shield => Get("shield");
     public static Sprite Skull => Get("skull");
     public static Sprite Sparkles => Get("sparkles");
+    public static Sprite Leaf => Get("leaf");
+    public static Sprite Pickaxe => Get("pickaxe");
+    public static Sprite Fish => Get("fish");
     public static Sprite Sliders => Get("sliders-horizontal");
     public static Sprite Sun => Get("sun");
     public static Sprite Swords => Get("swords");

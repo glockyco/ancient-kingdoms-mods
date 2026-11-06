@@ -18,12 +18,12 @@ The Gathering panel SHALL show one tab per category, herbs, ores, fishing and sp
 
 ### Requirement: A tile's tooltip says whether a type is worth the walk
 
-Hovering a tile, or focusing it with a gamepad, SHALL show Pocket Compendium's tooltip in the boss list's layout: the name, then the kind, level and zone in grey, then how many nodes here are ready, the regrow time and the player's chance from the game's own formula with their skill and best tool, then the click line. Below the game's floor it SHALL say that the skill is too low.
+Hovering a tile, or focusing it with a gamepad, SHALL show Pocket Compendium's tooltip in the boss list's layout: the name, then the kind, level and zone in grey, then how many nodes here are ready, the respawn time and the player's chance from the game's own formula with their skill and best tool, then the click line. Below the game's floor it SHALL say that the skill is too low.
 
 #### Scenario: Chamomile in The Lone-Lands
 
 - **WHEN** a character with 0% Herbalism hovers the watched Chamomile tile while all 32 are ready
-- **THEN** the tooltip reads "Chamomile", "Herb · Level 2 · The Lone-lands", "32 of 32 ready", "Grows back in 5m", "Your chance 30%" and "Click to stop watching."
+- **THEN** the tooltip reads "Chamomile", "Herb · Level 2 · The Lone-lands", "32 of 32 ready", "Respawns 5m after it's gathered", "Your chance 30%" and "Click to stop watching."
 
 #### Scenario: Ironjaw Catfish
 
@@ -64,7 +64,7 @@ Clicking a tile SHALL toggle whether its type is watched. Watched types SHALL pe
 
 ### Requirement: Watched types show on the local map
 
-For each watched type, the local map SHALL show a pin on every node of the current zone in its view, dimmed with its time while it grows back. The pins SHALL leave the player's own marker visible.
+For each watched type, the local map SHALL show a pin on every node of the current zone in its view, dimmed with its time while it respawns. The pins SHALL leave the player's own marker visible.
 
 #### Scenario: Chamomile and Iron Ore on the map
 
@@ -78,16 +78,16 @@ For each watched type, the local map SHALL show a pin on every node of the curre
 
 ### Requirement: Watched types show on the minimap
 
-The minimap SHALL show each watched type's icon on the nodes it covers, dimmed while they grow back.
+The minimap SHALL show each watched type's icon on the nodes it covers, dimmed while they respawn.
 
-#### Scenario: A growing Chamomile nearby
+#### Scenario: A respawning Chamomile nearby
 
-- **WHEN** a watched Chamomile on the minimap is growing back
+- **WHEN** a watched Chamomile on the minimap is respawning
 - **THEN** its icon there is dimmed
 
 ### Requirement: One arrow points to the next node
 
-One edge arrow SHALL point to the nearest ready node of any watched type that is off screen, with its name and distance in yd. When no watched node is ready, it SHALL point to the one that grows back first, with its time. Nothing SHALL be drawn on nodes in view, because the game shows their growth and time itself.
+One edge arrow SHALL point to the nearest ready node of any watched type that is off screen, with its name and distance in yd. When no watched node is ready, it SHALL point to the one that respawns first, with its time. Nothing SHALL be drawn on nodes in view, because the game shows their growth and time itself.
 
 #### Scenario: Two watched types in The Lone-Lands
 
@@ -112,13 +112,13 @@ The Gathering page SHALL have Zones with This zone and All zones, All zones at f
 - **WHEN** Zones is This zone in The Lone-Lands
 - **THEN** the herbs tab shows Chamomile, Spike and Violet, and its count reads 3
 
-### Requirement: Growing nodes can be hidden
+### Requirement: Respawning nodes can be hidden
 
-The Gathering page SHALL have Growing nodes with Show and Hide, Show at first start. With Hide, the map and the minimap SHALL leave out nodes that are growing back.
+The Gathering page SHALL have Respawning nodes with Show and Hide, Show at first start, and the panel's header SHALL have a timer button that switches the same setting, gold while respawning nodes show. With Hide, the map and the minimap SHALL mark only nodes that are ready to gather.
 
 #### Scenario: After a gathering run
 
-- **WHEN** Growing nodes is Hide and half the watched Chamomile is growing back
+- **WHEN** Respawning nodes is Hide and half the watched Chamomile is respawning
 - **THEN** the local map shows pins only on the ready Chamomile
 
 ### Requirement: Undiscovered types show as the game's journal shows them
@@ -141,7 +141,7 @@ At first start the list SHALL be hidden, and only the round button SHALL show.
 
 ### Requirement: Sparks behave like the other types
 
-Radiant Sparks SHALL count, pin and point like herbs and ores. A spark that has not appeared SHALL count as growing, with the time until it appears where the mod knows it.
+Radiant Sparks SHALL count, pin and point like herbs and ores. A spark that has not appeared SHALL count as respawning, with the time until it appears where the mod knows it.
 
 #### Scenario: No spark is out
 

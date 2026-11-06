@@ -22,7 +22,7 @@ public sealed class SettingsWindow
     private const float NavItemHeight = 34f;
     private const float FooterHeight = 54f;
     private const float Pad = 20f;
-    // Fits "Undiscovered monsters", the longest switch name.
+    // Fits "Undiscovered drops", the longest switch name.
     private const float LabelWidth = 165f;
     private const float ControlHeight = 26f;
     private const float HelpGap = 5f;

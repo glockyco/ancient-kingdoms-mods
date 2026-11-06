@@ -12,8 +12,8 @@ public sealed class GeneralSettings
         UndiscoveredMonsters = Page.Toggle(
             "UndiscoveredMonsters",
             true,
-            "Undiscovered monsters",
-            "Shows the names, portraits and Bestiary pages of monsters you haven't discovered yet, where the game shows ??? and a silhouette.",
+            "Undiscovered",
+            "Shows the names and pictures of monsters, herbs, ores and fish you haven't discovered yet, where the game shows ??? and a silhouette.",
             initial: earlierUndiscovered);
         Current = this;
     }

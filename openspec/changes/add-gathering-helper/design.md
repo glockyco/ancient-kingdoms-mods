@@ -39,7 +39,7 @@ On a joined world, nodes outside the interest range keep their last synced time,
 
 ## Risks / Trade-offs
 
-- A watched type with 43 nodes fills the map with pins. The pins are smaller than boss pins and dim while growing.
+- A watched type with 43 nodes fills the map with pins. The pins are smaller than boss pins and dim while respawning.
 - The arrow sits with the boss arrows at the screen's edge and can hide under the minimap, as boss arrows already do.
 - No panel takes a gamepad yet. The tiles need a focus path for the Steam Deck before release.
 - The search at session start costs a frame while the world loads, like the monster tracker's.

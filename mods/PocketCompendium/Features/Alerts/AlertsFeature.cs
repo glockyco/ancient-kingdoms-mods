@@ -64,7 +64,7 @@ public sealed class AlertsFeature : Feature
             or SpawnState.Window or SpawnState.Guards or SpawnState.Altar;
 
     // The game adds the chat line's full stop. A host saw the spawn happen, a client saw it up.
-    // While Undiscovered monsters is off, a watched monster the player has not discovered stays
+    // While Undiscovered is off, a watched monster the player has not discovered stays
     // ??? here too.
     private static void Announce(Player player, TrackedMonster monster, bool exact)
     {

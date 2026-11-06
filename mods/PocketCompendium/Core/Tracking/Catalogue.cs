@@ -135,7 +135,7 @@ internal static class Catalogue
     }
 
     // ZoneInfo.fullZones holds each zone's root object at the index of its zone id.
-    private static Dictionary<int, int> ZoneRoots()
+    internal static Dictionary<int, int> ZoneRoots()
     {
         var roots = new Dictionary<int, int>();
         var zones = ZoneInfo.singleton.fullZones;
@@ -144,6 +144,7 @@ internal static class Catalogue
         return roots;
     }
 
-    private static int ZoneOf(Dictionary<int, int> roots, Transform transform) =>
+    /// <summary>The zone whose root holds <paramref name="transform"/>, or -1.</summary>
+    internal static int ZoneOf(Dictionary<int, int> roots, Transform transform) =>
         roots.TryGetValue(transform.root.gameObject.GetInstanceID(), out int zone) ? zone : -1;
 }
