@@ -56,7 +56,7 @@ importers:
         version: 2.20.4(@internationalized/date@3.12.4)(@sveltejs/kit@2.70.3(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))(typescript@6.0.3)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)))(svelte@5.57.3(@typescript-eslint/types@8.72.1))
       lucide:
         specifier: ^1.27.0
-        version: 1.67.0
+        version: 1.68.0
       minisearch:
         specifier: ^7.2.0
         version: 7.2.0
@@ -78,7 +78,7 @@ importers:
         version: 3.12.4
       '@lucide/svelte':
         specifier: ^1.27.0
-        version: 1.67.0(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+        version: 1.68.0(svelte@5.57.3(@typescript-eslint/types@8.72.1))
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2
@@ -994,8 +994,8 @@ packages:
     peerDependencies:
       '@loaders.gl/core': ~4.4.0
 
-  '@lucide/svelte@1.67.0':
-    resolution: {integrity: sha512-DeqoOkMm3QihcNsrQB5drR/8azWDGuozfagDpm/anIqaJdflLUMhwLFPEANl/W3FLhXx6HmQwEWz7zBtZ6KXcQ==}
+  '@lucide/svelte@1.68.0':
+    resolution: {integrity: sha512-5iOupZmuGCJD89emoHsTlwkwMHzuNTBUwt/IbH3YVnmphBNqKqz4CKepzsOBXpf+c17DXlTOeV8nhzV0pU+5qw==}
     peerDependencies:
       svelte: ^5
 
@@ -2570,8 +2570,8 @@ packages:
   long@5.3.2:
     resolution: {integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==}
 
-  lucide@1.67.0:
-    resolution: {integrity: sha512-08U9yCSaUacMl9bZ6QbB9m1stArkwpn+qcL9I0EoHmNjkOFnrHK2vKD63zvdxzkLvFLw1gKIik/en1apdrDNMg==}
+  lucide@1.68.0:
+    resolution: {integrity: sha512-rs3/CGsK3g8pex8lsN5QDxUsEe3awxhMLsxqeK441WBmOlyF9X1sYIdGxTNV0ubpGu6rYSuj0pxuf189ziUKvw==}
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -4157,7 +4157,7 @@ snapshots:
       jszip: 3.10.1
       md5: 2.3.0
 
-  '@lucide/svelte@1.67.0(svelte@5.57.3(@typescript-eslint/types@8.72.1))':
+  '@lucide/svelte@1.68.0(svelte@5.57.3(@typescript-eslint/types@8.72.1))':
     dependencies:
       svelte: 5.57.3(@typescript-eslint/types@8.72.1)
 
@@ -5531,7 +5531,7 @@ snapshots:
 
   long@5.3.2: {}
 
-  lucide@1.67.0: {}
+  lucide@1.68.0: {}
 
   lz-string@1.5.0: {}
 
