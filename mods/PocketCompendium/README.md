@@ -1,6 +1,6 @@
 # Pocket Compendium
 
-Pocket Compendium is a MelonLoader mod for Ancient Kingdoms. It shows when bosses, elites, and fabled monsters spawn and where to find them. It also opens the full Bestiary page of any monster, even one you haven't discovered yet.
+Pocket Compendium is a MelonLoader mod for Ancient Kingdoms. It shows when bosses, elites, and fabled monsters spawn and where to find them, and marks the herbs, ores, fish and Radiant Sparks you're looking for. It also opens the full Bestiary page of any monster, even one you haven't discovered yet.
 
 The mod only displays information. It doesn't change combat, loot, or spawns.
 
@@ -19,6 +19,7 @@ The mod only displays information. It doesn't change combat, loot, or spawns.
 - Click a monster in the boss list to get an alert when it spawns.
 - Shift-click it, or hold Alt and click the monster in the world, to open its Bestiary page.
 - Hover over a row, map pin, skill or drop for details.
+- Click the leaf button on the minimap for the Gathering list.
 - Press F8 for the settings.
 
 ## Features
@@ -34,6 +35,12 @@ Lists the bosses, elites, and fabled monsters in your zone and when they spawn. 
 Marks respawn timers on the map and on spawn points, and points to monsters off screen. Hover over a dungeon's entrance to see its bosses.
 
 ![The map of Crescent Coast with a pin for each monster and the Sunken Temple's bosses beside its entrance.](../../assets/pocket-compendium-map.webp)
+
+### Gathering
+
+Marks the herbs, ores, fish and Radiant Sparks you watch on the map and the minimap, and points to the nearest ready one. The leaf button on the minimap opens the list where you choose them.
+
+![The Gathering list beside the minimap with Violet's tooltip, and an arrow to Chamomile 26 yd away.](../../assets/pocket-compendium-gathering.webp)
 
 ### Bestiary
 

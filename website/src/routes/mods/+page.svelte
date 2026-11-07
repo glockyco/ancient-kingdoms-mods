@@ -46,6 +46,12 @@
       alt: "The map of Crescent Coast with a pin for each monster and the Sunken Temple's bosses beside its entrance.",
     },
     {
+      title: "Gathering",
+      text: "Marks the herbs, ores, fish and Radiant Sparks you watch on the map and the minimap, and points to the nearest ready one.",
+      image: "/mod-pictures/card-gathering.webp",
+      alt: "The Gathering list beside the minimap with Violet's tooltip, and an arrow to Chamomile 26 yd away.",
+    },
+    {
       title: "Fatecharms",
       text: "Warns you on the target frame when killing a boss would use the Fatecharm in your main inventory.",
       image: "/mod-pictures/card-fatecharms.webp",
@@ -91,7 +97,8 @@
         <p class="text-lg text-pretty text-muted-foreground">
           A mod for Ancient Kingdoms that shows when bosses, elites, and fabled
           monsters spawn, where to find them, and their skill cooldowns in a
-          fight. It also opens the full Bestiary page of any monster.
+          fight. It also opens the full Bestiary page of any monster and marks
+          the herbs, ores, fish and Radiant Sparks you're looking for.
         </p>
       </div>
       <div class="flex flex-wrap gap-3 lg:flex-col">
