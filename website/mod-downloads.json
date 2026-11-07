@@ -11,8 +11,15 @@
       "id": "pocket-compendium",
       "project": "PocketCompendium",
       "name": "Pocket Compendium",
-      "description": "Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster.",
+      "description": "Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster, and marks the herbs, ores, fish and Radiant Sparks you're looking for.",
       "releases": [
+        {
+          "version": "1.5.0",
+          "date": "2026-11-07",
+          "changes": [
+            "Lists every herb, ore, fish and Radiant Spark, and marks the ones you watch on the map and the minimap, with an arrow to the nearest ready one."
+          ]
+        },
         {
           "version": "1.4.0",
           "date": "2026-11-05",
