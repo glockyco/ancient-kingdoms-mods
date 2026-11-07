@@ -19,9 +19,9 @@ Each feature SHALL have its own on and off switch, shown as a row in its group o
 - **WHEN** the player switches map pins off and hovers the Sunken Temple gate on the map
 - **THEN** the dungeon's card shows
 
-### Requirement: Features sit in three groups
+### Requirement: Features sit in four groups
 
-The groups SHALL be Respawns, with the boss list, map pins, dungeon entrances, world markers, edge arrows, alerts and sharing, Bestiary, with full Bestiary pages, Bestiary countdowns and drops found, and Combat, with boss skills, Fatecharms and augment marks.
+The groups SHALL be Respawns, with the boss list, map pins, dungeon entrances, world markers, edge arrows, alerts and sharing, Bestiary, with full Bestiary pages, Bestiary countdowns and drops found, Gathering, with the gathering helper, and Combat, with boss skills, Fatecharms and augment marks.
 
 #### Scenario: Finding edge arrows
 
@@ -37,6 +37,11 @@ The groups SHALL be Respawns, with the boss list, map pins, dungeon entrances, w
 
 - **WHEN** the player opens Combat in the settings window
 - **THEN** a row below Fatecharms reads "Augment marks" with "Marks each item that has an augment with the augment's icon."
+
+#### Scenario: Finding the gathering helper
+
+- **WHEN** the player opens Gathering in the settings window
+- **THEN** the gathering helper has its own row with its switch
 
 ### Requirement: A feature's settings sit behind a gear
 
@@ -79,18 +84,23 @@ The boss skills settings SHALL choose which tiers the skill panel shows, bosses,
 - **WHEN** the player switches elites off and fights an elite with special skills
 - **THEN** the skill panel does not show it
 
-### Requirement: Undiscovered monsters follow one setting
+### Requirement: Undiscovered things follow one setting
 
-The settings window SHALL have a General group for settings that apply across features. Its Undiscovered monsters switch, on at first start, SHALL decide for every surface how a monster without an entry in the game's Bestiary record shows. A player who had switched off undiscovered monsters on the Bestiary pages page SHALL start with this switch off.
+The settings window SHALL have a General group for settings that apply across features. Its Undiscovered switch, on at first start, SHALL decide for every surface how a monster without an entry in the game's Bestiary record shows, and how a herb, ore or fish the character has not gathered shows. A player who had switched off undiscovered monsters on the Bestiary pages page SHALL start with this switch off.
 
 #### Scenario: An earlier choice carries over
 
 - **WHEN** a player who had switched off undiscovered monsters on the Bestiary pages page starts the reorganized settings for the first time
-- **THEN** Undiscovered monsters in General is off
+- **THEN** Undiscovered in General is off
+
+#### Scenario: The switch's name
+
+- **WHEN** the player opens General in the settings window
+- **THEN** the first row reads "Undiscovered" and its help names monsters, herbs, ores and fish
 
 ### Requirement: Undiscovered monsters show in full or as the game shows them
 
-While Undiscovered monsters is on, the boss list, map pins, dungeon cards, world markers and spawn alerts SHALL name a monster without an entry in the game's Bestiary record and show its portrait, its Bestiary page SHALL show in full, and its tile in the Bestiary's list SHALL show its portrait in the game's grey for monsters seen but never killed. While it is off, they SHALL show it as a silhouette named ???, and its Bestiary page and tile SHALL show as the game shows them.
+While Undiscovered is on, the boss list, map pins, dungeon cards, world markers and spawn alerts SHALL name a monster without an entry in the game's Bestiary record and show its portrait, its Bestiary page SHALL show in full, and its tile in the Bestiary's list SHALL show its portrait in the game's grey for monsters seen but never killed. While it is off, they SHALL show it as a silhouette named ???, and its Bestiary page and tile SHALL show as the game shows them.
 
 #### Scenario: Undiscovered boss
 
@@ -99,7 +109,7 @@ While Undiscovered monsters is on, the boss list, map pins, dungeon cards, world
 
 #### Scenario: Keeping monsters hidden
 
-- **WHEN** the player switches Undiscovered monsters off
+- **WHEN** the player switches Undiscovered off
 - **THEN** Vyriss the Withered's row shows a silhouette named ???, its Bestiary page shows "???" as the game does, and its tile is a black silhouette
 
 ### Requirement: Panels are placed by the player
