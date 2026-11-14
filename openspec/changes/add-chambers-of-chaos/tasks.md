@@ -9,7 +9,7 @@
 
 ## 2. Preserve exclusions and use existing placeholders
 
-- [ ] 2.1 Correct the ignore-journal explanation in `redactions.toml` to state that the developer asked for every flagged item to be excluded. Verify the exclusion rule, exported flags and existing flagged-item removal set stay unchanged. Do not add an item-publication delta or named exception.
+- [x] 2.1 Correct the ignore-journal explanation in `redactions.toml` to state that the developer asked for every flagged item to be excluded. Verify the exclusion rule, exported flags and existing flagged-item removal set stay unchanged. Do not add an item-publication delta or named exception.
 - [ ] 2.2 Make the retained Chambers relationships use existing redacted placeholders for elite drops, entry cost, guardian reward and Chaos Catalyst's currency price. Verify amounts/chances and action context survive without excluded names, icons, links or identifiers on rules, zone, NPC, elite and catalyst pages, charts, payloads or images. Verify no seal, token or page item/reverse-use page is published and no retained action becomes free.
 - [ ] 2.3 Review redaction ledger differences caused by the new relationships and challenge gate, and sync through the ledger producer. Verify Seal of Chaos, Chaos Token, Torn Page of Chaos and the other flagged items remain excluded rather than treating placeholder coverage as permission to publish them.
 

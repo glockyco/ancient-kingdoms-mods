@@ -1,8 +1,9 @@
 # Items carrying ignore_journal=true are always excluded, together with every
-# entity left with no other source. The game's journal skips recipes for these
-# items (UIJournal.cs), and the compendium leaves the items out entirely, so
-# there is no configuration to switch this off. A published entry that still
-# needs one, such as a quest objective or a drop, shows a redacted placeholder
+# entity left with no other source, because the developer asked for every item
+# with this flag to stay out of the compendium. In the game the flag keeps a
+# recipe's result out of the crafting journal (UIJournal.cs). There is no
+# configuration to switch this off. A published entry that still needs one of
+# these items, such as a quest objective or a drop, shows a redacted placeholder
 # instead of the item.
 
 # Items whose recipes are left out. The item stays published and every recipe
