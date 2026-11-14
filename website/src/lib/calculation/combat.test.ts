@@ -193,9 +193,10 @@ describe("combat calculations", () => {
     expect(lifetapHeal(0, 0.5, 0.5)).toBe(0);
   });
 
-  it("rounds Wild Strike's complete empowered hit to even", () => {
-    expect(wildStrikeDamage(3, 5)).toBe(4);
-    expect(wildStrikeDamage(5, 5)).toBe(8);
+  it("rounds Wild Strike's complete empowered hit", () => {
+    expect(wildStrikeDamage(3, 1)).toBe(4);
+    expect(wildStrikeDamage(7, 2)).toBe(10);
+    expect(wildStrikeDamage(5, 5)).toBe(10);
   });
 
   it("bounds Parry after rounding and does not counter a fully absorbed hit", () => {

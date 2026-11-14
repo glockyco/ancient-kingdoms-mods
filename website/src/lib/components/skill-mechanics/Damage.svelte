@@ -152,13 +152,13 @@
     <RoundingDefinition />
   {/if}
   {#if skill.followup_default_attack && skill.player_classes.includes("ranger")}
-    <!-- Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike; Combat.cs:DealDamageAt,GetProbResistMagic — a Ranger player's next auto attack gains 10% damage per buff rank and uses Magic Resist. -->
+    <!-- Source: server-scripts/DamageSkill.cs:49-52,TryConsumeWildStrike; Combat.cs:DealDamageAt,GetProbResistMagic — a Ranger player's next auto attack gains 20% damage per buff rank and uses Magic Resist. -->
     <p class="text-muted-foreground">
       With <a
         href="/skills/wild_strike"
         class="text-blue-600 dark:text-blue-400 hover:underline">Wild Strike</a
       >
-      active, the Ranger's next hit deals 10% more per Wild Strike rank, rounded,
+      active, the Ranger's next hit deals 20% more per Wild Strike rank, rounded,
       as Magic damage against Magic Resist. Apply this bonus after the calculation
       above.
     </p>

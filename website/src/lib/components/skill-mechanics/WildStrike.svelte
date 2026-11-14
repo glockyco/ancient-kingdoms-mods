@@ -10,7 +10,7 @@
   <h3 class="font-semibold">Wild Strike</h3>
   <p class="text-muted-foreground">
     Your next melee auto attack (Swift Slash) or bow auto attack (Archer Shot)
-    consumes the buff, deals 10% more damage per Wild Strike rank and becomes
+    consumes the buff, deals 20% more damage per Wild Strike rank and becomes
     Magic damage. The target's Magic Resist reduces the converted damage by
     {DEFENSE_RATES.reductionPerPoint} per point, up to {DEFENSE_RATES.maxReduction}.
     See

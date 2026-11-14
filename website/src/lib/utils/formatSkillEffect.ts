@@ -1113,8 +1113,8 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // bonus to Attack Power. Duration stored in duration_base (10s).
   master_poisoner:
     "Stab deals poison dmg & adds 250% of DEX, resisted by poison res, 10s",
-  // Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — the Ranger's next auto attack deals 10% more per buff rank as Magic damage and consumes the buff.
-  wild_strike: "next auto attack deals +10% × rank dmg as magic dmg, 5s",
+  // Source: server-scripts/DamageSkill.cs:49-52,TryConsumeWildStrike — the Ranger's next auto attack deals 20% more per buff rank as Magic damage and consumes the buff.
+  wild_strike: "next auto attack deals +20% × rank dmg as magic dmg, 5s",
   // Source: server-scripts/TargetBuffSkill.cs:261-300 — isCallHeroes teleports all
   // active mercenaries to player position and clears their fear; returns before
   // applying any buff. mana_percent_per_second_bonus in game data is unused.

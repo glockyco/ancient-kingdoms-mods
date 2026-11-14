@@ -756,9 +756,9 @@ export function lifetapCalculation(): Calculation {
   };
 }
 
-// Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — the follow-up's complete damage is multiplied by 100% + 10% per buff rank, rounded; the buff adds no flat Damage.
+// Source: server-scripts/DamageSkill.cs:49-52,TryConsumeWildStrike — the follow-up's complete damage is multiplied by 100% + 20% per buff rank, rounded; the buff adds no flat Damage.
 export function wildStrikeDamage(damage: number, rank: number) {
-  return iround(multiplyF32(damage, addF32(1, multiplyF32(rank, 0.1))));
+  return iround(multiplyF32(damage, addF32(1, multiplyF32(rank, 0.2))));
 }
 
 // Source: server-scripts/Combat.cs:1201-1204,1232-1250,1710-1716 — parry requires remaining positive health damage, rage on being hit returns zero for non-positive damage.

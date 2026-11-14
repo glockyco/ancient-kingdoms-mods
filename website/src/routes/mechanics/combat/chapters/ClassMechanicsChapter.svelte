@@ -40,16 +40,16 @@
   </Topic>
 
   <Topic id="wild-strike">
-    <!-- Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — a Ranger follow-up consumes Wild Strike and multiplies its damage by 1 + 0.1 × rank. -->
+    <!-- Source: server-scripts/DamageSkill.cs:49-52,TryConsumeWildStrike — a Ranger follow-up consumes Wild Strike and multiplies its damage by 1 + 0.2 × rank. -->
     <p>
       The Ranger's <a href="/skills/wild_strike">Wild Strike</a> empowers the
       next melee auto attack (<a href="/skills/swift_slash">Swift Slash</a>) or
       bow auto attack (<a href="/skills/archer_shot">Archer Shot</a>).
     </p>
-    <!-- Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — any Ranger follow-up consumes Wild Strike, multiplies damage by 1 + 0.1 × rank and rounds, with no flat damage bonus. -->
+    <!-- Source: server-scripts/DamageSkill.cs:49-52,TryConsumeWildStrike — any Ranger follow-up consumes Wild Strike, multiplies damage by 1 + 0.2 × rank and rounds, with no flat damage bonus. -->
     <p>
-      Wild Strike multiplies the auto attack's starting damage by 100% + 10% per
-      rank, <RoundedTerm />, so rank 5 deals 150%. It adds no flat Attack Power.
+      Wild Strike multiplies the auto attack's starting damage by 100% + 20% per
+      rank, <RoundedTerm />, so rank 5 deals 200%. It adds no flat Attack Power.
     </p>
     <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — a melee follow-up passes the magic damage override to DealDamageAt. -->
     <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 — Apply consumes the override for a bow follow-up and passes it to the projectile effect. -->

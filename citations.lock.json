@@ -1026,6 +1026,10 @@
       "sha256": "c21d7a07d1768cea9a91d8238d389ef4d1c5c2774a0a859ca993a7d6e2dfc258",
       "span": 12
     },
+    "DamageSkill.cs:49-52": {
+      "sha256": "eb4c63b998466b4a6ad0f04f5b26a96586d0ecb29e938cd58e36ac63ab815265",
+      "span": 4
+    },
     "DamageSkill.cs:49-72": {
       "sha256": "7506e1a99076d06a9dcbed113031710ea90229cc98af7f9d151462aee97e4111",
       "span": 24
