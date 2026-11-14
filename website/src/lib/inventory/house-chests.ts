@@ -9,7 +9,7 @@
  * truth. When the game adds or renames a chest tier, update this file.
  *
  * Source: server-scripts/PlayerChest.cs:261-262,273-276,278-281,283-286,288-291,293-296,298-301,303-306,308-311,319 — chest name prefixes map to fixed 70-slot sections (initialIndex = chestIndex * 70).
- * Source: server-scripts/UIChest.cs — UI renders the same eight sections.
+ * Source: server-scripts/UIChest.cs:42-50 — UI renders the same eight sections.
  */
 export const HOUSE_CHEST_SLOT_RANGES: ReadonlyMap<
   string,

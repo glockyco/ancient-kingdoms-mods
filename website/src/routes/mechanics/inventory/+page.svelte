@@ -135,7 +135,7 @@
     <Card.Content class="space-y-5">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:OnBackpackKeyPressed — the Backpack input action shows or hides the UIBigBackpack panel. -->Open
+          <!-- Source: server-scripts/UIBigBackpack.cs:ShowBigBackpack; GameManager.cs:OnBackpackKeyPressed — the Backpack input action shows or hides the UIBigBackpack panel. -->Open
           the Combined Backpack window with the Backpack key (default
           <kbd
             class="rounded border border-border bg-muted px-1 py-0.5 font-mono text-sm"

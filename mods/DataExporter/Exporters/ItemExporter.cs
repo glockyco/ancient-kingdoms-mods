@@ -587,7 +587,7 @@ public class ItemExporter : BaseExporter
                 }
             }
         }
-        // Source: server-scripts/AugmentItem.cs — isDefensiveAugment: true=Defensive (Head/Chest/Legs/Feet/Hands/Bracers/Belt/Shield), false=Offensive (weapon slots)
+        // Source: server-scripts/AugmentItem.cs:isDefensiveAugment; Utils.cs:229-239; UICraftingStation.cs:152 — isDefensiveAugment: true=Defensive (Head/Chest/Legs/Feet/Hands/Bracers/Belt/Shield), false=Offensive (every other equipment category)
         itemData.augment_is_defensive = augmentItem.isDefensiveAugment;
     }
 

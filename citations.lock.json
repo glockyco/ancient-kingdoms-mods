@@ -37,9 +37,6 @@
     "AreaBuffSkill.cs:GetLeadershipAttributeBonus": {
       "span": 0
     },
-    "AreaDamageSkill.cs": {
-      "span": 0
-    },
     "AreaDamageSkill.cs:141": {
       "sha256": "db3cd25d4c3689a046166440c41c9491beb9687a043ca35657c6363834d367af",
       "span": 1
@@ -118,7 +115,10 @@
     "AreaObjectSpawnSkill.cs:AreaObjectSpawner": {
       "span": 0
     },
-    "AugmentItem.cs": {
+    "AugmentItem.cs:isDefensiveAugment": {
+      "span": 0
+    },
+    "AugmentItem.cs:nameArmorSet": {
       "span": 0
     },
     "AvatarEvent.cs:CheckPlayersUp": {
@@ -289,16 +289,14 @@
     "BonusSkill.cs:ToolTipUpgrade": {
       "span": 0
     },
-    "BookItem.cs": {
-      "span": 0
+    "BookItem.cs:28-32": {
+      "sha256": "7d83a1814e1ad3816b63ae21a21b10438965cf206ccba5a549ebfd8eda30a59e",
+      "span": 5
     },
     "Bookcase.cs:IsInRange": {
       "span": 0
     },
     "Bookcase.cs:OnInteractServer": {
-      "span": 0
-    },
-    "Buff.cs": {
       "span": 0
     },
     "Buff.cs:100": {
@@ -308,6 +306,10 @@
     "Buff.cs:122-159": {
       "sha256": "acb7efe6f6e685901be1ef33e6199cedb22b6091a989ba55eec334c5a59f79d8",
       "span": 38
+    },
+    "Buff.cs:18": {
+      "sha256": "a86273c97a2fbd04185b8ae8ada63be74fae6a3fd7f8ca6e7c9e2adf2f5a6d99",
+      "span": 1
     },
     "Buff.cs:249": {
       "sha256": "19f1068bf2cf50f90ce5e3b03a3f540a7ef4cc034c679478edca94d2aab5a0d9",
@@ -365,9 +367,6 @@
     "Buff.cs:speedBonus": {
       "span": 0
     },
-    "BuffSkill.cs": {
-      "span": 0
-    },
     "BuffSkill.cs:14-35": {
       "sha256": "9be447ede6681efcad5a0fd24e48a2f1b080dcfedbdadeb9a318911ae05611ff",
       "span": 22
@@ -403,6 +402,10 @@
     "BuffSkill.cs:546-568": {
       "sha256": "6e59ea17aa453656ac35d918f330d7e0e3bca9a58c5d61ae4e33e8f57840ee4e",
       "span": 23
+    },
+    "BuffSkill.cs:7": {
+      "sha256": "cd994668a22559f0dc9c0a6540b6902f2000bcf26ca8bb8d3aee31df039cf592",
+      "span": 1
     },
     "BuffSkill.cs:7-12": {
       "sha256": "a81cd66dd210393e8c6b716d753b564a77d542dc6125726368901f5a547a561c",
@@ -1031,9 +1034,6 @@
       "sha256": "144676cb831a510e9cea7d748dd5b1cfd85a58d2312262865af5953ab9647ae9",
       "span": 7
     },
-    "DamageSkill.cs": {
-      "span": 0
-    },
     "DamageSkill.cs:49-65": {
       "sha256": "b118e698faeabb0d0e27abd6285609114eac8deabd33a1e56eca29ac1fed63f5",
       "span": 17
@@ -1041,6 +1041,10 @@
     "DamageSkill.cs:49-67": {
       "sha256": "6e8c209752a2cf2c4d71454d0e1bfd22119671baa59dd8cdf6ba5dc501d195da",
       "span": 19
+    },
+    "DamageSkill.cs:5": {
+      "sha256": "c80e4c43b0e58c192768d8704d0b66222c181c0e553dae403d65ce3a9d8e556b",
+      "span": 1
     },
     "DamageSkill.cs:69-91": {
       "sha256": "1d2ce2516ad376e484b10d9eac4d4d2e8d6743cee74d89e78a6b1cd79910b5f9",
@@ -1464,9 +1468,6 @@
       "sha256": "e19d17260378bcd132108c10301d0b61c86d71be62b1c1a78bbf503b3f6adfe0",
       "span": 4
     },
-    "FoodItem.cs": {
-      "span": 0
-    },
     "FoodItem.cs:14-36": {
       "sha256": "849afdfad64ea3fd568a039f9163fecb8f74d31286870701bbbe2e3a9d64a7aa",
       "span": 23
@@ -1474,6 +1475,10 @@
     "FoodItem.cs:21-36": {
       "sha256": "4ecda03b5f26d3791cac4a1023a0c43896c3d327e008180a3c4d031ba4ac4da5",
       "span": 16
+    },
+    "FoodItem.cs:36": {
+      "sha256": "b3bd8bf457aabd32e2e86378f96bcac23a84ebf40141d174e2cecdb5eb07a21f",
+      "span": 1
     },
     "FoodItem.cs:ToolTip": {
       "span": 0
@@ -1497,9 +1502,6 @@
       "sha256": "639385597ffb0e855c7902d7def32a6147c75bcff910427a63668b448fb27a75",
       "span": 13
     },
-    "FrontalDamageSkill.cs": {
-      "span": 0
-    },
     "FrontalDamageSkill.cs:60-102": {
       "sha256": "c9ab4f745571aca26c495f0c4b9ff895b6fb889965b8ba214899cab19023a5d5",
       "span": 43
@@ -1517,9 +1519,6 @@
       "span": 9
     },
     "FrontalDamageSkill.cs:Apply": {
-      "span": 0
-    },
-    "FrontalProjectilesSkill.cs": {
       "span": 0
     },
     "FrontalProjectilesSkill.cs:102-114": {
@@ -1591,9 +1590,6 @@
       "span": 0
     },
     "GatherInventoryQuest.cs:OnCompleted": {
-      "span": 0
-    },
-    "GatherItem.cs": {
       "span": 0
     },
     "GatherItem.cs:1103-1121": {
@@ -2086,9 +2082,6 @@
     "MercenarySummonSkill.cs:UsesReaper": {
       "span": 0
     },
-    "Monster.cs": {
-      "span": 0
-    },
     "Monster.cs:1218-1224": {
       "sha256": "18682fb76622b4338396336324f6fca63a1fbf750be35e1689ff254fe771ec25",
       "span": 7
@@ -2096,6 +2089,14 @@
     "Monster.cs:1562-1576": {
       "sha256": "36f00ddb89a00895e88220ff049fea2daa7e99b8a36a659cf304c2177bb770fd",
       "span": 15
+    },
+    "Monster.cs:1562-1579": {
+      "sha256": "079010957178487d211a446664d5c862f528601d998c57b2de62ccaac9c69aba",
+      "span": 18
+    },
+    "Monster.cs:1577-1579": {
+      "sha256": "7b16bc55e9fab9c6a1ebe381e093145ec28e8adf3a06ec802476132d0d3e9ac7",
+      "span": 3
     },
     "Monster.cs:1636-1651": {
       "sha256": "6d96319534055afe41e8acb39d9abe9ff8c147f176ffa341adb4e2de00236a76",
@@ -2264,6 +2265,10 @@
     "Monster.cs:786-796": {
       "sha256": "cf2fc42e1f3661484d9358c1791bc5c2c3b056fb327f835e63708e4d0e8e0b15",
       "span": 11
+    },
+    "Monster.cs:886-899": {
+      "sha256": "85a55a901e0bedfa0ffadbc0fa4c401a4fa5a484dfb2fb74f0fc797218278df8",
+      "span": 14
     },
     "Monster.cs:960-967": {
       "sha256": "537907c18934a4a0b809e11cb79adb552508b5538a23dcedd4bbb9052eb81ce1",
@@ -2538,9 +2543,6 @@
     "NetworkManagerMMO.cs:regionalEvents": {
       "span": 0
     },
-    "Npc.cs": {
-      "span": 0
-    },
     "Npc.cs:1305-1313": {
       "sha256": "8d525553bd57468b4c6fe80cd1d79ed62b3c851e246ceab15e188fe3a4bf4af0",
       "span": 9
@@ -2624,6 +2626,14 @@
     "Npc.cs:671": {
       "sha256": "2b60aee24def2a704ca0494b5716ad3d6b885d5898497f2b1d45342c656da065",
       "span": 1
+    },
+    "Npc.cs:828-845": {
+      "sha256": "3f38071eb7ac86639b3bb25c241fb099495fddee0e8bfd119640d6e8ee1d5b4d",
+      "span": 18
+    },
+    "Npc.cs:845-848": {
+      "sha256": "eb01b9cf74f2b8d48f541d4818664505d4a4c447b45252d212c41b26dc69139b",
+      "span": 4
     },
     "Npc.cs:BarberPrice": {
       "span": 0
@@ -2716,9 +2726,6 @@
     "PartySystem.cs:LeaveParty": {
       "span": 0
     },
-    "PassiveSkill.cs": {
-      "span": 0
-    },
     "PassiveSkill.cs:65-90": {
       "sha256": "b57c06aaa180e723bfdc131cdf23c2042ac8bd28d508fb47374b7172ebd8f2e8",
       "span": 26
@@ -2727,9 +2734,6 @@
       "span": 0
     },
     "PassiveSkill.cs:GetFoodAndDrinkBuffDurationBonus": {
-      "span": 0
-    },
-    "Pet.cs": {
       "span": 0
     },
     "Pet.cs:1003-1012": {
@@ -2743,6 +2747,10 @@
     "Pet.cs:1539-1542": {
       "sha256": "67fb81b080a0e26456ea648c721fe53c9e76a02de4cd7d275d85c6ac85297c48",
       "span": 4
+    },
+    "Pet.cs:2175-2180": {
+      "sha256": "29e6f61f0282aeedd26e5a5d259397c2ac2db68ad0405a67d17462a71d54f24a",
+      "span": 6
     },
     "Pet.cs:2190-2281": {
       "sha256": "ff8c2aa9bb5a8d5ef994e4ceb0dabd82b4b58ed7a0f792fd61f9afb4d87c5e96",
@@ -2763,6 +2771,10 @@
     "Pet.cs:2242-2281": {
       "sha256": "43e6c31ca9e4fa0ab574f55beae1bf61055e302a58eb09bc00180d6e445f9f2c",
       "span": 40
+    },
+    "Pet.cs:2283-2285": {
+      "sha256": "64b21fc300d0766380ef88ac8eeb0869e5b396c2e0af85a1e1057ce85033fdef",
+      "span": 3
     },
     "Pet.cs:2303": {
       "sha256": "6d14e994b11fc984ba7f787ca982088d8b0084f17ba995296906eeb1eed42789",
@@ -2943,9 +2955,6 @@
       "span": 0
     },
     "PetSkills.cs:RefreshSkillLevels": {
-      "span": 0
-    },
-    "Player.cs": {
       "span": 0
     },
     "Player.cs:10566-10569": {
@@ -3396,6 +3405,14 @@
       "sha256": "9aafd6a1ffefb79954d122bb524e4b19699eff3f44bbbc4178ca7ce82161172a",
       "span": 15
     },
+    "Player.cs:2044-2047": {
+      "sha256": "e8dbd501a1c3464e0d76583994706ed18b775e5632338c2ae8c5ff7311aa17a3",
+      "span": 4
+    },
+    "Player.cs:2060": {
+      "sha256": "d55d2ba972b8b60e2816635dfc71c8df3b1fbf6e0cbdf2d6d512c12e9dbcc110",
+      "span": 1
+    },
     "Player.cs:3169-3174": {
       "sha256": "a59ae51b86da8650364c34c3165fdf44fb607e4debcfa202dbbfd0854e5df1af",
       "span": 6
@@ -3407,6 +3424,14 @@
     "Player.cs:3438-3496": {
       "sha256": "18c8fc991c4ffb10d6ee716c0cf27a8a6c65874b4196602cb7545ba2ecddc0ea",
       "span": 59
+    },
+    "Player.cs:3567-3570": {
+      "sha256": "8fe35fe4be04b64f7b1cebd46571082c167ca0b9d91ddb69cbb26a987492d32c",
+      "span": 4
+    },
+    "Player.cs:3575-3582": {
+      "sha256": "56626f273dceff1ba47b97b4f411bf6582844af6c007322a46065a13984f907d",
+      "span": 8
     },
     "Player.cs:3662-3673": {
       "sha256": "8b1d1d1c37c69100a8dc6521301f45d12b0ec75fcc670f9e8ae1c0ad2784070f",
@@ -3423,6 +3448,10 @@
     "Player.cs:3862-3891": {
       "sha256": "ad7f2f832dc347419b863df496664a93d841034809050a2bfff617137fd4294a",
       "span": 30
+    },
+    "Player.cs:3883-3887": {
+      "sha256": "9d70c56d3da933ce5a565901acc141909505be4cba4ff4e21ff36551544c24c7",
+      "span": 5
     },
     "Player.cs:3890-3892": {
       "sha256": "2a65bfce13c36cfbebaa381b0b3d0fd42650e923b2e10b64fb276e2d987c9431",
@@ -3663,6 +3692,9 @@
       "span": 0
     },
     "Player.cs:UserCode_CmdFishing__NetworkIdentity": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdGatherItem__NetworkIdentity": {
       "span": 0
     },
     "Player.cs:UserCode_CmdGetExpFromRemains": {
@@ -3979,9 +4011,6 @@
     "PlayerEquipment.cs:OnStartServer": {
       "span": 0
     },
-    "PlayerInventory.cs": {
-      "span": 0
-    },
     "PlayerInventory.cs:118-142": {
       "sha256": "18cc431e2f83a7d6677b6d6fe7a76eaa8bee18377035a75088813d11e4740139",
       "span": 25
@@ -3996,6 +4025,10 @@
     },
     "PlayerInventory.cs:2041-2055": {
       "sha256": "d4e26f6671e798eb2d952155f82ef4473d82bf3b302feb4a4725e4af20f87638",
+      "span": 15
+    },
+    "PlayerInventory.cs:2151-2165": {
+      "sha256": "73d2fcb791b417982444abd8ad1180be6d08818f9a47cc98f9c4f3b5cdb368f6",
       "span": 15
     },
     "PlayerInventory.cs:219-230": {
@@ -4888,9 +4921,6 @@
       "sha256": "c65796fc7331ddabfbc3a5584afe697085b93f52fdfd1b2c5985366454fb3d68",
       "span": 1
     },
-    "ScriptableSkill.cs": {
-      "span": 0
-    },
     "ScriptableSkill.cs:102-137": {
       "sha256": "db5aa927fa1877e9e2ea73817db211305e2cb4581847fbf376b34a2b0926bcea",
       "span": 36
@@ -4914,6 +4944,10 @@
     "ScriptableSkill.cs:139-143": {
       "sha256": "d15f2e9e33fc7cd40f571dcb3139f0a58dd6a8eacd6a36fb366a0455f256be3a",
       "span": 5
+    },
+    "ScriptableSkill.cs:143": {
+      "sha256": "53b8ec9dab3ceebb53c1ff0627c30cd30bbafcd77d0d2e54c529f65f641baf66",
+      "span": 1
     },
     "ScriptableSkill.cs:359-367": {
       "sha256": "8e40e5080cb09b988004c95374d98da18fdd3e9ec53b593cb5f7e26e198c2d51",
@@ -5002,6 +5036,10 @@
     "ScrollItem.cs:UseAfterCast": {
       "span": 0
     },
+    "Skill.cs:12": {
+      "sha256": "f1569e548b0581569e647d27daab4b461f1ef979466b301c0b1f9c2487c18c81",
+      "span": 1
+    },
     "Skill.cs:Skill": {
       "span": 0
     },
@@ -5030,9 +5068,6 @@
       "span": 0
     },
     "SkillbarMacroSequence.cs:Tick": {
-      "span": 0
-    },
-    "Skills.cs": {
       "span": 0
     },
     "Skills.cs:1020": {
@@ -5078,6 +5113,10 @@
     "Skills.cs:1691-1705": {
       "sha256": "db4f78c2596ab048cbcd5177b636ad76b8f78026d758b8f4521e36077fc20bb2",
       "span": 15
+    },
+    "Skills.cs:1710": {
+      "sha256": "f0f7500e1aa4e20e163ce33f0245c2f0e9c5522771bb2d351a08e300fc21865e",
+      "span": 1
     },
     "Skills.cs:174-185": {
       "sha256": "4d478065bb5ee05495dffb912a69f48be1c6d0c29fc055b9ab6a0c100f1fffcb",
@@ -5269,13 +5308,11 @@
     "SummonSkill.cs:UsesPetAttackCommand": {
       "span": 0
     },
-    "SummonSkillMonsters.cs": {
-      "span": 0
+    "SummonSkillMonsters.cs:8": {
+      "sha256": "4b562d726ecf69845454e92b841a0dee4851dd49816e7d1652e0e8fe7257af8e",
+      "span": 1
     },
     "SummonSkillMonsters.cs:Apply": {
-      "span": 0
-    },
-    "TableUI.cs": {
       "span": 0
     },
     "TableUI.cs:71-98": {
@@ -5286,15 +5323,20 @@
       "sha256": "ac6dad5acd6a507de3a53c258bd0d220dd91cd2a3729f2226ed7ada942e734cc",
       "span": 1
     },
-    "TableUI.cs:MakePotion": {
-      "span": 0
+    "TableUI.cs:96-97": {
+      "sha256": "5c9dba8f36ec685c684d94f298566a68cbe1745d48e12e261cad262188cf168e",
+      "span": 2
     },
-    "TargetBuffSkill.cs": {
+    "TableUI.cs:MakePotion": {
       "span": 0
     },
     "TargetBuffSkill.cs:153-178": {
       "sha256": "eebd09d0ba2211a7b972ff1cdd44f162e1ce49d94560ad2a804f06098940785e",
       "span": 26
+    },
+    "TargetBuffSkill.cs:258-297": {
+      "sha256": "96a7dc13121f74efc2278f77204f676354fc9e96a78eec08c620ce415e38e551",
+      "span": 40
     },
     "TargetBuffSkill.cs:338-352": {
       "sha256": "629ac72b55bdf6fd311a3a5bc23bf109de8e5faa8a89ed242421ea10be76bc25",
@@ -5316,6 +5358,10 @@
       "sha256": "6fd2c36faff6263fba4e2db06caa0b430c6ca6d0524c3a623be5666fc25f9d18",
       "span": 6
     },
+    "TargetBuffSkill.cs:502-510": {
+      "sha256": "a4bc9f611af3cc598b5939f79f84f2bb78bef3eb4e0ad28e12f86f34aeb25b9c",
+      "span": 9
+    },
     "TargetBuffSkill.cs:Apply": {
       "span": 0
     },
@@ -5326,9 +5372,6 @@
       "span": 0
     },
     "TargetBuffSkill.cs:HasMatchingCleanseDebuff": {
-      "span": 0
-    },
-    "TargetDamageSkill.cs": {
       "span": 0
     },
     "TargetDamageSkill.cs:132-159": {
@@ -5386,6 +5429,9 @@
     "TargetDamageSkill.cs:291": {
       "sha256": "b461db9bf044cbf2945cf6a233c88d605cc09c3d3c8e8eee6d8e3b12e1eb761d",
       "span": 1
+    },
+    "TargetDamageSkill.cs:Apply": {
+      "span": 0
     },
     "TargetDamageSkill.cs:ApplyDamage": {
       "span": 0
@@ -5475,9 +5521,6 @@
     "TargetHealSkill.cs:GetHealingAmount": {
       "span": 0
     },
-    "TargetProjectileSkill.cs": {
-      "span": 0
-    },
     "TargetProjectileSkill.cs:103-109": {
       "sha256": "39ad3c830ef945c8209a95863d88d4cd8d938fd196e677f1e7a30f29eea321e3",
       "span": 7
@@ -5555,9 +5598,6 @@
     "TrapDetection.cs:Update": {
       "span": 0
     },
-    "TravelItem.cs": {
-      "span": 0
-    },
     "TravelItem.cs:15-42": {
       "sha256": "233b74d8e727250b9f13fa394cd47092f378d16053c9f3f45cf15ca62cd881fd",
       "span": 28
@@ -5569,6 +5609,10 @@
     "TravelItem.cs:25-29": {
       "sha256": "f3f16a5b048d6936d4f0341e1021fffd8f19671322faa6b44d1eb2975c34d171",
       "span": 5
+    },
+    "TravelItem.cs:25-30": {
+      "sha256": "2b252f58b01e829d2f1a9ab3e7dfe24600afff2d8d7fe47c8944e7b6fd390364",
+      "span": 6
     },
     "TravelItem.cs:Use": {
       "span": 0
@@ -5624,12 +5668,12 @@
       "sha256": "a56a445ac66a493b2a208e8221f9343f667d2113607430e459464bb381615995",
       "span": 5
     },
-    "UIBigBackpack.cs": {
-      "span": 0
-    },
     "UIBigBackpack.cs:317-329": {
       "sha256": "6b2a53d35fc4b7a4046c2166c374af8b525e074a6abc5757ce78bce18b092ec1",
       "span": 13
+    },
+    "UIBigBackpack.cs:ShowBigBackpack": {
+      "span": 0
     },
     "UIBooks.cs:ShowLibrary": {
       "span": 0
@@ -5681,8 +5725,9 @@
       "sha256": "1c9628a90dc8e651adb9205c4b15d9f2be7050c126ace4d132770f69cbdc8eb8",
       "span": 5
     },
-    "UIChest.cs": {
-      "span": 0
+    "UIChest.cs:42-50": {
+      "sha256": "3fcd08d573dd61a3a26585b374a24cafa0c083b1ab54a47b1f1682709701f892",
+      "span": 9
     },
     "UIChest.cs:42-56": {
       "sha256": "70bab06aefbc238fa65e6c6b44f91c789282ecff55c588665fe56c35ec60900e",
@@ -5695,6 +5740,10 @@
     "UICraftingStation.cs:142-159": {
       "sha256": "ff3fa6522e6be0ec75c4af0d69b98c7285853e958473fdde3902fd6c6896c01a",
       "span": 18
+    },
+    "UICraftingStation.cs:152": {
+      "sha256": "5824b925e9ccdc19cb332024e82a57a4428c1a5cad57cdf4683ec106d311ecd6",
+      "span": 1
     },
     "UICraftingStation.cs:288-315": {
       "sha256": "dd3ce6054d0eb8233e5ad92b2c59f59e444f1658f7b1f35a09e2f2c74b7c9eca",
@@ -6134,6 +6183,10 @@
     "UsableItem.cs:Use": {
       "span": 0
     },
+    "Utils.cs:229-239": {
+      "sha256": "4e9e90c231ce7a3c7a71c97766f02e3e2436a34b62e600a07ed9944803f34b15",
+      "span": 11
+    },
     "Utils.cs:423-451": {
       "sha256": "cdfe7bd930e2b0fcc479824501b17bdbcebe4ae8545c8b706991fdaa2c15fcba",
       "span": 29
@@ -6365,9 +6418,6 @@
     "ZoneInfo.cs:GetEvacuateIdZone": {
       "span": 0
     },
-    "ZoneTrigger.cs": {
-      "span": 0
-    },
     "ZoneTrigger.cs:122-125": {
       "sha256": "daf8d523e3116b59a1279f9a3da319bc772a81b685d2eab61f43995b43c49d7f",
       "span": 4
@@ -6383,6 +6433,10 @@
     "ZoneTrigger.cs:190": {
       "sha256": "b4f00440bf044d4832629a08a9874c4e8704e59191e565738b1641868042e5b7",
       "span": 1
+    },
+    "ZoneTrigger.cs:192-194": {
+      "sha256": "f42c56bd563a55a87f38106b157e4b3e79bc1f868c96141c9e33f368729c2300",
+      "span": 3
     },
     "ZoneTrigger.cs:94-101": {
       "sha256": "a1d5bba40cd25a626e72b91de2d1a9b18b3d39969daee0eb2beca10499e26c49",

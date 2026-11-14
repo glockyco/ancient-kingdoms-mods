@@ -6,7 +6,7 @@
   const { skill } = $derived(mechanics);
 </script>
 
-<!-- Source: server-scripts/Buff.cs:.ctor; BuffSkill.cs:GetCleanseCountersRemoved; TargetBuffSkill.cs:HasMatchingCleanseDebuff,Apply; AreaBuffSkill.cs:Apply; Skills.cs:GetFinalDamageDoT — elemental type matching, three layers, cleanser Accuracy and rounded-up 85%/70% DoT ticks. -->
+<!-- Source: server-scripts/Buff.cs:18; BuffSkill.cs:GetCleanseCountersRemoved; TargetBuffSkill.cs:HasMatchingCleanseDebuff,Apply; AreaBuffSkill.cs:Apply; Skills.cs:GetFinalDamageDoT — elemental type matching, three layers, cleanser Accuracy and rounded-up 85%/70% damage-over-time ticks. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Cleanse Resist</h3>
   {#if !skill.is_disease_debuff && !skill.is_poison_debuff && !skill.is_cold_debuff && !skill.is_fire_debuff && !skill.is_magic_debuff}

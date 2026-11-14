@@ -664,7 +664,7 @@ export function skillEffectInput(
     damage_over_time_execute_bonus: skill.damage_over_time_execute_bonus,
   };
 
-  // Source: server-scripts/MonsterSkills.cs:OnStartServer; Skill.cs:Skill; Npc.cs — monsters and NPCs cast at rank 1 when learnDefault, otherwise rank 0.
+  // Source: server-scripts/MonsterSkills.cs:OnStartServer; Skill.cs:12; Npc.cs:845-848 — monsters and NPCs cast at rank 1 when learnDefault, otherwise rank 0.
   // A potion buff's rank is its buff level, which Elixir Endurance raises, so its duration keeps its rank formula.
   const resolvedLevel =
     runtimeLevel ??

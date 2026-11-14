@@ -1028,7 +1028,7 @@
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — Double XP applies to attaching augments. -->
         <!-- Source: server-scripts/PlayerQuests.cs:404-405 — no double XP for quests -->
-        <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
+        <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:14358-14361 — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
           <span class="block"
             >Double XP buffs double the XP you earn from kills, gathering,
@@ -1478,7 +1478,7 @@
       <Card.Description>
         Experience earned the first time you discover a zone.
       </Card.Description>
-      <!-- Source: server-scripts/ZoneTrigger.cs — no multipliers apply to zone discovery XP -->
+      <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:14358-14361 — no multipliers apply to zone discovery XP -->
     </Card.Header>
     <Card.Content class="space-y-4">
       <!-- Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — discovery XP amounts -->

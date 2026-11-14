@@ -334,7 +334,7 @@ export function skillFacts(
   );
 
   // "Weapon" means any melee weapon (StartsWith match) — not a meaningful restriction.
-  // Source: server-scripts/ScriptableSkill.cs — CheckWeapon(), line 100
+  // Source: server-scripts/ScriptableSkill.cs:143 — CheckWeapon matches the equipped weapon category by prefix.
   const meaningfulWeapon =
     !!skill.required_weapon_category &&
     skill.required_weapon_category !== "Weapon";

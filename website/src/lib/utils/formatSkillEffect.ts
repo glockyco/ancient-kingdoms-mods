@@ -776,7 +776,7 @@ function formatBuffDebuffStats(
   };
 
   // 1. Special flags (binary game-changers that define the skill's identity)
-  // Source: server-scripts/Skills.cs:hasDoubleExp; Monster.cs:OnDeath; GatherItem.cs; Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftItem__NetworkIdentity__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String — double XP covers kills, gathering, fishing, crafting, cooking, alchemy, scribing and augmentation, but not quest rewards.
+  // Source: server-scripts/Skills.cs:hasDoubleExp; Monster.cs:OnDeath; GatherItem.cs:640,826; Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftItem__NetworkIdentity__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String — double XP covers kills, gathering, fishing, crafting, cooking, alchemy, scribing and augmentation, but not quest rewards.
   if (skill.is_double_exp_spell) {
     parts.push(
       "2× XP from kills, gathering, fishing, crafting, cooking, alchemy, scribing & augmentation",
@@ -804,7 +804,7 @@ function formatBuffDebuffStats(
   // server-scripts/Player.cs:7201-7211 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
-  // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Skills.cs — undeadIlussion redraws a player as undead.
+  // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Player.cs:2044-2047,2060 — undeadIlussion redraws a player as undead.
   if (skill.is_undead_illusion) parts.push("undead illusion");
 
   // 2. Movement (matches game tooltip order)
@@ -812,7 +812,7 @@ function formatBuffDebuffStats(
   // Sleep (speedBonus <= -50f): breaks on any damage hit or DoT tick (BreakMezz, Skills.cs).
   // Root (-50f < speedBonus <= -10f): does NOT break on damage; RemoveRoot self-break timer.
   // Slow (speedBonus > -10f and < 0): pure speed reduction, no CC mechanic.
-  // Source: server-scripts/Monster.cs, Npc.cs, Pet.cs (FSM branches), server-scripts/Skills.cs (BreakMezz)
+  // Source: server-scripts/Monster.cs:1562-1579; Npc.cs:828-845; Pet.cs:2175-2180,2283-2285 (FSM branches); Skills.cs:BreakMezz
   const speedBonus = parseLinearValue(skill.speed_bonus);
   if (speedBonus) {
     if (speedBonus.base_value <= -50) {
@@ -954,7 +954,7 @@ function formatBuffDebuffStats(
   }
 
   // 10. Regen / DoT
-  // Source: server-scripts/Skills.cs — a negative regeneration value ticks as damage on whoever wears the buff.
+  // Source: server-scripts/Skills.cs:1710 — a negative regeneration value ticks as damage on whoever wears the buff.
   const hps = parseLinearValue(skill.healing_per_second_bonus);
   if (hps && hps.base_value !== 0) {
     if (hps.base_value > 0) {
@@ -1040,7 +1040,7 @@ function formatBuffDebuffStats(
     else if (skill.is_magic_debuff) parts.push("magic debuff");
   }
 
-  // Source: server-scripts/PassiveSkill.cs; Skills.cs:GetCriticalChanceBonus; ScriptableSkill.cs:CheckWeapon — a passive with a weapon requirement adds its bonus only while that weapon is equipped.
+  // Source: server-scripts/Skills.cs:GetCriticalChanceBonus; ScriptableSkill.cs:CheckWeapon — a passive with a weapon requirement adds its bonus only while that weapon is equipped.
   if (skill.skill_type === "passive" && skill.required_weapon_category) {
     parts.push(`with ${weaponCategoryLabel(skill.required_weapon_category)}`);
   }
@@ -1065,12 +1065,12 @@ function formatBuffDebuffStats(
 const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Combat.cs:DealDamageAt — learned Improved Backstab raises the from-behind bonus from 10% to 25% of the damage.
   improved_backstab: "from-behind bonus dmg 25% instead of 10%",
-  // Source: server-scripts/TargetBuffSkill.cs:Apply; Player.cs; TravelItem.cs — binding sets the respawn point that Gate Scroll also returns to.
+  // Source: server-scripts/TargetBuffSkill.cs:Apply; Player.cs:UserCode_CmdBindPlayer,3883-3887; TravelItem.cs:25-30 — binding sets the respawn point that Gate Scroll also returns to.
   bind_affinity: "set bind point (respawn & Gate Scroll destination)",
   binding: "set bind point (respawn & Gate Scroll destination)",
   // Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — every potion but Bandages applies its buff at 1 + rank, and each buff level adds 60s.
   elixir_endurance: "potion buff duration +60s × rank (not bandages)",
-  // Source: server-scripts/Monster.cs — minimap marks never show in Temple of Valaark.
+  // Source: server-scripts/Monster.cs:886-899 — minimap marks never show in Temple of Valaark.
   veteran_awareness:
     "reveals nearby monsters on minimap (not in Temple of Valaark)",
   // Source: server-scripts/Combat.cs:DealDamageAt,isParry — during the cast, your target's single-target physical hits are blocked and 50% of the damage, rounded and clamped to 1-5,000, is dealt back.
@@ -1085,12 +1085,12 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   alchemy: "craft potions and elixirs",
   baking: "craft food and consumables",
   crafting: "craft equipment and items",
-  // Source: server-scripts/TableUI.cs; Player.cs — the scribing table cast.
+  // Source: server-scripts/TableUI.cs:96-97; Player.cs:3567-3570 — the scribing table cast.
   crafting_scroll: "scribe scrolls",
   digging: "dig for buried treasure",
   // Source: server-scripts/Player.cs:CmdFishing — the fishing cast.
   fishing: "catch fish",
-  // Source: server-scripts/GatherItem.cs:TryGatherItem; Player.cs — the gather cast covers every node that is not ore, fish or a chest.
+  // Source: server-scripts/GatherItem.cs:TryGatherItem; Player.cs:UserCode_CmdGatherItem__NetworkIdentity — the gather cast covers every node that is not ore, fish or a chest.
   gathering: "gather plants and Radiant Sparks",
   mining: "mine ore and minerals",
   // Source: server-scripts/GatherItem.cs:TryGatherItem; Player.cs:CmdOpenChest — every chest opens with this cast.
@@ -1103,7 +1103,6 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   emerald_pop: "cosmetic visual effect",
   golden_whirl: "cosmetic visual effect",
   skyflare: "cosmetic visual effect",
-  // Source: server-scripts/PassiveSkill.cs (0.9.18.0+) — Detect Traps is now a passive skill.
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-199,204-217;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
@@ -1116,17 +1115,17 @@ const HARDCODED_EFFECTS: Record<string, string> = {
     "Stab deals poison dmg & adds 250% of DEX, resisted by poison res, 10s",
   // Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — the Ranger's next auto attack deals 10% more per buff rank as Magic damage and consumes the buff.
   wild_strike: "next auto attack deals +10% × rank dmg as magic dmg, 5s",
-  // Source: server-scripts/TargetBuffSkill.cs — isCallHeroes teleports all
+  // Source: server-scripts/TargetBuffSkill.cs:258-297 — isCallHeroes teleports all
   // active mercenaries to player position and clears their fear; returns before
   // applying any buff. mana_percent_per_second_bonus in game data is unused.
   call_of_the_heroes:
     "teleport all active mercenaries to you, remove their fear",
-  // Source: server-scripts/TargetBuffSkill.cs — Charge navigates caster toward target
+  // Source: server-scripts/TargetBuffSkill.cs:502-510 — Charge navigates caster toward target
   // monster and queues an automatic follow-up attack (pendingSkill=1). Speed/rage-gen
   // stats are in the DB but the gap-closer behavior is hardcoded.
   charge:
     "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
-  // Source: server-scripts/PlayerInventory.cs; Player.cs — the cast before a travel item takes effect, refused in combat.
+  // Source: server-scripts/PlayerInventory.cs:2151-2165; Player.cs:3575-3582 — the cast before a travel item takes effect, refused in combat.
   teleport: "use travel items (out of combat)",
   // Source: server-scripts/Combat.cs:137 — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
   razor_of_wrath:

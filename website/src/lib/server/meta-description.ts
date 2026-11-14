@@ -423,7 +423,7 @@ function potionDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function foodDescription(item: Item, ctx: ItemMetaContext): string {
-  // Source: server-scripts/FoodItem.cs — applies buffEffect at fixed buffLevel
+  // Source: server-scripts/FoodItem.cs:36 — applies buffEffect at fixed buffLevel
   const kind = item.food_type === "Drink" ? "Drink" : "Food";
   const buff = item.food_buff_name
     ? ctx.buffEffect
@@ -481,7 +481,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:5623-5658 — one-time read,
+  // Source: server-scripts/BookItem.cs:28-32; Player.cs:5623-5658 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -595,9 +595,8 @@ function randomDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function augmentDescription(item: Item): string {
-  // Source: server-scripts/AugmentItem.cs, website/src/routes/items/[id]/+page.svelte:975-1031
-  // — set augments grant set bonuses; socketable augments are consumed at a crafting
-  // station and can be removed by Augmenter NPCs (5,000g/10,000g/15,000g per quality).
+  // Source: server-scripts/AugmentItem.cs:nameArmorSet; Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String; UINpcTrading.cs:285-290 — set augments grant set bonuses,
+  // socketable augments are consumed at a crafting station, and Augmenter NPCs remove them for 5,000g, 10,000g or 15,000g by quality.
   const q = quality(item);
   if (item.augment_armor_set_name) {
     const attributes = JSON.parse(

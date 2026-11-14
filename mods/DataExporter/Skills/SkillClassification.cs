@@ -5,7 +5,7 @@ namespace DataExporter.Skills;
 
 public static class SkillClassification
 {
-    // Source: server-scripts/DamageSkill.cs, BuffSkill.cs, SummonSkillMonsters.cs — these classes define the skill hierarchy.
+    // Source: server-scripts/DamageSkill.cs:5; BuffSkill.cs:7; SummonSkillMonsters.cs:8 — these classes define the skill hierarchy.
     // Source: server-scripts/NecromancerBloodPactSkill.cs:Apply — Blood Pact derives from ScriptableSkill and converts the caster's Health into Mana.
     public static string DetermineSkillType(ScriptableSkill skill)
     {

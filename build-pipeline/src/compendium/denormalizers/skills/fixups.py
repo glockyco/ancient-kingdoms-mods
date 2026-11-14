@@ -69,7 +69,7 @@ def run(conn: sqlite3.Connection) -> None:
     # call_of_the_heroes: TargetBuffSkill.cs teleports mercenaries and returns
     # before any buff application. mana_percent_per_second_bonus and is_cleanse
     # are set in game data but are never applied at runtime.
-    # Source: server-scripts/TargetBuffSkill.cs — isCallHeroes returns at line 237
+    # Source: server-scripts/TargetBuffSkill.cs:258-297 — isCallHeroes returns before any buff is applied.
     cursor.execute(
         """
         UPDATE skills

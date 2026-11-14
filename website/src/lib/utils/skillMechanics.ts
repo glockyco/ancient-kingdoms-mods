@@ -104,8 +104,8 @@ const DAMAGE_SKILL_TYPES = new Set([
 
 /**
  * Resolve the damage formula for a player of a given class.
- * Source: server-scripts/TargetDamageSkill.cs, TargetProjectileSkill.cs,
- *         FrontalDamageSkill.cs, FrontalProjectilesSkill.cs, AreaDamageSkill.cs
+ * Source: server-scripts/TargetDamageSkill.cs:Apply; TargetProjectileSkill.cs:Apply;
+ *         FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; AreaDamageSkill.cs:Apply
  */
 function playerDamageFormula(
   skill: DamageDispatchSkill,
