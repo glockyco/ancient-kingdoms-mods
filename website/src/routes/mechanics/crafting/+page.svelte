@@ -173,9 +173,14 @@
                   class="py-2 text-right tabular-nums">10&#8239;000 gold</td
                 ></tr
               >
-              <tr
+              <tr class="border-b border-border/50"
                 ><td class="py-2 pr-4">Epic</td><td
                   class="py-2 text-right tabular-nums">15&#8239;000 gold</td
+                ></tr
+              >
+              <tr
+                ><td class="py-2 pr-4">Legendary</td><td
+                  class="py-2 text-right tabular-nums">20&#8239;000 gold</td
                 ></tr
               >
             </tbody>

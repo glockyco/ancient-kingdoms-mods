@@ -596,7 +596,7 @@ function randomDescription(item: Item, ctx: ItemMetaContext): string {
 
 function augmentDescription(item: Item): string {
   // Source: server-scripts/AugmentItem.cs:nameArmorSet; Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String; UINpcTrading.cs:285-291 — set augments grant set bonuses,
-  // socketable augments are consumed at a crafting station, and Augmenter NPCs remove them for 5,000g, 10,000g or 15,000g by quality.
+  // socketable augments are consumed at a crafting station, and Augmenter NPCs remove them for 5,000g, 10,000g, 15,000g or 20,000g by quality.
   const q = quality(item);
   if (item.augment_armor_set_name) {
     const attributes = JSON.parse(

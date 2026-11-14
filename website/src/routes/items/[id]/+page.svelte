@@ -1977,13 +1977,15 @@
           </div>
           <div>
             <div class={styles.label}>Removing</div>
-            <!-- Source: server-scripts/UINpcTrading.cs:168-173,253-257 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
+            <!-- Source: server-scripts/UINpcTrading.cs:285-291,352-357 — quality 2 (magic) = 10,000 gold, quality 3 (epic) = 15,000 gold, quality 4 (legendary) = 20,000 gold, else 5,000 gold -->
             <div class={styles.value}>
               Visit an Augmenter to remove a socketed augment. Removal costs {formatNumber(
                 5000,
               )}g for a common augment, {formatNumber(10000)}g for a magic
-              augment, or {formatNumber(15000)}g for an epic augment. The
-              Augmenter returns it to your inventory.
+              augment, {formatNumber(15000)}g for an epic augment, or {formatNumber(
+                20000,
+              )}g for a legendary augment. The Augmenter returns it to your
+              inventory.
             </div>
           </div>
           <div>

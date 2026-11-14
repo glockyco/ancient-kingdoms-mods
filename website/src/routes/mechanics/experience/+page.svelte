@@ -1424,7 +1424,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — augment quality 0–3 gives 15/150/750/3500 XP; Double XP applies. -->
+      <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — augment quality 0–4 gives 15/150/750/3500/6000 XP; Double XP applies. -->
       <table class="w-full text-sm border-collapse">
         <thead
           ><tr class="border-b"
@@ -1434,7 +1434,7 @@
           ></thead
         >
         <tbody>
-          {#each [15, 150, 750, 3500] as xp, index (index)}
+          {#each [15, 150, 750, 3500, 6000] as xp, index (index)}
             <tr class="border-b last:border-0 hover:bg-muted/30">
               <td class="p-2">{getQualityName(index)}</td>
               <td class="p-2 text-right font-mono">{formatNumber(xp)}</td>

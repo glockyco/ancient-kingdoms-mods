@@ -235,11 +235,11 @@ export const ROLE_DESCRIPTIONS: Partial<
     description:
       'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',
   },
-  // Source: server-scripts/UINpcTrading.cs:285-291,351-357 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
+  // Source: server-scripts/UINpcTrading.cs:285-291,352-357 — quality 2 (magic) = 10,000 gold, quality 3 (epic) = 15,000 gold, quality 4 (legendary) = 20,000 gold, else 5,000 gold
   is_augmenter: {
     description: "Removes augments from equipment and returns them to you.",
     details: [
-      `Removal costs ${formatNumber(10000)} gold for a Magic augment, ${formatNumber(15000)} for an Epic augment, and ${formatNumber(5000)} for any other augment.`,
+      `Removal costs ${formatNumber(10000)} gold for a Magic augment, ${formatNumber(15000)} for an Epic augment, ${formatNumber(20000)} for a Legendary augment, and ${formatNumber(5000)} for any other augment.`,
       "Wear the equipment or bring it in your inventory.",
     ],
   },
