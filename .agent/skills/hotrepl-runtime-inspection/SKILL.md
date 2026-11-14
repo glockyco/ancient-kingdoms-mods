@@ -80,6 +80,50 @@ missing. `game.useScratchDatabase` refuses a missing directory or a linked path.
 prepare the directory, then relaunch and redirect before the player database opens.
 `references/commands.md` gives the focal-point format and the capture's options.
 
+### Capture procedural Chambers layouts
+
+The default capture covers authored zones and Temple anchors. Capture Chambers records explicitly
+from real entered runs. The following starts a new owned scratch character and captures three
+first-chamber layouts without solving or replacing a trial:
+
+```sh
+dotnet run --project build-tool launch --wait
+pnpm exec hotrepl run game.useScratchDatabase '{}' --json
+# Continue only after isScratch=true. Use a fresh run-owned name.
+pnpm exec hotrepl run character.create '{"characterName":"ChaosArtNov14","class":"warrior","race":"human"}' --json
+pnpm exec hotrepl run world.enter '{"character":"ChaosArtNov14"}' --json
+pnpm exec hotrepl run character.raiseLevel '{"level":40}' --json
+pnpm exec hotrepl run inventory.grant '{"itemName":"Seal of Chaos","amount":3}' --json
+pnpm exec hotrepl run chambers.enter '{}' --json
+pnpm exec hotrepl run chambers.state '{}' --json
+pnpm exec hotrepl run capture.zoneShots '{"captureIds":["chambers_of_chaos"]}' --json
+pnpm exec hotrepl run chambers.navigate '{"action":"leave"}' --json
+pnpm exec hotrepl run chambers.enter '{}' --json
+pnpm exec hotrepl run chambers.state '{}' --json
+pnpm exec hotrepl run capture.zoneShots '{"captureIds":["chambers_of_chaos_layout_2"]}' --json
+pnpm exec hotrepl run chambers.navigate '{"action":"leave"}' --json
+pnpm exec hotrepl run chambers.enter '{}' --json
+pnpm exec hotrepl run chambers.state '{}' --json
+pnpm exec hotrepl run capture.zoneShots '{"captureIds":["chambers_of_chaos_layout_3"]}' --json
+pnpm exec hotrepl run chambers.navigate '{"action":"leave"}' --json
+pnpm exec hotrepl run game.quit '{}' --json
+```
+
+Wait for each entry receipt to report readiness. Review each PNG before keeping it.
+The focal file starts at each live entrance. Adjust its room-relative offset and composition note
+to frame representative creatures and scenery, then recapture that ID. Different seeds alone do
+not establish visibly different layouts. Repeat a real entry when the selected layouts look alike.
+Do not seed the run or create a showcase room.
+
+Receipts merge, so capturing an illustration retains earlier zone shots. Changing a focal point,
+mode or PNG invalidates its old receipt. The [command reference](references/commands.md#zone-framing-and-receipts)
+defines provenance, cleanup and the publication-safety review.
+
+If redirection reports `scratchSaveChoiceRequired`, the game's `SaveStartupGuard.ChoiceRequired`
+has found differing main and pending-local scratch saves after an unclean exit. Resolve that
+scratch save choice through the game, then quit, relaunch and redirect again. Do not continue
+with scratch setup after the refusal.
+
 ## One endpoint for each instance
 
 Two instances on one port do not both serve. The first keeps the endpoint, so every later command

@@ -10,6 +10,7 @@ using DataExporter;
 using HotRepl.Control;
 using HotReplCommands.Dtos;
 using HotReplCommands.Isolation;
+using HotReplCommands.World;
 using Il2CppInterop.Runtime;
 using MelonLoader;
 using Newtonsoft.Json;
@@ -23,7 +24,7 @@ namespace HotReplCommands.Commands
         private readonly string _exportDir;
         public CaptureZoneShotsCommand(string exportDir) => _exportDir = WritablePath(exportDir);
         public string Name => "capture.zoneShots";
-        public int Version => 1;
+        public int Version => 2;
         public ControlCommandKind Kind => ControlCommandKind.Job;
         public bool MutatesState => true;
 
@@ -46,6 +47,7 @@ namespace HotReplCommands.Commands
             CancellationToken token, TaskCompletionSource<ControlCommandResult<ZoneShotsResult>> completion)
         {
             var core = Capture(context, args, token, completion);
+            using var cleanup = core as IDisposable;
             while (true)
             {
                 object current;
@@ -63,8 +65,7 @@ namespace HotReplCommands.Commands
         private IEnumerator Capture(ControlCommandContext<ZoneShotsResult> context, ZoneShotsArgs args,
             CancellationToken token, TaskCompletionSource<ControlCommandResult<ZoneShotsResult>> completion)
         {
-            if (!ScratchDatabase.IsScratch(Il2Cpp.GameManager.pathFileDB))
-                throw new InvalidOperationException("Zone capture requires game.useScratchDatabase before database access.");
+            ScratchDatabase.RequireConfirmed(Il2Cpp.GameManager.pathFileDB);
             ScratchDatabase.ValidateOwnedPath(Application.dataPath, Il2Cpp.GameManager.pathFileDB);
             var player = Il2Cpp.Player.localPlayer;
             var camera = Camera.main;
@@ -81,14 +82,18 @@ namespace HotReplCommands.Commands
             if (args.FrameScale.HasValue && (!double.IsFinite(args.FrameScale.Value) || args.FrameScale.Value <= 0))
                 throw new ArgumentOutOfRangeException(nameof(args.FrameScale), "frameScale must be positive and finite.");
             var points = focal.Zones ?? throw new InvalidDataException("Focal-point zones are null.");
-            if (points.Count == 0 || points.Select(p => p.zone_id).Distinct().Count() != points.Count)
-                throw new InvalidDataException("Focal-point file is empty or contains duplicate zones.");
+            ZoneShotStore.Validate(focal);
             var runtimeZones = new Dictionary<string, int>();
             foreach (var pair in Il2Cpp.ZoneInfo.zones)
                 runtimeZones.Add(GameIds.Sanitize(pair.Value.name), pair.Key);
             if (args.ZoneIds != null)
                 foreach (var id in args.ZoneIds)
                     if (!points.Any(p => p.zone_id == id)) throw new InvalidDataException($"Unknown shot zone: {id}");
+            if (args.CaptureIds != null)
+                foreach (var id in args.CaptureIds)
+                    if (!points.Any(p => p.capture_id == id)) throw new InvalidDataException($"Unknown capture ID: {id}");
+            if (args.CaptureIds != null && args.ZoneIds != null)
+                throw new InvalidDataException("Use captureIds or zoneIds, not both.");
             var shots = new List<(ZoneShotFocalPoint Point, int Width, int Height, float CameraSize)>(points.Count);
             var maxTextureSize = SystemInfo.maxTextureSize;
             foreach (var point in points)
@@ -104,7 +109,8 @@ namespace HotReplCommands.Commands
                 var height = Math.Round(1080d * scale, MidpointRounding.AwayFromZero);
                 if (width < 1 || height < 1 || width > maxTextureSize || height > maxTextureSize)
                     throw new InvalidDataException($"Scaled capture exceeds supported texture dimensions: {point.zone_id}");
-                if (args.ZoneIds == null || args.ZoneIds.Contains(point.zone_id))
+                if (args.CaptureIds != null ? args.CaptureIds.Contains(point.capture_id) :
+                    args.ZoneIds != null ? args.ZoneIds.Contains(point.zone_id) : point.mode != "procedural_run")
                     shots.Add((point, (int)width, (int)height, (float)(11.25d * scale)));
             }
             var triggers = Resources.FindObjectsOfTypeAll(Il2CppType.Of<Il2Cpp.ZoneTrigger>())
@@ -112,15 +118,36 @@ namespace HotReplCommands.Commands
                 .Where(t => t?.gameObject != null && t.gameObject.scene.IsValid()).ToArray();
             var output = Path.Combine(_exportDir, "screenshots", "zones");
             Directory.CreateDirectory(output);
-            var records = new List<ZoneShotRecord>();
-            using var state = new CaptureState(player, camera, zones, args.IncludeCreatures);
+            var records = new List<(ZoneShotRecord Record, byte[] Image)>();
             foreach (var shot in shots)
             {
                 token.ThrowIfCancellationRequested();
                 var point = shot.Point;
+                var procedural = point.mode == "procedural_run";
+                if (!procedural && Il2Cpp.MadMageTower.IsInside(player))
+                    throw new InvalidOperationException("Leave the owned Chambers run before capturing authored world zones.");
+                using var state = new CaptureState(player, camera, zones, args.IncludeCreatures, procedural);
                 state.Configure(shot.Width, shot.Height, shot.CameraSize);
                 var zone = runtimeZones[point.zone_id];
-                var position = ResolvePosition(point, zone);
+                ChambersState identity = null;
+                Vector2 position;
+                if (procedural)
+                {
+                    if (!args.IncludeCreatures) throw new InvalidOperationException("Procedural captures must preserve creatures.");
+                    identity = ChambersRuntime.Read(player);
+                    var room = ChambersRuntime.ReadyRoom(player, identity);
+                    if (identity.ChamberIndex != point.chamber_index)
+                        throw new InvalidOperationException($"Capture {point.capture_id} requires chamber {point.chamber_index}.");
+                    var relative = new Vector2(point.room_camera[0], point.room_camera[1]);
+                    // Frame in room units relative to the live entrance, never a curated private-scene origin.
+                    position = room.Entrance + relative;
+                    var floor = position - (Vector2)room.transform.position;
+                    if (!room.Floorplan.IsFloor((int)Math.Floor(floor.x), (int)Math.Floor(floor.y)))
+                        throw new InvalidDataException("room_camera must frame a floor cell in the actual generated room. Inspect chambers.state and revise the focal point.");
+                }
+                else
+                {
+                position = ResolvePosition(point, zone);
                 Il2Cpp.ZoneTrigger trigger = null;
                 var smallest = float.PositiveInfinity;
                 foreach (var candidate in triggers)
@@ -146,24 +173,34 @@ namespace HotReplCommands.Commands
                 player.outdoorZone = trigger.outdoorZone;
                 player.globalLightIntensityZone = trigger.globalLightIntensity;
                 Il2Cpp.EnviromentSystem.singleton.StartChangingBloomColor(trigger.bloomColor);
+                }
                 // Let the game's actual daylight/weather and area-light interpolation settle.
                 var until = Time.realtimeSinceStartup + 2.5f;
                 while (Time.realtimeSinceStartup < until)
                 {
                     token.ThrowIfCancellationRequested();
-                    player.combat.Networkinvincible = true;
+                    if (procedural) ChambersRuntime.ReadyRoom(player, identity);
+                    else player.combat.Networkinvincible = true;
                     state.Frame(position);
                     yield return null;
                 }
                 state.Frame(position);
                 yield return new WaitForEndOfFrame();
-                state.Readback(Path.Combine(output, point.zone_id + ".png"));
-                records.Add(new ZoneShotRecord { zone_id = point.zone_id, x = point.x, y = point.y,
+                token.ThrowIfCancellationRequested();
+                if (procedural) ChambersRuntime.ReadyRoom(player, identity);
+                var png = state.Readback();
+                token.ThrowIfCancellationRequested();
+                if (procedural) ChambersRuntime.ReadyRoom(player, identity);
+                records.Add((new ZoneShotRecord {
+                    capture_id = point.capture_id, mode = point.mode, artwork_kind = point.artwork_kind,
+                    zone_id = point.zone_id, x = point.x, y = point.y,
                     anchor = point.anchor, offset = point.anchor == null ? null : point.offset ?? new float[] { 0, 0 },
-                    camera_size = shot.CameraSize, width = shot.Width, height = shot.Height, captured_at = DateTime.UtcNow.ToString("o") });
+                    run_seed = identity?.RunSeed, chamber_index = identity?.ChamberIndex, trial_kind = identity?.TrialKind,
+                    room_camera = point.room_camera, camera_size = shot.CameraSize,
+                    width = shot.Width, height = shot.Height, captured_at = DateTime.UtcNow.ToString("o") }, png));
             }
             var manifest = Path.Combine(output, "manifest.json");
-            File.WriteAllText(manifest, JsonConvert.SerializeObject(records, Formatting.Indented));
+            ZoneShotStore.Merge(output, records);
             completion.TrySetResult(ControlCommandResult.Ok(new ZoneShotsResult { Count = records.Count, ManifestPath = manifest }));
         }
 
@@ -191,6 +228,7 @@ namespace HotReplCommands.Commands
             private readonly Camera _camera;
             private readonly Il2Cpp.ZoneInfo _zones;
             private readonly bool _includeCreatures;
+            private readonly bool _procedural;
             private readonly Vector3 _position, _cameraPosition;
             private readonly Quaternion _rotation;
             private readonly float _size, _aspect;
@@ -210,9 +248,9 @@ namespace HotReplCommands.Commands
             private int _width, _height;
             private float _captureSize;
 
-            public CaptureState(Il2Cpp.Player player, Camera camera, Il2Cpp.ZoneInfo zones, bool includeCreatures)
+            public CaptureState(Il2Cpp.Player player, Camera camera, Il2Cpp.ZoneInfo zones, bool includeCreatures, bool procedural)
             {
-                _player = player; _camera = camera; _zones = zones; _includeCreatures = includeCreatures;
+                _player = player; _camera = camera; _zones = zones; _includeCreatures = includeCreatures; _procedural = procedural;
                 _position = player.transform.position; _cameraPosition = camera.transform.position;
                 _rotation = camera.transform.rotation; _size = camera.orthographicSize; _aspect = camera.aspect;
                 _mask = camera.cullingMask; _target = camera.targetTexture; _active = RenderTexture.active;
@@ -223,8 +261,11 @@ namespace HotReplCommands.Commands
                 _bloomColor = environment.bloom.tint.value; _orthographic = camera.orthographic;
                 try
                 {
-                    foreach (var obj in zones.fullZones) Remember(obj);
-                    foreach (var obj in zones.staticEnviroment) Remember(obj);
+                    if (!procedural)
+                    {
+                        foreach (var obj in zones.fullZones) Remember(obj);
+                        foreach (var obj in zones.staticEnviroment) Remember(obj);
+                    }
                     foreach (var b in camera.GetComponentsInChildren<Behaviour>(true))
                     {
                         var name = b.GetIl2CppType().Name;
@@ -278,7 +319,7 @@ namespace HotReplCommands.Commands
             {
                 if (_render != null)
                 {
-                    if (_camera.targetTexture == _render) _camera.targetTexture = _target;
+                    if (_camera != null && _camera.targetTexture == _render) _camera.targetTexture = _target;
                     if (RenderTexture.active == _render) RenderTexture.active = _active;
                     _render.Release(); UnityEngine.Object.Destroy(_render);
                     _render = null;
@@ -346,7 +387,7 @@ namespace HotReplCommands.Commands
                 // Entity Update can re-enable Renderer.enabled; this independent gate survives it.
                 renderer.forceRenderingOff = true;
             }
-            public void Readback(string path)
+            public byte[] Readback()
             {
                 // Suppress messages created by the last game Update before rendering synchronously.
                 HideOverlays();
@@ -357,7 +398,7 @@ namespace HotReplCommands.Commands
                     RenderTexture.active = _render;
                     // PNG encoding reads the CPU copy; no Texture2D.Apply GPU upload is needed.
                     _pixels.ReadPixels(new Rect(0, 0, _width, _height), 0, 0, false);
-                    File.WriteAllBytes(path, ImageConversion.EncodeToPNG(_pixels));
+                    return ImageConversion.EncodeToPNG(_pixels);
                 }
                 finally { RenderTexture.active = active; }
             }
@@ -365,17 +406,28 @@ namespace HotReplCommands.Commands
             {
                 try
                 {
-                    _camera.targetTexture = _target; RenderTexture.active = _active;
-                    _camera.transform.position = _cameraPosition; _camera.transform.rotation = _rotation;
-                    _camera.orthographicSize = _size; _camera.aspect = _aspect; _camera.cullingMask = _mask;
-                    _player.movement.Reset(); _player.movement.Warp(_position);
-                    _player.NetworkidZone = _zone; _player.outdoorZone = _outdoor;
-                    _player.globalLightIntensityZone = _intensity; _player.combat.Networkinvincible = _invincible;
-                    _camera.orthographic = _orthographic;
-                    var environment = Il2Cpp.EnviromentSystem.singleton;
-                    environment.StartChangingBloomColor(_bloomColor);
-                    environment.bloom.tint.value = _bloomColor;
-                    environment.globalLight.color = _lightColor; environment.globalLight.intensity = _lightIntensity;
+                    if (_camera != null)
+                    {
+                        _camera.targetTexture = _target;
+                        _camera.transform.position = _cameraPosition; _camera.transform.rotation = _rotation;
+                        _camera.orthographicSize = _size; _camera.aspect = _aspect; _camera.cullingMask = _mask;
+                        _camera.orthographic = _orthographic;
+                    }
+                    RenderTexture.active = _active;
+                    // Never restore player coordinates or environment from an obsolete private room.
+                    if (!_procedural && _player != null)
+                    {
+                        _player.movement.Reset(); _player.movement.Warp(_position);
+                        _player.NetworkidZone = _zone; _player.outdoorZone = _outdoor;
+                        _player.globalLightIntensityZone = _intensity; _player.combat.Networkinvincible = _invincible;
+                        var environment = Il2Cpp.EnviromentSystem.singleton;
+                        if (environment != null)
+                        {
+                            environment.StartChangingBloomColor(_bloomColor);
+                            environment.bloom.tint.value = _bloomColor;
+                            environment.globalLight.color = _lightColor; environment.globalLight.intensity = _lightIntensity;
+                        }
+                    }
                     foreach (var pair in _objects) if (pair.Object != null) pair.Object.SetActive(pair.Active);
                     foreach (var pair in _renderers.Values) if (pair.Renderer != null) pair.Renderer.forceRenderingOff = pair.ForceOff;
                     foreach (var pair in _behaviours) if (pair.Component != null) pair.Component.enabled = pair.Enabled;

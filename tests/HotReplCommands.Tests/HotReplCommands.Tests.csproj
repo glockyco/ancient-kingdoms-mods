@@ -66,5 +66,9 @@
              Link="Artifacts\ArtifactCollector.cs" />
     <Compile Include="..\..\mods\DataExporter\Sessions\ExportSessionManifest.cs"
              Link="Sessions\ExportSessionManifest.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\Chambers.cs"
+             Link="Dtos\Chambers.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\World\ZoneShotStore.cs"
+             Link="World\ZoneShotStore.cs" />
   </ItemGroup>
 </Project>

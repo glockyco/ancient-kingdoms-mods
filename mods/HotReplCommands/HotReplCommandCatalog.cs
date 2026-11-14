@@ -31,9 +31,14 @@ namespace HotReplCommands
             new Entry("compendium.export",    1, ControlCommandKind.Job,         true),
             new Entry("game.quit",            1, ControlCommandKind.Sync, true),
             new Entry("game.useScratchDatabase", 1, ControlCommandKind.Sync, true),
-            new Entry("capture.zoneShots",    1, ControlCommandKind.Job, true),
+            new Entry("capture.zoneShots",    2, ControlCommandKind.Job, true),
             new Entry("character.create",     1, ControlCommandKind.Job, true),
             new Entry("ui.pointer",           1, ControlCommandKind.Job, true),
+            new Entry("character.raiseLevel", 1, ControlCommandKind.Sync, true),
+            new Entry("inventory.grant",      1, ControlCommandKind.Sync, true),
+            new Entry("chambers.enter",       1, ControlCommandKind.Job, true),
+            new Entry("chambers.state",       1, ControlCommandKind.Sync, false),
+            new Entry("chambers.navigate",    1, ControlCommandKind.Job, true),
         };
     }
 }

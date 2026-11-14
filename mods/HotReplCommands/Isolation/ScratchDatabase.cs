@@ -14,6 +14,22 @@ namespace HotReplCommands.Isolation
 
         private const string FileName = "game.dat";
 
+        public static string ConfirmedPath { get; private set; }
+
+        public static void ClearConfirmation() => ConfirmedPath = null;
+
+        public static void Confirm(string path)
+        {
+            if (!IsScratch(path)) throw new InvalidOperationException("Cannot confirm a non-scratch database.");
+            ConfirmedPath = Normalize(path);
+        }
+
+        public static void RequireConfirmed(string path)
+        {
+            if (!IsScratch(path) || ConfirmedPath != Normalize(path))
+                throw new InvalidOperationException(
+                    "Run game.useScratchDatabase first and require its isScratch=true receipt. A refused redirect permits no mutation.");
+        }
         /// <summary>
         /// Scratch path beside <paramref name="currentDatabasePath"/>. Returns null when
         /// the input names no directory, because a run must not guess a location.

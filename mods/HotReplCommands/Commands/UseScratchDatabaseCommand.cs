@@ -34,6 +34,7 @@ namespace HotReplCommands.Commands
             CancellationToken cancellationToken)
         {
             var previous = GameManager.pathFileDB;
+            ScratchDatabase.ClearConfirmation();
 
             if (Il2Cpp.Database.connection != null)
                 return Failed(context,
@@ -61,8 +62,28 @@ namespace HotReplCommands.Commands
             }
 
             GameManager.pathFileDB = resolved;
-            Il2Cpp.Database.Connect();
-            ScratchDatabase.ValidateOwnedPath(UnityEngine.Application.dataPath, GameManager.pathFileDB);
+            int? characterCount;
+            try
+            {
+                Il2Cpp.Database.Connect();
+                ScratchDatabase.ValidateOwnedPath(UnityEngine.Application.dataPath, GameManager.pathFileDB);
+                if (Il2Cpp.Database.connection == null)
+                    throw new System.InvalidOperationException("Database.Connect returned without an open connection.");
+                characterCount = CountCharacters();
+            }
+            catch (System.Exception exception)
+            {
+                // Source: server-scripts/SaveStartupGuard.cs:ChoiceRequired — divergent main and pending saves require a choice after an unclean exit.
+                var choice = exception.ToString().Contains("ChoiceRequired", System.StringComparison.Ordinal)
+                    || exception.ToString().Contains("Two readable saves differ", System.StringComparison.Ordinal);
+                return Failed(context, choice ? "scratchSaveChoiceRequired" : "scratchDatabaseOpenFailed",
+                    choice
+                        ? "SaveStartupGuard.ChoiceRequired blocked the scratch database after an unclean exit. "
+                            + "Quit, resolve the main versus pending-local save choice for verification-scratch/game.dat in the game, "
+                            + "then relaunch and redirect again. No scratch mutation is authorized."
+                        : $"Could not open the scratch database '{resolved}': {exception.Message}");
+            }
+            ScratchDatabase.Confirm(GameManager.pathFileDB);
 
             return new ValueTask<ControlCommandResult<UseScratchDatabaseResult>>(
                 ControlCommandResult.Ok(new UseScratchDatabaseResult
@@ -70,7 +91,7 @@ namespace HotReplCommands.Commands
                     PreviousPath = previous,
                     ResolvedPath = GameManager.pathFileDB,
                     IsScratch = ScratchDatabase.IsScratch(GameManager.pathFileDB),
-                    CharacterCount = CountCharacters(),
+                    CharacterCount = characterCount,
                 }));
         }
 

@@ -45,6 +45,16 @@ namespace HotReplCommands.Commands
             CancellationToken cancellationToken,
             TaskCompletionSource<ControlCommandResult<CreateCharacterResult>> completion)
         {
+            try
+            {
+                Isolation.ScratchDatabase.RequireConfirmed(GameManager.pathFileDB);
+                Isolation.ScratchDatabase.ValidateOwnedPath(UnityEngine.Application.dataPath, GameManager.pathFileDB);
+            }
+            catch (Exception exception)
+            {
+                completion.TrySetResult(context.PreconditionFailed("scratchRequired", exception.Message));
+                yield break;
+            }
             if (args == null || string.IsNullOrWhiteSpace(args.CharacterName)
                 || string.IsNullOrWhiteSpace(args.Class) || string.IsNullOrWhiteSpace(args.Race))
             {

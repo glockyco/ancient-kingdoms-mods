@@ -1,7 +1,9 @@
 """Validate curated live-camera captures and publish zone overview artwork."""
 
+import hashlib
 import json
 import math
+import re
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -28,13 +30,26 @@ def _records(rows: Any, path: Path) -> dict[str, dict[str, Any]]:
     if not isinstance(rows, list):
         raise TypeError(f"Zone shot input must be an array: {path}")
     result = {}
+    artwork = set()
     for row in rows:
         if not isinstance(row, dict) or not isinstance(row.get("zone_id"), str):
             raise TypeError(f"Zone shot row requires a zone_id: {path}")
-        zone_id = validate_segment(row["zone_id"], label="Zone id")
-        if zone_id in result:
-            raise ValueError(f"Duplicate zone shot '{zone_id}': {path}")
-        result[zone_id] = row
+        validate_segment(row["zone_id"], label="Zone id")
+        capture_id = row.get("capture_id")
+        if not isinstance(capture_id, str) or capture_id in {".", ".."}:
+            raise ValueError(f"Zone shot requires a capture_id: {path}")
+        validate_segment(capture_id, label="Capture id")
+        if capture_id in result:
+            raise ValueError(f"Duplicate zone shot capture ID '{capture_id}': {path}")
+        kind = row.get("artwork_kind")
+        if not isinstance(kind, str) or kind in {".", ".."}:
+            raise ValueError(f"Zone shot requires artwork_kind: {path}")
+        validate_segment(kind, label="Artwork kind")
+        identity = (row["zone_id"], kind)
+        if identity in artwork:
+            raise ValueError(f"Duplicate zone shot artwork identity: {identity}")
+        artwork.add(identity)
+        result[capture_id] = row
     return result
 
 
@@ -52,6 +67,10 @@ def _focal_points(path: Path) -> tuple[float, dict[str, dict[str, Any]]]:
         data = json.load(source)
     if not isinstance(data, dict):
         raise TypeError(f"Zone shot focal input must be an object: {path}")
+    if type(data.get("schema_version")) is not int or data["schema_version"] != 2:
+        raise ValueError(
+            "Zone shot focal schema_version must be 2. Recapture legacy receipts."
+        )
     scale = _number(data, "frame_scale", "focal configuration")
     if scale <= 0:
         raise ValueError("Zone shot frame_scale must be positive")
@@ -94,6 +113,107 @@ def _anchor(row: dict[str, Any], zone_id: str) -> tuple[dict[str, str], list[flo
     return anchor, [_number({"offset": value}, "offset", zone_id) for value in offset]
 
 
+def _mode(row: dict[str, Any], zone_id: str, suppressed: set[str]) -> str:
+    expected = (
+        "procedural_run"
+        if zone_id == "chambers_of_chaos"
+        else "suppressed_anchor"
+        if zone_id in suppressed
+        else "authored_world"
+    )
+    if row.get("mode") != expected:
+        raise ValueError(f"Zone '{zone_id}' capture mode must be {expected}")
+    if expected != "procedural_run":
+        if row["artwork_kind"] != "shot":
+            raise ValueError("Only procedural captures support illustrations")
+        if any(
+            key in row
+            for key in ("run_seed", "chamber_index", "trial_kind", "room_camera")
+        ):
+            raise ValueError(f"Zone '{zone_id}' forbids procedural provenance")
+    return expected
+
+
+def _procedural(row: dict[str, Any], zone_id: str, *, receipt: bool) -> None:
+    if any(key in row for key in ("x", "y", "anchor", "offset")):
+        raise ValueError(
+            f"Procedural zone '{zone_id}' forbids world coordinates and anchors"
+        )
+    chamber = row.get("chamber_index")
+    if type(chamber) is not int or not 0 <= chamber <= 2:
+        raise ValueError("Procedural chamber_index must be an integer from 0 to 2")
+    camera = row.get("room_camera")
+    if not isinstance(camera, list) or len(camera) != 2:
+        raise ValueError("Procedural room_camera requires two finite numbers")
+    for value in camera:
+        _number({"room_camera": value}, "room_camera", zone_id)
+    if receipt:
+        seed = row.get("run_seed")
+        if type(seed) is not int or not 0 < seed < 2147483647:
+            raise ValueError("Procedural run_seed must be a positive game seed")
+        trial = row.get("trial_kind")
+        if trial not in {
+            "Battle",
+            "Waves",
+            "Riddle",
+            "Runes",
+            "Manuscript",
+            "Guardian",
+        }:
+            raise ValueError("Procedural trial_kind is invalid")
+        if (chamber == 2) != (trial == "Guardian"):
+            raise ValueError("Procedural trial_kind disagrees with chamber_index")
+
+
+def _capture_records(data: Any, path: Path) -> dict[str, dict[str, Any]]:
+    if isinstance(data, list):
+        normalized = []
+        for row in data:
+            if not isinstance(row, dict) or not isinstance(row.get("zone_id"), str):
+                raise TypeError("Legacy zone shot requires zone_id")
+            zone_id = row["zone_id"]
+            validate_segment(zone_id, label="Zone id")
+            if zone_id in {".", "..", "chambers_of_chaos"} or any(
+                key in row
+                for key in (
+                    "capture_id",
+                    "mode",
+                    "artwork_kind",
+                    "run_seed",
+                    "chamber_index",
+                    "trial_kind",
+                    "room_camera",
+                )
+            ):
+                raise ValueError(
+                    "Only legacy authored-world and Temple captures may use the array manifest"
+                )
+            image = f"{zone_id}.png"
+            source = path.parent / image
+            normalized.append(
+                {
+                    **row,
+                    "capture_id": zone_id,
+                    "artwork_kind": "shot",
+                    "mode": "suppressed_anchor"
+                    if zone_id == "temple_of_valaark"
+                    else "authored_world",
+                    "image": image,
+                    "sha256": hashlib.sha256(source.read_bytes()).hexdigest()
+                    if source.is_file()
+                    else None,
+                }
+            )
+        return _records(normalized, path)
+    if (
+        not isinstance(data, dict)
+        or type(data.get("schema_version")) is not int
+        or data["schema_version"] != 2
+    ):
+        raise ValueError("Zone shot manifest schema_version must be 2")
+    return _records(data.get("captures"), path)
+
+
 def publish_zone_shots(
     conn: sqlite3.Connection,
     export_root: Path,
@@ -110,7 +230,8 @@ def publish_zone_shots(
     shots_dir = export_root / "screenshots" / "zones"
     manifest_path = shots_dir / "manifest.json"
     with manifest_path.open(encoding="utf-8") as source:
-        captures = _records(json.load(source), manifest_path)
+        manifest = json.load(source)
+    captures = _capture_records(manifest, manifest_path)
     zones = {
         row[0]: row[1:]
         for row in conn.execute(
@@ -121,17 +242,25 @@ def publish_zone_shots(
     excluded = redactions.exclude_zone_ids
     required = set(zones) - excluded
     for label, records in (("focal points", focal), ("capture manifest", captures)):
-        unknown = set(records) - set(zones)
+        record_zones = {row["zone_id"] for row in records.values()}
+        unknown = record_zones - set(zones)
         if unknown:
             raise ValueError(f"Unknown zone in {label}: {', '.join(sorted(unknown))}")
-        forbidden = set(records) & excluded
+        forbidden = record_zones & excluded
         if forbidden:
             raise ValueError(
                 f"Excluded zone in {label}: {', '.join(sorted(forbidden))}"
             )
-        missing = required - set(records)
+        primary_zones = {
+            row["zone_id"] for row in records.values() if row["artwork_kind"] == "shot"
+        }
+        missing = required - primary_zones
         if missing:
             raise ValueError(f"Missing zone shot {label}: {', '.join(sorted(missing))}")
+    if set(focal) != set(captures):
+        raise ValueError(
+            "Missing or unexpected zone shot capture IDs relative to focal points"
+        )
 
     triggers: dict[str, list[tuple]] = {}
     for row in conn.execute(
@@ -141,8 +270,18 @@ def publish_zone_shots(
         triggers.setdefault(row[0], []).append(row[1:])
 
     # Validate the complete set before publishing any of it.
-    for zone_id in sorted(required):
-        point, capture = focal[zone_id], captures[zone_id]
+    for capture_id in sorted(focal):
+        point, capture = focal[capture_id], captures[capture_id]
+        zone_id = point["zone_id"]
+        if (capture["zone_id"], capture["artwork_kind"]) != (
+            zone_id,
+            point["artwork_kind"],
+        ):
+            raise ValueError(
+                f"Capture '{capture_id}' receipt identity differs from focal point"
+            )
+        mode = _mode(point, zone_id, redactions.suppress_position_zone_ids)
+        _mode(capture, zone_id, redactions.suppress_position_zone_ids)
         effective_scale = point.get("frame_scale", scale)
         # Positive dimensions use the same midpoint rule as Math.Round AwayFromZero.
         source_size = tuple(
@@ -151,7 +290,20 @@ def publish_zone_shots(
         camera_size = CAMERA_SIZE * effective_scale
         if not isinstance(point.get("comment"), str):
             raise TypeError(f"Zone '{zone_id}' focal point requires a comment")
-        if zone_id in redactions.suppress_position_zone_ids:
+        if not point["comment"].strip():
+            raise ValueError(
+                f"Zone '{zone_id}' focal point requires a nonempty comment"
+            )
+        if mode == "procedural_run":
+            _procedural(point, zone_id, receipt=False)
+            _procedural(capture, zone_id, receipt=True)
+            if any(
+                point[key] != capture[key] for key in ("chamber_index", "room_camera")
+            ):
+                raise ValueError(
+                    f"Capture '{capture_id}' procedural framing differs from focal point"
+                )
+        elif zone_id in redactions.suppress_position_zone_ids:
             if _anchor(point, zone_id) != _anchor(capture, zone_id):
                 raise ValueError(
                     f"Zone '{zone_id}' capture anchor or offset differs from focal point"
@@ -200,7 +352,16 @@ def publish_zone_shots(
             ) from error
         if parsed.tzinfo is None:
             raise ValueError(f"Zone '{zone_id}' captured_at requires a timezone")
-        source_path = shots_dir / f"{zone_id}.png"
+        image = capture.get("image")
+        if (
+            not isinstance(image, str)
+            or Path(image).name != image
+            or not re.fullmatch(r"[A-Za-z0-9._-]+\.png", image)
+        ):
+            raise ValueError(
+                f"Capture '{capture_id}' requires a safe PNG image filename"
+            )
+        source_path = shots_dir / image
         if not source_path.is_file():
             raise FileNotFoundError(f"Missing zone shot PNG: {source_path}")
         with Image.open(source_path) as source:
@@ -209,10 +370,22 @@ def publish_zone_shots(
                     f"Zone '{zone_id}' source framing must be a {source_size[0]}x{source_size[1]} PNG"
                 )
             source.load()
+        digest = capture.get("sha256")
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise ValueError(
+                f"Capture '{capture_id}' requires a lowercase SHA-256 digest"
+            )
+        if hashlib.sha256(source_path.read_bytes()).hexdigest() != digest:
+            raise ValueError(
+                f"Capture '{capture_id}' image digest differs from its receipt"
+            )
 
     cursor = conn.cursor()
-    for zone_id in sorted(required):
-        export_path = f"screenshots/zones/{zone_id}.png"
+    for capture_id in sorted(focal):
+        capture = captures[capture_id]
+        zone_id = capture["zone_id"]
+        kind = capture["artwork_kind"]
+        export_path = f"screenshots/zones/{capture['image']}"
         with Image.open(export_root / export_path) as source:
             image = source.convert("RGB").resize(
                 PUBLISHED_SIZE, Image.Resampling.LANCZOS
@@ -222,20 +395,24 @@ def publish_zone_shots(
             static_dir,
             domain="zone",
             entity_id=zone_id,
-            kind="shot",
+            kind=kind,
             encoding=Encoding.PHOTO,
         )
         insert_asset(
             cursor,
             domain="zone",
             entity_id=zone_id,
-            kind="shot",
+            kind=kind,
             export_path=export_path,
             asset=asset,
             source_field="screenshots.zones.manifest",
-            source_type="LiveZoneCameraCapture",
-            source_name=zone_id,
+            source_type="LiveProceduralCameraCapture"
+            if capture["mode"] == "procedural_run"
+            else "LiveZoneCameraCapture",
+            source_name=capture_id,
         )
     conn.commit()
-    console.print(f"  [green]OK[/green] Published {len(required)} zone shots")
-    return len(required)
+    console.print(
+        f"  [green]OK[/green] Published {len(captures)} zone shots and illustrations"
+    )
+    return len(captures)

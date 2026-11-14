@@ -1,3 +1,4 @@
+import hashlib
 import json
 import struct
 import tempfile
@@ -63,12 +64,34 @@ class ZoneShotTests(unittest.TestCase):
         Image.new("RGB", (1920, 1080), "green").save(self.shots / "forest.png")
 
     def publish(self):
+        for rows in (self.focal, self.manifest):
+            for row in rows:
+                row.setdefault("capture_id", row["zone_id"])
+                row.setdefault("artwork_kind", "shot")
+                row.setdefault(
+                    "mode",
+                    "suppressed_anchor"
+                    if row["zone_id"] == "temple_of_valaark"
+                    else "authored_world",
+                )
+        for row in self.manifest:
+            row.setdefault("image", f"{row['capture_id']}.png")
+            image = self.shots / row["image"]
+            if image.is_file() and "sha256" not in row:
+                row["sha256"] = hashlib.sha256(image.read_bytes()).hexdigest()
         self.focal_path.write_text(
-            json.dumps({"frame_scale": self.frame_scale, "zones": self.focal}),
+            json.dumps(
+                {
+                    "schema_version": 2,
+                    "frame_scale": self.frame_scale,
+                    "zones": self.focal,
+                }
+            ),
             encoding="utf-8",
         )
         (self.shots / "manifest.json").write_text(
-            json.dumps(self.manifest), encoding="utf-8"
+            json.dumps({"schema_version": 2, "captures": self.manifest}),
+            encoding="utf-8",
         )
         return publish_zone_shots(
             self.conn, self.export_dir, self.static, self.focal_path
@@ -291,6 +314,7 @@ class ZoneShotTests(unittest.TestCase):
             camera_size=11.25 * scale, width=size[0], height=size[1]
         )
         Image.new("RGB", size, "green").save(self.shots / "forest.png")
+        self.manifest[0].pop("sha256", None)
 
     def set_mixed_scales(self):
         self.set_scale(2, (3840, 2160))
@@ -493,3 +517,233 @@ class ZoneShotTests(unittest.TestCase):
                     publish_zone_shots(
                         self.conn, self.export_dir, self.static, self.focal_path
                     )
+
+    def add_procedural(self):
+        self.conn.execute(
+            "INSERT INTO zones (id, zone_id, name, is_dungeon) VALUES ('chambers_of_chaos', 26, 'Chambers of Chaos', 1)"
+        )
+        for index, kind in enumerate(("shot", "illustration_2", "illustration_3")):
+            capture_id = f"chambers_layout_{index}"
+            point = {
+                "zone_id": "chambers_of_chaos",
+                "capture_id": capture_id,
+                "mode": "procedural_run",
+                "artwork_kind": kind,
+                "chamber_index": 0,
+                "room_camera": [0, 2],
+                "comment": "Entered live room",
+            }
+            self.focal.append(point)
+            self.manifest.append(
+                {
+                    **point,
+                    "run_seed": 100 + index,
+                    "trial_kind": "Battle",
+                    "width": 1920,
+                    "height": 1080,
+                    "camera_size": 11.25,
+                    "captured_at": "2026-11-14T12:00:00Z",
+                }
+            )
+            Image.new("RGB", (1920, 1080), ("red", "blue", "yellow")[index]).save(
+                self.shots / f"{capture_id}.png"
+            )
+
+    def test_publishes_primary_and_separate_procedural_illustrations_without_geometry(
+        self,
+    ):
+        self.add_procedural()
+        self.assertEqual(4, self.publish())
+        self.assertEqual(
+            [
+                ("illustration_2", 960, 540),
+                ("illustration_3", 960, 540),
+                ("shot", 960, 540),
+            ],
+            self.conn.execute(
+                "SELECT kind, width, height FROM visual_assets WHERE entity_id = 'chambers_of_chaos' ORDER BY kind"
+            ).fetchall(),
+        )
+
+    def test_rejects_missing_or_malformed_procedural_provenance_before_publication(
+        self,
+    ):
+        self.add_procedural()
+        receipt = self.manifest[1]
+        for key, values in {
+            "run_seed": [None, True, 0, -1, 2147483647, 1.5, "100"],
+            "chamber_index": [None, True, -1, 3, 0.5, "0"],
+            "trial_kind": [None, "", "unknown", "Guardian"],
+            "room_camera": [None, [], [0], [0, 1, 2], [True, 0], [float("inf"), 0]],
+        }.items():
+            original = receipt[key]
+            del receipt[key]
+            with (
+                self.subTest(key=key, missing=True),
+                self.assertRaises((TypeError, ValueError)),
+            ):
+                self.publish()
+            for value in values:
+                receipt[key] = value
+                with (
+                    self.subTest(key=key, value=value),
+                    self.assertRaises((TypeError, ValueError)),
+                ):
+                    self.publish()
+            receipt[key] = original
+        self.assertEqual(
+            0, self.conn.execute("SELECT COUNT(*) FROM visual_assets").fetchone()[0]
+        )
+        self.assertFalse(self.static.exists())
+
+    def test_rejects_procedural_world_coordinates_and_stale_relative_framing(self):
+        self.add_procedural()
+        for row in (self.focal[1], self.manifest[1]):
+            for key in ("x", "y", "anchor", "offset"):
+                row[key] = None
+                with self.assertRaisesRegex(ValueError, "forbids world coordinates"):
+                    self.publish()
+                del row[key]
+        self.manifest[1]["room_camera"] = [1, 2]
+        with self.assertRaisesRegex(ValueError, "framing differs"):
+            self.publish()
+
+    def test_rejects_authored_zone_using_procedural_mode(self):
+        self.focal[0]["mode"] = "procedural_run"
+        with self.assertRaisesRegex(ValueError, "capture mode must be authored_world"):
+            self.publish()
+
+    def test_rejects_procedural_capture_with_authored_mode(self):
+        self.add_procedural()
+        self.manifest[1]["mode"] = "authored_world"
+        with self.assertRaisesRegex(ValueError, "capture mode must be procedural_run"):
+            self.publish()
+
+    def test_rejects_altered_png_with_matching_dimensions_before_publication(self):
+        self.manifest[0]["sha256"] = hashlib.sha256(
+            (self.shots / "forest.png").read_bytes()
+        ).hexdigest()
+        Image.new("RGB", (1920, 1080), "red").save(self.shots / "forest.png")
+        with self.assertRaisesRegex(ValueError, "image digest differs"):
+            self.publish()
+        self.assertFalse(self.static.exists())
+
+    def test_rejects_malformed_digest_and_timestamp(self):
+        for digest in (None, "", "a" * 63, "A" * 64, 1):
+            self.manifest[0]["sha256"] = digest
+            with (
+                self.subTest(digest=digest),
+                self.assertRaisesRegex(ValueError, "SHA-256"),
+            ):
+                self.publish()
+        del self.manifest[0]["sha256"]
+        for stamp in ("invalid", "2026-11-14T12:00:00"):
+            self.manifest[0]["captured_at"] = stamp
+            with (
+                self.subTest(stamp=stamp),
+                self.assertRaisesRegex(ValueError, "timestamp|timezone"),
+            ):
+                self.publish()
+
+    def test_rejects_duplicate_capture_ids_and_artwork_identities(self):
+        self.add_procedural()
+        self.focal[2]["capture_id"] = self.focal[1]["capture_id"]
+        with self.assertRaisesRegex(ValueError, "Duplicate zone shot capture ID"):
+            self.publish()
+        self.focal[2]["capture_id"] = "other"
+        self.focal[2]["artwork_kind"] = "shot"
+        with self.assertRaisesRegex(ValueError, "Duplicate zone shot artwork identity"):
+            self.publish()
+
+    def test_rejects_missing_illustration_or_mismatched_artwork_identity(self):
+        self.add_procedural()
+        missing = self.manifest.pop()
+        with self.assertRaisesRegex(ValueError, "capture IDs"):
+            self.publish()
+        self.manifest.append(missing)
+        self.manifest[-1]["artwork_kind"] = "other_illustration"
+        with self.assertRaisesRegex(ValueError, "identity differs"):
+            self.publish()
+
+    def test_entity_redaction_rejects_every_owned_illustration(self):
+        self.add_procedural()
+        config = self.root / "exclude-chambers.toml"
+        config.write_text(
+            '[zones.exclude_unreleased]\nzone_ids = ["old_valorath", "chambers_of_chaos"]\n'
+        )
+        with (
+            patch(
+                "compendium.zone_shots.load_redactions", lambda: load_redactions(config)
+            ),
+            self.assertRaisesRegex(ValueError, "Excluded zone"),
+        ):
+            self.publish()
+
+    def test_rejects_unsafe_image_filename(self):
+        for image in (
+            "../forest.png",
+            "/forest.png",
+            "forest.jpg",
+            "sub/forest.png",
+            "sub\\\\forest.png",
+        ):
+            self.manifest[0]["image"] = image
+            with (
+                self.subTest(image=image),
+                self.assertRaisesRegex(ValueError, "safe PNG"),
+            ):
+                self.publish()
+
+    def test_reads_legacy_world_and_temple_captures_without_rewriting_or_recapture(
+        self,
+    ):
+        self.add_anchored_temple()
+        self.focal_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 2,
+                    "frame_scale": 1,
+                    "zones": [
+                        {
+                            **row,
+                            "capture_id": row["zone_id"],
+                            "artwork_kind": "shot",
+                            "mode": "suppressed_anchor"
+                            if "anchor" in row
+                            else "authored_world",
+                        }
+                        for row in self.focal
+                    ],
+                }
+            )
+        )
+        path = self.shots / "manifest.json"
+        original = json.dumps(self.manifest)
+        path.write_text(original)
+        images = {
+            name: (self.shots / name).read_bytes()
+            for name in ("forest.png", "temple_of_valaark.png")
+        }
+        self.assertEqual(
+            2,
+            publish_zone_shots(
+                self.conn, self.export_dir, self.static, self.focal_path
+            ),
+        )
+        self.assertEqual(original, path.read_text())
+        for name, content in images.items():
+            self.assertEqual(content, (self.shots / name).read_bytes())
+
+    def test_legacy_array_cannot_bypass_procedural_receipt_requirements(self):
+        from compendium.zone_shots import _capture_records
+
+        for row in (
+            {"zone_id": "chambers_of_chaos", "x": 0, "y": 0},
+            {"zone_id": "forest", "mode": "procedural_run"},
+            {"zone_id": "forest", "run_seed": 12},
+        ):
+            with (
+                self.subTest(row=row),
+                self.assertRaisesRegex(ValueError, "Only legacy"),
+            ):
+                _capture_records([row], self.shots / "manifest.json")

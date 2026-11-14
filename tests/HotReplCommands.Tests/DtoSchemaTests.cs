@@ -123,7 +123,7 @@ namespace HotReplCommands.Tests
             var props = descriptor.ArgsSchema["properties"] as JObject;
             Assert.NotNull(props);
             Assert.Equal(
-                new[] { "focalPointsPath", "frameScale", "includeCreatures", "zoneIds" },
+                new[] { "captureIds", "focalPointsPath", "frameScale", "includeCreatures", "zoneIds" },
                 props!.Properties().Select(p => p.Name).OrderBy(n => n).ToArray());
             Assert.True(new ZoneShotsArgs().IncludeCreatures);
             Assert.Null(new ZoneShotsArgs().ZoneIds);
@@ -133,7 +133,7 @@ namespace HotReplCommands.Tests
         [Fact]
         public void ZoneShotFocalFile_RoundTripsOptionalPerZoneScale()
         {
-            const string json = "{\"frame_scale\":2,\"zones\":[" +
+            const string json = "{\"schema_version\":2,\"frame_scale\":2,\"zones\":[" +
                 "{\"zone_id\":\"overworld\",\"x\":1,\"y\":2,\"comment\":\"Default frame\"}," +
                 "{\"zone_id\":\"dungeon\",\"x\":3,\"y\":4,\"comment\":\"Dungeon frame\",\"frame_scale\":1.5}]}";
             var focal = JsonConvert.DeserializeObject<ZoneShotFocalFile>(json);

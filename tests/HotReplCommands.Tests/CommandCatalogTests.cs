@@ -16,11 +16,16 @@ namespace HotReplCommands.Tests
                 new[]
                 {
                     "capture.zoneShots",
+                    "chambers.enter",
+                    "chambers.navigate",
+                    "chambers.state",
                     "character.create",
+                    "character.raiseLevel",
                     "compendium.export",
                     "compendium.preflight",
                     "game.quit",
                     "game.useScratchDatabase",
+                    "inventory.grant",
                     "ui.pointer",
                     "world.enter",
                     "world.summary",
@@ -34,9 +39,14 @@ namespace HotReplCommands.Tests
         [InlineData("compendium.export",    1, ControlCommandKind.Job,         true)]
         [InlineData("game.quit",            1, ControlCommandKind.Sync, true)]
         [InlineData("game.useScratchDatabase", 1, ControlCommandKind.Sync, true)]
-        [InlineData("capture.zoneShots", 1, ControlCommandKind.Job, true)]
+        [InlineData("capture.zoneShots", 2, ControlCommandKind.Job, true)]
         [InlineData("character.create", 1, ControlCommandKind.Job, true)]
         [InlineData("ui.pointer", 1, ControlCommandKind.Job, true)]
+        [InlineData("character.raiseLevel", 1, ControlCommandKind.Sync, true)]
+        [InlineData("inventory.grant", 1, ControlCommandKind.Sync, true)]
+        [InlineData("chambers.enter", 1, ControlCommandKind.Job, true)]
+        [InlineData("chambers.state", 1, ControlCommandKind.Sync, false)]
+        [InlineData("chambers.navigate", 1, ControlCommandKind.Job, true)]
         public void Catalog_EntryHasExpectedMetadata(
             string name, int version, ControlCommandKind kind, bool mutates)
         {

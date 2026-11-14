@@ -19,6 +19,7 @@ namespace HotReplCommands
         private IDisposable _zoneShots;
         private IDisposable _createCharacter;
         private IDisposable _pointer;
+        private IDisposable _raiseLevel, _grantItem, _chambersEnter, _chambersState, _chambersNavigate;
 
         public override void OnLateInitializeMelon()
         {
@@ -35,9 +36,14 @@ namespace HotReplCommands
             _zoneShots = registry.Register(new CaptureZoneShotsCommand(exportDir));
             _createCharacter = registry.Register(new CreateCharacterCommand());
             _pointer = registry.Register(new UiPointerCommand());
+            _raiseLevel = registry.Register(new RaiseLevelCommand());
+            _grantItem = registry.Register(new GrantItemCommand());
+            _chambersEnter = registry.Register(new ChambersEnterCommand());
+            _chambersState = registry.Register(new ChambersStateCommand());
+            _chambersNavigate = registry.Register(new ChambersNavigateCommand());
 
             LoggerInstance.Msg(
-                $"HotReplCommands: registered 9 typed commands (exportDir={exportDir}).");
+                $"HotReplCommands: registered {HotReplCommandCatalog.All.Length} typed commands (exportDir={exportDir}).");
         }
 
         public override void OnDeinitializeMelon()
@@ -51,6 +57,11 @@ namespace HotReplCommands
             _zoneShots?.Dispose();
             _createCharacter?.Dispose();
             _pointer?.Dispose();
+            _raiseLevel?.Dispose();
+            _grantItem?.Dispose();
+            _chambersEnter?.Dispose();
+            _chambersState?.Dispose();
+            _chambersNavigate?.Dispose();
         }
     }
 }
