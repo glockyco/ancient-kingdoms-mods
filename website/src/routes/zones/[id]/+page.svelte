@@ -77,6 +77,23 @@
   import { virtueHref } from "$lib/virtues/display";
 
   let { data } = $props();
+  // Source: server-scripts/WeatherType.cs:1-10 — the zone weather kinds; None shows no weather line.
+  const WEATHER_LABELS: Record<string, string | null> = {
+    None: null,
+    Rain: "Rain",
+    Snow: "Snow",
+    Ashes: "Ashes",
+    SandStorm: "Sandstorm",
+    FireEmber: "Fire embers",
+    DiseaseMotes: "Disease motes",
+  };
+  function weatherLabel(type: string): string | null {
+    if (!(type in WEATHER_LABELS)) throw new Error(`Unknown weather ${type}`);
+    return WEATHER_LABELS[type];
+  }
+  const weather = $derived(
+    data.zone.weather_type ? weatherLabel(data.zone.weather_type) : null,
+  );
   const SEASON_ORDER_LIST = Object.keys(SEASONS) as Season[];
 
   // Split monsters by type
@@ -602,8 +619,8 @@
           ></span
         >
       {/if}
-      {#if data.zone.weather_type}
-        <span>Weather: {data.zone.weather_type}</span>
+      {#if weather}
+        <span>Weather: {weather}</span>
       {/if}
     </div>
   </div>
