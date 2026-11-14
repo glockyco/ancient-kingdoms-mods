@@ -981,6 +981,33 @@ async function addMechanicsHashes(db, addHash, context) {
           ),
         };
         break;
+      case "chambers-of-chaos":
+        rows = {
+          ...Object.fromEntries(
+            [
+              "chambers_definitions",
+              "chambers_encounter_groups",
+              "chambers_pool_monsters",
+              "chambers_rule_domains",
+              "chambers_scaling",
+              "chambers_trial_bag",
+              "items",
+              "npcs",
+              "npc_spawns",
+              "monsters",
+              "zones",
+              "zone_triggers",
+              "visual_assets",
+            ].map((table) => [table, tableRows(db, table)]),
+          ),
+          acquisition: context.fingerprint("providers", {
+            providers: [{ kind: "chambers", id: "chambers_of_chaos" }],
+          }),
+          catalyst: context.fingerprint("items", {
+            itemIds: ["chaos_catalyst"],
+          }),
+        };
+        break;
       default:
         if (existsSync(join("src/routes/mechanics", slug, "+page.server.ts")))
           throw new Error(

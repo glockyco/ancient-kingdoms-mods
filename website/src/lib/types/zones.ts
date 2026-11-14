@@ -1,3 +1,4 @@
+import type { ChambersOverview } from "$lib/components/chambers/model";
 import type { RespawnInfo } from "./respawn";
 import type { NpcRoles } from "./npcs";
 import type { TrapType } from "$lib/constants/traps";
@@ -189,6 +190,8 @@ export interface ZoneDetailData {
   eventRegion: ZoneEventRegion | null;
   /** The region whose Prosperity applies to kills here, for a dungeon. */
   prosperityRegion: { id: string; name: string } | null;
+  /** Set for a procedurally generated zone, which has no world map, spawn rows or enemy counts. */
+  chambers: ChambersOverview | null;
   /** The stranded adventurer of a dungeon, from its ordinary monsters. */
   escort: { level: number; health: number } | null;
 }

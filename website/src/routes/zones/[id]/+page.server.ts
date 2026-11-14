@@ -1,5 +1,6 @@
 import { acquisitionQuery } from "$lib/server/acquisition";
 import { getDb } from "$lib/db.server";
+import { loadChambersOverview } from "$lib/queries/chambers.server";
 import { loadDungeonEscorts } from "$lib/queries/virtues.server";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
@@ -502,5 +503,6 @@ export const load: PageServerLoad = async ({
     renewalSage: renewalSage ?? null,
     eventRegion: getZoneEventRegion(zone.id),
     prosperityRegion: getProsperityRegion(zone.id),
+    chambers: loadChambersOverview(db, zone.id),
   };
 };

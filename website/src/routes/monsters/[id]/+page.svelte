@@ -46,6 +46,7 @@
   import { monsterKillReputation } from "$lib/utils/killReputation";
   import Sword from "@lucide/svelte/icons/sword";
   import Gem from "@lucide/svelte/icons/gem";
+  import DoorOpen from "@lucide/svelte/icons/door-open";
   import CircleHelp from "@lucide/svelte/icons/circle-help";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Megaphone from "@lucide/svelte/icons/megaphone";
@@ -1579,6 +1580,38 @@
           </li>
         {/each}
       </ul>
+    </section>
+  {/if}
+
+  {#if data.chambers}
+    <section>
+      <div class="mb-4 flex items-center gap-2">
+        <h2 class="flex items-center gap-2 text-xl font-semibold">
+          <DoorOpen class="h-5 w-5 text-amber-500" />
+          Chambers of Chaos
+        </h2>
+        <a
+          href="/mechanics/chambers-of-chaos"
+          class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
+        >
+          <CircleHelp class="h-4 w-4" />
+          How the Chambers Work
+        </a>
+      </div>
+      <!-- Source: server-scripts/MadMageTower.cs:Spawn,NormalizeCombat — the Chambers clone this monster with a rewritten level, Health, Power, Defense and resistances, and no gold or drops. -->
+      <p class="rounded-md border bg-muted/30 p-4">
+        {data.monster.name} also appears as a guardian in
+        <a
+          href="/zones/{data.chambers.zoneId}"
+          class="text-blue-600 hover:underline dark:text-blue-400"
+          >{data.chambers.zoneName}</a
+        >. There its level, Health, and Power follow
+        <a
+          href="/mechanics/chambers-of-chaos#scaling"
+          class="text-blue-600 hover:underline dark:text-blue-400"
+          >the entry's level and veteran points</a
+        >, not the values on this page, and it has no gold or normal drops.
+      </p>
     </section>
   {/if}
 

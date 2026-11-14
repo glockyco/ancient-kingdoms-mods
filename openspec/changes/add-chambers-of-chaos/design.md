@@ -105,21 +105,27 @@ Use the existing redacted-placeholder behavior for published entries that need t
 
 No item-publication delta or named exception is needed. Review ledger differences from the added relationships and challenge gate, not from a change to which flagged items are excluded. Ask Tornar whether the seal, token and page may be published. Until an explicit answer changes the publication policy, retain their exclusions and the existing placeholder presentation.
 
-### 7. Presentation options for comparison, not a selected design
+### 7. Presentation: Follow a run
 
-The current version has no Chambers rules page. Build the data and plumbing, then capture real entered runs, then build these three options on `/mechanics/chambers-of-chaos` with that data and artwork. They are comparison candidates, not an approved layout or final player copy. Each includes every required visualization, but makes a different player question the organizing principle. In every option, entry items and rewards use existing redacted-item placeholders without excluded names, images or links. The structural descriptions below refer to private mechanics, not final player-facing labels.
+The rules page is organized around one question: what does a player do from preparing entry to leaving with the reward? It is the page's only structure, and it prerenders at `/mechanics/chambers-of-chaos`.
 
-| Option | Player question and structure | Visualization placement |
-| --- | --- | --- |
-| A. Follow a run | "What do I do from preparing entry to leaving with the reward?" A continuous walkthrough follows entry, two variable chambers, Guardian and exit. | An entry-item drop-chance chart with "Redacted item" sits beside entry. A chamber-sequence strip leads into illustrated trial sections. The 20-minute run timeline spans the walkthrough. Scaling charts appear at the first combat stage with shared level/veteran controls. A redacted-reward quantity table and catalyst-to-augment chain close the run. Three live layout shots illustrate different stages. |
-| B. Plan a character | "How hard will this be for my level and veteran points, and what can I earn?" A planning surface leads with shared inputs and comparative results, then offers trial detail and a compact run guide. | Enemy-level distribution, Health and Power across chambers/guardian are the primary panels. Redacted-reward quantity bands sit beside those results. Entry-item drop chance follows with the same placeholder. A compact sequence/timeline and game-art trial selector lead to screenshot-backed objectives. Avoid a second prose walkthrough that repeats every panel. |
-| C. Browse the trials | "What might I face, and how does each trial work?" A field-guide composition leads with large illustrated trial sections and a clear always-final Guardian, then a planning section. | Real layouts anchor trial-kind cards and detail sections. A three-chamber sequence shows where those kinds occur. The run timeline groups time, penalties and failure. A lower shared planning section contains level/Health/Power charts, redacted-reward quantities and entry-item drop chance with existing placeholders. Permitted entry and reward facts stay concise rather than becoming a long narrative. |
+- The page opens with a plain two-sentence summary, the keeper's card and one real capture. It has no flavor text from the game.
+- Numbered sections follow the order a player meets them: Enter, Time Limit, Chambers, What You Face, Your Reward, Spend It, If It Goes Wrong, Who Is Inside. A contents list links them.
+- Enter holds the requirements and the entry-item drop chance by monster level. Time Limit holds the 20-minute timeline. What You Face holds the shared Entry Level and Total Veteran Points inputs with the enemy level, Health Target and Power charts. Your Reward holds the reward quantity bands. Spend It holds the catalyst chain.
+- Chambers shows the sequence as one row of three chamber labels with one sentence for the draw, then one trial card per trial. A trial card has a capture or the game's tracker lines on the left, and on the right the working label, the game's objective line and the explanation. Every card has the same media size.
+- Trials are labelled with a working label (Battle, Waves, Riddle, Runes, Manuscript, Final Guardian) and the game's objective line beneath it. The game names no trial kind, and Runes and Manuscript share one objective line.
+- Prose calls the excluded items "entry item" and "reward". The "Redacted item" placeholder carries each amount and chance, and an inline placeholder sits on the surrounding text baseline.
+- The keeper's role reads "Chambers of Chaos Keeper", and the catalyst's item type reads "Augment Upgrade".
 
-A is the initial recommendation to compare because it puts irreversible entry-cost consumption, trial objectives and looting before exit in the order a first-time player meets them. B provides the stronger repeat-run planning alternative. C tests whether image-led trial browsing makes the procedural dungeon easier to understand. No option is selected by this recommendation.
+Exact example, the Waves trial card:
 
-For each option, ask what the player can do with each sentence, chart and image. Omit decorative lore and repeated explanations in at least one candidate. Use the live game's help/tracker and strong external dungeon-guide references to check the comparison, with linked quotations in the private review material. Reference pages have not been selected by this planning work and are not evidence of game behavior.
+> Waves
+> Survive the summoned waves
+> 3 waves of guardians arrive one after another. The next wave comes 3 seconds after the last guardian of a wave dies. If a wave would hold more than 10 guardians, the chamber is a Battle chamber instead.
 
-Render and inspect phone, desktop and every layout breakpoint in the actual browser. Include the current absence, all candidates, a marked recommendation and None of these in a Plannotator comparison. Check readable axes, keyboard use, touch controls, chart/table equivalence, image cropping, repeated card sizing and default prerendered facts. Model or persona reviewers can find defects, not choose the design. Record only the selected rule and its exact example in the active change, remove unused comparison implementations, and preserve ordinary entity-page layouts. Review the keeper role label/description, catalyst type label, source/use wording, captions and spoiler wording in their real page contexts too.
+Exact example, an entry requirement: "Carry 1 Redacted item."
+
+Rejected structures were a character planner that leads with results and a trial catalogue that leads with images. Every required visualization appears once in the selected page. Each chart shows its numbers beside the bars or in a table, and the default numbers are in the prerendered HTML. The explanations avoid flavor text and rhetorical lead-ins, and a sentence says what a number is or what to do.
 
 ### 8. Correct existing rules where the Chambers is an exception
 
@@ -150,4 +156,3 @@ Contributor instructions need the authored-versus-procedural capture distinction
 ## Open Questions
 
 - What does Tornar permit publishing from the Chambers riddles and rune puzzles: questions, choices, correct answers, puzzle titles, stories, rune words and solution order? Does any permitted content require spoiler-style hiding? May Seal of Chaos, Chaos Token and Torn Page of Chaos be published? Until an answer is recorded, challenge content stays withheld and all three items stay excluded under the existing policy.
-- Which of the three page structures, or another structure, should be retained after the real-page comparison? This does not change the required facts, visualization set, data contracts or capture workflow.

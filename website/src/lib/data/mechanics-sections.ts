@@ -107,6 +107,16 @@ export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
       { id: "prosperity", label: "Prosperity" },
       { id: "invasions", label: "City Invasions" },
     ],
+    "/mechanics/chambers-of-chaos": [
+      { id: "enter", label: "Enter" },
+      { id: "time-limit", label: "Time Limit" },
+      { id: "chambers", label: "Chambers" },
+      { id: "scaling", label: "What You Face" },
+      { id: "reward", label: "Your Reward" },
+      { id: "catalyst", label: "Spend It" },
+      { id: "failure", label: "If It Goes Wrong" },
+      { id: "monsters", label: "Who Is Inside" },
+    ],
     "/mechanics/seasonal-events": [
       { id: "dates", label: "Dates" },
       { id: "double-xp", label: "Double XP" },

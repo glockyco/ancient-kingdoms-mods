@@ -15,6 +15,8 @@ export interface MechanicsPage {
    * compendium at its best; the menu lists them in this file's order.
    */
   readonly featured?: true;
+  /** Position in the site menu among featured pages. Pages without one follow in hub order. */
+  readonly menuRank?: number;
 }
 
 export interface MechanicsGroup {
@@ -54,6 +56,7 @@ export const MECHANICS_GROUPS = [
           "Shrines, blessings, ranks, and how each virtue earns points",
         summary: "Blessings and ranks",
         featured: true,
+        menuRank: 2,
       },
     ],
   },
@@ -65,6 +68,8 @@ export const MECHANICS_GROUPS = [
         href: "/mechanics/combat",
         description: "Targeting, damage formulas, mitigation, and effects",
         summary: "Damage and mitigation",
+        featured: true,
+        menuRank: 6,
       },
       {
         title: "Death and Remains",
@@ -78,6 +83,7 @@ export const MECHANICS_GROUPS = [
         description: "Respawn timers, rare spawns, and missing bosses",
         summary: "Respawns and rare spawns",
         featured: true,
+        menuRank: 3,
       },
     ],
   },
@@ -97,6 +103,7 @@ export const MECHANICS_GROUPS = [
         description: "Stat ranges per class and race, and hiring odds",
         summary: "Stats and hiring odds",
         featured: true,
+        menuRank: 4,
       },
       {
         title: "Bard Songs and Charm",
@@ -127,6 +134,7 @@ export const MECHANICS_GROUPS = [
         description: "Faction standing, reputation tiers, sources, and unlocks",
         summary: "Faction standing",
         featured: true,
+        menuRank: 5,
       },
     ],
   },
@@ -147,6 +155,15 @@ export const MECHANICS_GROUPS = [
         summary: "Invasions and Prosperity",
       },
       {
+        title: "Chambers of Chaos",
+        href: "/mechanics/chambers-of-chaos",
+        description:
+          "Entry, the three trials, enemy levels, rewards, and Augment Upgrade catalysts",
+        summary: "Solo timed trials",
+        featured: true,
+        menuRank: 1,
+      },
+      {
         title: "Seasonal Events",
         href: "/mechanics/seasonal-events",
         description:
@@ -158,7 +175,6 @@ export const MECHANICS_GROUPS = [
         href: "/mechanics/inventory",
         description: "Storage, durability, armor sets, and merchants",
         summary: "Storage and durability",
-        featured: true,
       },
       {
         title: "Crafting and Augments",

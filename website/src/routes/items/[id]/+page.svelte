@@ -589,12 +589,14 @@
     {
       accessorKey: "price",
       header: "Price",
-      // Gold fits a number column. A token name or a bundle size needs more room.
-      size: computed.soldBy.some(
-        (v) => v.currency_item_id || (v.amount ?? 1) > 1,
+      // Gold fits a number column. A token name, a placeholder or a bundle size
+      // grows the column to its content, which the price cell keeps on one line.
+      ...(computed.soldBy.some(
+        (v) =>
+          v.currency_item_id || v.currency_item_name || (v.amount ?? 1) > 1,
       )
-        ? 160
-        : NUMBER,
+        ? { minSize: NUMBER }
+        : { size: NUMBER }),
     },
     ...(computed.soldBy.some((v) => v.npc_faction && v.is_faction_vendor)
       ? [
@@ -884,7 +886,7 @@
       >{vendor.npc_name}</a
     >
   {:else if cell.column.id === "price"}
-    <span class="ml-auto tabular-nums {styles.valueCurrency}">
+    <span class="ml-auto whitespace-nowrap tabular-nums {styles.valueCurrency}">
       {#if vendor.currency_item_id}
         {formatNumber(vendor.price)}
         <a

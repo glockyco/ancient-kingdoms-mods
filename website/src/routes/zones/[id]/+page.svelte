@@ -20,6 +20,7 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import ChambersZoneOverview from "$lib/components/chambers/ChambersZoneOverview.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
@@ -612,7 +613,7 @@
           {/if}
         </span>
       {/if}
-      {#if data.zone.discovery_exp > 0}
+      {#if data.zone.discovery_exp > 0 && !data.chambers}
         <span
           >Discovery XP: <MechanicsLink section="experience"
             >{formatNumber(data.zone.discovery_exp)}</MechanicsLink
@@ -624,7 +625,9 @@
       {/if}
     </div>
   </div>
-  {#if !data.zone.has_map_bounds}
+  {#if data.chambers}
+    <ChambersZoneOverview overview={data.chambers} />
+  {:else if !data.zone.has_map_bounds}
     <p
       class="rounded-md border bg-muted/30 p-4 text-pretty text-muted-foreground"
     >

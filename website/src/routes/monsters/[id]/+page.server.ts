@@ -37,6 +37,7 @@ import {
   altarOutcomeSemantics,
   consolidateAltarTiers,
 } from "$lib/server/altar-tier-summaries";
+import { loadMonsterChambers } from "$lib/queries/chambers.server";
 import {
   getMonsterRegionalHunts,
   getMonsterRegionalInvasions,
@@ -62,6 +63,8 @@ export const load: PageServerLoad = async ({
   MonsterDetailData & {
     regionalInvasions: RegionalInvasion[];
     regionalHunts: RegionalHuntTarget[];
+    /** The Chambers zone whose guardian pool holds this monster. */
+    chambers: { zoneId: string; zoneName: string } | null;
     achievements: LinkedAchievement[];
   }
 > => {
@@ -952,6 +955,7 @@ export const load: PageServerLoad = async ({
     monster,
     regionalInvasions: getMonsterRegionalInvasions(params.id),
     regionalHunts: getMonsterRegionalHunts(params.id),
+    chambers: loadMonsterChambers(db, params.id),
     achievements: getAchievementsLinkingTo(`/monsters/${params.id}`),
     factionIds: getFactionIdsByName(),
     description,

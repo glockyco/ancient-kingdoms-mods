@@ -79,7 +79,7 @@ const mechanicsPages: readonly MechanicsPage[] = MECHANICS_GROUPS.flatMap(
   (group): readonly MechanicsPage[] => group.pages,
 );
 
-// The featured mechanics pages in the order of the /mechanics hub, which keeps
+// The featured mechanics pages by menu rank, then in the order of the /mechanics hub, which keeps
 // related pages together. A page whose route another column already names,
 // such as the mercenary overview, is not listed twice.
 const mechanicsLinks: NavigationLink[] = mechanicsPages
@@ -90,6 +90,7 @@ const mechanicsLinks: NavigationLink[] = mechanicsPages
         (def) => def.overviewHref === page.href.split("#")[0],
       ),
   )
+  .sort((a, b) => (a.menuRank ?? Infinity) - (b.menuRank ?? Infinity))
   .map((page) => ({
     label: page.title,
     href: page.href,
