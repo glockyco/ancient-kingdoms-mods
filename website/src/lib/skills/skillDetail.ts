@@ -228,6 +228,7 @@ export function skillDetailFromRow(
     is_necromancer_death_bloom: Boolean(skillRaw.is_necromancer_death_bloom),
     is_necromancer_pet_buff: Boolean(skillRaw.is_necromancer_pet_buff),
     is_necromancer_reaper_form: Boolean(skillRaw.is_necromancer_reaper_form),
+    is_toggle_stance: Boolean(skillRaw.is_toggle_stance),
 
     // Damage
     damage: parseLinear(skillRaw.damage),

@@ -1552,6 +1552,7 @@ interface SkillDescriptionInput {
   is_necromancer_blood_pact?: boolean;
   is_necromancer_death_bloom?: boolean;
   is_necromancer_reaper_form?: boolean;
+  is_toggle_stance?: boolean;
   is_necromancer_pet_buff?: boolean;
   channel_pulses?: number;
   is_familiar?: boolean;
@@ -1690,20 +1691,23 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // Source: server-scripts/NecromancerDeathBloomSkill.cs:CorrectedTarget — another living Player or non-familiar Pet only.
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet — owned living combat pet, not a familiar or mercenary.
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — toggles the form buff.
+  // Source: server-scripts/PlayerSkills.cs:715-738 — using a toggle stance again ends it.
   // Source: server-scripts/SummonSkill.cs:56 — Necromancer non-familiar summons can replace an active pet when MatchesPet is false.
   const typeLabel = skill.is_necromancer_death_bloom
     ? "Hit Points-sacrificing heal for another player or non-familiar pet"
     : skill.is_necromancer_reaper_form
       ? "Toggleable Reaper Form"
-      : skill.is_necromancer_pet_buff
-        ? "Buff for your active combat pet"
-        : (skill.channel_pulses ?? 0) > 0
-          ? `Channeled ${formatSkillType(skill.skill_type).toLowerCase()}`
-          : skill.skill_type === "summon" &&
-              !skill.is_familiar &&
-              skill.player_classes.includes("necromancer")
-            ? "Summons an undead combat pet and replaces any other active pet"
-            : formatSkillType(skill.skill_type);
+      : skill.is_toggle_stance
+        ? "Toggleable stance"
+        : skill.is_necromancer_pet_buff
+          ? "Buff for your active combat pet"
+          : (skill.channel_pulses ?? 0) > 0
+            ? `Channeled ${formatSkillType(skill.skill_type).toLowerCase()}`
+            : skill.skill_type === "summon" &&
+                !skill.is_familiar &&
+                skill.player_classes.includes("necromancer")
+              ? "Summons an undead combat pet and replaces any other active pet"
+              : formatSkillType(skill.skill_type);
   const ownership =
     skill.player_classes.length === 1 ? null : skillOwnershipPhrase(skill);
 

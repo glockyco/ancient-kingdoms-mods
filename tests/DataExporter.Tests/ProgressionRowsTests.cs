@@ -51,7 +51,7 @@ public sealed class ProgressionRowsTests
     }
 
     [Fact]
-    public void EveryRaceStartsWithEightFixedAttributePoints()
+    public void EveryRaceStartsWithSixteenFixedAttributePoints()
     {
         var progression = ProgressionRows.Create(50, 200, Classes);
 
@@ -60,7 +60,7 @@ public sealed class ProgressionRowsTests
         {
             var attributes = race.starting_attributes;
             Assert.Equal(
-                8,
+                16,
                 attributes.strength
                 + attributes.constitution
                 + attributes.dexterity
@@ -69,7 +69,7 @@ public sealed class ProgressionRowsTests
                 + attributes.charisma);
         });
         var dwarf = Assert.Single(progression.races, race => race.id == "dwarf");
-        Assert.Equal(3, dwarf.starting_attributes.constitution);
+        Assert.Equal(11, dwarf.starting_attributes.constitution);
     }
 
     [Fact]

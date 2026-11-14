@@ -160,6 +160,7 @@ internal static class SkillEffectExtractor
         input.also_buff_active_pet = targetBuffSkill.alsoBuffActivePet;
         input.can_buff_self = targetBuffSkill.canBuffSelf;
         input.can_buff_others = targetBuffSkill.canBuffOthers;
+        input.is_toggle_stance = targetBuffSkill.isToggleStance;
     }
 
     private static void PopulateBonus(ScriptableSkill skill, SkillEffectInput input)

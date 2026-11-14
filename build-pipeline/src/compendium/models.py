@@ -983,6 +983,7 @@ class SkillData(BaseModel):
     can_buff_others: bool = False
     is_double_exp_spell: bool = False
     also_buff_active_pet: bool = False
+    is_toggle_stance: bool = False
 
     # Buff/debuff
     duration_base: float = 0.0

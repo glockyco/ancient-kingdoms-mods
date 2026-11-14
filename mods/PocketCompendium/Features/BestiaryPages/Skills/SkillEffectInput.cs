@@ -155,6 +155,7 @@ internal sealed class SkillEffectInput
     public bool is_necromancer_death_bloom { get; set; }
     public bool is_necromancer_pet_buff { get; set; }
     public bool is_necromancer_reaper_form { get; set; }
+    public bool is_toggle_stance { get; set; }
     public LinearValue lifetap_healing_percent_bonus { get; set; }
     public LinearValue damage_over_time_execute_bonus { get; set; }
 

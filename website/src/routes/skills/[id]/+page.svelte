@@ -1117,7 +1117,7 @@
         {#if hasAnyBonuses}
           <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
             <!-- 1. Duration -->
-            {#if !skill.is_necromancer_reaper_form && (skill.duration_base > 0 || skill.duration_per_level > 0)}
+            {#if !skill.is_necromancer_reaper_form && !skill.is_toggle_stance && (skill.duration_base > 0 || skill.duration_per_level > 0)}
               <div>
                 <dt class="text-muted-foreground">Duration</dt>
                 <dd class="font-medium">

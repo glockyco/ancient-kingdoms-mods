@@ -102,6 +102,7 @@ export interface SkillDetailView {
   is_necromancer_death_bloom: boolean;
   is_necromancer_pet_buff: boolean;
   is_necromancer_reaper_form: boolean;
+  is_toggle_stance: boolean;
 
   // Damage
   damage: LinearValue | null;

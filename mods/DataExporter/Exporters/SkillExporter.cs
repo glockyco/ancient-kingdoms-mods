@@ -256,6 +256,8 @@ public class SkillExporter : BaseExporter
         skillData.can_buff_others = targetBuffSkill.canBuffOthers;
         skillData.is_double_exp_spell = targetBuffSkill.isDoubleExpSpell;
         skillData.also_buff_active_pet = targetBuffSkill.alsoBuffActivePet;
+        // Source: server-scripts/TargetBuffSkill.cs:isToggleStance; Buff.cs:371-381; PlayerSkills.cs:715-738 — a toggle stance has no time limit and ends when used again.
+        skillData.is_toggle_stance = targetBuffSkill.isToggleStance;
     }
 
     private void PopulateBonusSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)

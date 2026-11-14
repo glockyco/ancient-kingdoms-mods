@@ -162,6 +162,7 @@ export interface Skill {
   is_necromancer_death_bloom?: boolean;
   is_necromancer_pet_buff?: boolean;
   is_necromancer_reaper_form?: boolean;
+  is_toggle_stance?: boolean;
   lifetap_healing_percent_bonus?: LinearValue | null;
   damage_over_time_execute_bonus?: LinearValue | null;
 
@@ -1308,6 +1309,8 @@ export function formatSkillEffect(
 
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — RemoveBuff when GetBuffIndexByName(nameSkill) >= 0; otherwise applies the buff.
   if (skill.is_necromancer_reaper_form) parts.push("toggle form");
+  // Source: server-scripts/PlayerSkills.cs:715-738; Buff.cs:371-381 — using a toggle stance again ends it, and it has no time limit.
+  if (skill.is_toggle_stance) parts.push("toggle stance");
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet,CheckDistance — only the Necromancer's own living companion within cast range, never a familiar or mercenary.
   if (skill.is_necromancer_pet_buff) {
     parts.push(
@@ -1379,7 +1382,8 @@ export function formatSkillEffect(
     (skill.duration_base ?? 0) > 0 &&
     parts.length > 0 &&
     !skill.is_permanent &&
-    !skill.is_cleanse
+    !skill.is_cleanse &&
+    !skill.is_toggle_stance
   ) {
     // Check if this is a buff/debuff (not damage/heal/summon)
     const hasBuffStats =

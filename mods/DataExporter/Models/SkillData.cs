@@ -129,6 +129,7 @@ public class SkillData
     public bool can_buff_others { get; set; }
     public bool is_double_exp_spell { get; set; }
     public bool also_buff_active_pet { get; set; }
+    public bool is_toggle_stance { get; set; }
     public bool is_necromancer_pet_buff { get; set; }
     public bool is_necromancer_reaper_form { get; set; }
 

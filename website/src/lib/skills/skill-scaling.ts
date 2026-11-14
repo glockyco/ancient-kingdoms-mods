@@ -199,7 +199,11 @@ export function scalingColumns(
   const cols: ScalingColumn[] = [];
 
   // Duration has its own format (not a LinearValue)
-  if (!skill.is_necromancer_reaper_form && skill.duration_per_level > 0) {
+  if (
+    !skill.is_necromancer_reaper_form &&
+    !skill.is_toggle_stance &&
+    skill.duration_per_level > 0
+  ) {
     cols.push({
       label: "Duration",
       field: {

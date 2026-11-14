@@ -3525,6 +3525,10 @@
       "sha256": "2abf04d08449725a84c54263c6862259e0d3a08965076113c2c41035de9b8a35",
       "span": 16
     },
+    "Player.cs:5628-5661": {
+      "sha256": "b7714ffd84bce7c179c16e5120f69ec0d31d620bc4e9f675eb12b6b538aa4737",
+      "span": 34
+    },
     "Player.cs:5684-5719": {
       "sha256": "e33740fc28cd74de8510ebd91e39d8de35d8714d6f6b1335a8fc21e8f8420cbc",
       "span": 36
@@ -5386,6 +5390,9 @@
       "span": 0
     },
     "TargetBuffSkill.cs:HasMatchingCleanseDebuff": {
+      "span": 0
+    },
+    "TargetBuffSkill.cs:isToggleStance": {
       "span": 0
     },
     "TargetDamageSkill.cs:132-159": {

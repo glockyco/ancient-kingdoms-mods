@@ -83,16 +83,17 @@ public static class ProgressionRows
         _ => throw new ArgumentOutOfRangeException(nameof(classId)),
     };
 
+    // Source: server-scripts/Player.cs:5628-5661 — every attribute starts at 1, and each race adds 5 to two attributes or 10 to one.
     private static IReadOnlyList<RaceProgressionData> RaceStartingAttributes() =>
         new RaceProgressionData[]
         {
-            Race("human", "Human", Attributes(2, 1, 2, 1, 1, 1)),
-            Race("elf", "Elf", Attributes(1, 1, 2, 1, 2, 1)),
-            Race("dark_elf", "Dark Elf", Attributes(1, 1, 2, 2, 1, 1)),
-            Race("dwarf", "Dwarf", Attributes(1, 3, 1, 1, 1, 1)),
-            Race("fire_goblin", "Fire Goblin", Attributes(2, 2, 1, 1, 1, 1)),
-            Race("felarii", "Felarii", Attributes(1, 1, 3, 1, 1, 1)),
-            Race("drassar", "Drassar", Attributes(3, 1, 1, 1, 1, 1)),
+            Race("human", "Human", Attributes(6, 1, 6, 1, 1, 1)),
+            Race("elf", "Elf", Attributes(1, 1, 6, 1, 6, 1)),
+            Race("dark_elf", "Dark Elf", Attributes(1, 1, 6, 6, 1, 1)),
+            Race("dwarf", "Dwarf", Attributes(1, 11, 1, 1, 1, 1)),
+            Race("fire_goblin", "Fire Goblin", Attributes(6, 6, 1, 1, 1, 1)),
+            Race("felarii", "Felarii", Attributes(1, 1, 11, 1, 1, 1)),
+            Race("drassar", "Drassar", Attributes(11, 1, 1, 1, 1, 1)),
         };
 
     private static RaceProgressionData Race(

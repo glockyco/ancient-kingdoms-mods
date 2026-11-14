@@ -589,6 +589,7 @@ export function skillEffectInput(
     is_necromancer_death_bloom: skill.is_necromancer_death_bloom,
     is_necromancer_pet_buff: skill.is_necromancer_pet_buff,
     is_necromancer_reaper_form: skill.is_necromancer_reaper_form,
+    is_toggle_stance: skill.is_toggle_stance,
     summoned_monster_id: skill.summoned_monster_id,
     summoned_monster_name: skill.summoned_monster_name,
     summoned_monster_level: skill.summoned_monster_level,

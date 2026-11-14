@@ -106,6 +106,9 @@ internal static class SkillEffectFormatter
             parts.Add($"+{FormatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food");
         if (skill.is_necromancer_reaper_form)
             parts.Add("toggle form");
+        // Source: server-scripts/PlayerSkills.cs:715-738; Buff.cs:371-381 — using a toggle stance again ends it, and it has no time limit.
+        if (skill.is_toggle_stance)
+            parts.Add("toggle stance");
         // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet,CheckDistance — only the Necromancer's own living companion within cast range, never a familiar or mercenary.
         if (skill.is_necromancer_pet_buff)
             parts.Add($"buffs your companion within {FormatNumber(skill.cast_range)} yd");
@@ -138,7 +141,7 @@ internal static class SkillEffectFormatter
                 : "spends all rage for 2 dmg per rage, ignores avoidance & mitigation");
         }
 
-        if (skill.duration_base > 0 && parts.Count > 0 && !skill.is_permanent && !skill.is_cleanse)
+        if (skill.duration_base > 0 && parts.Count > 0 && !skill.is_permanent && !skill.is_cleanse && !skill.is_toggle_stance)
         {
             var hasBuffStats = skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff";
             if (hasBuffStats)

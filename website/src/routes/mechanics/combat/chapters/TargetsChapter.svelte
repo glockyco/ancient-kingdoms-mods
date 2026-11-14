@@ -57,11 +57,12 @@
       Selecting another target during the cast does not redirect it.
     </p>
     <!-- Source: server-scripts/PlayerSkills.cs:734-738 — fear and stun block normal skill use. -->
-    <!-- Source: server-scripts/PlayerSkills.cs:715-738 — active NecromancerReaperFormSkill and Fearless Stance are removed before the FEAR/STUNNED gate. -->
+    <!-- Source: server-scripts/PlayerSkills.cs:715-738 — an active NecromancerReaperFormSkill, Fearless Stance or toggle stance is removed before the FEAR/STUNNED gate. -->
     <p>
       Fear and stun block skill use, except dismissing an active
-      <a href="/skills/reaper_form">Reaper Form</a> or
-      <a href="/skills/fearless_stance">Fearless Stance</a>.
+      <a href="/skills/reaper_form">Reaper Form</a>,
+      <a href="/skills/fearless_stance">Fearless Stance</a> or
+      <a href="/skills/unbound_rage">Unbound Rage</a>.
     </p>
     <!-- Source: server-scripts/PlayerSkills.cs:1056-1126,1270-1306 — Bard song use and repetition continue while moving or casting ordinary skills. -->
     <p>Bard songs can continue while you move or use combat skills.</p>

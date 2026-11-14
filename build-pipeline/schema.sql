@@ -1116,6 +1116,8 @@ CREATE TABLE skills (
     is_double_exp_spell BOOLEAN DEFAULT 0,
     -- TargetBuffSkill: a self-cast also buffs the caster's living combat pet in range.
     also_buff_active_pet BOOLEAN NOT NULL DEFAULT 0,
+    -- TargetBuffSkill: a stance that lasts until it is used again or the player logs out.
+    is_toggle_stance BOOLEAN NOT NULL DEFAULT 0,
 
     -- Necromancer skill classes. health_cost_percent is the share of maximum Health
     -- that Blood Pact or Death Bloom spends (Death Bloom authors a flat value).

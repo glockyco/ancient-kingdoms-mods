@@ -587,6 +587,7 @@ export const load: PageServerLoad = async ({
     is_necromancer_blood_pact: skill.is_necromancer_blood_pact,
     is_necromancer_death_bloom: skill.is_necromancer_death_bloom,
     is_necromancer_reaper_form: skill.is_necromancer_reaper_form,
+    is_toggle_stance: skill.is_toggle_stance,
     is_necromancer_pet_buff: skill.is_necromancer_pet_buff,
     channel_pulses: skill.channel_pulses,
     is_familiar: skill.is_familiar,
