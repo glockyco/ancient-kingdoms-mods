@@ -41,13 +41,6 @@ export const MECHANICS_GROUPS = [
         description:
           "XP needed to level up, level rewards, total veteran points, and XP sources",
         summary: "Levels and XP sources",
-        featured: true,
-      },
-      {
-        title: "Housing and Appearance",
-        href: "/mechanics/housing",
-        description: "Furniture, wardrobe, and barbers",
-        summary: "Furniture and wardrobe",
       },
       {
         title: "Virtues",
@@ -57,6 +50,12 @@ export const MECHANICS_GROUPS = [
         summary: "Blessings and ranks",
         featured: true,
         menuRank: 2,
+      },
+      {
+        title: "Death and Remains",
+        href: "/mechanics/death",
+        description: "Death penalties, remains, and resurrection",
+        summary: "Death costs and remains",
       },
     ],
   },
@@ -72,12 +71,6 @@ export const MECHANICS_GROUPS = [
         menuRank: 6,
       },
       {
-        title: "Death and Remains",
-        href: "/mechanics/death",
-        description: "Death penalties, remains, and resurrection",
-        summary: "Death costs and remains",
-      },
-      {
         title: "Monster Spawns",
         href: "/mechanics/monster-spawns",
         description: "Respawn timers, rare spawns, and missing bosses",
@@ -85,10 +78,25 @@ export const MECHANICS_GROUPS = [
         featured: true,
         menuRank: 3,
       },
+      {
+        title: "Bard Songs and Charm",
+        href: "/mechanics/bard",
+        description: "Song slots, auras, Final Cadence, and charm",
+        summary: "Songs and charming",
+      },
+      {
+        title: "Chambers of Chaos",
+        href: "/mechanics/chambers-of-chaos",
+        description:
+          "Entry, the three trials, enemy levels, rewards, and Augment Upgrade catalysts",
+        summary: "Solo timed trials",
+        featured: true,
+        menuRank: 1,
+      },
     ],
   },
   {
-    title: "Companions",
+    title: "Allies",
     pages: [
       {
         title: "Mercenaries",
@@ -106,17 +114,6 @@ export const MECHANICS_GROUPS = [
         menuRank: 4,
       },
       {
-        title: "Bard Songs and Charm",
-        href: "/mechanics/bard",
-        description: "Song slots, auras, Final Cadence, and charm",
-        summary: "Songs and charming",
-      },
-    ],
-  },
-  {
-    title: "Party & Society",
-    pages: [
-      {
         title: "Party and Loot",
         href: "/mechanics/party",
         description: "Party size, shared rewards, and loot rolls",
@@ -128,6 +125,17 @@ export const MECHANICS_GROUPS = [
         description: "Membership, invitations, and guild points",
         summary: "Membership and points",
       },
+    ],
+  },
+  {
+    title: "World",
+    pages: [
+      {
+        title: "World and Travel",
+        href: "/mechanics/world",
+        description: "Game modes, maps, binding, travel, and portals",
+        summary: "Binding, travel, and portals",
+      },
       {
         title: "Reputation",
         href: "/mechanics/reputation",
@@ -135,17 +143,6 @@ export const MECHANICS_GROUPS = [
         summary: "Faction standing",
         featured: true,
         menuRank: 5,
-      },
-    ],
-  },
-  {
-    title: "World & Economy",
-    pages: [
-      {
-        title: "World and Travel",
-        href: "/mechanics/world",
-        description: "Game modes, maps, binding, travel, and portals",
-        summary: "Binding, travel, and portals",
       },
       {
         title: "Regional Events",
@@ -155,21 +152,17 @@ export const MECHANICS_GROUPS = [
         summary: "Invasions and Prosperity",
       },
       {
-        title: "Chambers of Chaos",
-        href: "/mechanics/chambers-of-chaos",
-        description:
-          "Entry, the three trials, enemy levels, rewards, and Augment Upgrade catalysts",
-        summary: "Solo timed trials",
-        featured: true,
-        menuRank: 1,
-      },
-      {
         title: "Seasonal Events",
         href: "/mechanics/seasonal-events",
         description:
           "Halloween and the Winter Festival: dates, Double XP, and seasonal shops",
         summary: "Halloween and Winter Festival",
       },
+    ],
+  },
+  {
+    title: "Items & Home",
+    pages: [
       {
         title: "Inventory",
         href: "/mechanics/inventory",
@@ -182,6 +175,12 @@ export const MECHANICS_GROUPS = [
         description:
           "Craft Stations, recipes, the Crafting journal, and augments",
         summary: "Stations and augments",
+      },
+      {
+        title: "Housing and Appearance",
+        href: "/mechanics/housing",
+        description: "Furniture, wardrobe, and barbers",
+        summary: "Furniture and wardrobe",
       },
     ],
   },
