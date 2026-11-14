@@ -465,6 +465,10 @@
         "items:sanctified_reliquary"
       ]
     },
+    "items:chaos_token": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
     "items:deathcallers_phylactery": {
       "mechanism": "ignore_journal",
       "reason": "the game marks the item ignore_journal"
@@ -545,7 +549,15 @@
       "mechanism": "ignore_journal",
       "reason": "the game marks the item ignore_journal"
     },
+    "items:seal_of_chaos": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
     "items:steel_of_ancient_dragons": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:torn_page_of_chaos": {
       "mechanism": "ignore_journal",
       "reason": "the game marks the item ignore_journal"
     },
@@ -567,7 +579,7 @@
     }
   },
   "snapshot": {
-    "game_version": "0.10.2.5",
+    "game_version": "0.10.4.0",
     "keys": "placement"
   },
   "suppressed_positions": {
