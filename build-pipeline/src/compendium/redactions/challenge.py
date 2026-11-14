@@ -201,7 +201,9 @@ _ESCAPE = re.compile(r"\\u([0-9a-fA-F]{4})")
 _TAG = re.compile(r"<[^>]*>")
 _SPACE = re.compile(r"\s+")
 # Between two words of a list there may be quotes, commas, markup and entities.
-_SEPARATOR = r"(?:<[^>]*>|[^a-z0-9])+"
+# Only the tag branch may consume "<", so the two branches never match the same text
+# and a long run of punctuation cannot backtrack exponentially.
+_SEPARATOR = r"(?:<[^>]*>|[^a-z0-9<])+"
 
 
 def normalize(text: str) -> str:
@@ -314,6 +316,10 @@ class Scanner:
                 phrase = signature.parts[0]
                 if phrase in flat or phrase in bare:
                     found.add(signature.label)
+            elif signature.parts[0] not in flat:
+                # Every match contains its first part verbatim, so a text without it
+                # cannot match and the regular expression is skipped.
+                continue
             elif signature.kind == "title":
                 if pattern.search(flat):
                     found.add(signature.label)
