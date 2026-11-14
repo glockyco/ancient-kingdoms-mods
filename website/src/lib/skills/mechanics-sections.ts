@@ -212,6 +212,15 @@ const MECHANICS_SECTIONS = [
   },
   { id: "teleport", shows: ({ skill }) => skill.is_teleport },
   {
+    id: "bind-point",
+    shows: ({ skill }) =>
+      skill.id === "bind_affinity" || skill.id === "binding",
+  },
+  {
+    id: "veteran-awareness",
+    shows: ({ skill }) => skill.id === "veteran_awareness",
+  },
+  {
     id: "block-chance",
     shows: ({ skill }) => hasLinearValue(skill.block_chance_bonus),
   },

@@ -51,10 +51,14 @@
   import SongDurationBonus from "./SongDurationBonus.svelte";
   import Stun from "./Stun.svelte";
   import Teleport from "./Teleport.svelte";
+  import BindPoint from "./BindPoint.svelte";
+  import VeteranAwareness from "./VeteranAwareness.svelte";
   import Virtuosity from "./Virtuosity.svelte";
   import WildStrike from "./WildStrike.svelte";
 
   const SECTION_COMPONENTS: Record<MechanicsSectionId, Component> = {
+    "bind-point": BindPoint,
+    "veteran-awareness": VeteranAwareness,
     "blood-pact": BloodPact,
     "death-bloom": DeathBloom,
     "reaper-form": ReaperForm,
