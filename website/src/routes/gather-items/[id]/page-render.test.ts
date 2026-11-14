@@ -60,6 +60,8 @@ function createPageData(isFishingSpot: boolean): PageData {
         housing: [],
         cap_xp: [],
         altar: [],
+        augment_upgrade: [],
+        chambers: [],
       },
       entities: {},
       facts: {},
@@ -76,6 +78,7 @@ function createPageData(isFishingSpot: boolean): PageData {
         items: [],
         classes: [],
         treasure_locations: [],
+        chambers: [],
       },
     },
   } satisfies PageData;

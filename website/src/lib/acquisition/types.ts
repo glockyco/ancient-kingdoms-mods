@@ -308,6 +308,7 @@ export type Phase =
   | "use"
   | "cast"
   | "enter"
+  | "entry"
   | "loot";
 export type Subject =
   | "player"

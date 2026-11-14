@@ -1273,13 +1273,15 @@ export async function loadItemPopupDetails(
     } else if (method.kind === "augment_upgrade") {
       augmentUpgradeSources.push({
         methodId: method.methodId,
-        inputs: inputs.map((input) => ({
-          itemId: input.withheld ? null : input.item_id,
-          itemName: input.withheld
-            ? "Redacted item"
-            : String(entity(model, "items", input.item_id)?.name),
-          amount: input.amount,
-        })),
+        inputs: method.costGroups
+          .flatMap((group) => group.inputs)
+          .map((input) => ({
+            itemId: input.withheld ? null : input.item_id,
+            itemName: input.withheld
+              ? "Redacted item"
+              : String(entity(model, "items", input.item_id)?.name),
+            amount: input.amount,
+          })),
       });
     } else if (method.kind === "merge" || method.kind === "fragment") {
       if (

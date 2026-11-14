@@ -23,6 +23,7 @@ export const MAP_PROVIDER_CATEGORY = {
   scribing_tables: "crafting",
   items: "item",
   classes: null,
+  chambers: null,
   treasure_locations: "treasure",
   portals: "portal",
 } as const;
