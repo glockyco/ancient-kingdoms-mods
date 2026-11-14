@@ -1146,6 +1146,9 @@
     "Database.cs:GetGuildManagementText": {
       "span": 0
     },
+    "Database.cs:SavePlayer": {
+      "span": 0
+    },
     "Database.cs:TryNormalizeGuildName": {
       "span": 0
     },
@@ -2055,6 +2058,9 @@
       "sha256": "2fb5dc327de70e8cbbca03e5686dd7cc1ea5bac952d76df8666aa4a0e043a626",
       "span": 4
     },
+    "MadMageTower.cs:Answer": {
+      "span": 0
+    },
     "MadMageTower.cs:AwardKillExperience": {
       "span": 0
     },
@@ -2062,6 +2068,12 @@
       "span": 0
     },
     "MadMageTower.cs:CanTravel": {
+      "span": 0
+    },
+    "MadMageTower.cs:Exit": {
+      "span": 0
+    },
+    "MadMageTower.cs:Expired": {
       "span": 0
     },
     "MadMageTower.cs:Find": {
@@ -2073,13 +2085,40 @@
     "MadMageTower.cs:Interact": {
       "span": 0
     },
+    "MadMageTower.cs:LootClue": {
+      "span": 0
+    },
+    "MadMageTower.cs:MonsterDied": {
+      "span": 0
+    },
+    "MadMageTower.cs:NormalizeCombat": {
+      "span": 0
+    },
+    "MadMageTower.cs:Prepare": {
+      "span": 0
+    },
     "MadMageTower.cs:Ready": {
       "span": 0
     },
     "MadMageTower.cs:Run": {
       "span": 0
     },
+    "MadMageTower.cs:SelectHuntTarget": {
+      "span": 0
+    },
+    "MadMageTower.cs:Spawn": {
+      "span": 0
+    },
+    "MadMageTower.cs:StartTrial": {
+      "span": 0
+    },
+    "MadMageTower.cs:Update": {
+      "span": 0
+    },
     "MadMageTowerClient.cs:IsTransitioning": {
+      "span": 0
+    },
+    "MadMageTowerClient.cs:Refresh": {
       "span": 0
     },
     "MadMageTowerClient.cs:SceneFor": {
@@ -2104,10 +2143,25 @@
       "sha256": "c6622f2a52da7f3d4867035400b0d66f854c08964fa8ca4c5abbde37d557babb",
       "span": 8
     },
+    "MadMageTowerRules.cs:CompletionExperience": {
+      "span": 0
+    },
     "MadMageTowerRules.cs:EnemyLevel": {
       "span": 0
     },
+    "MadMageTowerRules.cs:Health": {
+      "span": 0
+    },
+    "MadMageTowerRules.cs:MaximumEnemyLevelBonus": {
+      "span": 0
+    },
+    "MadMageTowerRules.cs:Power": {
+      "span": 0
+    },
     "MadMageTowerRules.cs:Reward": {
+      "span": 0
+    },
+    "MadMageTowerRules.cs:RunDurationSeconds": {
       "span": 0
     },
     "MadMageTowerRules.cs:SealDropChance": {
@@ -2117,6 +2171,45 @@
       "span": 0
     },
     "MadMageTowerScenes.cs:Create": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:battle": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:findcarrier": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:findpage": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:guardian": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:hardcore": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:hunt": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:loot": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:pagefound": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:readpage": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:riddle": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:room": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:runeprogress": {
+      "span": 0
+    },
+    "MadMageTowerText.cs:waves": {
       "span": 0
     },
     "Mana.cs:28-41": {
@@ -2621,6 +2714,9 @@
       "span": 5
     },
     "NetworkManagerMMO.cs:DoServerDisconnect": {
+      "span": 0
+    },
+    "NetworkManagerMMO.cs:OnServerDisconnect": {
       "span": 0
     },
     "NetworkManagerMMO.cs:OnStartServer": {
@@ -3754,6 +3850,9 @@
       "span": 0
     },
     "Player.cs:Start": {
+      "span": 0
+    },
+    "Player.cs:SuspendMadMageTowerMercenaries": {
       "span": 0
     },
     "Player.cs:SynchronizeMercenaryVirtueBlessings": {

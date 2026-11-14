@@ -1149,6 +1149,10 @@ def _load_regional_event_regions(
 ) -> None:
     items = {row[0] for row in cursor.execute("SELECT id FROM items")}
     zones = {row[0] for row in cursor.execute("SELECT id FROM zones")}
+    # Source: server-scripts/Monster.cs:OnDeath; MadMageTower.cs:MonsterDied,AwardKillExperience — a tower enemy dies in its own branch, which grants the owner's experience without the Prosperity multiplier, although RegionalEvents.CombatRegion still names a region for the tower zone.
+    tower_zones = {
+        row[0] for row in cursor.execute("SELECT zone_id FROM chambers_definitions")
+    }
     for region in regions:
         named_zones = [region.zone_id, *region.dungeon_zone_ids]
         named_items = [*region.cooking_meat_ids, *region.cooking_dish_ids]
@@ -1192,7 +1196,11 @@ def _load_regional_event_regions(
         cursor.executemany(
             "INSERT INTO regional_event_dungeons (dungeon_zone_id, region_zone_id) "
             "VALUES (?, ?)",
-            [(dungeon_id, region.zone_id) for dungeon_id in region.dungeon_zone_ids],
+            [
+                (dungeon_id, region.zone_id)
+                for dungeon_id in region.dungeon_zone_ids
+                if dungeon_id not in tower_zones
+            ],
         )
 
 
