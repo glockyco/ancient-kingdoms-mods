@@ -24,6 +24,9 @@ interface ItemRow {
   name: string;
   quality: number;
   icon: string | null;
+  icon_width: number | null;
+  icon_height: number | null;
+  tooltip_html: string | null;
   augment_next_quality_id: string | null;
 }
 
@@ -56,8 +59,8 @@ export const load: PageServerLoad = async () => {
 
   const items = db
     .prepare(
-      `SELECT i.id, i.name, i.quality, i.augment_next_quality_id,
-              va.public_path AS icon
+      `SELECT i.id, i.name, i.quality, i.augment_next_quality_id, i.tooltip_html,
+              va.public_path AS icon, va.width AS icon_width, va.height AS icon_height
          FROM items i
          LEFT JOIN visual_assets va
            ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
@@ -76,6 +79,9 @@ export const load: PageServerLoad = async () => {
     name: row.name,
     quality: row.quality,
     icon: row.icon ? `/${row.icon}` : null,
+    tooltipHtml: row.tooltip_html,
+    iconWidth: row.icon_width,
+    iconHeight: row.icon_height,
   });
   const families: ChainFamily[] = items
     .filter((row) => !successors.has(row.id))
@@ -95,18 +101,14 @@ export const load: PageServerLoad = async () => {
 
   const catalyst = db
     .prepare(
-      `SELECT i.id, i.name, i.quality, va.public_path AS icon
+      `SELECT i.id, i.name, i.quality, i.tooltip_html,
+              va.public_path AS icon, va.width AS icon_width, va.height AS icon_height
          FROM items i
          LEFT JOIN visual_assets va
            ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
         WHERE i.item_type = 'augment_upgrade'`,
     )
-    .all() as {
-    id: string;
-    name: string;
-    quality: number;
-    icon: string | null;
-  }[];
+    .all() as Omit<ItemRow, "augment_next_quality_id">[];
   if (catalyst.length !== 1)
     error(500, `Expected one augment upgrade item, found ${catalyst.length}`);
 

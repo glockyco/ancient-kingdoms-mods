@@ -68,20 +68,23 @@
       </div>
     {/each}
   </div>
-  <table class="sr-only">
-    <caption>{title}: chance of each enemy level</caption>
-    <thead
-      ><tr><th>Enemy Level</th><th>Levels Above Yours</th><th>Chance</th></tr
-      ></thead
-    >
-    <tbody>
-      {#each chances as row (row.level)}
-        <tr
-          ><td>{row.level}</td><td>{row.offset}</td><td
-            >{percent(row.probability)}</td
-          ></tr
-        >
-      {/each}
-    </tbody>
-  </table>
+  <!-- The caption renders outside the table's box, so the wrapper hides both. -->
+  <div class="sr-only">
+    <table>
+      <caption>{title}: chance of each enemy level</caption>
+      <thead
+        ><tr><th>Enemy Level</th><th>Levels Above Yours</th><th>Chance</th></tr
+        ></thead
+      >
+      <tbody>
+        {#each chances as row (row.level)}
+          <tr
+            ><td>{row.level}</td><td>{row.offset}</td><td
+              >{percent(row.probability)}</td
+            ></tr
+          >
+        {/each}
+      </tbody>
+    </table>
+  </div>
 </figure>

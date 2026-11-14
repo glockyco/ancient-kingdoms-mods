@@ -218,6 +218,10 @@ export interface ChainItem {
   readonly quality: number;
   /** Public path of the item's icon, or null when it has none. */
   readonly icon: string | null;
+  /** The item's game tooltip, shown on hover. */
+  readonly tooltipHtml: string | null;
+  readonly iconWidth: number | null;
+  readonly iconHeight: number | null;
 }
 
 export interface ChainFamily {

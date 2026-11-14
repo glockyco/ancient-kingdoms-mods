@@ -7,6 +7,7 @@
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
+  import ItemTooltipCard from "$lib/components/ItemTooltipCard.svelte";
   import RedactedEntry from "$lib/components/RedactedEntry.svelte";
   import { resolve } from "$app/paths";
   import { formatNumber, getQualityBorderClass } from "$lib/utils/format";
@@ -33,14 +34,24 @@
   <div
     class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border bg-card p-3"
   >
-    <EntityLink
-      variant="reference"
-      href={resolve("/items/[id]", { id: catalyst.id })}
-      name={catalyst.name}
-      imageSrc={catalyst.icon}
-      quality={catalyst.quality}
-      size={36}
-    />
+    <ItemTooltipCard
+      tooltipHtml={catalyst.tooltipHtml}
+      icon={catalyst.icon}
+      iconWidth={catalyst.iconWidth}
+      iconHeight={catalyst.iconHeight}
+    >
+      {#snippet trigger({ props })}
+        <EntityLink
+          {...props}
+          variant="reference"
+          href={resolve("/items/[id]", { id: catalyst.id })}
+          name={catalyst.name}
+          imageSrc={catalyst.icon}
+          quality={catalyst.quality}
+          size={36}
+        />
+      {/snippet}
+    </ItemTooltipCard>
     <span
       class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
       >{typeLabel}</span
@@ -81,19 +92,28 @@
                   aria-hidden="true"
                 />
               {/if}
-              <a
-                href={resolve("/items/[id]", { id: tier.id })}
-                title={tier.name}
-                aria-label={tier.name}
-                class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+              <ItemTooltipCard
+                tooltipHtml={tier.tooltipHtml}
+                icon={tier.icon}
+                iconWidth={tier.iconWidth}
+                iconHeight={tier.iconHeight}
               >
-                <EntityIcon
-                  src={tier.icon}
-                  alt=""
-                  size={32}
-                  borderClass={getQualityBorderClass(tier.quality)}
-                />
-              </a>
+                {#snippet trigger({ props })}
+                  <a
+                    {...props}
+                    href={resolve("/items/[id]", { id: tier.id })}
+                    aria-label={tier.name}
+                    class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    <EntityIcon
+                      src={tier.icon}
+                      alt=""
+                      size={32}
+                      borderClass={getQualityBorderClass(tier.quality)}
+                    />
+                  </a>
+                {/snippet}
+              </ItemTooltipCard>
             </li>
           {/each}
         </ol>

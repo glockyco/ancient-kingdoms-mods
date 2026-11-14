@@ -372,7 +372,7 @@
       />
     </div>
     <!-- Source: server-scripts/MadMageTowerRules.cs:Health,Power; MadMageTower.cs:Spawn — the game scales each enemy's Health to the Health target and replaces its Damage and Magic Damage with Power. Both are rounded to whole numbers. -->
-    <div class="grid gap-8 md:grid-cols-2">
+    <div class="grid gap-8 pt-4 md:grid-cols-2">
       <ScalingChart
         chambers={view.chambers}
         metric="health"
