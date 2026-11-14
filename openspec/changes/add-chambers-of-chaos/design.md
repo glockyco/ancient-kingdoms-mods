@@ -153,6 +153,6 @@ The Party page must describe invitations and acceptance involving a player insid
 
 Contributor instructions need the authored-versus-procedural capture distinction. The HotRepl capture reference needs the new argument/receipt forms, scratch entry procedure and invalidation conditions. Keep the command's schema and configuration as the source for field inventories rather than copying them into documentation. No README addition is planned.
 
-## Open Questions
+## Developer Permission
 
-- What does Tornar permit publishing from the Chambers riddles and rune puzzles: questions, choices, correct answers, puzzle titles, stories, rune words and solution order? Does any permitted content require spoiler-style hiding? May Seal of Chaos, Chaos Token and Torn Page of Chaos be published? Until an answer is recorded, challenge content stays withheld and all three items stay excluded under the existing policy.
+No developer question is needed for this change. Challenge content stays withheld and Seal of Chaos, Chaos Token and Torn Page of Chaos stay excluded, which is what the developer already asked for. A later change that would publish any of them asks the developer first.

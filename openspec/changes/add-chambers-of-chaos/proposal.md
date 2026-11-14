@@ -46,7 +46,7 @@ Published Chambers coverage uses the existing "Redacted item" behavior wherever 
 
 The item-publication policy and its removal set do not change, so no item-publication delta or exception is added. Correct `redactions.toml` to state the developer's request as the reason, not that flagged items are internal. Ledger changes come only from the new modeled relationships or challenge-content gate and are reviewed through their producer.
 
-Ask Tornar whether the seal, token and page may be published alongside the riddle and rune-puzzle question. All three items remain excluded unless an explicit answer changes their publication policy.
+Seal of Chaos, Chaos Token and Torn Page of Chaos remain excluded. Publishing them, or any challenge content, needs the developer's permission in a later change.
 
 ## Non-Goals
 
