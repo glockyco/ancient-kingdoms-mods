@@ -66,11 +66,11 @@
 </script>
 
 <figure class="space-y-3 {className}">
-  <figcaption class="text-sm text-muted-foreground">
-    Chance that an elite, non-boss monster drops
+  <figcaption class="text-sm text-pretty text-muted-foreground">
+    How likely an elite, non-boss monster of each level is to drop
     <span class="whitespace-nowrap"
       >1 <RedactedEntry kind="item" slot={false} /></span
-    >, by the monster's level.
+    >.
   </figcaption>
 
   <div class="flex gap-2">

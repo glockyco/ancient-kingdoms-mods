@@ -32,7 +32,7 @@
     decoding="async"
     class="aspect-video w-full rounded-lg border bg-muted object-cover"
   />
-  <figcaption class="mt-1.5 text-xs text-muted-foreground">
+  <figcaption class="mt-1.5 text-xs text-pretty text-muted-foreground">
     {caption}
   </figcaption>
 </figure>

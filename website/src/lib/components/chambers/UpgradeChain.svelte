@@ -9,7 +9,7 @@
   import EntityLink from "$lib/components/EntityLink.svelte";
   import RedactedEntry from "$lib/components/RedactedEntry.svelte";
   import { resolve } from "$app/paths";
-  import { formatNumber } from "$lib/utils/format";
+  import { formatNumber, getQualityBorderClass } from "$lib/utils/format";
   import type { ChainFamily, ChainItem, Vendor } from "./model";
 
   let {
@@ -91,9 +91,7 @@
                   src={tier.icon}
                   alt=""
                   size={32}
-                  borderClass={tier.quality >= 4
-                    ? "border-amber-500"
-                    : "border-border/60"}
+                  borderClass={getQualityBorderClass(tier.quality)}
                 />
               </a>
             </li>

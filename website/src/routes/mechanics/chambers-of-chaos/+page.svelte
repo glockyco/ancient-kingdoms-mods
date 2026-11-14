@@ -68,7 +68,7 @@
   path="/mechanics/chambers-of-chaos"
 />
 
-<div class="container mx-auto max-w-5xl space-y-8 p-8">
+<div class="container mx-auto max-w-5xl space-y-8 p-8 [&_p]:text-pretty">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
@@ -79,10 +79,11 @@
 
   <h1 class="text-4xl font-bold">Chambers of Chaos</h1>
 
-  <section class="grid items-center gap-6 lg:grid-cols-2" aria-label="Overview">
-    <div class="space-y-4">
+  <section class="grid gap-6 lg:grid-cols-2" aria-label="Overview">
+    <!-- The bottom padding matches the image caption's line, so the keeper card ends level with the image. -->
+    <div class="flex flex-col justify-between gap-4 lg:pb-[22px]">
       <!-- Source: server-scripts/MadMageTower.cs:Begin,Ready — entry needs level 40, no other player in the party, and one entry item, which is taken when chamber 1 opens. server-scripts/MadMageTowerRules.cs:RoomCount,RunDurationSeconds — 3 chambers and one 1200 second timer. -->
-      <p class="text-muted-foreground">
+      <p class="text-lg text-muted-foreground">
         The Chambers of Chaos are a solo dungeon for characters of level {d.minimumLevel}
         and up. Mordrath lets you in for 1 entry item. You clear {d.roomCount}
         chambers within {minutes} minutes, and the final guardian drops a reward.
@@ -95,7 +96,7 @@
         width={introShot.width}
         height={introShot.height}
         alt="A pale hall seen from above with guardians crowded between stone vases."
-        caption="Real run: the busiest hall of a chamber with a missing page."
+        caption="Real run: the busiest hall of a Manuscript chamber."
         priority
       />
     {/if}
@@ -110,8 +111,9 @@
     >
       {@render badge(1)} Enter
     </h2>
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
-      <div class="space-y-4">
+    <div class="grid gap-6 lg:grid-cols-2">
+      <div class="space-y-3">
+        <h3 class="font-semibold text-foreground">Requirements</h3>
         <!-- Source: server-scripts/MadMageTower.cs:Begin — entry needs level 40, no other player in the party, no combat, and one entry item in the inventory. -->
         <ul class="space-y-2 text-muted-foreground">
           <li class="flex gap-2">
@@ -143,6 +145,7 @@
             <span>Carry 1 <RedactedEntry kind="item" slot={false} />.</span>
           </li>
         </ul>
+        <h3 class="pt-2 font-semibold text-foreground">When You Enter</h3>
         <!-- Source: server-scripts/MadMageTower.cs:Ready — the entry item is removed when the player is moved into chamber 1, after the distance and combat checks run again. A failed check ends the attempt without spending it. -->
         <p class="text-muted-foreground">
           The entry item is used up when chamber 1 opens. If the entry fails
@@ -155,7 +158,7 @@
         </p>
         <!-- Source: server-scripts/PlayerParty.cs:UserCode_CmdInvite__String,UserCode_CmdAcceptInvite — invitations to or from a player inside are ignored. -->
         <p class="text-muted-foreground">
-          Party invitations to and from you are refused while you are inside.
+          While you are inside, party invitations to and from you are refused.
         </p>
       </div>
       <div class="space-y-3">
@@ -324,8 +327,8 @@
         <!-- Source: server-scripts/MadMageTower.cs:MonsterDied,Interact; MadMageTowerText.cs:loot — chamber 3 spawns its guardians first, and the final guardian appears when one kill remains. Its death gives the reward, and the exit refuses to let the player leave while the final guardian still holds loot. -->
         <p>
           Guardians fill the chamber first. When one kill remains, the final
-          guardian appears. It is one of the {data.monsters.length} monsters listed
-          under Who Is Inside, under a new name.
+          guardian appears: one of the {data.monsters.length} monsters under Who Is
+          Inside, with a new name.
         </p>
         <p>
           Kill it and take its reward from its remains. The exit opens when it

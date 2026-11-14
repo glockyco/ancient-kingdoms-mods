@@ -29,8 +29,11 @@
     <span>{redactedCountLabel(kind, count)}</span>
   </span>
 {:else}
-  <!-- Plain inline text, so it sits on the surrounding baseline at the surrounding size. -->
-  <span class="text-muted-foreground" title={REDACTED_HOVER}
-    >{redactedCountLabel(kind, count)}</span
+  <!-- Inline in running text: a dashed box sized to the line stands where the icon would, on the surrounding baseline. -->
+  <span class="whitespace-nowrap text-muted-foreground" title={REDACTED_HOVER}
+    ><span
+      class="mr-[0.3em] inline-block size-[1.1em] rounded-[0.2em] border border-dashed border-current align-[-0.2em] opacity-60"
+      aria-hidden="true"
+    ></span>{redactedCountLabel(kind, count)}</span
   >
 {/if}
