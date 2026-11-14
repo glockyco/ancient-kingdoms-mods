@@ -68,7 +68,10 @@
   path="/mechanics/chambers-of-chaos"
 />
 
-<div class="container mx-auto max-w-5xl space-y-8 p-8 [&_p]:text-pretty">
+<!-- Balanced wrapping evens out the lines of short paragraphs, so none ends on a stray word or two. -->
+<div
+  class="container mx-auto max-w-5xl space-y-8 p-8 [&_figcaption]:text-balance [&_p]:text-balance"
+>
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
@@ -148,8 +151,8 @@
         <h3 class="pt-2 font-semibold text-foreground">When You Enter</h3>
         <!-- Source: server-scripts/MadMageTower.cs:Ready — the entry item is removed when the player is moved into chamber 1, after the distance and combat checks run again. A failed check ends the attempt without spending it. -->
         <p class="text-muted-foreground">
-          The entry item is used up when chamber 1 opens. If the entry fails
-          first, you keep it.
+          The entry item is used up when chamber&nbsp;1 opens. If the entry
+          fails first, you keep it.
         </p>
         <!-- Source: server-scripts/MadMageTower.cs:Ready; Player.cs:SuspendMadMageTowerMercenaries — entering dismisses mercenaries, cancels casts, removes invisibility and dismounts. server-scripts/MadMageTower.cs:MoveParticipant — the active pet moves with the player. -->
         <p class="text-muted-foreground">

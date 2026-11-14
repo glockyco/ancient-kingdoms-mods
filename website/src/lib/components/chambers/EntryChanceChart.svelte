@@ -66,7 +66,7 @@
 </script>
 
 <figure class="space-y-3 {className}">
-  <figcaption class="text-sm text-pretty text-muted-foreground">
+  <figcaption class="text-sm text-balance text-muted-foreground">
     How likely an elite, non-boss monster of each level is to drop
     <span class="whitespace-nowrap"
       >1 <RedactedEntry kind="item" slot={false} /></span
