@@ -218,20 +218,26 @@ export function earnMethods(
       {
         name: "Defeat Your Quarry",
         icon: Crosshair,
+        // Source: server-scripts/Player.cs:AssignValorTarget,CompleteValorTarget,TickValorTarget — each quarry has an hour, and Valor names the next when it falls or the hour ends.
         steps: [
           {
             icon: Landmark,
-            text: "The shrine names an elite or boss in a dungeon",
+            text: "Receive the blessing. Valor names an elite or boss in a dungeon",
           },
-          { icon: Skull, text: "Help defeat it while Valor is active" },
-          { icon: Landmark, text: "Return to a Shrine of Valor for the next" },
+          { icon: Skull, text: "Help defeat it within an hour" },
+          {
+            icon: Crosshair,
+            text: "Valor names the next when it falls or the hour runs out",
+          },
         ],
         rewards: [
           { value: `+${valorPoints(true)}`, unit: "per boss" },
           { value: `+${valorPoints(false)}`, unit: "per elite" },
         ],
         notes: [
-          `Quarries are elites and bosses from ${-quarryMin} levels below you to ${quarryMax} above.`,
+          `Quarries are elites and bosses that always respawn, from ${-quarryMin} levels below you to ${quarryMax} above.`,
+          // Source: server-scripts/Player.cs:ValorTargetSecondsRemaining,ExportVirtues,InitializeVirtues — the save keeps the seconds left, so the hour counts only while you are online.
+          "The hour counts only while you are online.",
         ],
         link: {
           href: "#quarries",
@@ -248,9 +254,11 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
     {
       title: "Allowed",
       kind: "ok",
+      // Source: server-scripts/VirtueCombat.cs:HostileAction,BuffApplied,Assistance — once it has hit you, your own debuffs and crowd control are ordinary attacks, and your own familiar's buffs do not end Honor.
       items: [
         "Your own pet",
-        "Effects that only deal damage over time",
+        "Your own debuffs, stuns, fear and knockback once it has hit you",
+        "Buffs from your own familiar",
         "Monsters that join the fight",
       ],
     },
@@ -265,12 +273,12 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       ],
     },
     {
-      // Source: server-scripts/VirtueCombat.cs:HostileAction,MonsterHit,BuffApplied — that monster does not count.
+      // Source: server-scripts/VirtueCombat.cs:HostileAction,MonsterHit,BuffApplied — acting on it before its first hit, a debuff from anyone else on it at that hit, or another attacker makes that monster not count.
       title: "That Monster Gives No Points",
       kind: "no",
       items: [
-        "Hitting it before it hits you",
-        "Stuns, removing its buffs, or debuffs that do more than damage",
+        "Hitting or debuffing it before it hits you",
+        "A debuff from anyone else on it when it first hits you",
         "Someone else fighting it",
       ],
     },
@@ -301,8 +309,12 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       title: "Good to Know",
       kind: "info",
       items: [
-        // Source: server-scripts/VirtueEncounters.cs:MaximumUncollectedBelongings,CreateHonestySearch — 10 belongings, 3 hours apart.
-        "A search hides 10 belongings. The next can start 3 hours later.",
+        // Source: server-scripts/VirtueEncounters.cs:TryEnterHonestyZone,CreateHonestySearch,MaximumUncollectedBelongings,HonestySpawnChance — each zone entered rolls 40% for 1 or 2 belongings unless one is already there, up to 10 waiting.
+        "Each region or dungeon you enter has a 40% chance to hold 1 or 2 belongings, unless one you have not picked up is already there. At most 10 wait at a time.",
+        // Source: server-scripts/VirtueLostPlacement.cs:HasEntrancePath — each belonging lies on a walkable path from one of the zone's entrances.
+        "You can walk to each one from an entrance of its zone.",
+        // Source: server-scripts/VirtueEncounters.cs:Cleanup,ClearHonestySearch — belongings not yet picked up vanish when the blessing ends or you log out.
+        "Belongings you have not picked up vanish when the blessing ends or you log out.",
         // Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine — the shrine refuses Honesty while belongings are out, unless Honesty is at rank 5.
         "Returns count even after the blessing ends, but below rank\u00a05 you must return everything before taking Honesty again.",
         "The bank and house chests do not take belongings.",
@@ -314,8 +326,8 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       title: "Good to Know",
       kind: "info",
       items: [
-        // Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine,AssignValorTarget — after 5 minutes of the blessing, or once it has ended, the shrine names a quarry other than the current one.
-        "Renew after 5 minutes for a different quarry.",
+        // Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine,AssignValorTarget — 5 minutes after a quarry is named, renewing at a shrine names a different one.
+        "Renew at a shrine 5 minutes after a quarry is named to get a different one.",
         // Source: server-scripts/Player.cs:AssignValorTarget,UserCode_CmdActivateVirtue__VirtueShrine — below rank 5, the shrine refuses Valor when no quarry fits.
         'Below rank\u00a05, when none fits your level, the shrine says "No worthy quarry answers the shrine at this time."',
       ],
@@ -332,5 +344,5 @@ export const EARN_SUMMARIES: Record<VirtueId, string> = {
   humility:
     "Defeat monsters near your level while the blessing weakens your defenses.",
   honesty: "Find lost belongings and return them to their owners.",
-  valor: "Help defeat the elite or boss the shrine names.",
+  valor: "Help defeat the elite or boss Valor names, within an hour.",
 };

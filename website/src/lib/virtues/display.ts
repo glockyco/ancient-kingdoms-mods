@@ -3,6 +3,7 @@
 
 import {
   compassionHealingBonus,
+  honestyDamageOverTimeReduction,
   honestyGainBonus,
   honorAccuracyBonus,
   honorCriticalResistBonus,
@@ -64,7 +65,7 @@ export const BLESSING_UNITS: Record<VirtueId, string> = {
   honor: "Critical Resist and Accuracy",
   sacrifice: "maximum Health",
   humility: "Armor Class and resistances",
-  honesty: "positive faction gains",
+  honesty: "positive faction gains and enemy damage over time",
   valor: "damage to elites and bosses",
 };
 
@@ -121,7 +122,11 @@ export function rankEffect(
         negative: humilityMultiplier < 1,
       };
     case "honesty":
-      return { value: signedPercent(honestyGainBonus(rank)), negative: false };
+      return {
+        value: signedPercent(honestyGainBonus(rank)),
+        extra: `${signedPercent(-honestyDamageOverTimeReduction(rank))} enemy damage over time`,
+        negative: false,
+      };
     case "valor":
       return { value: signedPercent(valorDamageBonus(rank)), negative: false };
   }
@@ -140,7 +145,7 @@ export function blessingSummary(
     case "honor":
       return `Up to ${top.extra} and ${top.value} Critical Resist`;
     case "honesty":
-      return `Up to ${top.value} faction gains`;
+      return `Up to ${top.value} faction gains and ${top.extra}`;
     default:
       return `Up to ${top.value} ${BLESSING_UNITS[virtue]}`;
   }

@@ -40,8 +40,8 @@ describe("level window", () => {
     expect(isEligibleLevel(40, 37)).toBe(false);
   });
 
-  it("names Valor quarries from 2 levels below to 5 above", () => {
-    expect(valorQuarryLevels(40)).toEqual([38, 45]);
+  it("names Valor quarries from 10 levels below to 5 above", () => {
+    expect(valorQuarryLevels(40)).toEqual([30, 45]);
   });
 });
 

@@ -290,12 +290,12 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "virtues.honesty": {
     href: "/mechanics/virtues#honesty",
     reviewedBodySha256:
-      "fff680c6fa681cd1936c0a49916d099e3a401dd805eca131daa10b3e6fbd988e",
+      "e508f2daa4906fdbb5d98c9a7a58f0ab4cabb8cd0ad19347333d23ccdce3e732",
   },
   "virtues.honor": {
     href: "/mechanics/virtues#honor",
     reviewedBodySha256:
-      "f042434afda860c2745b2fcd61d1022822e7bf3b3ee73a357979c95f78f715cf",
+      "46fd5bd5a0e0dd8afda6ee8f562f8851151d104e558005003664dbfc2377c3cc",
   },
   "virtues.humility": {
     href: "/mechanics/virtues#humility",
@@ -320,7 +320,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "virtues.valor": {
     href: "/mechanics/virtues#valor",
     reviewedBodySha256:
-      "57a2b5c50918303cc94cfc1bcfcdeddcd1f9a6da1eb2817ced108d4d60eb58cc",
+      "9189e08044e4d5b753da6da2805e94a8c838d95126ec7fc0941c05a033bb94df",
   },
   "world.adventurers-guild": {
     href: "/professions/adventuring#how-it-works",

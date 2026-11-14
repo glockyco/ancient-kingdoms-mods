@@ -107,8 +107,8 @@ export interface ValorQuarry {
   portrait_path: string | null;
 }
 
-// Source: server-scripts/Player.cs:AssignValorTarget — a living elite or boss in a dungeon zone.
-// Source: server-scripts/VirtueRules.cs:IsEligibleMonster — no dummies or Forgotten Altar event monsters.
+// Source: server-scripts/VirtueRules.cs:203 — an elite or boss that always respawns, in a dungeon zone.
+// Source: server-scripts/VirtueRules.cs:IsOrdinaryVirtueMonster — no dummies or Forgotten Altar event monsters.
 /** Each dungeon elite and boss once per level and dungeon it spawns at. */
 export function loadValorQuarries(): ValorQuarry[] {
   return query<ValorQuarry>(
@@ -120,6 +120,7 @@ export function loadValorQuarries(): ValorQuarry[] {
      LEFT JOIN visual_assets va
        ON va.domain = 'monster' AND va.entity_id = m.id AND va.kind = 'portrait'
      WHERE z.is_dungeon = 1 AND (m.is_boss = 1 OR m.is_elite = 1)
+       AND m.respawn_probability >= 1
        AND m.is_dummy = 0 AND m.is_forgotten_altar_event = 0 AND m.season IS NULL
      ORDER BY s.level, m.name, z.name`,
   );

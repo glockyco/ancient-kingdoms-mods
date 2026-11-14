@@ -2953,6 +2953,10 @@
     "PetSkills.cs:RefreshSkillLevels": {
       "span": 0
     },
+    "Player.cs:10530": {
+      "sha256": "f241593ce399ae5e09efe163f2c05f3b16daeadc13488f8d4e8434aaa06a11cc",
+      "span": 1
+    },
     "Player.cs:11039-11042": {
       "sha256": "4037492196bb57aa4725f418967a90adb6fed6739e5f401f396cb144c6b0da41",
       "span": 4
@@ -3576,10 +3580,16 @@
     "Player.cs:CmdPortalDestination": {
       "span": 0
     },
+    "Player.cs:CompleteValorTarget": {
+      "span": 0
+    },
     "Player.cs:DestroyLivingMercenariesOnOwnerDeath": {
       "span": 0
     },
     "Player.cs:EventRefractoryPeriod": {
+      "span": 0
+    },
+    "Player.cs:ExportVirtues": {
       "span": 0
     },
     "Player.cs:GetMercenaryResurrectionPrice": {
@@ -3601,6 +3611,9 @@
       "span": 0
     },
     "Player.cs:InitializeAttributeSpecs": {
+      "span": 0
+    },
+    "Player.cs:InitializeVirtues": {
       "span": 0
     },
     "Player.cs:IsBarberSessionValid": {
@@ -3639,7 +3652,13 @@
     "Player.cs:Start": {
       "span": 0
     },
+    "Player.cs:SynchronizeMercenaryVirtueBlessings": {
+      "span": 0
+    },
     "Player.cs:TargetRpcHouse": {
+      "span": 0
+    },
+    "Player.cs:TickValorTarget": {
       "span": 0
     },
     "Player.cs:TickVirtuesServer": {
@@ -3742,6 +3761,9 @@
       "span": 0
     },
     "Player.cs:UserCode_TargetRpcUpdateKillsBestiary__String": {
+      "span": 0
+    },
+    "Player.cs:ValorTargetSecondsRemaining": {
       "span": 0
     },
     "Player.cs:VirtueAccuracy": {
@@ -6299,10 +6321,19 @@
     "VirtueCombat.cs:Tick": {
       "span": 0
     },
+    "VirtueEncounters.cs:Cleanup": {
+      "span": 0
+    },
+    "VirtueEncounters.cs:ClearHonestySearch": {
+      "span": 0
+    },
     "VirtueEncounters.cs:CreateHonestySearch": {
       "span": 0
     },
     "VirtueEncounters.cs:EscortPoints": {
+      "span": 0
+    },
+    "VirtueEncounters.cs:HonestySpawnChance": {
       "span": 0
     },
     "VirtueEncounters.cs:IsWorldPortalTrip": {
@@ -6315,6 +6346,9 @@
       "span": 0
     },
     "VirtueEncounters.cs:TryClaimEscort": {
+      "span": 0
+    },
+    "VirtueEncounters.cs:TryEnterHonestyZone": {
       "span": 0
     },
     "VirtueEncounters.cs:TryEscortPosition": {
@@ -6332,6 +6366,9 @@
     "VirtueEscortStats.cs:TryForDungeon": {
       "span": 0
     },
+    "VirtueLostPlacement.cs:HasEntrancePath": {
+      "span": 0
+    },
     "VirtuePersistence.cs:MigrateAccount": {
       "span": 0
     },
@@ -6341,13 +6378,27 @@
     "VirtuePersistence.cs:Save": {
       "span": 0
     },
+    "VirtueRules.cs:151-172": {
+      "sha256": "324cdb3e014ab7010a7aa3b56ae4b41b76f258a6bdd6d9c158289eedf03e93c9",
+      "span": 22
+    },
+    "VirtueRules.cs:203": {
+      "sha256": "f5b027db8c240c59391f1bbbfb373797995a33c2ca41426c3c7c9afd5c0b8841",
+      "span": 1
+    },
     "VirtueRules.cs:BlessingDuration": {
       "span": 0
     },
     "VirtueRules.cs:CombatPoints": {
       "span": 0
     },
+    "VirtueRules.cs:GetBlessingRank": {
+      "span": 0
+    },
     "VirtueRules.cs:GoldPerPoint": {
+      "span": 0
+    },
+    "VirtueRules.cs:HonestyDamageOverTimeReduction": {
       "span": 0
     },
     "VirtueRules.cs:HonorPoints": {
@@ -6357,6 +6408,9 @@
       "span": 0
     },
     "VirtueRules.cs:IsEligibleMonster": {
+      "span": 0
+    },
+    "VirtueRules.cs:IsOrdinaryVirtueMonster": {
       "span": 0
     },
     "VirtueRules.cs:MaxRank": {

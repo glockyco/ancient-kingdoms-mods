@@ -44,6 +44,11 @@ export function honestyGainBonus(rank: number): number {
   return 0.05 * rankWeight(rank);
 }
 
+// Source: server-scripts/VirtueRules.cs:151-172; Skills.cs:GetFinalDamageDoT — an enemy's debuff ticks fall 4% per rank, 2% at rank 0.
+export function honestyDamageOverTimeReduction(rank: number): number {
+  return 0.04 * rankWeight(rank);
+}
+
 // Source: server-scripts/VirtueCombat.cs:ApplyValor — final damage to elites and bosses rises 1% per rank, 0.5% at rank 0.
 export function valorDamageBonus(rank: number): number {
   return 0.01 * rankWeight(rank);
@@ -126,12 +131,12 @@ export function honorPointsAtLevel(foe: HonorFoe): number {
   return honorPoints(foe, foe.level);
 }
 
-// Source: server-scripts/Player.cs:AssignValorTarget — a shrine names a living dungeon elite or boss from 2 levels below you to 5 above.
+// Source: server-scripts/VirtueRules.cs:203 — a quarry is a dungeon elite or boss that always respawns, from 10 levels below you to 5 above.
 export function valorQuarryLevels(playerLevel: number): [number, number] {
-  return [playerLevel - 2, playerLevel + 5];
+  return [playerLevel - 10, playerLevel + 5];
 }
 
-// Source: server-scripts/VirtueCombat.cs:OnDeath — a named boss gives 150 Valor points and a named elite 75.
+// Source: server-scripts/Player.cs:10530 — a named boss gives 150 Valor points and a named elite 75.
 export function valorPoints(isBoss: boolean): number {
   return isBoss ? 150 : 75;
 }

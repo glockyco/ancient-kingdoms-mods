@@ -1,5 +1,8 @@
 <script lang="ts">
-  import { valorDamageBonus } from "$lib/calculation/virtues";
+  import {
+    honestyDamageOverTimeReduction,
+    valorDamageBonus,
+  } from "$lib/calculation/virtues";
   import { bonusRange, virtueHref } from "$lib/virtues/display";
   import { statName } from "$lib/stats";
   import RoundedTerm from "$lib/components/RoundedTerm.svelte";
@@ -395,6 +398,13 @@
         On an elite or boss, the caster's active
         <a href={virtueHref("valor")}>Valor</a> blessing adds
         {bonusRange(valorDamageBonus)} to each tick, rounded.
+      </li>
+      <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT; VirtueRules.cs:HonestyDamageOverTimeReduction,GetBlessingRank — after Valor and before Ward, Honesty reduces another source's debuff tick unless it is permanent, an aura or a Bard area song. -->
+      <li>
+        On a player or mercenary with the
+        <a href={virtueHref("honesty")}>Honesty</a> blessing, an enemy's debuff
+        deals {bonusRange(honestyDamageOverTimeReduction)} less each tick, rounded.
+        Auras, Bard songs and permanent debuffs are not reduced.
       </li>
       <li>Ward absorbs the final tick before the target loses Hit Points.</li>
     </ul>

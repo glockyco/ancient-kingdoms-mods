@@ -503,7 +503,7 @@
   <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing,IsVirtueMastered; VirtueRules.cs:BlessingDuration — one virtue below rank 5 is active at a time, a rank 5 blessing keeps its own timer beside it, and receiving or renewing a blessing sets 3 hours below rank 5 and 10 hours at rank 5. -->
   <!-- Source: server-scripts/Player.cs:TickVirtuesServer — the time counts down only while you are connected. -->
   <!-- Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine — Sacrifice needs an offering below rank 5. -->
-  <!-- Source: server-scripts/Player.cs:BeginVirtueBlessing,RefreshMercenaryVirtueBlessing — receiving or renewing a blessing also gives it to each active mercenary that is alive, except Honesty's. -->
+  <!-- Source: server-scripts/Player.cs:TickVirtuesServer,SynchronizeMercenaryVirtueBlessings,RefreshMercenaryVirtueBlessing — each active mercenary carries every blessing you have, kept in step every second and when it is summoned or revived. -->
   <!-- Source: server-scripts/VirtuePersistence.cs:Read,Save,MigrateAccount — the account keeps each virtue's highest points, and every character on it reads them. -->
   <section class="space-y-4">
     <h2 class="text-2xl font-semibold">Getting Started</h2>

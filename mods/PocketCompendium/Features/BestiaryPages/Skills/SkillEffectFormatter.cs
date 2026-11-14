@@ -868,7 +868,7 @@ internal static class SkillEffectFormatter
         ["blessing_of_honor"] = "more Accuracy & Critical Resist, by rank in Honor",
         ["blessing_of_sacrifice"] = "more maximum Health, by rank in Sacrifice",
         ["blessing_of_humility"] = "lower AC & resistances, by rank in Humility (higher at the top rank)",
-        ["blessing_of_honesty"] = "more positive faction gains, by rank in Honesty",
+        ["blessing_of_honesty"] = "more positive faction gains & less enemy damage over time, by rank in Honesty",
         ["blessing_of_valor"] = "more damage to elites & bosses, by rank in Valor",
     };
 }
