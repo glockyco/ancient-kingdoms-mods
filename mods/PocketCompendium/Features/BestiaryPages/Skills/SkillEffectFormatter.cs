@@ -834,10 +834,10 @@ internal static class SkillEffectFormatter
     private static readonly Dictionary<string, string> HardcodedEffects = new()
     {
         ["improved_backstab"] = "from-behind bonus dmg 25% instead of 10%",
-        ["bind_affinity"] = "set bind point (respawn & Gate Scroll destination)",
-        ["binding"] = "set bind point (respawn & Gate Scroll destination)",
+        ["bind_affinity"] = "set bind point (respawn & Gate Scroll destination, except Chambers of Chaos respawns)",
+        ["binding"] = "set bind point (respawn & Gate Scroll destination, except Chambers of Chaos respawns)",
         ["elixir_endurance"] = "potion buff duration +60s × rank (not bandages)",
-        ["veteran_awareness"] = "reveals nearby monsters on minimap (not in Temple of Valaark)",
+        ["veteran_awareness"] = "reveals nearby monsters on minimap (not in Temple of Valaark or Chambers of Chaos)",
         ["parry"] = "while casting, blocks your target's physical melee hits & counters 50% (max 5,000)",
         ["symbiosis"] = "pet gets 10% × rank of your attributes, AC & resistances when summoned (max 50%)",
         ["summon_player"] = "summons a target 3 - 15 yd away to the caster, stun (2s)",

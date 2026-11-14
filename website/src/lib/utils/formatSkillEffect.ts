@@ -1066,14 +1066,16 @@ function formatBuffDebuffStats(
 const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Combat.cs:DealDamageAt — learned Improved Backstab raises the from-behind bonus from 10% to 25% of the damage.
   improved_backstab: "from-behind bonus dmg 25% instead of 10%",
-  // Source: server-scripts/TargetBuffSkill.cs:Apply; Player.cs:UserCode_CmdBindPlayer,3927-3936; TravelItem.cs:25-30 — binding sets the respawn point that Gate Scroll also returns to.
-  bind_affinity: "set bind point (respawn & Gate Scroll destination)",
-  binding: "set bind point (respawn & Gate Scroll destination)",
+  // Source: server-scripts/TargetBuffSkill.cs:Apply; Player.cs:UserCode_CmdBindPlayer,3927-3936; TravelItem.cs:25-30 — binding sets the respawn point that Gate Scroll also returns to, except that a Chambers of Chaos respawn returns to the run's entrance.
+  bind_affinity:
+    "set bind point (respawn & Gate Scroll destination, except Chambers of Chaos respawns)",
+  binding:
+    "set bind point (respawn & Gate Scroll destination, except Chambers of Chaos respawns)",
   // Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — every potion but Bandages applies its buff at 1 + rank, and each buff level adds 60s.
   elixir_endurance: "potion buff duration +60s × rank (not bandages)",
-  // Source: server-scripts/Monster.cs:1031-1051 — minimap marks never show in Temple of Valaark.
+  // Source: server-scripts/Monster.cs:1031-1051 — minimap marks never show in Temple of Valaark or the Chambers of Chaos.
   veteran_awareness:
-    "reveals nearby monsters on minimap (not in Temple of Valaark)",
+    "reveals nearby monsters on minimap (not in Temple of Valaark or Chambers of Chaos)",
   // Source: server-scripts/Combat.cs:DealDamageAt,isParry — during the cast, your target's single-target physical hits are blocked and 50% of the damage, rounded and clamped to 1-5,000, is dealt back.
   parry: `while casting, blocks your target's physical melee hits & counters 50% (max ${formatNumber(5000)})`,
   // Source: server-scripts/SummonSkill.cs:Apply — on summon, the pet takes rank × 10% of your attributes and adds rank × 10% of your AC and resists.
