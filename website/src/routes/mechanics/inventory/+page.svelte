@@ -893,11 +893,16 @@
           <a
             href="/items/epic_repair_kit"
             class="text-blue-600 dark:text-blue-400 hover:underline">Epic</a
-          >, or
+          >,
           <a
             href="/items/legendary_repair_kit"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Legendary Repair Kit</a
+          >, or a
+          <a
+            href="/items/mythic_repair_hammer"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Mythic Repair Hammer</a
           >
           restores equipped items of its quality or lower to full durability.</span
         >
@@ -952,7 +957,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerEquipment.cs:287-317,1631-1642 and server-scripts/MercenaryEquipment.cs:148-185 — three matching equipped working pieces give attributes; five give player skill levels; mercenaries apply only the three-piece attributes. -->
+      <!-- Source: server-scripts/PlayerEquipment.cs:287-317,1631-1642; Equipment.cs:GetArmorSetResistanceBonus and server-scripts/MercenaryEquipment.cs:148-185 — three matching equipped working pieces give attributes and resistances; five give player skill levels; mercenaries apply only the three-piece bonuses. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -965,7 +970,7 @@
           <tbody>
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4">3 equipped</td>
-              <td class="py-2">The set's attribute bonuses</td>
+              <td class="py-2">The set's attribute and resistance bonuses</td>
             </tr>
             <tr>
               <td class="py-2 pr-4">5 equipped</td>
@@ -984,10 +989,11 @@
           bonuses.</span
         >
       </p>
-      <!-- Source: server-scripts/MercenaryEquipment.cs:148-185,226-241 and server-scripts/EquipmentItem.cs:562-576 — mercenary set processing has the three-piece attribute threshold but no five-piece skill threshold. -->
+      <!-- Source: server-scripts/MercenaryEquipment.cs:148-185,226-241; Equipment.cs:GetArmorSetResistanceBonus and server-scripts/EquipmentItem.cs:562-576 — mercenary set processing has the three-piece threshold but no five-piece skill threshold. -->
       <p>
         <span class="block"
-          >Mercenary armor sets grant only the three-piece attribute bonus.</span
+          >Mercenary armor sets grant only the three-piece attribute and
+          resistance bonuses.</span
         >
         <span class="block"
           >See <a
