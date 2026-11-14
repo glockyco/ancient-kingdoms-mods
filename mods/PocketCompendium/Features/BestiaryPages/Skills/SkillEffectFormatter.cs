@@ -861,6 +861,7 @@ internal static class SkillEffectFormatter
         ["sharp_senses"] = "reveal and disarm traps",
         ["master_poisoner"] = "Stab deals poison dmg & adds 250% of DEX, resisted by poison res, 10s",
         ["wild_strike"] = "next auto attack deals +20% × rank dmg as magic dmg, 5s",
+        ["evasion"] = "avoid the next area or frontal attack, 5s",
         ["call_of_the_heroes"] = "teleport all active mercenaries to you, remove their fear",
         ["charge"] = "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
         ["teleport"] = "use travel items (out of combat)",

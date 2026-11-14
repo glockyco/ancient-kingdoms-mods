@@ -37,10 +37,12 @@
     <h4>Avoidance</h4>
     <ol start="3">
       <!-- Source: server-scripts/Combat.cs:739-801 — positional and moving-player adjustments precede the block, miss or resist roll, which ends an avoided hit. -->
+      <!-- Source: server-scripts/Combat.cs:540-559,771 — a Rogue's active Evasion avoids an area or frontal hit before the roll. -->
       <li>
         Roll to <a href="#avoidance">block, miss or resist</a>, adjusted by
         <a href="#combat-advantage">Combat Advantage</a>. A blocked, missed or
-        resisted hit stops here.
+        resisted hit stops here. A Rogue's active Evasion avoids an area or
+        frontal hit without a roll.
       </li>
     </ol>
 

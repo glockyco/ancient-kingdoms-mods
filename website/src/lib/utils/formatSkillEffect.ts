@@ -1116,6 +1116,8 @@ const HARDCODED_EFFECTS: Record<string, string> = {
     "Stab deals poison dmg & adds 250% of DEX, resisted by poison res, 10s",
   // Source: server-scripts/DamageSkill.cs:49-52,TryConsumeWildStrike — the Ranger's next auto attack deals 20% more per buff rank as Magic damage and consumes the buff.
   wild_strike: "next auto attack deals +20% × rank dmg as magic dmg, 5s",
+  // Source: server-scripts/Combat.cs:540-559,771 — a living player Rogue's active Evasion avoids the next damaging area or frontal hit and ends.
+  evasion: "avoid the next area or frontal attack, 5s",
   // Source: server-scripts/TargetBuffSkill.cs:261-300 — isCallHeroes teleports all
   // active mercenaries to player position and clears their fear; returns before
   // applying any buff. mana_percent_per_second_bonus in game data is unused.

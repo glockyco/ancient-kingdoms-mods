@@ -725,6 +725,10 @@
       "sha256": "2c28c16b76b5b3c955840d7b3dfbea25b08b875097a41a95219cecc5aec37541",
       "span": 6
     },
+    "Combat.cs:540-559": {
+      "sha256": "17019799897c82a5b9e8df1b5557ee563450fa98135ddf51b57a50a80adc7ae6",
+      "span": 20
+    },
     "Combat.cs:618-622": {
       "sha256": "2a43a3ace8db82b926a20e8141d2bd11499998ea4c7516f27a52ca810ba77276",
       "span": 5
@@ -768,6 +772,10 @@
     "Combat.cs:767-770": {
       "sha256": "d38c2ee744c59bb1d462392e9f47556f8ea04cb2c5b93c4c7278dcd707436638",
       "span": 4
+    },
+    "Combat.cs:771": {
+      "sha256": "f526cc57c7c7ffaa76653bcd81d6a69592512fefb26d2105d0f9a3c68e032cc1",
+      "span": 1
     },
     "Combat.cs:771-801": {
       "sha256": "46e5a10d8a02eec3c6d91e3e9b3ac2228bb5870b8cf85e058aaf532241390fd3",
@@ -2815,10 +2823,6 @@
     "Pet.cs:4622-4649": {
       "sha256": "de90b684e27748271cc6f365ab86f8c0129ff81e3d8dccf9478f91d573294fa1",
       "span": 28
-    },
-    "Pet.cs:4622-4659": {
-      "sha256": "d48fd596b35b204f5dfe042a3f2339a54c88e25224e9e1c854e8144e49806596",
-      "span": 38
     },
     "Pet.cs:4652-4699": {
       "sha256": "4e4e27df78543273568179f55bd5af1fb77deccca7e3d07001c55bc60c9c7802",

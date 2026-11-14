@@ -126,6 +126,11 @@
     </p>
     <!-- Source: server-scripts/Combat.cs:618-622 — returning-home monsters evade incoming hits. -->
     <p>A monster returning home after a chase avoids every hit.</p>
+    <!-- Source: server-scripts/Combat.cs:540-559,771 — a living player Rogue's active Evasion avoids the next damaging area or frontal hit and ends. -->
+    <p>
+      A Rogue's active <a href="/skills/evasion">Evasion</a> avoids the next area
+      or frontal attack that would deal damage, and that attack ends Evasion.
+    </p>
     <SeeAlso
       links={[
         {
