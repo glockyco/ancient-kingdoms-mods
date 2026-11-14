@@ -95,6 +95,18 @@
             >bind point</a
           >. You respawn with 50% of maximum Hit Points, rounded.
         </p>
+        <!-- Source: server-scripts/Player.cs:3914-3945 — in zone 26 respawn creates no remains, returns the player to the remembered Chambers entrance instead of the bind point, and finishes the run. -->
+        <p>
+          A death in the
+          <a
+            href="/mechanics/chambers-of-chaos"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Chambers of Chaos</a
+          >
+          leaves no remains, so neither of the recovery options below applies. Respawning
+          there ends the run and returns you to where you entered, not to your bind
+          point.
+        </p>
         <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD; server-scripts/BuffSkill.cs:ignoreSeeInvisibility; website/data/compendium.db skills.resurrection_effects — respawn applies 10 seconds of invisibility that defeats see-invisibility. -->
         <p>
           For 10 seconds after respawning, monsters ignore you (<a

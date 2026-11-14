@@ -1021,6 +1021,20 @@
           <!-- Source: server-scripts/Monster.cs:3369-3372,3406-3409; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity multiplies the award after Double XP and the Forgotten Altar bonus, then floors it. -->
           Prosperity comes last and rounds down.
         </p>
+        <!-- Source: server-scripts/MadMageTower.cs:AwardKillExperience — Chambers kills use dungeon balancing times 3 and Double XP only. -->
+        <!-- Source: server-scripts/Monster.cs:3082-3087 — Chambers enemies skip the normal reward path with its Forgotten Altar and Prosperity multipliers. -->
+        <!-- Source: server-scripts/MadMageTowerRules.cs:114-121; server-scripts/MadMageTower.cs:1146-1149 — completion experience is a fixed level-based award without Double XP. -->
+        <p class="text-sm text-muted-foreground">
+          Kills in the
+          <a
+            href="/mechanics/chambers-of-chaos"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Chambers of Chaos</a
+          >
+          give 3 times the dungeon XP, doubled again by a Double XP buff. Prosperity
+          does not apply there. Completing a run gives a separate fixed amount of
+          XP that Double XP does not change.
+        </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,826 — double XP applies to gathering -->
         <!-- Source: server-scripts/Player.cs:15266-15279 — double XP applies to alchemy -->

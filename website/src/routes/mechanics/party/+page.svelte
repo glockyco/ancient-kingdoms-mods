@@ -56,6 +56,16 @@
         Invite an online player who is not in a party or in combat. There must
         still be room when they accept.
       </p>
+      <!-- Source: server-scripts/PlayerParty.cs:UserCode_CmdInvite__String,UserCode_CmdAcceptInvite — invitations and acceptances are ignored while either player is inside the Chambers of Chaos. -->
+      <p>
+        While you or the other player is inside the
+        <a
+          href="/mechanics/chambers-of-chaos"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Chambers of Chaos</a
+        >, invitations do nothing, and accepting an earlier invitation clears it
+        instead.
+      </p>
       <!-- Source: server-scripts/Party.cs:master; PartySystem.cs:FormParty,AddToParty,LeaveParty,KickFromParty,DismissParty; PlayerParty.cs:UserCode_CmdInvite__String — any member can invite; the first remaining member leads a party that continues after its leader leaves. -->
       <p>
         <span class="block"
