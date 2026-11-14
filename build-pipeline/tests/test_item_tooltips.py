@@ -154,9 +154,18 @@ def test_set_bonus_derivation_stores_stat_ids_without_display_names(tmp_path):
                 json.dumps(["test_armor"]),
             ),
         )
+        # The piece names its set by the asset name, which differs from the
+        # augment's localized name, so only the id joins them.
         conn.execute(
             "UPDATE items SET stats = ? WHERE id = 'test_armor'",
-            (json.dumps({"augment_bonus_set": "Set Augment"}),),
+            (
+                json.dumps(
+                    {
+                        "augment_bonus_set": "Set Augment Asset",
+                        "augment_bonus_set_id": "set_augment",
+                    }
+                ),
+            ),
         )
         assert _denormalize_armor_sets(conn) == (1, 1)
         rows = conn.execute(

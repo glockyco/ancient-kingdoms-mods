@@ -1282,6 +1282,9 @@
       "sha256": "e9b79de110336cb6a64e5b7cdc153f5e694dfec2a592170a7c6c8c062622961a",
       "span": 53
     },
+    "Equipment.cs:GetArmorSetResistanceBonus": {
+      "span": 0
+    },
     "EquipmentItem.cs:115-133": {
       "sha256": "481a334cbfd490fa5bdb487b1b3504ca9b5535bee55a137169055b0ef2ec3961",
       "span": 19
@@ -1313,6 +1316,10 @@
     "EquipmentItem.cs:562-576": {
       "sha256": "ed74b2165b891cd141ea93fca26f7805dbbe2b672a5bfc83c693a99e5a7a79c9",
       "span": 15
+    },
+    "EquipmentItem.cs:563-573": {
+      "sha256": "21fadfc3d9a2ac9cd4a33234121afa6201a1c6f88e1005ae60fca3e309f75e1b",
+      "span": 11
     },
     "EquipmentItem.cs:747-755": {
       "sha256": "20996cfc5da4d6db0b5116e772890bcf560a4f618b5c5616a858373b335991bd",

@@ -28,38 +28,46 @@ def _denormalize_armor_sets(conn: sqlite3.Connection) -> tuple[int, int]:
         conn.execute("SELECT field, stat_id FROM stat_fields WHERE source = 'item'")
     )
     cursor.execute("""
-        SELECT id, name, augment_skill_bonuses, augment_armor_set_item_ids, augment_armor_set_name, stats
+        SELECT id, augment_skill_bonuses, augment_armor_set_item_ids, augment_armor_set_name, stats
         FROM items
         WHERE item_type = 'augment' AND augment_skill_bonuses IS NOT NULL
     """)
 
-    # Build mapping of augment item name -> (augment_id, skill bonuses, set item IDs, set name, attribute bonuses)
-    # Armor pieces reference augments by their name field, not ID
-    set_data: dict[str, tuple[str, str, str, str, str | None]] = {}
+    # Augment id -> (skill bonuses, set item IDs, set name, three-piece bonuses).
+    # Armor pieces name their set augment by id in stats.augment_bonus_set_id. The
+    # augment's exported name is localized, so a set whose display name differs from
+    # its asset name cannot be joined by name.
+    set_data: dict[str, tuple[str, str, str, str | None]] = {}
     augment_items_updated = 0
 
     for (
         augment_id,
-        augment_name,
         skill_bonuses_json,
         set_item_ids_json,
         set_name,
         stats_json,
     ) in cursor.fetchall():
-        # Extract attribute bonuses from stats
+        # Three working pieces add the set's attributes and resistances, listed in
+        # the order the set tooltip shows them.
+        # Source: server-scripts/EquipmentItem.cs:563-573; Equipment.cs:GetArmorSetResistanceBonus
         attribute_bonuses = []
         if stats_json:
             try:
                 stats = json.loads(stats_json)
-                attributes = (
+                set_bonus_stats = (
                     "strength",
                     "dexterity",
                     "constitution",
+                    "charisma",
                     "intelligence",
                     "wisdom",
-                    "charisma",
+                    "magic_resist",
+                    "poison_resist",
+                    "fire_resist",
+                    "cold_resist",
+                    "disease_resist",
                 )
-                for attr_key in attributes:
+                for attr_key in set_bonus_stats:
                     value = stats.get(attr_key, 0)
                     if value > 0:
                         if attr_key not in attribute_stats:
@@ -75,8 +83,7 @@ def _denormalize_armor_sets(conn: sqlite3.Connection) -> tuple[int, int]:
         attribute_bonuses_json = (
             json.dumps(attribute_bonuses) if attribute_bonuses else None
         )
-        set_data[augment_name] = (
-            augment_id,
+        set_data[augment_id] = (
             skill_bonuses_json,
             set_item_ids_json,
             set_name,
@@ -100,16 +107,15 @@ def _denormalize_armor_sets(conn: sqlite3.Connection) -> tuple[int, int]:
     for item_id, stats_json in cursor.fetchall():
         try:
             stats = json.loads(stats_json)
-            augment_set_name = stats.get("augment_bonus_set")
+            augment_id = stats.get("augment_bonus_set_id")
 
-            if augment_set_name and augment_set_name in set_data:
+            if augment_id and augment_id in set_data:
                 (
-                    augment_id,
                     skill_bonuses,
                     set_item_ids,
                     set_name,
                     attribute_bonuses_json_data,
-                ) = set_data[augment_set_name]
+                ) = set_data[augment_id]
                 # Copy augment ID, skill bonuses, set member IDs, set name, and attribute bonuses to this item
                 cursor.execute(
                     """UPDATE items
