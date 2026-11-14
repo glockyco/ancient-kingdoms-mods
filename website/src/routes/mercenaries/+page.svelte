@@ -842,12 +842,12 @@
 
   <section id="ai-behavior" class="space-y-4 rounded-lg border p-5">
     <h2 class="text-xl font-semibold">Healers, Taunts, and Area Attacks</h2>
-    <!-- Source: server-scripts/Pet.cs:4622-4659,GetSupportCandidates,4869-4884,5339-5377,5379-5425; PetSkills.cs:163-214,268-275 — target score, healing thresholds, range, efficiency, and offensive mana reserve. -->
+    <!-- Source: server-scripts/Pet.cs:GetSupportCandidates,4869-4884,5339-5377,5379-5425; PetSkills.cs:163-214,268-275 — target score, healing thresholds, range, efficiency, and offensive mana reserve; party members count within 12 yd of the healer or 20 yd of its owner. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Cleric and Druid healers consider you, your mercenaries and companion,
-        and other party members within 12 yd of the healer, along with those
-        members' mercenaries and companions.</span
+        and other party members within 12 yd of the healer or 20 yd of you,
+        along with those members' mercenaries and companions.</span
       >
       <span class="block"
         >Healers prioritize allies with fewer Hit Points, allies under attack,
