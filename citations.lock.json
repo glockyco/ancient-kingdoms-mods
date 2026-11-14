@@ -2051,6 +2051,13 @@
       "sha256": "fd1031866193f57a490dd20d219984ce4602d8f78f304aa2d5ea257841cdfaf9",
       "span": 14
     },
+    "MadMageTower.cs:1146-1149": {
+      "sha256": "2fb5dc327de70e8cbbca03e5686dd7cc1ea5bac952d76df8666aa4a0e043a626",
+      "span": 4
+    },
+    "MadMageTower.cs:AwardKillExperience": {
+      "span": 0
+    },
     "MadMageTower.cs:Begin": {
       "span": 0
     },
@@ -2092,6 +2099,10 @@
     },
     "MadMageTowerRiddles.cs:Text": {
       "span": 0
+    },
+    "MadMageTowerRules.cs:114-121": {
+      "sha256": "c6622f2a52da7f3d4867035400b0d66f854c08964fa8ca4c5abbde37d557babb",
+      "span": 8
     },
     "MadMageTowerRules.cs:EnemyLevel": {
       "span": 0
@@ -2235,6 +2246,10 @@
     "Monster.cs:3067-3070": {
       "sha256": "741c47add2a566c3f4cb5b4d2afc08afb7eafd340cf1378692c6eeb3f7d88da6",
       "span": 4
+    },
+    "Monster.cs:3082-3087": {
+      "sha256": "067f16bba2380a386966d0a5bc908d84dda8bbb4c5f0a45b7f6178b60f1ed6da",
+      "span": 6
     },
     "Monster.cs:3090-3100": {
       "sha256": "8c4477daf55efcd3dcf0f01695c7ea54ca9ed1411b2cb3e87fbadc4fe4d8e260",
@@ -3526,6 +3541,10 @@
       "sha256": "556582287f0149b76554b01aa2c4868c077c073cea79868f902845609562e182",
       "span": 38
     },
+    "Player.cs:3914-3945": {
+      "sha256": "098ded0acdbf9833f113320565d142f1205dd22d34157e78cc291beb685208a9",
+      "span": 32
+    },
     "Player.cs:3914-3947": {
       "sha256": "db424bc1b15ab747ca443641e7bb7ed913b0fc9cdf16d65487675f51d0817c94",
       "span": 34
@@ -4338,6 +4357,9 @@
       "span": 50
     },
     "PlayerParty.cs:GetMembersInProximity": {
+      "span": 0
+    },
+    "PlayerParty.cs:UserCode_CmdAcceptInvite": {
       "span": 0
     },
     "PlayerParty.cs:UserCode_CmdInvite__String": {

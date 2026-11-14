@@ -30,7 +30,7 @@ describe("compact map popups on canonical acquisition", () => {
   test("Festive Cookie keeps all seasonal merchants and eligible focus geometry", async () => {
     const popup = await loadItemPopupDetails("festive_cookie");
     expect(popup).not.toBeNull();
-    expect(popup!.vendors).toHaveLength(13);
+    expect(popup!.vendors).toHaveLength(14);
     expect(
       popup!.vendors.every(
         (offer) =>
@@ -50,7 +50,7 @@ describe("compact map popups on canonical acquisition", () => {
     );
     expect(
       new Set(merchants.map((location) => location.provider.id)).size,
-    ).toBe(13);
+    ).toBe(14);
     expect(await getItemMapBounds("festive_cookie")).not.toBeNull();
     const selection = await resolveVirtualSelection("item", "festive_cookie");
     expect(selection.highlight).not.toBeNull();

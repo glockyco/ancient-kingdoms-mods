@@ -207,6 +207,11 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
     reviewedBodySha256:
       "7de3574996435219cfa5cd5741616920b23a95a8b77bf72fbc15ab7e49f1e0b8",
   },
+  "macros.introduction": {
+    href: "/mechanics/character#macros",
+    reviewedBodySha256:
+      "ba5d8c84853956bef49e17042e9b9d02c9c06f9e05344047a10ff1cf1d1ac235",
+  },
   "professions.alchemy": {
     href: "/professions/alchemy#how-it-works",
     reviewedBodySha256:
