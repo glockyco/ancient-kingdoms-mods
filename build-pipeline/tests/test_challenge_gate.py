@@ -23,7 +23,10 @@ from compendium.redactions.challenge import (
 from compendium.redactions.config import RedactionConfig, load_redactions
 from compendium.utils.paths import get_repo_root
 
-CLOSED = {"riddles": frozenset(), "rune_puzzles": frozenset()}
+CLOSED: dict[str, frozenset[str]] = {
+    "riddles": frozenset(),
+    "rune_puzzles": frozenset(),
+}
 RAW = chambers_export()
 QUESTION = RAW["riddles"][0]["question"]
 CLUE = RAW["rune_puzzles"][0]["clue"]

@@ -1275,6 +1275,7 @@ class _Normalizer:
             "eligible_kill" if event == "altar_final" else "corpse_generation",
         )
         if roll[0] is not None:
+            assert self.chambers is not None  # a roll exists only with Chambers data
             # Source: server-scripts/Monster.cs:OnDeath — the roll adds one item to the corpse after the ordinary loot, whatever the template's drops.
             self.output(
                 method,

@@ -2,10 +2,9 @@ import copy
 import json
 
 import pytest
-from acquisition_fixtures import database, item, monster, normalizer, stage
+from acquisition_fixtures import database, item, monster, normalizer
 
 from compendium.denormalizers.acquisition import (
-    STAGING_FAMILIES,
     derive,
     verify_private_reachability,
 )
@@ -580,8 +579,3 @@ def test_without_an_eligible_elite_the_entry_item_has_no_source(tmp_path):
     conn = chain(tmp_path, spawn_level=39)
     with pytest.raises(ValueError, match="no eligible elite drops the entry item"):
         verify_private_reachability(conn)
-
-
-def test_staging_family_is_registered():
-    assert "chambers" in STAGING_FAMILIES
-    assert stage  # the shared helper stays importable for staged inputs

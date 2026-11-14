@@ -186,20 +186,24 @@ def compare(recorded: Ledger, current: Ledger) -> list[Difference]:
     for family in sorted(
         set(current.withheld_challenges) | set(recorded.withheld_challenges)
     ):
-        was = recorded.withheld_challenges.get(family)
-        now = current.withheld_challenges.get(family)
-        if was is None:
+        was_withheld = recorded.withheld_challenges.get(family)
+        now_withheld = current.withheld_challenges.get(family)
+        if was_withheld is None:
             differences.append(
-                Difference(family, "appeared", f"{now} challenge values withheld")
+                Difference(
+                    family, "appeared", f"{now_withheld} challenge values withheld"
+                )
             )
-        elif now is None:
+        elif now_withheld is None:
             differences.append(
                 Difference(family, "disappeared", "challenge values no longer withheld")
             )
-        elif was != now:
+        elif was_withheld != now_withheld:
             differences.append(
                 Difference(
-                    family, "changed", f"{was} -> {now} challenge values withheld"
+                    family,
+                    "changed",
+                    f"{was_withheld} -> {now_withheld} challenge values withheld",
                 )
             )
 
