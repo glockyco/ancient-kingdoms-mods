@@ -247,6 +247,11 @@
           hold more than {wavePopulationLimit} guardians, the chamber is a Battle
           chamber instead.
         </p>
+        <!-- Source: server-scripts/MadMageTowerRules.cs:HallGuards,PassageGuards — every hall gets at least 6 Waves guardians and every passage at least 3, so a chamber with two halls cannot fit under the limit. The game-bug report in docs/game-bugs/ records 330 sampled layouts, none under it. -->
+        <p>
+          In this game version the chambers are larger than that, so in practice
+          a Waves draw plays as Battle. This looks like a game bug.
+        </p>
       </TrialCard>
 
       <TrialCard

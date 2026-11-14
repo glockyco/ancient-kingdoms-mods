@@ -2149,10 +2149,16 @@
     "MadMageTowerRules.cs:EnemyLevel": {
       "span": 0
     },
+    "MadMageTowerRules.cs:HallGuards": {
+      "span": 0
+    },
     "MadMageTowerRules.cs:Health": {
       "span": 0
     },
     "MadMageTowerRules.cs:MaximumEnemyLevelBonus": {
+      "span": 0
+    },
+    "MadMageTowerRules.cs:PassageGuards": {
       "span": 0
     },
     "MadMageTowerRules.cs:Power": {

@@ -6,6 +6,7 @@ Defects in this repository do not belong here. Fix those in the code that owns t
 
 | Report | Effect on a player | Reproduced |
 |---|---|---|
+| [The Chambers of Chaos Waves trial never runs](chambers-of-chaos-waves-trial-never-runs.md) | Two of the seven trial slots are Waves, but every chamber is too large for the Waves limit, so players always get a Battle chamber instead. | Yes |
 | [A mercenary's energy multiplier never affects its energy](mercenary-energy-multiplier-is-never-used.md) | A Warrior or Rogue mercenary gains nothing from its resource quality roll and nothing from veteran progression, while a mana user gains up to 50 percent at the veteran cap. | Yes |
 | [Choosing Fire Goblin silently changes a selected Druid to Warrior](fire-goblin-silently-changes-druid-to-warrior.md) | A player who picks the class before the race can create a Warrior while intending a Druid. Fire Goblin allows Druid, so nothing marks the change. | Yes |
 | [The Adventurer's Guide joins a skill's cast time and cooldown into one word](adventurers-guide-joins-cast-time-and-cooldown.md) | 190 of the 474 skill pages in the in-game guide (0.9.35.0) show text such as `0.5s cast45s cooldown`, so the two values read as one. | Yes |
@@ -20,7 +21,7 @@ Defects in this repository do not belong here. Fix those in the code that owns t
 | [Fisherman's Hat and Trousers label their slot as Chest](fishermans-hat-and-trousers-label-their-slot-as-chest.md) | Two inventory tooltips say Chest although the costumes equip to Head and Legs. | Yes |
 | [Beryllium Pickaxe's description misspells intricate](beryllium-pickaxe-description-misspells-intricate.md) | The English item description says `intrincate` instead of `intricate`. | Yes |
 
-Each report states the game version and Steam build it was observed on. The Archer Shot, Bandages, Light of the Heavens and Shadowstrike reports were observed on 0.9.35.5, Steam build 25927597. The resurrection, two-point veteran skill and dungeon potion reports were observed on 0.9.35.1, Steam build 25863605. The Adventurer's Guide and backpack reports were observed on 0.9.34.0, Steam build 25548782. The two earlier character-creation and mercenary reports were observed on 0.9.31.0, Steam build 24925347.
+Each report states the game version and Steam build it was observed on. The Chambers of Chaos Waves report was observed on 0.10.4.0, Steam build 26665980. The Archer Shot, Bandages, Light of the Heavens and Shadowstrike reports were observed on 0.9.35.5, Steam build 25927597. The resurrection, two-point veteran skill and dungeon potion reports were observed on 0.9.35.1, Steam build 25863605. The Adventurer's Guide and backpack reports were observed on 0.9.34.0, Steam build 25548782. The two earlier character-creation and mercenary reports were observed on 0.9.31.0, Steam build 24925347.
 
 Reproduction used a scratch database, so no player save was reached. For the 0.9.31.0 reports, the player save content hash was unchanged after every run. For the 0.9.34.0 reports, the player save modification time predates each run, and only the scratch database changed.
 
