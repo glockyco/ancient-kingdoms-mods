@@ -630,8 +630,11 @@ function augmentDescription(item: Item): string {
       : "";
     return `Bonuses for ${item.augment_armor_set_name}${classRestrictionPhrase(item.class_required)}.${attributePhrase}${skillPhrase}`;
   }
-  const target = item.augment_is_defensive ? "armor piece" : "weapon";
-  return `${q} ${item.augment_is_defensive ? "armor" : "weapon"} augment.${itemStatPhrase(item)} Socket it into ${target === "armor piece" ? "an armor piece" : "a weapon"} at a crafting station. An Augmenter can remove it.`;
+  // Source: server-scripts/UICraftingStation.cs:152; server-scripts/Utils.cs:defensiveEquipment — defensive augments fit armor and shields, offensive ones every other equipment category.
+  const fits = item.augment_is_defensive
+    ? "armor or a shield"
+    : "a weapon or other non-armor equipment";
+  return `${q} ${item.augment_is_defensive ? "defensive" : "offensive"} augment.${itemStatPhrase(item)} Socket it into ${fits} at a crafting station. An Augmenter can remove it.`;
 }
 
 function fragmentDescription(item: Item): string {
