@@ -127,6 +127,7 @@ def _add_villager_role(conn: sqlite3.Connection) -> int:
         "is_guild_management",
         "is_renewal_sage",
         "is_teleporter",
+        "is_chambers_of_chaos_keeper",
     ]
 
     cursor.execute("SELECT id, roles FROM npcs")

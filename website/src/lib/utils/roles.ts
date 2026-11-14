@@ -77,6 +77,11 @@ export const ROLE_CONFIG: RoleConfig[] = [
   { key: "is_guard", label: "Guard", category: "combat" },
   { key: "is_renewal_sage", label: "Renewal Sage", category: "renewal" },
   { key: "is_teleporter", label: "Teleporter", category: "travel" },
+  {
+    key: "is_chambers_of_chaos_keeper",
+    label: "Chambers of Chaos Keeper",
+    category: "travel",
+  },
 ];
 
 /**
@@ -138,6 +143,7 @@ export function normalizeRoles(partial: Partial<NpcRoles>): NpcRoles {
     is_guild_management: partial.is_guild_management ?? false,
     is_renewal_sage: partial.is_renewal_sage ?? false,
     is_teleporter: partial.is_teleporter ?? false,
+    is_chambers_of_chaos_keeper: partial.is_chambers_of_chaos_keeper ?? false,
     is_villager: partial.is_villager ?? false,
   };
 }
@@ -150,6 +156,10 @@ export function normalizeRoles(partial: Partial<NpcRoles>): NpcRoles {
 export const ROLE_DESCRIPTIONS: Partial<
   Record<keyof NpcRoles, RoleDescription>
 > = {
+  // Source: server-scripts/Npc.cs:InteractNpc — madMageTowerEntry offers confirmation before CmdEnterMadMageTower.
+  is_chambers_of_chaos_keeper: {
+    description: "Offers entry to the Chambers of Chaos.",
+  },
   is_quest_giver: {
     description: "Offers quests.",
   },
@@ -275,6 +285,10 @@ export const ROLE_RULES: Partial<Record<keyof NpcRoles, RoleRules>> = {
   is_taskgiver_adventurer: {
     href: "/professions/adventuring#how-it-works",
     label: "How Assignments Work",
+  },
+  is_chambers_of_chaos_keeper: {
+    href: "/mechanics/chambers-of-chaos",
+    label: "Chambers of Chaos",
   },
   is_merchant: {
     href: "/mechanics/inventory#merchants",

@@ -122,6 +122,7 @@ class BuildFailureTests(unittest.TestCase):
             patch.object(build_command, "reconcile"),
             patch.object(build_command, "resolve"),
             patch.object(build_command.verify, "check"),
+            patch.object(build_command.challenge, "check_database"),
             patch.object(Path, "replace", new=fail_database_promotion),
             self.assertRaisesRegex(OSError, "database rename failed"),
         ):
@@ -175,6 +176,7 @@ class BuildFailureTests(unittest.TestCase):
             patch.object(build_command, "reconcile"),
             patch.object(build_command, "resolve"),
             patch.object(build_command.verify, "check"),
+            patch.object(build_command.challenge, "check_database"),
         ):
             build_command.run(self.config)
 

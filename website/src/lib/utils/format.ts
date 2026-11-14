@@ -120,6 +120,7 @@ const itemTypeDisplayNames: Record<string, string> = {
   ammo: "Ammo",
   armor_set_bonus: "Armor Set Bonus",
   augment: "Augment",
+  augment_upgrade: "Augment Upgrade",
   backpack: "Backpack",
   book: "Book",
   chest: "Chest",

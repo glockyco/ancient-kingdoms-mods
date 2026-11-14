@@ -289,6 +289,10 @@ const NPC_FACET_METADATA = {
     label: "Guild Managers",
   },
   isBarber: { visibilityKey: "npcBarbers", label: "Barbers" },
+  isChambersOfChaosKeeper: {
+    visibilityKey: "npcChambersOfChaosKeepers",
+    label: "Chambers of Chaos Keepers",
+  },
 } as const satisfies Record<
   keyof typeof NPC_ROLE_BITS,
   { visibilityKey: keyof LayerVisibility; label: string }

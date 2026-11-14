@@ -128,6 +128,9 @@
     "AugmentItem.cs:nameArmorSet": {
       "span": 0
     },
+    "AugmentUpgradeItem.cs:TryUpgrade": {
+      "span": 0
+    },
     "AvatarEvent.cs:CheckPlayersUp": {
       "span": 0
     },
@@ -2094,6 +2097,9 @@
       "span": 0
     },
     "MadMageTowerRules.cs:Reward": {
+      "span": 0
+    },
+    "MadMageTowerRules.cs:SealDropChance": {
       "span": 0
     },
     "MadMageTowerRules.cs:Trials": {

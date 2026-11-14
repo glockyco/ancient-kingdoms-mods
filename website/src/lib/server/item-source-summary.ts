@@ -138,6 +138,15 @@ export function itemSourceSummariesFromModel(
                   : name("items", input.item_id),
               );
           break;
+        case "augment_upgrade":
+          if (d.predecessor_item_id)
+            add(
+              method,
+              "augment_upgrade",
+              String(d.predecessor_item_id),
+              name("items", d.predecessor_item_id),
+            );
+          break;
         case "treasure_dig":
           if (d.map_item_id)
             add(

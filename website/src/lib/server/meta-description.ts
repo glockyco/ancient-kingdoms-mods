@@ -153,14 +153,30 @@ export function itemTitle(item: Item): string {
 // ---------------------------------------------------------------------------
 
 export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
-  if (ctx.seasons?.length) {
-    const description = itemBaseDescription(item, {
-      ...ctx,
-      sources: undefined,
-    });
-    return description + seasonalItemSourcePhrase(ctx);
-  }
-  return itemBaseDescription(item, ctx);
+  const description = ctx.seasons?.length
+    ? itemBaseDescription(item, { ...ctx, sources: undefined }) +
+      seasonalItemSourcePhrase(ctx)
+    : itemBaseDescription(item, ctx);
+  const upgrades = [
+    ...(ctx.sources?.augmentUpgrades ?? []),
+    ...(ctx.usages?.augmentUpgrades ?? []),
+  ];
+  // Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade; server-scripts/AugmentItem.cs:CanUpgrade — one catalyst and one eligible inventory target produce one next-quality augment.
+  const upgradePhrase = [
+    ...new Map(
+      upgrades.map((upgrade) => [
+        upgrade.method_id,
+        ` Upgrade: ${upgrade.inputs.map((input) => `${formatNumber(input.amount)} ${input.item_name}`).join(" + ")} becomes ${formatNumber(upgrade.result_amount)} ${upgrade.result_item_name}.`,
+      ]),
+    ).values(),
+  ].join("");
+  return (
+    description +
+    upgradePhrase +
+    (upgrades.length
+      ? " Targets must be loose inventory augments with no augment of their own. The result needs inventory space, which consumed inputs or an eligible stack can provide."
+      : "")
+  );
 }
 
 function itemBaseDescription(item: Item, ctx: ItemMetaContext): string {
@@ -196,7 +212,7 @@ function itemBaseDescription(item: Item, ctx: ItemMetaContext): string {
     case "random":
       return randomDescription(item, ctx);
     case "augment":
-      return augmentDescription(item);
+      return augmentDescription(item) + sourcePhrase(ctx);
     case "fragment":
       return fragmentDescription(item);
     case "recipe":
@@ -923,6 +939,7 @@ interface NpcRoles {
   is_teleporter: boolean;
   is_villager: boolean;
   is_barber: boolean;
+  is_chambers_of_chaos_keeper: boolean;
 }
 
 interface NpcDescriptionInput {
@@ -943,6 +960,8 @@ interface NpcDescriptionInput {
  * merchants because the faction context is more specific.
  */
 const NPC_ROLE_PRIORITY: Array<keyof NpcRoles> = [
+  // Source: server-scripts/Npc.cs:InteractNpc — Chambers entry precedes other services.
+  "is_chambers_of_chaos_keeper",
   "is_quest_giver",
   "is_skill_master",
   "is_recruiter_mercenaries",

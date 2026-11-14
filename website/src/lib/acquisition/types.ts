@@ -18,6 +18,8 @@ export const METHOD_KINDS = [
   "pack_use",
   "merge",
   "fragment",
+  "augment_upgrade",
+  "chambers_guardian",
   "treasure_dig",
   "blessing",
   "essence",
@@ -38,6 +40,7 @@ export const PROVIDER_TABLES = {
   items: "item_id",
   classes: "class_id",
   treasure_locations: "treasure_location_id",
+  chambers: "chambers_id",
 } as const;
 export type ProviderDomain = keyof typeof PROVIDER_TABLES;
 export type ProviderRef = {
@@ -108,6 +111,8 @@ export interface InputRow {
     | "component"
     | "fragment"
     | "selected_instance"
+    | "catalyst"
+    | "target"
     | "quest_primary"
     | "quest_secondary";
 }
@@ -121,7 +126,8 @@ export interface CostGroupRow {
     | "complete"
     | "attempt"
     | "use"
-    | "exchange";
+    | "exchange"
+    | "entry";
   readonly quantity_rule: "fixed" | "all_carried" | "quest_completion";
   readonly consumption_rule:
     | "on_success"
@@ -169,6 +175,10 @@ export interface KillDetailRow extends DataRow {
   readonly gold_min: number;
   readonly gold_max: number;
   readonly gold_probability: number;
+  /** A native corpse roll outside the loot pool, by the monster's live level. */
+  readonly code_roll_scaling: "fixed" | "activator" | null;
+  readonly code_roll_level: number | null;
+  readonly code_roll_chance: number | null;
 }
 export interface VendorDetailRow extends DataRow {
   readonly npc_id: string;
@@ -208,6 +218,13 @@ export interface WorldChestDetailRow extends DataRow {
 export interface ItemDetailRow extends DataRow {
   readonly item_id: string;
 }
+export interface ChambersDetailRow extends DataRow {
+  readonly chambers_id: string;
+}
+export interface AugmentUpgradeDetailRow extends DataRow {
+  readonly catalyst_item_id: string | null;
+  readonly predecessor_item_id: string | null;
+}
 export interface TreasureDetailRow extends DataRow {
   readonly treasure_location_id: string;
   readonly map_item_id: string | null;
@@ -236,6 +253,8 @@ export interface DetailRowMap {
   readonly resource: ResourceDetailRow;
   readonly world_chest: WorldChestDetailRow;
   readonly item: ItemDetailRow;
+  readonly augment_upgrade: AugmentUpgradeDetailRow;
+  readonly chambers: ChambersDetailRow;
   readonly treasure: TreasureDetailRow;
   readonly service: ServiceDetailRow;
   readonly creation: CreationDetailRow;
@@ -389,6 +408,13 @@ export type PredicatePayload =
       itemId: string;
       rule: "essence_ui" | "essence_server";
     }
+  | { kind: "augment_upgrade_target"; itemId: string }
+  | {
+      kind: "augment_upgrade_space";
+      catalystItemId: string;
+      predecessorItemId: string;
+      resultItemId: string;
+    }
   | { kind: "withheld"; reason: "unpublished_target" };
 export type RequirementPredicate = PredicatePayload & { subject: Subject };
 export type RequirementExpression =
@@ -452,6 +478,15 @@ export interface SubjectFacts {
     itemId: string;
     definitionEligible: boolean;
     durability: number;
+    location?: ItemLocation;
+    augmented?: boolean;
+    amount?: number;
+    preferredSlot?: boolean;
+  }>;
+  readonly augmentUpgradeSpace?: FactCollection<{
+    resultItemId: string;
+    compatibleStack: boolean;
+    emptyPreferredSlot: boolean;
   }>;
 }
 export interface RequirementFacts {

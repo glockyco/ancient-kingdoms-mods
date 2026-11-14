@@ -44,6 +44,8 @@ const DETAIL_KIND: Record<MethodRow["kind"], string> = {
   pack_use: "item",
   merge: "item",
   fragment: "item",
+  augment_upgrade: "augment_upgrade",
+  chambers_guardian: "chambers",
   treasure_dig: "treasure",
   blessing: "service",
   essence: "service",
@@ -70,6 +72,8 @@ const RULES: Record<MethodRow["kind"], readonly string[]> = {
   pack_use: ["pack_use"],
   merge: ["merge"],
   fragment: ["fragment"],
+  augment_upgrade: ["augment_upgrade"],
+  chambers_guardian: ["chambers_guardian"],
   treasure_dig: ["treasure_dig"],
   blessing: ["blessing"],
   essence: ["essence"],
@@ -90,6 +94,8 @@ const PHASES: Record<MethodRow["kind"], Phase> = {
   pack_use: "use",
   merge: "use",
   fragment: "use",
+  augment_upgrade: "use",
+  chambers_guardian: "enter",
   treasure_dig: "use",
   blessing: "exchange",
   essence: "exchange",
@@ -224,6 +230,7 @@ export function assembleAcquisitionModel(
       "attempt",
       "use",
       "exchange",
+      "entry",
     ]);
     enumField(group as unknown as Record<string, unknown>, "quantity_rule", [
       "fixed",
@@ -267,6 +274,8 @@ export function assembleAcquisitionModel(
       "component",
       "fragment",
       "selected_instance",
+      "catalyst",
+      "target",
       "quest_primary",
       "quest_secondary",
     ]);
@@ -542,6 +551,8 @@ export function assembleAcquisitionModel(
             "is_summoned_pet",
           ])
             flag(detail, field);
+          if (detail.code_roll_scaling !== null)
+            enumField(detail, "code_roll_scaling", ["fixed", "activator"]);
           integer(detail, "loot_zone_number", 0, true);
           if (detail.loot_zone_withheld) {
             if (
@@ -664,6 +675,13 @@ export function assembleAcquisitionModel(
           break;
         case "item":
           reference("item_id", "items");
+          break;
+        case "chambers":
+          reference("chambers_id", "chambers_definitions");
+          break;
+        case "augment_upgrade":
+          reference("catalyst_item_id", "items", true);
+          reference("predecessor_item_id", "items", true);
           break;
         case "treasure":
           reference("treasure_location_id", "treasure_locations");
@@ -971,6 +989,64 @@ export function assembleAcquisitionModel(
           );
         break;
       }
+      case "augment_upgrade": {
+        const groups = costsByMethod.get(id) ?? [];
+        const inputs = groups.flatMap(
+          (group) => inputsByGroup.get(group.id) ?? [],
+        );
+        const outputs = outputsByMethod.get(id) ?? [];
+        if (
+          groups.length !== 1 ||
+          groups[0].phase !== "use" ||
+          groups[0].quantity_rule !== "fixed" ||
+          groups[0].consumption_rule !== "on_success" ||
+          inputs.length !== 2 ||
+          inputs.some(
+            (input) => input.amount !== 1 || input.resource_kind !== "item",
+          ) ||
+          !inputs.some(
+            (input) =>
+              input.role === "catalyst" &&
+              input.item_id === detail.catalyst_item_id,
+          ) ||
+          !inputs.some(
+            (input) =>
+              input.role === "target" &&
+              input.item_id === detail.predecessor_item_id,
+          ) ||
+          outputs.length !== 1 ||
+          outputs[0].amount_min !== 1 ||
+          outputs[0].amount_max !== 1 ||
+          outputs[0].yield_rule !== "fixed" ||
+          outputs[0].delivery !== "inventory"
+        )
+          dataError(id, "invalid augment upgrade transformation");
+        // Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade — target is a loose unaugmented inventory item and output can reuse a consumed slot, stack or empty preferred slot.
+        const output = (outputsByMethod.get(id) ?? [])[0];
+        if (
+          detail.predecessor_item_id &&
+          detail.catalyst_item_id &&
+          output?.item_id
+        )
+          add([
+            predicate(
+              {
+                kind: "augment_upgrade_target",
+                itemId: String(detail.predecessor_item_id),
+              },
+              "selected_instance",
+            ),
+            predicate({
+              kind: "augment_upgrade_space",
+              catalystItemId: String(detail.catalyst_item_id),
+              predecessorItemId: String(detail.predecessor_item_id),
+              resultItemId: output.item_id,
+            }),
+          ]);
+        else
+          add([predicate({ kind: "withheld", reason: "unpublished_target" })]);
+        break;
+      }
       case "creation":
         add([
           predicate({
@@ -1067,6 +1143,20 @@ export function assembleAcquisitionModel(
           );
         break;
       }
+      case "chambers_guardian": {
+        const run = get("chambers_definitions", detail.chambers_id);
+        if (!run) return dataError(id, "missing Chambers definition");
+        // Source: server-scripts/MadMageTower.cs:Begin — a run needs the configured minimum level. The reward bands depend on entry level and veteran points.
+        add([
+          predicate({
+            kind: "metric_at_least",
+            metric: "level",
+            amount: Number(run.minimum_level),
+            unit: "levels",
+          }),
+        ]);
+        break;
+      }
       case "kill":
       case "portable_chest":
       case "pack_use":
@@ -1115,7 +1205,11 @@ export function assembleAcquisitionModel(
       for (const membership of providersByMethod.get(domain)?.get(id) ?? []) {
         const providerId = text(membership, PROVIDER_TABLES[domain], id);
         const table =
-          domain === "resource_spawns" ? "gathering_resource_spawns" : domain;
+          domain === "resource_spawns"
+            ? "gathering_resource_spawns"
+            : domain === "chambers"
+              ? "chambers_definitions"
+              : domain;
         const entity = get(table, providerId);
         if (!entity) dataError(id, `missing ${domain} provider ${providerId}`);
         const ref: ProviderRef = { kind: domain, id: providerId };
@@ -1131,7 +1225,7 @@ export function assembleAcquisitionModel(
             : domain === "treasure_locations"
               ? "Treasure site"
               : String(entity.name ?? parent?.name ?? providerId);
-        const physical = !["items", "classes"].includes(domain);
+        const physical = !["items", "classes", "chambers"].includes(domain);
         const placements =
           domain === "npcs" ? (npcSpawnsByNpc.get(providerId) ?? []) : [entity];
         // A definition without a configured spawn is inspectable, not a physical source.
@@ -1355,7 +1449,10 @@ export function assembleAcquisitionModel(
                       itemId: text(slot, "item_id", id),
                     }),
               });
-          } else if (method.rule_id !== "altar_final_loot")
+          } else if (
+            method.rule_id !== "altar_final_loot" &&
+            method.kind !== "chambers_guardian"
+          )
             dataError(id, "unsupported conditional output");
         }
         return {

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from rich.console import Console
 
+from compendium.redactions.challenge import parse_policy
 from compendium.redactions.verify import Allowance
 from compendium.utils.paths import get_repo_root
 
@@ -32,6 +33,10 @@ class RedactionConfig:
     the reason for it. Each entry names one table, one column, and one
     identifier, so an allowance covers the case somebody justified and nothing
     else.
+
+    ``challenge_policy`` lists, per Chambers challenge family, the fields that may be
+    published. It is closed by default: an absent or empty entry publishes no row,
+    and a policy that is missing or malformed fails the load.
     """
 
     hide_crafting_item_ids: set[str] = field(default_factory=set)
@@ -39,6 +44,7 @@ class RedactionConfig:
     exclude_zone_ids: set[str] = field(default_factory=set)
     exclude_entity_ids: set[str] = field(default_factory=set)
     allowances: list[Allowance] = field(default_factory=list)
+    challenge_policy: dict[str, frozenset[str]] = field(default_factory=dict)
 
 
 def load_redactions(config_path: Path | None = None) -> RedactionConfig:
@@ -84,6 +90,7 @@ def load_redactions(config_path: Path | None = None) -> RedactionConfig:
             )
             for entry in data.get("verify", {}).get("allow", [])
         ],
+        challenge_policy=parse_policy(data),
     )
 
     if config.hide_crafting_item_ids:

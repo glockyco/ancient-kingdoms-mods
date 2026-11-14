@@ -113,6 +113,11 @@ const PREDICATE_FIELDS: Record<
   house_owned: { strings: [], numbers: [] },
   home_station: { strings: ["structureItemId", "componentPath"], numbers: [] },
   instance_eligible: { strings: ["itemId", "rule"], numbers: [] },
+  augment_upgrade_target: { strings: ["itemId"], numbers: [] },
+  augment_upgrade_space: {
+    strings: ["catalystItemId", "predecessorItemId", "resultItemId"],
+    numbers: [],
+  },
   withheld: { strings: ["reason"], numbers: [] },
 };
 function validatePredicate(predicate: RequirementPredicate): void {
@@ -573,6 +578,73 @@ function evaluatePredicate(
           }
         : unknown;
     }
+    // Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade — both inputs must be in preferred inventory slots and the target cannot carry an augment.
+    case "augment_upgrade_target": {
+      const instance = s?.instances?.entries.find((i) => i.itemId === p.itemId);
+      if (!instance) return unknown;
+      if (
+        !instance.definitionEligible ||
+        (instance.location && instance.location !== "inventory") ||
+        instance.augmented === true ||
+        instance.preferredSlot === false
+      )
+        return {
+          status: "unmet",
+          children: [],
+          evidence: ["ineligible augment target"],
+        };
+      if (
+        instance.location === undefined ||
+        instance.augmented === undefined ||
+        instance.preferredSlot === undefined
+      )
+        return unknown;
+      return {
+        status: "met",
+        children: [],
+        evidence: ["loose unaugmented augment"],
+      };
+    }
+    // Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade — consumed input slots, a compatible result stack or an empty preferred slot can receive the result.
+    case "augment_upgrade_space": {
+      const instances = s?.instances;
+      const catalyst = instances?.entries.find(
+        (i) => i.itemId === p.catalystItemId,
+      );
+      const target = instances?.entries.find(
+        (i) => i.itemId === p.predecessorItemId,
+      );
+      const space = s?.augmentUpgradeSpace?.entries.find(
+        (i) => i.resultItemId === p.resultItemId,
+      );
+      const consumedSlot = [catalyst, target].some(
+        (i) =>
+          i?.location === "inventory" &&
+          i.preferredSlot === true &&
+          i.amount === 1,
+      );
+      if (consumedSlot || space?.compatibleStack || space?.emptyPreferredSlot)
+        return {
+          status: "met",
+          children: [],
+          evidence: ["result destination available"],
+        };
+      if (
+        !space ||
+        catalyst?.amount === undefined ||
+        target?.amount === undefined ||
+        catalyst.preferredSlot === undefined ||
+        target.preferredSlot === undefined ||
+        catalyst.location === undefined ||
+        target.location === undefined
+      )
+        return unknown;
+      return {
+        status: "unmet",
+        children: [],
+        evidence: ["no result destination"],
+      };
+    }
     default:
       return dataError("predicate", "unsupported predicate kind");
   }
@@ -720,6 +792,10 @@ function describePredicate(
       return p.rule === "essence_ui"
         ? "The item must have durability remaining"
         : "Select one item eligible for Primal Essence";
+    case "augment_upgrade_target":
+      return "Select a loose, unaugmented inventory augment";
+    case "augment_upgrade_space":
+      return "Space for the result in a consumed input slot, compatible stack or empty inventory slot";
     default:
       return dataError("description", "unsupported predicate");
   }

@@ -21,6 +21,8 @@ export const DETAIL_TABLES = {
   resource: "acquisition_resource_details",
   world_chest: "acquisition_world_chest_details",
   item: "acquisition_item_details",
+  augment_upgrade: "acquisition_augment_upgrade_details",
+  chambers: "acquisition_chambers_details",
   treasure: "acquisition_treasure_details",
   service: "acquisition_service_details",
   creation: "acquisition_creation_details",
@@ -56,6 +58,7 @@ const ENTITY_TABLES = [
   "alchemy_recipes",
   "scribing_recipes",
   "progression_rules",
+  "chambers_definitions",
 ] as const;
 const FACT_TABLES = [
   "quest_objectives",
@@ -82,6 +85,7 @@ const FACT_TABLES = [
   "item_pool_definitions",
   "acquisition_global_roots",
   "luck_tokens",
+  "chambers_entry_item_chances",
   "summon_trigger_placeholders",
   "item_seasons",
 ] as const;
@@ -506,6 +510,8 @@ export async function queryAcquisitionRows(
     declared_result_item_id: "items",
     result_item_id: "items",
     reward_item_id: "items",
+    catalyst_item_id: "items",
+    predecessor_item_id: "items",
     structure_item_id: "items",
     map_item_id: "items",
     key_item_id: "items",
@@ -529,6 +535,7 @@ export async function queryAcquisitionRows(
     skill_id: "skills",
     predecessor_skill_id: "skills",
     treasure_location_id: "treasure_locations",
+    chambers_id: "chambers_definitions",
     zone_id: "zones",
     loot_zone_id: "zones",
     from_zone_id: "zones",

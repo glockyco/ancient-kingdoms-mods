@@ -5,7 +5,11 @@ import {
   projectMethodSeasons,
 } from "$lib/acquisition/projections";
 import type { ItemUsages } from "$lib/types/item-sources";
-import { loadItemSourceModel, sourceEntity } from "./item-sources";
+import {
+  augmentUpgradeTransformation,
+  loadItemSourceModel,
+  sourceEntity,
+} from "./item-sources";
 import { chestRewardFields } from "./world-acquisition";
 
 export function itemUsagesFromModel(
@@ -20,6 +24,7 @@ export function itemUsagesFromModel(
     portals: [],
     chests: [],
     merges: [],
+    augmentUpgrades: [],
   };
   const name = (kind: string, id: unknown): string =>
     String(sourceEntity(model, kind, id)?.name ?? id ?? "");
@@ -154,6 +159,8 @@ export function itemUsagesFromModel(
         item_reward_name: reward.item_reward_name,
         item_reward_amount: reward.item_reward_amount,
       });
+    } else if (method?.kind === "augment_upgrade" && use.kind === "cost") {
+      result.augmentUpgrades.push(augmentUpgradeTransformation(model, method));
     } else if (method?.kind === "merge" && use.kind === "cost") {
       for (const output of method.outputs)
         if (output.item_id)

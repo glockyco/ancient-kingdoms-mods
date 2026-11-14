@@ -266,6 +266,7 @@ describe("map golden invariants", () => {
       "npcAugmenters",
       "npcBanks",
       "npcBarbers",
+      "npcChambersOfChaosKeepers",
       "npcEssenceTraders",
       "npcFactionVendors",
       "npcGuards",

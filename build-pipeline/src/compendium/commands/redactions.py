@@ -15,7 +15,7 @@ from rich.table import Table
 from compendium.config import get_curated_dir, get_repo_root
 from compendium.db import create_database
 from compendium.denormalizers import run_before_closure
-from compendium.redactions import closure, verify
+from compendium.redactions import challenge, closure, verify
 from compendium.redactions.config import load_redactions
 from compendium.redactions.ledger import (
     LEDGER_NAME,
@@ -32,7 +32,7 @@ console = Console()
 
 def _removals(
     repo_root: Path, config: dict
-) -> tuple[list[closure.Removal], dict[str, int], dict[str, int]]:
+) -> tuple[list[closure.Removal], dict[str, int], dict[str, int], dict[str, int]]:
     """The removals the current export and configuration produce."""
     from compendium.loaders import load_all
 
@@ -47,17 +47,17 @@ def _removals(
             # Without a static directory the loaders record their manifest rows
             # and write no file, so this reads the export without publishing.
             load_all(conn, session_dir, curated_dir)
-            redactions, suppressed, hidden_crafting = run_before_closure(conn)
+            redactions, suppressed, hidden_crafting, withheld = run_before_closure(conn)
             removals, _ = closure.decide(conn, redactions)
         finally:
             conn.close()
 
-    return removals, suppressed, hidden_crafting
+    return removals, suppressed, hidden_crafting, withheld
 
 
 def _recompute(repo_root: Path, config: dict) -> Ledger:
     """Work out what the current export and configuration remove."""
-    removals, suppressed, hidden_crafting = _removals(repo_root, config)
+    removals, suppressed, hidden_crafting, withheld = _removals(repo_root, config)
 
     return Ledger(
         removed={
@@ -72,6 +72,7 @@ def _recompute(repo_root: Path, config: dict) -> Ledger:
         },
         suppressed_zones=suppressed,
         hidden_crafting=hidden_crafting,
+        withheld_challenges=withheld,
     )
 
 
@@ -108,6 +109,8 @@ def _summarise(ledger: Ledger) -> None:
         console.print(f"  positions suppressed in {zone}: {cleared} values")
     for item, removed in sorted(ledger.hidden_crafting.items()):
         console.print(f"  crafting hidden for {item}: {removed} recipes")
+    for family, cleared in sorted(ledger.withheld_challenges.items()):
+        console.print(f"  challenge values withheld for {family}: {cleared}")
 
 
 def _check(repo_root: Path, config: dict) -> int:
@@ -154,7 +157,7 @@ def _scan_identifiers(repo_root: Path, config: dict) -> set[str]:
     recorded ledger's keys: a placement is recorded under where it stands, and a
     ledger that has not been synced names the previous removals.
     """
-    removals, _, _ = _removals(repo_root, config)
+    removals, _, _, _ = _removals(repo_root, config)
     return {removal.entity_id for removal in removals}
 
 
@@ -196,6 +199,20 @@ def _verify(repo_root: Path, config: dict) -> int:
 
     for surface in missing:
         console.print(f"  [yellow]skipped[/yellow] {surface} is not built")
+
+    # Withheld challenge content has no identifier to find, so its own gate reads the
+    # raw export and the policy, and scans every surface including the browser copies.
+    policy = load_redactions().challenge_policy
+    challenge_findings, not_built = challenge.verify_surfaces(
+        website_dir,
+        resolve_export_session(repo_root / config["paths"]["export_dir"]),
+        policy,
+    )
+    findings += challenge_findings
+    for surface in not_built:
+        console.print(
+            f"  [yellow]skipped[/yellow] challenge scan of {surface}: not built"
+        )
 
     surviving = verify.report(findings, load_redactions().allowances)
     if surviving:

@@ -501,6 +501,8 @@
       >
         {row.original.currency_item_name}
       </a>
+    {:else if row.original.currency_item_name}
+      <RedactedEntry kind="item" />
     {:else}
       <span class="text-yellow-600 dark:text-yellow-400">Gold</span>
     {/if}

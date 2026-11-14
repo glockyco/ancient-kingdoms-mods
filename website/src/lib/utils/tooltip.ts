@@ -78,6 +78,7 @@ const ROLE_DISPLAY_NAMES: Record<keyof typeof NPC_ROLE_BITS, string> = {
   isVillager: "Villager",
   isGuildManagement: "Guild Manager",
   isBarber: "Barber",
+  isChambersOfChaosKeeper: "Chambers of Chaos Keeper",
 };
 
 /**

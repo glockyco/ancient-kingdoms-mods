@@ -377,6 +377,150 @@
         "items:divine_essence"
       ]
     },
+    "chambers_riddles:chambers_riddle_0": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_1": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_10": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_11": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_12": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_13": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_14": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_15": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_16": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_17": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_18": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_19": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_2": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_3": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_4": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_5": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_6": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_7": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_8": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_riddles:chambers_riddle_9": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_0": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_1": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_10": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_11": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_12": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_13": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_14": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_15": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_2": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_3": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_4": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_5": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_6": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_7": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_8": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
+    "chambers_rune_puzzles:chambers_rune_puzzle_9": {
+      "mechanism": "challenge_gate",
+      "reason": "challenge content is withheld until its publication is permitted"
+    },
     "crafting_recipes:divine_essence": {
       "mechanism": "cascade",
       "pass": 0,

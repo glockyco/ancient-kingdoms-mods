@@ -55,6 +55,7 @@ const defaultRoles: NpcRoles = {
   is_guild_management: false,
   is_renewal_sage: false,
   is_teleporter: false,
+  is_chambers_of_chaos_keeper: false,
   is_villager: false,
 };
 
@@ -149,13 +150,15 @@ export const load: PageServerLoad = async ({
     const costs = method.costGroups.flatMap((group) => group.inputs);
     const currency = costs.find((input) => input.resource_kind === "item");
     const gold = costs.find((input) => input.resource_kind === "gold");
-    const currencyName = currency?.item_id
-      ? (
-          db
-            .prepare("SELECT name FROM items WHERE id = ?")
-            .get(currency.item_id) as { name: string }
-        ).name
-      : null;
+    const currencyName = currency?.withheld
+      ? "Redacted item"
+      : currency?.item_id
+        ? (
+            db
+              .prepare("SELECT name FROM items WHERE id = ?")
+              .get(currency.item_id) as { name: string }
+          ).name
+        : null;
     const seasons = projectMethodSeasons(acquisition, method);
     const offer: NpcItemSold = {
       item_id: itemId,
@@ -164,7 +167,7 @@ export const load: PageServerLoad = async ({
       tooltip_html: item.tooltip_html,
       visual_public_path: item.visual_public_path,
       price: currency?.amount ?? gold?.amount ?? 0,
-      currency_item_id: currency?.item_id ?? null,
+      currency_item_id: currency?.withheld ? null : (currency?.item_id ?? null),
       currency_item_name: currencyName,
       faction_required: item.faction_required_to_buy,
       faction_tier_name: item.faction_required_tier_name,

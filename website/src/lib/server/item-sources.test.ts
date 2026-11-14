@@ -47,6 +47,104 @@ function fixture() {
   return { db, insert, method, output };
 }
 
+test("upgrade sources and both reverse uses preserve the same grouped costs", async () => {
+  const f = fixture();
+  try {
+    for (const id of ["catalyst", "epic", "legendary"])
+      f.insert("items", { id, name: id, item_type: "general", quality: 0 });
+    f.method("upgrade", "augment_upgrade");
+    f.insert("acquisition_augment_upgrade_details", {
+      id: "upgrade",
+      catalyst_item_id: "catalyst",
+      predecessor_item_id: "epic",
+    });
+    f.insert("acquisition_cost_groups", {
+      id: "upgrade-cost",
+      method_id: "upgrade",
+      phase: "use",
+      quantity_rule: "fixed",
+      consumption_rule: "on_success",
+      selection_rule: "always",
+    });
+    for (const [ordinal, item_id, role] of [
+      [0, "catalyst", "catalyst"],
+      [1, "epic", "target"],
+    ] as const)
+      f.insert("acquisition_inputs", {
+        id: `input-${ordinal}`,
+        cost_group_id: "upgrade-cost",
+        ordinal,
+        resource_kind: "item",
+        item_id,
+        amount: 1,
+        role,
+      });
+    f.output("upgrade-output", "upgrade", "legendary");
+    const sources = (await getItemSources(f.db, "legendary")).augmentUpgrades;
+    expect(sources).toMatchObject([
+      {
+        result_item_id: "legendary",
+        result_amount: 1,
+        inputs: [
+          { item_id: "catalyst", amount: 1, role: "catalyst" },
+          { item_id: "epic", amount: 1, role: "target" },
+        ],
+      },
+    ]);
+    for (const id of ["catalyst", "epic"])
+      expect((await getItemUsages(f.db, id)).augmentUpgrades).toEqual(sources);
+  } finally {
+    f.db.close();
+  }
+});
+
+test("withheld vendor currency keeps the offer and amount without its identifier", async () => {
+  const f = fixture();
+  try {
+    f.insert("items", {
+      id: "catalyst",
+      name: "Catalyst",
+      item_type: "general",
+      quality: 0,
+    });
+    f.insert("npcs", { id: "merchant", name: "Merchant" });
+    f.method("sale", "vendor");
+    f.insert("acquisition_vendor_details", {
+      id: "sale",
+      npc_id: "merchant",
+      offered_item_id: "catalyst",
+    });
+    f.insert("acquisition_cost_groups", {
+      id: "price",
+      method_id: "sale",
+      phase: "attempt",
+      quantity_rule: "fixed",
+      consumption_rule: "on_success",
+      selection_rule: "always",
+    });
+    f.insert("acquisition_inputs", {
+      id: "price",
+      cost_group_id: "price",
+      ordinal: 0,
+      resource_kind: "item",
+      item_id: null,
+      withheld: 1,
+      amount: 10,
+      role: "currency",
+    });
+    f.output("sale-output", "sale", "catalyst");
+    expect((await getItemSources(f.db, "catalyst")).vendors).toMatchObject([
+      {
+        price: 10,
+        currency_item_id: null,
+        currency_item_name: "Redacted item",
+      },
+    ]);
+  } finally {
+    f.db.close();
+  }
+});
+
 test("pack vendors expose direct contents and retain pack inspection without a carried-pack source", async () => {
   const f = fixture();
   try {

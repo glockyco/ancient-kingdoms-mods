@@ -35,6 +35,7 @@ ROLE_BITS = {
     "is_villager": 19,
     "is_guild_management": 20,
     "is_barber": 21,
+    "is_chambers_of_chaos_keeper": 22,
 }
 
 

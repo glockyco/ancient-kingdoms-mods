@@ -16,7 +16,14 @@ from compendium.denormalizers import (
     skills,
     zones,
 )
-from compendium.redactions import closure, crafting, geometry, semantics, verify
+from compendium.redactions import (
+    challenge,
+    closure,
+    crafting,
+    geometry,
+    semantics,
+    verify,
+)
 from compendium.redactions.config import RedactionConfig, load_redactions
 
 console = Console()
@@ -24,7 +31,7 @@ console = Console()
 
 def run_before_closure(
     conn: sqlite3.Connection,
-) -> tuple[RedactionConfig, dict[str, int], dict[str, int]]:
+) -> tuple[RedactionConfig, dict[str, int], dict[str, int], dict[str, int]]:
     """Run every step the unreleased-zone closure depends on.
 
     `redactions check` recomputes the removal decisions without writing a
@@ -35,10 +42,12 @@ def run_before_closure(
 
     Returns:
         The redaction configuration, the count of geometry values cleared for
-        each zone under position suppression, and the count of recipes removed
-        for each item with hidden crafting.
+        each zone under position suppression, the count of recipes removed for
+        each item with hidden crafting, and the count of challenge values cleared
+        for each family that permits only some of its fields.
     """
     redactions = load_redactions()
+    challenge.require_policy(redactions.challenge_policy)
 
     # Enrich altar waves with monster boss/elite info (before altar data is read)
     altars.run_waves(conn)
@@ -46,13 +55,17 @@ def run_before_closure(
     # Canonical process inputs and identified requirements must exist before
     # reachability removes any identity or scrubs a required target.
     acquisition.normalize(conn)
+    # The reward chain is proved on the private graph, where the entry item and the
+    # guardian reward still have identities.
+    acquisition.verify_private_reachability(conn)
     experience.run_gathering(conn)
     # Apply field policies to canonical facts before closure. Running these
     # before normalization would recreate hidden variants or objective geometry.
     suppressed = geometry.run(conn, redactions)
     hidden_recipes = crafting.run(conn, redactions)
+    withheld_challenges = challenge.clear(conn, redactions.challenge_policy)
 
-    return redactions, suppressed, hidden_recipes
+    return redactions, suppressed, hidden_recipes, withheld_challenges
 
 
 def run_all(conn: sqlite3.Connection) -> verify.Subject:
@@ -66,7 +79,7 @@ def run_all(conn: sqlite3.Connection) -> verify.Subject:
     """
     # The build needs the configuration. The two attribute counts belong to the
     # ledger, which `redactions sync` writes from its own recomputation.
-    redactions, _, _ = run_before_closure(conn)
+    redactions, _, _, _ = run_before_closure(conn)
 
     # Snapshot the numeric zone space before removing unpublished identities.
     # Read the numeric key of every zone before the closure deletes rows. A

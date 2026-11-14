@@ -63,6 +63,7 @@ export type ObtainabilitySourceType =
   | "pack"
   | "random"
   | "merge"
+  | "augment_upgrade"
   | "treasure_map"
   | "special";
 
@@ -116,6 +117,7 @@ export interface ObtainabilityNode {
   /** If this item is created by merging other items */
   merge?: {
     materials: ObtainabilityNode[];
+    kind?: "merge" | "augment_upgrade";
   };
   /** Sources for obtaining this item (for leaf nodes or alternative sources) */
   sources: SourceSummary[];

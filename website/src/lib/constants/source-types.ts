@@ -50,6 +50,7 @@ export type ItemSourceType =
   | "pack"
   | "random"
   | "merge"
+  | "augment_upgrade"
   | "treasure_map"
   | "fishing"
   | "starter"
@@ -133,6 +134,12 @@ export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
     icon: Combine,
     color: "text-indigo-500",
     label: "Merge",
+    linkPrefix: "/items/",
+  },
+  augment_upgrade: {
+    icon: Sparkles,
+    color: "text-indigo-500",
+    label: "Augment Upgrade",
     linkPrefix: "/items/",
   },
   treasure_map: {

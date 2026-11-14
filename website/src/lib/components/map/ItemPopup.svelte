@@ -323,6 +323,8 @@
                   itemName={group.offer.currencyItemName}
                   onSelect={onSelectItem}
                 />
+              {:else if group.offer.currencyItemName}
+                {group.offer.currencyItemName}
               {:else}g{/if}
               {#if group.offer.resultAmount && group.offer.resultAmount > 1}
                 for {formatNumber(group.offer.resultAmount)}
@@ -611,6 +613,31 @@
             </div>
           {/each}
         </div>
+      </div>
+    {/if}
+
+    {#if details.augmentUpgradeSources.length > 0}
+      <div class="border-t pt-2">
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Augment Upgrade Inputs
+        </div>
+        {#each details.augmentUpgradeSources as upgrade (upgrade.methodId)}
+          <div>
+            {#each upgrade.inputs as input, index (index)}
+              {#if index > 0}<span> + </span>{/if}
+              <span>{input.amount} </span>
+              {#if input.itemId}
+                <MapItemLink
+                  itemId={input.itemId}
+                  itemName={input.itemName}
+                  onSelect={onSelectItem}
+                />
+              {:else}
+                <span>{input.itemName}</span>
+              {/if}
+            {/each}
+          </div>
+        {/each}
       </div>
     {/if}
 

@@ -217,9 +217,7 @@
         ),
       })),
 
-      soldBy: data.sources.vendors.filter(
-        (vendor) => !vendor.currency_item_name || vendor.currency_item_id,
-      ),
+      soldBy: data.sources.vendors,
 
       rewardedBy:
         data.sources.quests
@@ -893,6 +891,9 @@
           href={resolve("/items/[id]", { id: vendor.currency_item_id })}
           class={styles.link}>{vendor.currency_item_name}</a
         >
+      {:else if vendor.currency_item_name}
+        {formatNumber(vendor.price)}
+        <RedactedEntry kind="item" />
       {:else}
         {formatNumber(vendor.price)}g
       {/if}
@@ -1590,12 +1591,12 @@
                 </dd>
               </div>
             {/if}
-            {#if data.item.buy_price > 0 && computed.soldBy && computed.soldBy.length > 0}
+            {#if computed.soldBy.length > 0 && computed.soldBy[0].price > 0}
               <div class={styles.fact}>
                 <dt class={styles.label}>Buy Price</dt>
                 <dd class={styles.valueCurrency}>
                   {#if computed.soldBy[0].currency_item_id}
-                    {formatNumber(data.item.buy_price)}
+                    {formatNumber(computed.soldBy[0].price)}
                     <a
                       href={resolve("/items/[id]", {
                         id: computed.soldBy[0].currency_item_id,
@@ -1604,8 +1605,11 @@
                     >
                       {computed.soldBy[0].currency_item_name}
                     </a>
+                  {:else if computed.soldBy[0].currency_item_name}
+                    {formatNumber(computed.soldBy[0].price)}
+                    <RedactedEntry kind="item" />
                   {:else}
-                    {formatNumber(data.item.buy_price)}g
+                    {formatNumber(computed.soldBy[0].price)}g
                   {/if}
                 </dd>
               </div>
@@ -1814,6 +1818,49 @@
       </Card.Content>
     </Card.Root>
   {/if}
+  {#each [{ title: "Augment Upgrade Sources", rows: data.sources.augmentUpgrades ?? [] }, { title: "Augment Upgrade Uses", rows: data.usages.augmentUpgrades ?? [] }] as section (section.title)}
+    {#if section.rows.length}
+      <Card.Root class="bg-muted/30">
+        <Card.Header
+          ><Card.Title level={2}>{section.title}</Card.Title></Card.Header
+        >
+        <Card.Content class="space-y-4">
+          <!-- Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade; server-scripts/AugmentItem.cs:CanUpgrade — each transformation consumes one catalyst and one loose, unaugmented target for its next quality. -->
+          <p class="text-sm text-muted-foreground">
+            Each upgrade consumes both inputs. The target must be a loose
+            inventory augment with no augment of its own. The result needs room
+            in inventory, including space freed by the consumed inputs or an
+            eligible stack.
+          </p>
+          {#each section.rows as upgrade (upgrade.method_id)}
+            <div class="flex flex-wrap items-center gap-2">
+              {#each upgrade.inputs as input, i (i)}
+                {#if i > 0}<span>+</span>{/if}
+                <span>{formatNumber(input.amount)}</span>
+                {#if input.item_id}
+                  <a
+                    href={resolve("/items/[id]", { id: input.item_id })}
+                    class={styles.link}>{input.item_name}</a
+                  >
+                {:else}
+                  <RedactedEntry kind="item" />
+                {/if}
+              {/each}
+              <span>becomes {formatNumber(upgrade.result_amount)}</span>
+              {#if upgrade.result_item_id}
+                <a
+                  href={resolve("/items/[id]", { id: upgrade.result_item_id })}
+                  class={styles.link}>{upgrade.result_item_name}</a
+                >
+              {:else}
+                <RedactedEntry kind="item" />
+              {/if}
+            </div>
+          {/each}
+        </Card.Content>
+      </Card.Root>
+    {/if}
+  {/each}
   {#if specialMechanics[0]}
     <Card.Root class="bg-muted/30">
       <Card.Header>

@@ -263,6 +263,11 @@ export interface ItemPopupMergeSource {
   itemName: string;
 }
 
+export interface ItemPopupAugmentUpgradeSource {
+  methodId: string;
+  inputs: Array<{ itemId: string | null; itemName: string; amount: number }>;
+}
+
 export interface ItemPopupPackSource {
   itemId: string;
   itemName: string;
@@ -304,6 +309,7 @@ export interface ItemPopupDetails {
   chestSources: ItemPopupChestSource[];
   craftingSources: ItemPopupCraftSource[];
   mergeSources: ItemPopupMergeSource[];
+  augmentUpgradeSources: ItemPopupAugmentUpgradeSource[];
   packSources: ItemPopupPackSource[];
   /** Treasure maps that lead to this item as a reward */
   treasureMapSources: ItemPopupTreasureMapSource[];
@@ -710,7 +716,6 @@ export async function loadNpcPopupDetails(
     if (method.kind !== "vendor") continue;
     const offeredId = String(method.detail.offered_item_id);
     const inputs = method.costGroups.flatMap((group) => group.inputs);
-    if (inputs.some((input) => input.withheld)) continue;
     const cost =
       inputs.find((input) => input.resource_kind === "item") ??
       inputs.find((input) => input.resource_kind === "gold");
@@ -722,7 +727,11 @@ export async function loadNpcPopupDetails(
       ...itemFields(model, offeredId),
       price,
       currencyItemId,
-      currencyItemName: currency ? String(currency.name) : null,
+      currencyItemName: cost?.withheld
+        ? "Redacted item"
+        : currency
+          ? String(currency.name)
+          : null,
       seasons,
     });
   }
@@ -1019,6 +1028,7 @@ export async function loadItemPopupDetails(
   const chestSources: ItemPopupChestSource[] = [];
   const craftingSources: ItemPopupCraftSource[] = [];
   const mergeSources: ItemPopupMergeSource[] = [];
+  const augmentUpgradeSources: ItemPopupAugmentUpgradeSource[] = [];
   const packSources: ItemPopupPackSource[] = [];
   const treasureMapSources: ItemPopupTreasureMapSource[] = [];
   let level: number | null = null;
@@ -1115,7 +1125,6 @@ export async function loadItemPopupDetails(
       const cost =
         inputs.find((input) => input.resource_kind === "item") ??
         inputs.find((input) => input.resource_kind === "gold");
-      if (inputs.some((input) => input.withheld)) continue;
       const currency = entity(model, "items", cost?.item_id);
       const output = method.outputs.find((output) => output.item_id === itemId);
       const resultAmount =
@@ -1137,7 +1146,11 @@ export async function loadItemPopupDetails(
           price: cost?.amount ?? 0,
           resultAmount,
           currencyItemId: cost?.item_id ?? null,
-          currencyItemName: currency ? String(currency.name) : null,
+          currencyItemName: cost?.withheld
+            ? "Redacted item"
+            : currency
+              ? String(currency.name)
+              : null,
           seasons,
         });
       }
@@ -1257,6 +1270,17 @@ export async function loadItemPopupDetails(
           resultAmount: output.quantity.value,
         });
       }
+    } else if (method.kind === "augment_upgrade") {
+      augmentUpgradeSources.push({
+        methodId: method.methodId,
+        inputs: inputs.map((input) => ({
+          itemId: input.withheld ? null : input.item_id,
+          itemName: input.withheld
+            ? "Redacted item"
+            : String(entity(model, "items", input.item_id)?.name),
+          amount: input.amount,
+        })),
+      });
     } else if (method.kind === "merge" || method.kind === "fragment") {
       if (
         method.costGroups.some((group) =>
@@ -1334,6 +1358,7 @@ export async function loadItemPopupDetails(
     chestSources,
     craftingSources,
     mergeSources,
+    augmentUpgradeSources,
     packSources,
     treasureMapSources,
     treasureDestination:

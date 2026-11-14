@@ -18,7 +18,8 @@ from compendium.config import get_curated_dir, get_repo_root
 from compendium.db import create_database
 from compendium.denormalizers import run_all as denormalize_all
 from compendium.loaders import load_all
-from compendium.redactions import verify
+from compendium.redactions import challenge, verify
+from compendium.redactions.config import load_redactions
 from compendium.redactions.references import resolve
 from compendium.session import resolve_export_session
 from compendium.visual_assets import reconcile
@@ -108,6 +109,9 @@ def run(config: dict) -> None:
 
             # Verify after every step that removes published content.
             verify.check(conn, subject, resolve(conn), stage_static_dir / "images")
+            challenge.check_database(
+                conn, load_redactions().challenge_policy, session_dir
+            )
             conn.commit()
         except Exception as e:
             console.print(f"\n[bold red]Error building database:[/bold red] {e}")

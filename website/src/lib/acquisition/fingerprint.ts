@@ -215,12 +215,20 @@ function createProjector(
           dataError(p.questId, "missing objective ordinal"),
       };
     }
+    if (p.kind === "augment_upgrade_space")
+      return {
+        predicate: p,
+        catalyst: identity("items", p.catalystItemId),
+        predecessor: identity("items", p.predecessorItemId),
+        result: identity("items", p.resultItemId),
+      };
     const target =
       p.kind === "item_count" ||
       p.kind === "party_key" ||
       p.kind === "book_read" ||
       p.kind === "reward_choice" ||
-      p.kind === "instance_eligible"
+      p.kind === "instance_eligible" ||
+      p.kind === "augment_upgrade_target"
         ? identity("items", p.itemId)
         : p.kind === "identity_is"
           ? identity(
@@ -324,6 +332,9 @@ function createProjector(
     "gold_min",
     "gold_max",
     "gold_probability",
+    "code_roll_scaling",
+    "code_roll_level",
+    "code_roll_chance",
     "npc_id",
     "offered_item_id",
     "season",
@@ -413,11 +424,14 @@ function createProjector(
       chest_id: "chests",
       item_id: "items",
       treasure_location_id: "treasure_locations",
+      chambers_id: "chambers_definitions",
       map_item_id: "items",
       key_item_id: "items",
       class_id: "classes",
       structure_item_id: "items",
       reward_item_id: "items",
+      catalyst_item_id: "items",
+      predecessor_item_id: "items",
       altar_id: "altars",
       loot_zone_id: "zones",
       parent_monster_spawn_id: "monster_spawns",

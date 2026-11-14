@@ -472,3 +472,98 @@ describe("profession attempt floors", () => {
     );
   });
 });
+
+describe("augment upgrade instance requirements", () => {
+  const target = root(
+    predicate({ kind: "augment_upgrade_target", itemId: "epic" }),
+  );
+  const space = root(
+    predicate({
+      kind: "augment_upgrade_space",
+      catalystItemId: "catalyst",
+      predecessorItemId: "epic",
+      resultItemId: "legendary",
+    }),
+  );
+  const instance = (itemId: string, amount: number) => ({
+    itemId,
+    amount,
+    definitionEligible: true,
+    durability: 0,
+    location: "inventory" as const,
+    augmented: false,
+    preferredSlot: true,
+  });
+  it("keeps unknown target facts unknown and rejects equipped or augmented targets", () => {
+    expect(evaluateRequirement(target, {}).status).toBe("unknown");
+    for (const change of [
+      { location: "equipment" as const },
+      { augmented: true },
+      { definitionEligible: false },
+      { preferredSlot: false },
+    ])
+      expect(
+        evaluateRequirement(
+          target,
+          player({
+            instances: {
+              complete: true,
+              entries: [{ ...instance("epic", 1), ...change }],
+            },
+          }),
+        ).status,
+      ).toBe("unmet");
+    expect(
+      evaluateRequirement(
+        target,
+        player({
+          instances: { complete: true, entries: [instance("epic", 1)] },
+        }),
+      ).status,
+    ).toBe("met");
+  });
+  it.each([
+    [1, 2, false, false, "met"],
+    [2, 1, false, false, "met"],
+    [2, 2, true, false, "met"],
+    [2, 2, false, true, "met"],
+    [2, 2, false, false, "unmet"],
+  ])(
+    "uses consumed slots, compatible stacks and empty preferred slots",
+    (
+      catalystAmount,
+      targetAmount,
+      compatibleStack,
+      emptyPreferredSlot,
+      status,
+    ) => {
+      expect(
+        evaluateRequirement(
+          space,
+          player({
+            instances: {
+              complete: true,
+              entries: [
+                instance("catalyst", catalystAmount),
+                instance("epic", targetAmount),
+              ],
+            },
+            augmentUpgradeSpace: {
+              complete: true,
+              entries: [
+                {
+                  resultItemId: "legendary",
+                  compatibleStack,
+                  emptyPreferredSlot,
+                },
+              ],
+            },
+          }),
+        ).status,
+      ).toBe(status);
+    },
+  );
+  it("does not infer space from unknown slot or stack facts", () => {
+    expect(evaluateRequirement(space, {}).status).toBe("unknown");
+  });
+});

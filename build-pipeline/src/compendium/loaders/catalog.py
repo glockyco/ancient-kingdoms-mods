@@ -31,6 +31,7 @@ from pydantic import BaseModel
 from rich.console import Console
 
 from compendium.db import insert_model
+from compendium.loaders.chambers import load_chambers
 from compendium.loaders.core import (
     load_achievements,
     load_alchemy_tables,
@@ -315,6 +316,28 @@ DATASETS: tuple[Dataset, ...] = (
         ("npc_spawns",),
         after=("zones", "zone_triggers", "npcs"),
         model=NpcSpawnData,
+    ),
+    Dataset(
+        "chambers",
+        ("chambers_of_chaos.json",),
+        (
+            "chambers_definitions",
+            "chambers_pool_monsters",
+            "chambers_encounter_groups",
+            "chambers_trial_bag",
+            "chambers_rule_domains",
+            "chambers_entry_item_chances",
+            "chambers_completion_experience",
+            "chambers_veteran_level_bonuses",
+            "chambers_enemy_level_offsets",
+            "chambers_scaling",
+            "chambers_reward_bands",
+            "chambers_riddles",
+            "chambers_rune_puzzles",
+            "_acquisition_input_chambers",
+        ),
+        after=("zones", "items", "monsters", "npcs", "progression"),
+        handler=_plain(load_chambers),
     ),
     Dataset(
         "summon_triggers",

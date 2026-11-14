@@ -496,6 +496,7 @@ class ItemData(BaseModel):
     augment_is_defensive: bool | None = (
         None  # None for non-augments; True=Defensive (armor slots), False=Offensive (weapon slots)
     )
+    augment_next_quality_id: str | None = None
     recipe_potion_learned_id: str | None = None  # Potion unlocked by recipe
 
     # Weapon properties
@@ -553,6 +554,8 @@ class NpcRoles(BaseModel):
     is_barber: bool = False
     is_augmenter: bool = False
     is_guild_management: bool = False
+    # Source: server-scripts/Npc.cs:madMageTowerEntry — explicit Chambers entry service.
+    is_chambers_of_chaos_keeper: bool = False
 
 
 class NpcSpawnData(BaseModel):
@@ -1193,6 +1196,184 @@ class ProgressionExportData(BaseModel):
     races: list[RaceProgressionData] = Field(min_length=1)
     class_levels: list[ClassLevelProgressionData] = Field(min_length=1)
     level_budgets: list[LevelBudgetData] = Field(min_length=1)
+
+
+# =============================================================================
+# Chambers of Chaos Models
+# =============================================================================
+
+
+class ChambersEncounterGroupData(BaseModel):
+    """One configured encounter group, whose support monster is optional."""
+
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    guards_monster_id: str = Field(min_length=1)
+    support_monster_id: str | None = None
+
+
+class ChambersSealChanceData(BaseModel):
+    """The game's Seal of Chaos corpse-roll chance at one live monster level."""
+
+    level: int = Field(ge=1)
+    chance: float = Field(ge=0, le=1)
+
+
+class ChambersCompletionExperienceData(BaseModel):
+    """Experience for finishing a run, by the player's level at the guardian's death."""
+
+    level: int = Field(ge=1)
+    experience: int = Field(ge=0)
+
+
+class ChambersLevelBonusData(BaseModel):
+    """Highest enemy level above the player's, by total veteran points."""
+
+    veteran_points: int = Field(ge=0)
+    bonus: int = Field(ge=0)
+
+
+class ChambersScalingData(BaseModel):
+    """The game's Health and Power for one enemy level, veteran total and room."""
+
+    enemy_level: int = Field(ge=1)
+    veteran_points: int = Field(ge=0)
+    room_index: int = Field(ge=0)
+    guardian: bool
+    health: int = Field(ge=0)
+    power: int = Field(ge=0)
+
+
+class ChambersRewardBandData(BaseModel):
+    """A uniform guardian reward quantity for a range of entry facts."""
+
+    minimum_level: int = Field(ge=1)
+    maximum_level: int | None = Field(default=None, ge=1)
+    minimum_veteran_points: int = Field(ge=0)
+    maximum_veteran_points: int | None = Field(default=None, ge=0)
+    minimum_quantity: int = Field(ge=1)
+    maximum_quantity: int = Field(ge=1)
+    distribution: Literal["uniform_integer"]
+
+    @model_validator(mode="after")
+    def _ordered(self) -> "ChambersRewardBandData":
+        if self.minimum_quantity > self.maximum_quantity:
+            raise ValueError("reward band quantity range is reversed")
+        if (
+            self.maximum_level is not None and self.maximum_level < self.minimum_level
+        ) or (
+            self.maximum_veteran_points is not None
+            and self.maximum_veteran_points < self.minimum_veteran_points
+        ):
+            raise ValueError("reward band domain is reversed")
+        return self
+
+
+class ChambersEnemyLevelOffsetData(BaseModel):
+    """One weighted enemy level offset from the player's level."""
+
+    offset: int
+    weight: int = Field(ge=1)
+    ordinary: bool
+    guardian: bool
+
+
+class ChambersRandomProbeData(BaseModel):
+    """One seeded game call, kept to check the tables rather than to publish."""
+
+    seed: int
+    player_level: int
+    veteran_points: int
+    guardian: bool
+    reward: int = Field(ge=0)
+    enemy_level: int
+
+
+class ChambersTrialProbeData(BaseModel):
+    seed: int
+    trials: list[str] = Field(min_length=1)
+
+
+class ChambersRulesData(BaseModel):
+    """The Chambers rule constants and the tables the game's own calls produced."""
+
+    room_count: int = Field(ge=1)
+    run_duration_seconds: int = Field(ge=1)
+    minimum_level: int = Field(ge=1)
+    wave_count: int = Field(ge=1)
+    maximum_hunt_targets: int = Field(ge=1)
+    maximum_clear_targets: int = Field(ge=1)
+    puzzle_penalty_guards: int = Field(ge=0)
+    combat_experience_multiplier: int = Field(ge=1)
+    player_levels: list[int] = Field(min_length=1)
+    veteran_points: list[int] = Field(min_length=1)
+    enemy_levels: list[int] = Field(min_length=1)
+    room_indices: list[int] = Field(min_length=1)
+    seal_drop_levels: list[int] = Field(min_length=1)
+    seal_drop_chances: list[ChambersSealChanceData] = Field(min_length=1)
+    completion_experience: list[ChambersCompletionExperienceData] = Field(min_length=1)
+    maximum_enemy_level_bonus: list[ChambersLevelBonusData] = Field(min_length=1)
+    scaling: list[ChambersScalingData] = Field(min_length=1)
+    reward_bands: list[ChambersRewardBandData] = Field(min_length=1)
+    enemy_level_offsets: list[ChambersEnemyLevelOffsetData] = Field(min_length=1)
+    trial_bag: list[str] = Field(min_length=1)
+    final_trial: str = Field(min_length=1)
+    random_probes: list[ChambersRandomProbeData] = Field(min_length=1)
+    trial_probes: list[ChambersTrialProbeData] = Field(min_length=1)
+
+
+class ChambersRiddleData(BaseModel):
+    """A private riddle record. Every field is gated by the publication policy."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(min_length=1)
+    source_index: int = Field(ge=0)
+    question: str = Field(min_length=1)
+    choices: list[str] = Field(min_length=2)
+    correct_answer_index: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def _answer_is_a_choice(self) -> "ChambersRiddleData":
+        if self.correct_answer_index >= len(self.choices):
+            raise ValueError(f"riddle {self.id}: answer index is not a choice")
+        return self
+
+
+class ChambersRunePuzzleData(BaseModel):
+    """A private rune puzzle record. Every field is gated by the publication policy."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(min_length=1)
+    source_id: int = Field(ge=0)
+    title: str = Field(min_length=1)
+    clue: str = Field(min_length=1)
+    rune_words: list[str] = Field(min_length=1)
+    solution_order: list[int] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _order_is_a_permutation(self) -> "ChambersRunePuzzleData":
+        if sorted(self.solution_order) != list(range(len(self.rune_words))):
+            raise ValueError(
+                f"rune puzzle {self.id}: solution order is not a permutation"
+            )
+        return self
+
+
+class ChambersExportData(BaseModel):
+    """The whole of chambers_of_chaos.json."""
+
+    id: str = Field(min_length=1)
+    zone_id: str = Field(min_length=1)
+    keeper_npc_id: str = Field(min_length=1)
+    seal_item_id: str = Field(min_length=1)
+    reward_item_id: str = Field(min_length=1)
+    monster_pool: list[str] = Field(min_length=1)
+    encounter_groups: list[ChambersEncounterGroupData] = Field(min_length=1)
+    rules: ChambersRulesData
+    riddles: list[ChambersRiddleData] = Field(min_length=1)
+    rune_puzzles: list[ChambersRunePuzzleData] = Field(min_length=1)
 
 
 # =============================================================================

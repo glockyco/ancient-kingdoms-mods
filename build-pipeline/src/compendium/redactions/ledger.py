@@ -67,9 +67,11 @@ class Ledger:
     removed: dict[str, Entry] = field(default_factory=dict)
     suppressed_zones: dict[str, int] = field(default_factory=dict)
     hidden_crafting: dict[str, int] = field(default_factory=dict)
+    # Challenge values cleared where a family permits only some of its fields.
+    withheld_challenges: dict[str, int] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
-        return {
+        record: dict[str, object] = {
             "snapshot": {"game_version": self.game_version, "keys": KEY_SPACE},
             "removed": {
                 key: self.removed[key].to_dict() for key in sorted(self.removed)
@@ -83,6 +85,13 @@ class Ledger:
                 for item in sorted(self.hidden_crafting)
             },
         }
+        # Only a family that permits some of its fields clears values.
+        if self.withheld_challenges:
+            record["withheld_challenge_fields"] = {
+                family: self.withheld_challenges[family]
+                for family in sorted(self.withheld_challenges)
+            }
+        return record
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
@@ -105,6 +114,7 @@ class Ledger:
             },
             suppressed_zones=dict(data.get("suppressed_positions", {})),
             hidden_crafting=dict(data.get("hidden_crafting", {})),
+            withheld_challenges=dict(data.get("withheld_challenge_fields", {})),
         )
 
     def write(self, path: Path) -> None:
@@ -172,5 +182,25 @@ def compare(recorded: Ledger, current: Ledger) -> list[Difference]:
 
     for item in sorted(set(recorded.hidden_crafting) - set(current.hidden_crafting)):
         differences.append(Difference(item, "disappeared", "crafting no longer hidden"))
+
+    for family in sorted(
+        set(current.withheld_challenges) | set(recorded.withheld_challenges)
+    ):
+        was = recorded.withheld_challenges.get(family)
+        now = current.withheld_challenges.get(family)
+        if was is None:
+            differences.append(
+                Difference(family, "appeared", f"{now} challenge values withheld")
+            )
+        elif now is None:
+            differences.append(
+                Difference(family, "disappeared", "challenge values no longer withheld")
+            )
+        elif was != now:
+            differences.append(
+                Difference(
+                    family, "changed", f"{was} -> {now} challenge values withheld"
+                )
+            )
 
     return differences

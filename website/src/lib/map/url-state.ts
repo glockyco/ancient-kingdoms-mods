@@ -82,6 +82,7 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     npcVillagers: false,
     npcGuildManagers: false,
     npcBarbers: false,
+    npcChambersOfChaosKeepers: false,
     // Interactables
     portalArcs: false,
     // Resources
@@ -235,6 +236,7 @@ export function urlStateToLayerVisibility(
     npcVillagers: urlLayers.includes("npcVillagers"),
     npcGuildManagers: urlLayers.includes("npcGuildManagers"),
     npcBarbers: urlLayers.includes("npcBarbers"),
+    npcChambersOfChaosKeepers: urlLayers.includes("npcChambersOfChaosKeepers"),
     // Interactables
     portals: urlLayers.includes("portals"),
     portalArcs: urlLayers.includes("portalArcs"),

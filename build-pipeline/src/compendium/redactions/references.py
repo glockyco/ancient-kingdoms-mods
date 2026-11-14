@@ -175,6 +175,7 @@ PROVIDER_COLUMNS = {
     "items": "item_id",
     "classes": "class_id",
     "treasure_locations": "treasure_location_id",
+    "chambers": "chambers_id",
 }
 
 # Parent ownership is backwards. Targets of costs, gates and lookups are never
@@ -189,6 +190,7 @@ CANONICAL_DIRECTIONS: dict[tuple[str, str], Direction] = {
     ("acquisition_cost_groups", "method_id"): "provided_by",
     ("acquisition_inputs", "cost_group_id"): "provided_by",
     ("acquisition_inputs", "item_id"): "none",
+    ("items", "augment_next_quality_id"): "none",
     ("acquisition_outputs", "method_id"): "provided_by",
     ("acquisition_outputs", "item_id"): "provides",
     ("acquisition_faction_effects", "method_id"): "provided_by",
@@ -259,6 +261,27 @@ CANONICAL_DIRECTIONS: dict[tuple[str, str], Direction] = {
     ("regional_event_hunt_targets", "monster_id"): "none",
     ("regional_event_dungeons", "region_zone_id"): "provided_by",
 }
+# The Chambers definition is provided by its zone. Its rows hang from it, and the
+# monsters and the keeper that it names are mentioned, never provided.
+for _table, _column in (
+    ("chambers_trial_bag", "definition_id"),
+    ("chambers_rule_domains", "definition_id"),
+    ("chambers_entry_item_chances", "definition_id"),
+    ("chambers_completion_experience", "definition_id"),
+    ("chambers_veteran_level_bonuses", "definition_id"),
+    ("chambers_enemy_level_offsets", "definition_id"),
+    ("chambers_scaling", "definition_id"),
+    ("chambers_reward_bands", "definition_id"),
+    ("chambers_riddles", "definition_id"),
+    ("chambers_rune_puzzles", "definition_id"),
+    ("chambers_pool_monsters", "definition_id"),
+    ("chambers_encounter_groups", "definition_id"),
+):
+    CANONICAL_DIRECTIONS[(_table, _column)] = "provided_by"
+CANONICAL_DIRECTIONS[("chambers_definitions", "keeper_npc_id")] = "none"
+CANONICAL_DIRECTIONS[("chambers_pool_monsters", "monster_id")] = "none"
+CANONICAL_DIRECTIONS[("chambers_encounter_groups", "guards_monster_id")] = "none"
+CANONICAL_DIRECTIONS[("chambers_encounter_groups", "support_monster_id")] = "none"
 for _domain, _column in PROVIDER_COLUMNS.items():
     CANONICAL_DIRECTIONS[(f"acquisition_providers_{_domain}", _column)] = "provided_by"
     CANONICAL_DIRECTIONS[(f"acquisition_providers_{_domain}", "method_id")] = "provides"
@@ -283,6 +306,8 @@ DETAIL_TARGETS = {
     "resource": ("resource_id",),
     "world_chest": ("chest_id", "key_item_id"),
     "item": ("item_id",),
+    "augment_upgrade": ("catalyst_item_id", "predecessor_item_id"),
+    "chambers": ("chambers_id",),
     "treasure": ("treasure_location_id", "map_item_id"),
     "service": (),
     "creation": ("class_id",),

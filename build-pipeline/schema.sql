@@ -518,6 +518,7 @@ CREATE TABLE items (
     augment_skill_bonuses_with_names TEXT,  -- JSON: [{"skill_id": "combat_training", "skill_name": "Combat Training", "level_bonus": 2}, ...]
     augment_attribute_bonuses TEXT,   -- JSON: [{"stat_id": "strength", "bonus": 10}, ...]
     augment_is_defensive INTEGER,  -- NULL for non-augments; 1=Defensive (Head/Chest/Legs/Feet/Hands/Bracers/Belt/Shield), 0=Offensive (every other equipment category). Source: server-scripts/AugmentItem.cs:isDefensiveAugment; Utils.cs:229-239
+    augment_next_quality_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
     recipe_potion_learned_id TEXT REFERENCES items(id),
     relic_buff_id TEXT REFERENCES skills(id),
     relic_buff_name TEXT,
@@ -988,6 +989,155 @@ CREATE TABLE npc_spawns (
 CREATE INDEX idx_npc_spawns_npc ON npc_spawns(npc_id);
 CREATE INDEX idx_npc_spawns_zone ON npc_spawns(zone_id);
 CREATE INDEX idx_npc_spawns_sub_zone ON npc_spawns(sub_zone_id);
+
+-- =============================================================================
+-- CHAMBERS OF CHAOS
+-- =============================================================================
+-- A procedural dungeon. Its rooms are generated per run, so nothing here has a
+-- position or bounds. Seal of Chaos and Chaos Token are excluded items. The
+-- definition keeps no reference to them: the private acquisition staging holds
+-- them until normalization has turned them into redactable methods.
+
+CREATE TABLE chambers_definitions (
+    id TEXT PRIMARY KEY,
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    keeper_npc_id TEXT NOT NULL REFERENCES npcs(id),
+    room_count INTEGER NOT NULL CHECK (room_count > 0),
+    run_duration_seconds INTEGER NOT NULL CHECK (run_duration_seconds > 0),
+    minimum_level INTEGER NOT NULL CHECK (minimum_level > 0),
+    wave_count INTEGER NOT NULL CHECK (wave_count > 0),
+    maximum_hunt_targets INTEGER NOT NULL CHECK (maximum_hunt_targets > 0),
+    maximum_clear_targets INTEGER NOT NULL CHECK (maximum_clear_targets > 0),
+    puzzle_penalty_guards INTEGER NOT NULL CHECK (puzzle_penalty_guards >= 0),
+    combat_experience_multiplier INTEGER NOT NULL CHECK (combat_experience_multiplier > 0),
+    final_trial TEXT NOT NULL
+);
+
+-- The monsters the game's configuration allows in a run. Their ordinary world
+-- stats and drops stay world facts.
+CREATE TABLE chambers_pool_monsters (
+    id TEXT PRIMARY KEY,
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    monster_id TEXT NOT NULL REFERENCES monsters(id),
+    UNIQUE (definition_id, ordinal),
+    UNIQUE (definition_id, monster_id)
+);
+
+CREATE TABLE chambers_encounter_groups (
+    id TEXT PRIMARY KEY,
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    name TEXT NOT NULL,
+    guards_monster_id TEXT NOT NULL REFERENCES monsters(id),
+    -- NULL when the group has guards and no support monster.
+    support_monster_id TEXT REFERENCES monsters(id),
+    UNIQUE (definition_id, ordinal)
+);
+
+-- The trials the first two chambers draw from, with repeats as the game lists them.
+CREATE TABLE chambers_trial_bag (
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    trial_kind TEXT NOT NULL,
+    PRIMARY KEY (definition_id, ordinal)
+);
+
+-- The inputs the rule tables cover. An input outside its domain is refused, and
+-- never answered from the nearest row.
+--   player_level        entry level and the level at the guardian's death
+--   veteran_points      total veteran points
+--   enemy_level         every level an enemy can have
+--   room_index          zero-based chamber index
+--   entry_item_drop_level  live monster level of the entry item's corpse roll
+CREATE TABLE chambers_rule_domains (
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    domain TEXT NOT NULL CHECK (domain IN ('player_level','veteran_points','enemy_level','room_index','entry_item_drop_level')),
+    value INTEGER NOT NULL,
+    PRIMARY KEY (definition_id, domain, value)
+);
+
+CREATE TABLE chambers_entry_item_chances (
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    level INTEGER NOT NULL,
+    chance REAL NOT NULL CHECK (chance >= 0 AND chance <= 1),
+    PRIMARY KEY (definition_id, level)
+);
+
+CREATE TABLE chambers_completion_experience (
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    level INTEGER NOT NULL,
+    experience INTEGER NOT NULL CHECK (experience >= 0),
+    PRIMARY KEY (definition_id, level)
+);
+
+CREATE TABLE chambers_veteran_level_bonuses (
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    veteran_points INTEGER NOT NULL,
+    bonus INTEGER NOT NULL CHECK (bonus >= 0),
+    PRIMARY KEY (definition_id, veteran_points)
+);
+
+-- Enemy level is the player's level plus a weighted offset. A guardian uses only
+-- the offsets flagged for it.
+CREATE TABLE chambers_enemy_level_offsets (
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    level_offset INTEGER NOT NULL,
+    weight INTEGER NOT NULL CHECK (weight > 0),
+    ordinary INTEGER NOT NULL CHECK (ordinary IN (0,1)),
+    guardian INTEGER NOT NULL CHECK (guardian IN (0,1)),
+    PRIMARY KEY (definition_id, level_offset)
+);
+
+-- Rounded Health and Power as the game calculates them. A room index starts at 0.
+CREATE TABLE chambers_scaling (
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    enemy_level INTEGER NOT NULL,
+    veteran_points INTEGER NOT NULL,
+    room_index INTEGER NOT NULL,
+    guardian INTEGER NOT NULL CHECK (guardian IN (0,1)),
+    health INTEGER NOT NULL CHECK (health >= 0),
+    power INTEGER NOT NULL CHECK (power >= 0),
+    PRIMARY KEY (definition_id, enemy_level, veteran_points, room_index, guardian)
+);
+
+-- Guardian reward quantity bands. A NULL maximum has no upper bound. The
+-- reward itself is an excluded item and lives in the acquisition methods.
+CREATE TABLE chambers_reward_bands (
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    minimum_level INTEGER NOT NULL,
+    maximum_level INTEGER,
+    minimum_veteran_points INTEGER NOT NULL,
+    maximum_veteran_points INTEGER,
+    minimum_quantity INTEGER NOT NULL CHECK (minimum_quantity > 0),
+    maximum_quantity INTEGER NOT NULL CHECK (maximum_quantity >= minimum_quantity),
+    distribution TEXT NOT NULL CHECK (distribution IN ('uniform_integer')),
+    PRIMARY KEY (definition_id, ordinal)
+);
+
+-- Challenge content is withheld by default. Every content column can be NULL
+-- because the publication policy in redactions.toml decides which fields stay.
+CREATE TABLE chambers_riddles (
+    id TEXT PRIMARY KEY,
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    source_index INTEGER NOT NULL,
+    question TEXT,
+    choices TEXT,                   -- JSON array of strings
+    correct_answer_index INTEGER
+);
+
+CREATE TABLE chambers_rune_puzzles (
+    id TEXT PRIMARY KEY,
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    source_id INTEGER NOT NULL,
+    title TEXT,
+    clue TEXT,
+    rune_words TEXT,                -- JSON array of strings
+    solution_order TEXT             -- JSON array of integers
+);
+
+CREATE INDEX idx_chambers_pool_monsters_monster ON chambers_pool_monsters(monster_id);
 
 -- =============================================================================
 -- QUESTS
@@ -1640,8 +1790,8 @@ CREATE TABLE pet_skills (
 -- Canonical acquisition facts. Private staging is consumed before closure.
 CREATE TABLE acquisition_methods (
     id TEXT PRIMARY KEY,
-    kind TEXT NOT NULL CHECK (kind IN ('kill','vendor','quest_accept','quest_complete','altar_activate','recipe','gather','world_chest','portable_chest','pack_use','merge','fragment','treasure_dig','blessing','essence','creation','housing','cap_xp')),
-    rule_id TEXT NOT NULL CHECK (rule_id IN ('monster_loot','boss_loot','altar_final_loot','placeholder_loot','lootless','vendor','quest_accept','quest_complete','altar_activate','crafting','cooking','alchemy','scribing','herbalism','mining','fishing','radiant','gather_fixed','world_chest','portable_chest','pack_use','merge','fragment','treasure_dig','blessing','essence','creation','housing','cap_xp')),
+    kind TEXT NOT NULL CHECK (kind IN ('kill','vendor','quest_accept','quest_complete','altar_activate','recipe','gather','world_chest','portable_chest','pack_use','merge','fragment','augment_upgrade','chambers_guardian','treasure_dig','blessing','essence','creation','housing','cap_xp')),
+    rule_id TEXT NOT NULL CHECK (rule_id IN ('monster_loot','boss_loot','altar_final_loot','placeholder_loot','lootless','vendor','quest_accept','quest_complete','altar_activate','crafting','cooking','alchemy','scribing','herbalism','mining','fishing','radiant','gather_fixed','world_chest','portable_chest','pack_use','merge','fragment','augment_upgrade','chambers_guardian','treasure_dig','blessing','essence','creation','housing','cap_xp')),
     setup_method_id TEXT REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
     rooted INTEGER NOT NULL DEFAULT 0 CHECK (rooted IN (0,1)),
     source_level_hint INTEGER
@@ -1649,7 +1799,7 @@ CREATE TABLE acquisition_methods (
 CREATE TABLE acquisition_cost_groups (
     id TEXT PRIMARY KEY,
     method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
-    phase TEXT NOT NULL CHECK (phase IN ('activate','purchase','accept','complete','attempt','use','exchange')),
+    phase TEXT NOT NULL CHECK (phase IN ('activate','purchase','accept','complete','attempt','use','exchange','entry')),
     quantity_rule TEXT NOT NULL CHECK (quantity_rule IN ('fixed','all_carried','quest_completion')),
     consumption_rule TEXT NOT NULL CHECK (consumption_rule IN ('on_success','before_roll','after_outer_success','quest_inventory_then_equipped','replace_carried_stack')),
     selection_rule TEXT NOT NULL DEFAULT 'always' CHECK (selection_rule IN ('always','chest_key_first','chest_lockpick_fallback'))
@@ -1661,7 +1811,7 @@ CREATE TABLE acquisition_inputs (
     resource_kind TEXT NOT NULL CHECK (resource_kind IN ('item','gold')),
     item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
     amount INTEGER NOT NULL CHECK (amount > 0),
-    role TEXT NOT NULL CHECK (role IN ('material','currency','activation','key','lockpick','component','fragment','selected_instance','quest_primary','quest_secondary')),
+    role TEXT NOT NULL CHECK (role IN ('material','currency','activation','key','lockpick','component','fragment','selected_instance','catalyst','target','quest_primary','quest_secondary')),
     withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
     UNIQUE (cost_group_id,ordinal),
     CHECK ((resource_kind='gold' AND item_id IS NULL AND withheld=0) OR (resource_kind='item' AND ((item_id IS NOT NULL AND withheld=0) OR (item_id IS NULL AND withheld=1))))
@@ -1787,6 +1937,15 @@ CREATE TABLE acquisition_kill_details (
     gold_min INTEGER NOT NULL,
     gold_max INTEGER NOT NULL,
     gold_probability REAL NOT NULL CHECK (gold_probability >= 0 AND gold_probability <= 1),
+    -- A native corpse roll that depends on the monster's live level and is not part of
+    -- the loot pool. 'fixed' has a live level and the chance it gives. 'activator'
+    -- scales the level from the player who starts an event, so the chance is open.
+    code_roll_scaling TEXT CHECK (code_roll_scaling IN ('fixed','activator')),
+    code_roll_level INTEGER,
+    code_roll_chance REAL CHECK (code_roll_chance IS NULL OR (code_roll_chance >= 0 AND code_roll_chance <= 1)),
+    CHECK ((code_roll_scaling IS NULL AND code_roll_level IS NULL AND code_roll_chance IS NULL)
+        OR (code_roll_scaling = 'fixed' AND code_roll_level IS NOT NULL AND code_roll_chance IS NOT NULL)
+        OR (code_roll_scaling = 'activator' AND code_roll_level IS NOT NULL AND code_roll_chance IS NULL)),
     CHECK ((loot_zone_withheld=1 AND loot_zone_number IS NULL AND loot_zone_id IS NULL) OR (loot_zone_withheld=0 AND loot_zone_number IS NOT NULL))
 );
 CREATE TABLE acquisition_vendor_details (
@@ -1836,6 +1995,16 @@ CREATE TABLE acquisition_world_chest_details (
 CREATE TABLE acquisition_item_details (
     id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
     item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE acquisition_augment_upgrade_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    catalyst_item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    predecessor_item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
+);
+-- A Chambers run's guardian reward. The run is a procedural provider, not a spawn.
+CREATE TABLE acquisition_chambers_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    chambers_id TEXT NOT NULL REFERENCES chambers_definitions(id) DEFERRABLE INITIALLY DEFERRED
 );
 CREATE TABLE acquisition_treasure_details (
     id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
@@ -1921,6 +2090,12 @@ CREATE TABLE acquisition_providers_classes (
     id TEXT PRIMARY KEY,
     method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
     class_id TEXT NOT NULL REFERENCES classes(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_chambers (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    chambers_id TEXT NOT NULL REFERENCES chambers_definitions(id) DEFERRABLE INITIALLY DEFERRED,
     offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
 );
 CREATE TABLE acquisition_providers_treasure_locations (
@@ -2147,6 +2322,9 @@ CREATE TABLE _acquisition_input_scribing_tables (
     id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
 );
 CREATE TABLE _acquisition_input_game_config (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_chambers (
     id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
 );
 

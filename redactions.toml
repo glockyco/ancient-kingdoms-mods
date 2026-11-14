@@ -60,3 +60,20 @@ ids = [
     "compassion_escort",
     "valaarks_corrupted_seal",
 ]
+
+# Chambers of Chaos riddle and rune-puzzle content. Each family lists the fields
+# that may be published. The riddle fields are question, choices and
+# correct_answer_index. The rune-puzzle fields are title, clue, rune_words and
+# solution_order. A rune puzzle's canonical word order is its solution, so
+# rune_words is as revealing as solution_order. An empty list publishes no row of
+# the family. A family without an entry, or a field the compendium does not know,
+# fails the build, and no key grants permission by default. Both families stay
+# closed until the developer's answer on which fields may be published is
+# recorded in the OpenSpec change. A spoiler control does not change what is
+# permitted, because it hides nothing in the page data. Change a list only with
+# that recorded answer, then sync the ledger.
+[challenges.riddles]
+permitted_fields = []
+
+[challenges.rune_puzzles]
+permitted_fields = []

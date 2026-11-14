@@ -23,6 +23,7 @@ STAGING_FAMILIES = (
     "alchemy_tables",
     "scribing_tables",
     "game_config",
+    "chambers",
 )
 RULES = {
     "kill": {
@@ -46,6 +47,8 @@ RULES = {
             "pack_use",
             "merge",
             "fragment",
+            "augment_upgrade",
+            "chambers_guardian",
             "treasure_dig",
             "blessing",
             "essence",
@@ -69,6 +72,7 @@ PROVIDERS = {
     "items": "item_id",
     "classes": "class_id",
     "treasure_locations": "treasure_location_id",
+    "chambers": "chambers_id",
 }
 DETAILS = {
     "kill": "kill",
@@ -83,6 +87,8 @@ DETAILS = {
     "pack_use": "item",
     "merge": "item",
     "fragment": "item",
+    "augment_upgrade": "augment_upgrade",
+    "chambers_guardian": "chambers",
     "treasure_dig": "treasure",
     "blessing": "service",
     "essence": "service",
@@ -134,6 +140,17 @@ class _Normalizer:
             row["name"]: row["id"] for row in _rows(conn, "SELECT id,name FROM classes")
         }
         self.config = inputs["game_config"][0]
+        self.chambers = inputs["chambers"][0] if inputs["chambers"] else None
+        self.entry_item_chances: dict[int, float] = {}
+        if self.chambers is not None:
+            if self.chambers["seal_item_id"] not in self.items:
+                raise ValueError("Chambers entry item is not a staged item")
+            if self.chambers["reward_item_id"] not in self.items:
+                raise ValueError("Chambers reward item is not a staged item")
+            self.entry_item_chances = {
+                row["level"]: row["chance"]
+                for row in self.chambers["seal_drop_chances"]
+            }
         self.pool_by_item: dict[str, str] = {}
         self.recipe_by_definition: dict[str, str] = {}
         self.kill_methods: dict[str, str] = {}
@@ -435,6 +452,44 @@ class _Normalizer:
                 self.provider("items", method, item_id)
             self.cost(method, "use", [(item, 1, "component") for item in components])
             self.award(method, result)
+        # Source: server-scripts/AugmentItem.cs:CanUpgrade; AugmentUpgradeItem.cs:TryUpgrade — one catalyst upgrades one loose augment by one valid quality step.
+        catalysts = [
+            item
+            for item in self.items.values()
+            if item["item_type"] == "augment_upgrade"
+        ]
+        for predecessor in self.items.values():
+            target_id = predecessor.get("augment_next_quality_id")
+            if target_id is None:
+                continue
+            target = self.items.get(target_id)
+            if (
+                predecessor["item_type"] != "augment"
+                or not 0 <= predecessor["quality"] < 4
+                or target is None
+                or target["item_type"] != "augment"
+                or target["quality"] != predecessor["quality"] + 1
+                or target["max_stack"] <= 0
+                or target["augment_is_defensive"] != predecessor["augment_is_defensive"]
+            ):
+                raise ValueError(f"Invalid augment upgrade link: {predecessor['id']}")
+            for catalyst in catalysts:
+                method = self.method(
+                    "augment_upgrade", [catalyst["id"], predecessor["id"]]
+                )
+                self.detail(
+                    "augment_upgrade",
+                    method,
+                    catalyst_item_id=catalyst["id"],
+                    predecessor_item_id=predecessor["id"],
+                )
+                self.provider("items", method, catalyst["id"])
+                self.cost(
+                    method,
+                    "use",
+                    [(catalyst["id"], 1, "catalyst"), (predecessor["id"], 1, "target")],
+                )
+                self.output(method, target_id)
 
     def recipes(self) -> None:
         for family, route_column, rule in (
@@ -1014,6 +1069,40 @@ class _Normalizer:
             origin="cap_xp",
         )
 
+    def code_roll(
+        self,
+        identity: Any,
+        context: dict[str, Any],
+        level: int | None,
+        scaling: str,
+    ) -> tuple[str | None, int | None, float | None]:
+        """The native corpse roll a kill context adds, as scaling, level and chance.
+
+        The roll is in no loot pool. It depends on the live level of the monster that
+        dies, so a template's level says nothing about a spawn that stands lower.
+        """
+        # Source: server-scripts/Monster.cs:OnDeath — only a non-boss elite that reaches the player-loot branch rolls, a training dummy never does, and a Chambers tower clone takes the other branch.
+        if (
+            self.chambers is None
+            or level is None
+            or not context["is_elite"]
+            or context["is_boss"]
+            or context.get("is_dummy")
+        ):
+            return None, None, None
+        if scaling == "activator":
+            # Source: server-scripts/DefaultEvent.cs:SummonMonsters — a Forgotten Altar wave monster takes the activator's level, so its chance is open.
+            return "activator", level, None
+        chance = self.entry_item_chances.get(level)
+        if chance is None:
+            raise ValueError(
+                f"Kill context {identity}: live level {level} is outside the exported entry item chance domain"
+            )
+        # Source: server-scripts/Monster.cs:OnDeath; MadMageTowerRules.cs:SealDropChance — the roll needs live level 40 and the game's chance is 0 below it.
+        if chance <= 0:
+            return None, None, None
+        return "fixed", level, chance
+
     def kill_context(
         self,
         identity: Any,
@@ -1028,8 +1117,11 @@ class _Normalizer:
         parent: str | None = None,
         setup: str | None = None,
         tier_slot: int | None = None,
+        roll_level: int | None = None,
+        roll_scaling: str = "fixed",
     ) -> None:
         lootless = event == "lootless" or context["is_summoned_pet"]
+        roll = self.code_roll(identity, context, roll_level, roll_scaling)
         entries = [] if lootless else context["drops"]
         rewards = (
             [
@@ -1076,6 +1168,8 @@ class _Normalizer:
                     parent=parent,
                     setup=setup,
                     tier_slot=ordinal,
+                    roll_level=roll_level,
+                    roll_scaling=roll_scaling,
                 )
             return
         rule = (
@@ -1117,6 +1211,7 @@ class _Normalizer:
             member,
             parent,
             tier_slot,
+            roll,
             "lootless" if lootless else event,
             0 if lootless else context["gold_min"],
             0 if lootless else context["gold_max"],
@@ -1169,6 +1264,9 @@ class _Normalizer:
             gold_min=0 if lootless else context["gold_min"],
             gold_max=0 if lootless else context["gold_max"],
             gold_probability=0 if lootless else context["probability_drop_gold"],
+            code_roll_scaling=roll[0],
+            code_roll_level=roll[1],
+            code_roll_chance=roll[2],
         )
         self.provider(provider[0], method, provider[1])
         self.bind_pool(
@@ -1176,6 +1274,14 @@ class _Normalizer:
             pool,
             "eligible_kill" if event == "altar_final" else "corpse_generation",
         )
+        if roll[0] is not None:
+            # Source: server-scripts/Monster.cs:OnDeath — the roll adds one item to the corpse after the ordinary loot, whatever the template's drops.
+            self.output(
+                method,
+                self.chambers["seal_item_id"],
+                1,
+                delivery="corpse",
+            )
         if lootless:
             return
         if gold_override:
@@ -1234,12 +1340,14 @@ class _Normalizer:
                 "gold_min": spawn["loot_gold_min"],
                 "gold_max": spawn["loot_gold_max"],
                 "probability_drop_gold": spawn["loot_gold_probability"],
+                "is_dummy": monster["is_dummy"],
             }
             self.kill_context(
                 ["authored", spawn["id"]],
                 monster,
                 context,
                 provider=("monster_spawns", spawn["id"]),
+                roll_level=spawn["level"] if self.chambers else None,
             )
             if (
                 monster["placeholder_monster_id"]
@@ -1250,6 +1358,7 @@ class _Normalizer:
                     ["placeholder", spawn["id"], child["id"]],
                     child,
                     child,
+                    roll_level=child["level"] if self.chambers else None,
                     provider=("monster_spawns", spawn["id"]),
                     event="placeholder",
                     parent=spawn["id"],
@@ -1280,7 +1389,44 @@ class _Normalizer:
                         wave=wave["wave_number"],
                         member=member,
                         setup=setup,
+                        roll_level=entry["base_level"] if self.chambers else None,
+                        roll_scaling="activator"
+                        if altar["type"] == "forgotten"
+                        else "fixed",
                     )
+
+    def chambers_run(self) -> None:
+        """The guardian's corpse reward, with the run's entry cost.
+
+        The run is a procedural provider named by the Chambers definition. It has no
+        spawn, so no map point, and the entry item is charged once, at first-chamber
+        entry, rather than when the corpse is looted.
+        """
+        chambers = self.chambers
+        if chambers is None:
+            return
+        definition = chambers["id"]
+        method = self.method("chambers_guardian", definition)
+        self.detail("chambers", method, chambers_id=definition)
+        self.provider("chambers", method, definition)
+        # Source: server-scripts/MadMageTower.cs:Begin,Ready — one entry item is consumed when the first chamber is entered.
+        self.cost(
+            method,
+            "entry",
+            [(chambers["seal_item_id"], 1, "activation")],
+            consumption="before_roll",
+        )
+        # Source: server-scripts/MadMageTowerRules.cs:Reward — the quantity is uniform within the band of the entry level and veteran points.
+        for ordinal, band in enumerate(chambers["reward_bands"]):
+            self.output(
+                method,
+                chambers["reward_item_id"],
+                band["minimum_quantity"],
+                band["maximum_quantity"],
+                rule="uniform_inclusive",
+                delivery="corpse",
+                condition=ordinal,
+            )
 
     def gathering(self) -> None:
         methods: dict[tuple[str, str], str] = {}
@@ -1518,6 +1664,7 @@ def normalize(conn: sqlite3.Connection) -> None:
     normalizer.vendors_and_services()
     normalizer.global_grants()
     normalizer.monsters_and_events()
+    normalizer.chambers_run()
     normalizer.gathering()
     for family in STAGING_FAMILIES:
         conn.execute(f'DROP TABLE "_acquisition_input_{family}"')
@@ -1748,6 +1895,16 @@ def _physical_seeds(conn: sqlite3.Connection) -> tuple[set[str], dict[str, int]]
         # A quest is done at the level it recommends. Its acceptance gate is a requirement.
         if row["id"] in rooted:
             hints[row["id"]] = max(row["level_required"], row["level_recommended"] or 0)
+    # A run is entered through its keeper, at the definition's minimum level. Its
+    # entry cost raises the hint like a purchase's price does.
+    for row in _rows(
+        conn,
+        """
+        SELECT p.method_id,d.minimum_level FROM acquisition_providers_chambers p
+        JOIN chambers_definitions d ON d.id=p.chambers_id
+    """,
+    ):
+        add(row["method_id"], row["minimum_level"])
     return rooted, hints
 
 
@@ -1822,6 +1979,11 @@ def _derived_state(conn: sqlite3.Connection) -> dict[str, tuple[int, int | None]
         while changed:
             changed = False
             for method, definition in methods.items():
+                if (
+                    definition["kind"] == "augment_upgrade"
+                    and not cost_level(method)[0]
+                ):
+                    continue
                 if method not in rooted and (
                     (inventory_providers[method] & carried)
                     or (home_providers[method] & structures)
@@ -1855,6 +2017,7 @@ def _derived_state(conn: sqlite3.Connection) -> dict[str, tuple[int, int | None]
                     "portable_chest",
                     "merge",
                     "fragment",
+                    "augment_upgrade",
                     "essence",
                     "blessing",
                 }
@@ -2025,8 +2188,8 @@ def _item_seasons(conn: sqlite3.Connection) -> dict[str, set[str]]:
     return items
 
 
-def derive(conn: sqlite3.Connection) -> None:
-    """Build the item output index and fixed-point opportunity metadata after closure."""
+def _index_pool_outputs(conn: sqlite3.Connection) -> None:
+    """Replace the derived pool outcomes with the ones the current pools give."""
     conn.execute(
         "DELETE FROM acquisition_outputs WHERE yield_rule='pool' AND condition_slot IS NULL"
     )
@@ -2064,6 +2227,109 @@ def derive(conn: sqlite3.Connection) -> None:
             condition_slot=None,
             withheld=0,
         )
+
+
+def verify_private_reachability(conn: sqlite3.Connection) -> None:
+    """Check the Chambers reward chain on the private graph, before redaction.
+
+    Redaction withholds the entry item and the guardian reward, and a withheld cost
+    is no longer known to be obtainable. The chain from the entry item to the
+    Legendary augments is therefore proved here, where every identity is present:
+    the entry item drops from an eligible elite, the guardian rewards the token, a
+    merchant sells the catalyst for it, and each upgrade consumes one catalyst and
+    one predecessor. A link with no source behind it roots nothing.
+    """
+    chambers = _rows(
+        conn,
+        "SELECT p.method_id,d.minimum_level FROM acquisition_providers_chambers p "
+        "JOIN chambers_definitions d ON d.id=p.chambers_id",
+    )
+    if not chambers:
+        return
+    conn.execute("SAVEPOINT chambers_reachability")
+    try:
+        _index_pool_outputs(conn)
+        state = _derived_state(conn)
+        entry_items = {
+            row["item_id"]
+            for row in _rows(
+                conn,
+                "SELECT i.item_id FROM acquisition_inputs i "
+                "JOIN acquisition_cost_groups g ON g.id=i.cost_group_id "
+                "JOIN acquisition_methods m ON m.id=g.method_id "
+                "WHERE m.kind='chambers_guardian'",
+            )
+        }
+        rewards = {
+            row["item_id"]
+            for row in _rows(
+                conn,
+                "SELECT o.item_id FROM acquisition_outputs o "
+                "JOIN acquisition_methods m ON m.id=o.method_id "
+                "WHERE m.kind='chambers_guardian'",
+            )
+        }
+        roll_methods = {
+            row["id"]
+            for row in _rows(
+                conn,
+                "SELECT id FROM acquisition_kill_details WHERE code_roll_scaling IS NOT NULL",
+            )
+        }
+        rooted_awards: dict[str, set[str]] = defaultdict(set)
+        for row in _rows(
+            conn,
+            "SELECT o.method_id,o.item_id,m.kind FROM acquisition_outputs o "
+            "JOIN acquisition_methods m ON m.id=o.method_id "
+            "WHERE o.item_id IS NOT NULL AND o.withheld=0",
+        ):
+            if state[row["method_id"]][0]:
+                rooted_awards[row["item_id"]].add(row["kind"])
+        upgrades = {
+            row["item_id"]
+            for row in _rows(
+                conn,
+                "SELECT o.item_id FROM acquisition_outputs o "
+                "JOIN acquisition_methods m ON m.id=o.method_id "
+                "JOIN items i ON i.id=o.item_id "
+                "WHERE m.kind='augment_upgrade' AND i.quality>=4",
+            )
+        }
+        legendary_catalysts = {
+            row["catalyst_item_id"]
+            for row in _rows(
+                conn, "SELECT catalyst_item_id FROM acquisition_augment_upgrade_details"
+            )
+        }
+    finally:
+        conn.execute("ROLLBACK TO chambers_reachability")
+        conn.execute("RELEASE chambers_reachability")
+    problems: list[str] = []
+    for row in chambers:
+        method = row["method_id"]
+        if not state[method][0] or state[method][1] is None:
+            problems.append(f"guardian run {method} is not reachable")
+    if not roll_methods:
+        problems.append("no eligible elite drops the entry item")
+    for item in sorted(entry_items):
+        if "kill" not in rooted_awards[item]:
+            problems.append(f"entry item {item} has no reachable source")
+    for item in sorted(rewards):
+        if "chambers_guardian" not in rooted_awards[item]:
+            problems.append(f"guardian reward {item} has no reachable source")
+    for item in sorted(legendary_catalysts):
+        if not rooted_awards[item] - {"augment_upgrade"}:
+            problems.append(f"catalyst {item} has no source outside the upgrades")
+    for item in sorted(upgrades):
+        if "augment_upgrade" not in rooted_awards[item]:
+            problems.append(f"Legendary augment {item} has no reachable upgrade source")
+    if problems:
+        raise ValueError("Chambers reward chain is broken: " + "; ".join(problems))
+
+
+def derive(conn: sqlite3.Connection) -> None:
+    """Build the item output index and fixed-point opportunity metadata after closure."""
+    _index_pool_outputs(conn)
     for method, (rooted, hint) in _derived_state(conn).items():
         conn.execute(
             "UPDATE acquisition_methods SET rooted=?,source_level_hint=? WHERE id=?",
@@ -2146,6 +2412,55 @@ def validate(conn: sqlite3.Connection) -> None:
                 raise ValueError(
                     f"Acquisition method {identity}: impossible {family} detail for {kind}"
                 )
+        if kind == "augment_upgrade":
+            definition = _rows(
+                conn,
+                "SELECT * FROM acquisition_augment_upgrade_details WHERE id=?",
+                (identity,),
+            )[0]
+            groups = _rows(
+                conn,
+                "SELECT * FROM acquisition_cost_groups WHERE method_id=?",
+                (identity,),
+            )
+            operands = _rows(
+                conn,
+                """SELECT i.* FROM acquisition_inputs i
+                JOIN acquisition_cost_groups g ON g.id=i.cost_group_id WHERE g.method_id=?""",
+                (identity,),
+            )
+            results = _rows(
+                conn, "SELECT * FROM acquisition_outputs WHERE method_id=?", (identity,)
+            )
+            if (
+                len(groups) != 1
+                or groups[0]["phase"] != "use"
+                or groups[0]["quantity_rule"] != "fixed"
+                or groups[0]["consumption_rule"] != "on_success"
+                or len(operands) != 2
+                or any(
+                    row["amount"] != 1 or row["resource_kind"] != "item"
+                    for row in operands
+                )
+                or not any(
+                    row["role"] == "catalyst"
+                    and row["item_id"] == definition["catalyst_item_id"]
+                    for row in operands
+                )
+                or not any(
+                    row["role"] == "target"
+                    and row["item_id"] == definition["predecessor_item_id"]
+                    for row in operands
+                )
+                or len(results) != 1
+                or results[0]["amount_min"] != 1
+                or results[0]["amount_max"] != 1
+                or results[0]["yield_rule"] != "fixed"
+                or results[0]["delivery"] != "inventory"
+            ):
+                raise ValueError(
+                    f"Acquisition method {identity}: invalid augment upgrade transformation"
+                )
         if kind == "kill":
             row = _rows(
                 conn, "SELECT * FROM acquisition_kill_details WHERE id=?", (identity,)
@@ -2181,6 +2496,94 @@ def validate(conn: sqlite3.Connection) -> None:
             if count != 1 or binding != 1:
                 raise ValueError(
                     f"Acquisition method {identity}: damaged monster pool binding"
+                )
+            roll = [
+                row["code_roll_scaling"],
+                row["code_roll_level"],
+                row["code_roll_chance"],
+            ]
+            roll_outputs = conn.execute(
+                """
+                SELECT count(*) FROM acquisition_outputs
+                WHERE method_id=? AND resource_kind='item' AND yield_rule='fixed'
+                  AND delivery='corpse' AND amount_min=1 AND amount_max=1
+            """,
+                (identity,),
+            ).fetchone()[0]
+            if roll_outputs != int(roll[0] is not None):
+                raise ValueError(
+                    f"Acquisition method {identity}: code roll and its corpse output disagree"
+                )
+            if roll[0] is not None:
+                if not row["is_elite"] or row["is_boss"]:
+                    raise ValueError(
+                        f"Acquisition method {identity}: code roll on a non-elite or boss"
+                    )
+                if roll[0] == "fixed":
+                    # The chance is the exported game call's value at the live level.
+                    table = conn.execute(
+                        "SELECT chance FROM chambers_entry_item_chances WHERE level=?",
+                        (roll[1],),
+                    ).fetchone()
+                    if table is None or table[0] != roll[2] or roll[2] <= 0:
+                        raise ValueError(
+                            f"Acquisition method {identity}: code roll chance is not the exported value"
+                        )
+        if kind == "chambers_guardian":
+            definition = _rows(
+                conn,
+                "SELECT * FROM acquisition_chambers_details WHERE id=?",
+                (identity,),
+            )[0]
+            groups = _rows(
+                conn,
+                "SELECT * FROM acquisition_cost_groups WHERE method_id=?",
+                (identity,),
+            )
+            entry = _rows(
+                conn,
+                """SELECT i.* FROM acquisition_inputs i
+                JOIN acquisition_cost_groups g ON g.id=i.cost_group_id WHERE g.method_id=?""",
+                (identity,),
+            )
+            bands = _rows(
+                conn,
+                "SELECT * FROM chambers_reward_bands WHERE definition_id=? ORDER BY ordinal",
+                (definition["chambers_id"],),
+            )
+            results = _rows(
+                conn,
+                "SELECT * FROM acquisition_outputs WHERE method_id=? ORDER BY condition_slot",
+                (identity,),
+            )
+            providers = conn.execute(
+                "SELECT count(*) FROM acquisition_providers_chambers WHERE method_id=? AND chambers_id=?",
+                (identity, definition["chambers_id"]),
+            ).fetchone()[0]
+            if (
+                len(groups) != 1
+                or groups[0]["phase"] != "entry"
+                or groups[0]["quantity_rule"] != "fixed"
+                or groups[0]["consumption_rule"] != "before_roll"
+                or len(entry) != 1
+                or entry[0]["amount"] != 1
+                or entry[0]["resource_kind"] != "item"
+                or providers != 1
+                or len(results) != len(bands)
+                or any(
+                    result["condition_slot"] != band["ordinal"]
+                    or result["amount_min"] != band["minimum_quantity"]
+                    or result["amount_max"] != band["maximum_quantity"]
+                    or result["yield_rule"] != "uniform_inclusive"
+                    or result["delivery"] != "corpse"
+                    or result["resource_kind"] != "item"
+                    or result["item_id"] != results[0]["item_id"]
+                    or result["withheld"] != results[0]["withheld"]
+                    for result, band in zip(results, bands, strict=True)
+                )
+            ):
+                raise ValueError(
+                    f"Acquisition method {identity}: invalid Chambers guardian reward"
                 )
         if kind == "portable_chest":
             count = conn.execute(
@@ -2352,6 +2755,17 @@ def validate(conn: sqlite3.Connection) -> None:
                 conn.execute(
                     "SELECT 1 FROM acquisition_kill_details WHERE id=? AND event_kind='altar_final' AND altar_id IS NOT NULL",
                     (row["method_id"],),
+                ).fetchone()
+            )
+        elif row["kind"] == "chambers_guardian":
+            valid = bool(
+                conn.execute(
+                    """
+                    SELECT 1 FROM acquisition_chambers_details d
+                    JOIN chambers_reward_bands b ON b.definition_id=d.chambers_id
+                    WHERE d.id=? AND b.ordinal=?
+                """,
+                    (row["method_id"], row["condition_slot"]),
                 ).fetchone()
             )
         else:

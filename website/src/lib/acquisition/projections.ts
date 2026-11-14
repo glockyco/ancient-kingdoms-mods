@@ -450,6 +450,7 @@ export function projectDirectGeometry(
             "pack_use",
             "merge",
             "fragment",
+            "augment_upgrade",
             "blessing",
             "essence",
           ].includes(method.kind),

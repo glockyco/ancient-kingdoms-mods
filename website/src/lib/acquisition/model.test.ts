@@ -3376,3 +3376,128 @@ describe("epic quest completion gates", () => {
     }
   });
 });
+
+function addAugmentUpgrades(f: Fixture) {
+  for (const [id, quality] of [
+    ["lesser", 2],
+    ["epic", 3],
+    ["legendary", 4],
+  ] as const)
+    f.insert("items", {
+      id,
+      name: id,
+      item_type: "augment",
+      quality,
+      augment_is_defensive: 1,
+    });
+  f.insert("items", {
+    id: "catalyst",
+    name: "Catalyst",
+    item_type: "augment_upgrade",
+  });
+  for (const [predecessor, result] of [
+    ["lesser", "epic"],
+    ["epic", "legendary"],
+  ]) {
+    const id = `upgrade-${predecessor}`;
+    f.method(id, "augment_upgrade");
+    f.insert("acquisition_augment_upgrade_details", {
+      id,
+      catalyst_item_id: "catalyst",
+      predecessor_item_id: predecessor,
+    });
+    f.cost(`${id}-cost`, id, [
+      ["catalyst", 1],
+      [predecessor, 1],
+    ]);
+    f.db
+      .prepare(
+        "UPDATE acquisition_inputs SET role=CASE ordinal WHEN 0 THEN 'catalyst' ELSE 'target' END WHERE cost_group_id=?",
+      )
+      .run(`${id}-cost`);
+    f.output(`${id}-output`, id, result);
+  }
+}
+
+describe("canonical augment upgrades", () => {
+  it("expands each quality step with its own catalyst and keeps both reverse uses", async () => {
+    const f = fixture();
+    try {
+      addAugmentUpgrades(f);
+      const model = await f.model({
+        kind: "items",
+        itemIds: ["catalyst", "epic", "legendary"],
+      });
+      const upgrade = projectItemSources(model, "legendary").methods[0];
+      expect(upgrade.kind).toBe("augment_upgrade");
+      expect(projectDirectGeometry(model, "legendary")).toEqual([]);
+      for (const itemId of ["catalyst", "epic"])
+        expect(
+          projectItemUsages(model, itemId).some(
+            (use) => use.method === upgrade,
+          ),
+        ).toBe(true);
+      const tree = await expandAcquisition(f.execute, {
+        itemId: "legendary",
+        amount: 2,
+        maxDepth: 4,
+        maxNodes: 30,
+      });
+      expect(tree.branches[0].plannedExecutions).toBe(2);
+      expect(
+        tree.branches[0].ingredients.map((input) => [
+          input.input.item_id,
+          input.amount,
+        ]),
+      ).toEqual([
+        ["catalyst", { kind: "exact", value: 2 }],
+        ["epic", { kind: "exact", value: 2 }],
+      ]);
+      const previous = tree.branches[0].ingredients[1].acquisition!;
+      expect(previous.branches[0].ingredients[0]).toMatchObject({
+        input: { item_id: "catalyst" },
+        amount: { kind: "exact", value: 2 },
+      });
+    } finally {
+      f.db.close();
+    }
+  });
+
+  it("loads the same upgrade facts and fingerprints in server and browser databases", async () => {
+    const f = fixture();
+    addAugmentUpgrades(f);
+    const SQL = await initSqlJs({
+      wasmBinary: Uint8Array.from(
+        readFileSync(require.resolve("sql.js-fts5/dist/sql-wasm.wasm")),
+      ).buffer,
+    });
+    const db = new SQL.Database(f.db.serialize());
+    const execute: AcquisitionQuery = async (sql, params) => {
+      const statement = db.prepare(sql);
+      try {
+        statement.bind([...params]);
+        const rows: Record<string, unknown>[] = [];
+        while (statement.step()) rows.push(statement.getAsObject());
+        return rows;
+      } finally {
+        statement.free();
+      }
+    };
+    try {
+      const request = {
+        kind: "items" as const,
+        itemIds: ["catalyst", "epic", "legendary"],
+      };
+      const server = await f.model(request);
+      const browser = assembleAcquisitionModel(
+        await queryAcquisitionRows(execute, request),
+      );
+      expect(publicAcquisitionFingerprint(browser, request)).toEqual(
+        publicAcquisitionFingerprint(server, request),
+      );
+    } finally {
+      db.close();
+      f.db.close();
+    }
+  });
+});

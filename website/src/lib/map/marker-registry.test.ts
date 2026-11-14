@@ -197,12 +197,18 @@ describe("marker registry", () => {
   });
 
   test("derives unique NPC visibility facets from role bits", () => {
-    expect(NPC_FACETS).toHaveLength(22);
-    expect(new Set(NPC_FACETS.map((facet) => facet.id)).size).toBe(22);
+    expect(NPC_FACETS).toHaveLength(23);
+    expect(new Set(NPC_FACETS.map((facet) => facet.id)).size).toBe(23);
     expect(new Set(NPC_FACETS.map((facet) => facet.visibilityKey)).size).toBe(
-      22,
+      23,
     );
-    expect(new Set(NPC_FACETS.map((facet) => facet.mask)).size).toBe(22);
+    expect(new Set(NPC_FACETS.map((facet) => facet.mask)).size).toBe(23);
+    expect(
+      NPC_FACETS.find((facet) => facet.id === "isChambersOfChaosKeeper"),
+    ).toMatchObject({
+      visibilityKey: "npcChambersOfChaosKeepers",
+      mask: 1 << 22,
+    });
     expect(
       NPC_FACETS.find((facet) => facet.id === "isTeleporter"),
     ).toMatchObject({
@@ -247,8 +253,8 @@ describe("marker registry", () => {
 
   test("keeps NPC roles as facets over one marker layer", () => {
     const npc = markerRegistry.npc as typeof markerRegistry.npc;
-    expect(npc.facets).toHaveLength(22);
-    expect(new Set(npc.facets?.map((facet) => facet.mask)).size).toBe(22);
+    expect(npc.facets).toHaveLength(23);
+    expect(new Set(npc.facets?.map((facet) => facet.mask)).size).toBe(23);
 
     const row = {
       roleBitmask: 1 << 18,

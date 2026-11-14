@@ -22,6 +22,7 @@ export type ItemSourceType =
   | "pack"
   | "random"
   | "merge"
+  | "augment_upgrade"
   | "treasure_map";
 
 /**
@@ -40,12 +41,18 @@ export type ZoneSourceType = Extract<
 
 /** Usage categories used by the item tables. */
 export type ItemUsageType =
-  "recipe" | "quest" | "currency" | "altar" | "portal" | "chest";
+  | "recipe"
+  | "quest"
+  | "currency"
+  | "altar"
+  | "portal"
+  | "chest"
+  | "augment_upgrade";
 
 /**
  * Usage types that have zone associations
  */
-export type ZoneUsageType = ItemUsageType;
+export type ZoneUsageType = Exclude<ItemUsageType, "augment_upgrade">;
 
 // ============================================================================
 // ITEM SOURCE RECORD INTERFACES
@@ -353,6 +360,20 @@ export interface MergeUsage {
   all_components: Array<{ item_id: string; item_name: string }>;
 }
 
+/** One canonical inventory transformation, shared by both inputs and its output. */
+export interface AugmentUpgradeTransformation {
+  method_id: string;
+  result_item_id: string | null;
+  result_item_name: string;
+  result_amount: number;
+  inputs: Array<{
+    item_id: string | null;
+    item_name: string;
+    amount: number;
+    role: string;
+  }>;
+}
+
 // ============================================================================
 // AGGREGATED INTERFACES
 // ============================================================================
@@ -372,6 +393,7 @@ export interface ItemSources {
   randoms: RandomSource[];
   chestItems: ChestItemSource[];
   merges: MergeSource[];
+  augmentUpgrades: AugmentUpgradeTransformation[];
   treasureMaps: TreasureMapSource[];
   seasonal: SeasonalShopSource[];
 }
@@ -387,6 +409,7 @@ export interface ItemUsages {
   portals: PortalUsage[];
   chests: ChestUsage[];
   merges: MergeUsage[];
+  augmentUpgrades: AugmentUpgradeTransformation[];
 }
 
 // ============================================================================

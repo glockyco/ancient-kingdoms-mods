@@ -206,7 +206,11 @@
       {:else if hasMergeChildren}
         <div class="ml-6 py-1.5 flex items-center gap-1.5">
           <Combine class="h-4 w-4 shrink-0 text-purple-500" />
-          <span class="text-muted-foreground text-sm">Merge Components:</span>
+          <span class="text-muted-foreground text-sm"
+            >{node.merge?.kind === "augment_upgrade"
+              ? "Augment Upgrade Inputs:"
+              : "Merge Components:"}</span
+          >
         </div>
         {#each node.merge?.materials ?? [] as child, index (`${child.item_id}_${index}`)}
           <ObtainabilityTree node={child} />

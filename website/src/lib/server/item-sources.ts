@@ -201,6 +201,32 @@ function monsterRow(
   return row;
 }
 
+export function augmentUpgradeTransformation(
+  model: AcquisitionModel,
+  method: MethodView,
+): ItemSources["augmentUpgrades"][number] {
+  const output = method.outputs[0];
+  return {
+    method_id: method.methodId,
+    result_item_id: output?.withheld ? null : (output?.item_id ?? null),
+    result_item_name: output?.withheld
+      ? "Redacted item"
+      : str(sourceEntity(model, "items", output?.item_id), "name"),
+    result_amount: output?.amount_min ?? 1,
+    inputs: method.costGroups
+      .flatMap((group) => group.inputs)
+      .filter((input) => input.resource_kind === "item")
+      .map((input) => ({
+        item_id: input.withheld ? null : input.item_id,
+        item_name: input.withheld
+          ? "Redacted item"
+          : str(sourceEntity(model, "items", input.item_id), "name"),
+        amount: input.amount,
+        role: input.role,
+      })),
+  };
+}
+
 /** Adapt the canonical methods to the existing item tables without introducing new sections. */
 export function itemSourcesFromModel(
   model: AcquisitionModel,
@@ -219,6 +245,7 @@ export function itemSourcesFromModel(
     randoms: [],
     chestItems: [],
     merges: [],
+    augmentUpgrades: [],
     treasureMaps: [],
     seasonal: [],
   };
@@ -286,9 +313,13 @@ export function itemSourcesFromModel(
         const row = {
           season,
           price: currency?.amount ?? gold?.amount ?? 0,
-          currency_item_id: currency?.item_id ?? null,
+          currency_item_id: currency?.withheld
+            ? null
+            : (currency?.item_id ?? null),
           currency_item_name: currency
-            ? str(sourceEntity(model, "items", currency.item_id), "name")
+            ? currency.withheld
+              ? "Redacted item"
+              : str(sourceEntity(model, "items", currency.item_id), "name")
             : null,
           amount: output?.amount_min ?? 1,
         };
@@ -313,7 +344,9 @@ export function itemSourcesFromModel(
         is_faction_vendor: num(offered, "faction_required_to_buy") > 0,
         price: currency?.amount ?? gold?.amount ?? 0,
         amount: output?.amount_min ?? undefined,
-        currency_item_id: currency?.item_id ?? null,
+        currency_item_id: currency?.withheld
+          ? null
+          : (currency?.item_id ?? null),
         currency_item_name: currency
           ? currency.withheld
             ? "Redacted item"
@@ -375,6 +408,8 @@ export function itemSourcesFromModel(
               ]
             : [],
       });
+    } else if (method.kind === "augment_upgrade") {
+      result.augmentUpgrades.push(augmentUpgradeTransformation(model, method));
     } else if (method.kind === "recipe") {
       const recipeType = detail.alchemy_recipe_id
         ? "alchemy"

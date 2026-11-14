@@ -375,7 +375,8 @@ async function buildTree(
           (m) =>
             m.kind === "blessing" ||
             m.kind === "merge" ||
-            m.kind === "fragment",
+            m.kind === "fragment" ||
+            m.kind === "augment_upgrade",
         );
     for (const method of transformations) {
       const pair = `${id}:${method.methodId}`;
@@ -457,7 +458,11 @@ async function buildTree(
         };
       } else if (method.kind === "blessing")
         branch.service = { service_type: "blessing", materials: children };
-      else branch.merge = { materials: children };
+      else
+        branch.merge = {
+          materials: children,
+          kind: method.kind === "augment_upgrade" ? "augment_upgrade" : "merge",
+        };
       return branch;
     }
     return base;

@@ -250,7 +250,9 @@ class ScanSetTests(unittest.TestCase):
     def test_the_scan_set_comes_from_the_current_removals(self):
         current = [self._removal("items", "gloomwarden_armor_bonus_set")]
 
-        with patch.object(redactions_cmd, "_removals", return_value=(current, {}, {})):
+        with patch.object(
+            redactions_cmd, "_removals", return_value=(current, {}, {}, {})
+        ):
             identifiers = redactions_cmd._scan_identifiers(Path("."), {})
 
         self.assertEqual(identifiers, {"gloomwarden_armor_bonus_set"})
@@ -274,7 +276,7 @@ class ScanSetTests(unittest.TestCase):
             current = [self._removal("items", "gloomwarden_armor_bonus_set")]
 
             with patch.object(
-                redactions_cmd, "_removals", return_value=(current, {}, {})
+                redactions_cmd, "_removals", return_value=(current, {}, {}, {})
             ):
                 identifiers = redactions_cmd._scan_identifiers(repo_root, {})
 
@@ -291,7 +293,9 @@ class ScanSetTests(unittest.TestCase):
         conn.commit()
         current = [self._removal("items", "gloomwarden_armor_bonus_set")]
 
-        with patch.object(redactions_cmd, "_removals", return_value=(current, {}, {})):
+        with patch.object(
+            redactions_cmd, "_removals", return_value=(current, {}, {}, {})
+        ):
             identifiers = redactions_cmd._scan_identifiers(Path("."), {})
 
         findings = verify.scan(conn, identifiers)

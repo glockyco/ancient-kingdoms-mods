@@ -27,7 +27,7 @@ from typing import Any
 
 from rich.console import Console
 
-from compendium.redactions import traces
+from compendium.redactions import challenge, traces
 from compendium.redactions.config import RedactionConfig
 from compendium.redactions.discovery import (
     ZONE_TABLE,
@@ -349,6 +349,18 @@ def _seeds(conn: sqlite3.Connection, redactions: RedactionConfig) -> list[Remova
                         reason="named in the manual exclusion list",
                     )
                 )
+    # A challenge family that permits no field loses every row, through the same
+    # removal accounting as any other seed. A policy that grants nothing names the
+    # whole family, so a missing policy never opens one.
+    for table, identity in challenge.seeds(conn, redactions.challenge_policy):
+        seeds.append(
+            Removal(
+                table=table,
+                entity_id=identity,
+                mechanism=challenge.MECHANISM,
+                reason=challenge.REASON,
+            )
+        )
     return seeds
 
 

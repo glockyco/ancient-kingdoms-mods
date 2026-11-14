@@ -37,6 +37,7 @@ NPC_ROLE_KEYWORDS = {
     "is_guild_management": "guild manager registrar management create invite",
     "is_renewal_sage": "renewal sage reset respawn",
     "is_teleporter": "teleporter teleport travel transport",
+    "is_chambers_of_chaos_keeper": "chambers of chaos keeper entrance entry",
     "is_villager": "villager citizen townsfolk",
 }
 
