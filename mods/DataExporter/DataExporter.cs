@@ -137,6 +137,7 @@ namespace DataExporter
                 new("classes", new[] { "classes_combat.json" }, () => new ClassExporter(LoggerInstance, path, visuals).Export()),
                 new("equipmentSlots", new[] { "equipment_slots.json" }, () => new EquipmentSlotExporter(LoggerInstance, path).Export()),
                 new("progression", new[] { "progression.json" }, () => new ProgressionExporter(LoggerInstance, path).Export()),
+                new("chambersOfChaos", new[] { "chambers_of_chaos.json" }, () => new ChambersOfChaosExporter(LoggerInstance, path).Export()),
                 new("gameGuide", new[] { "game_guide.json" }, () => new GameGuideExporter(LoggerInstance, path).Export()),
                 new("worldMap", Array.Empty<string>(), () => new WorldMapExporter(LoggerInstance, path, visuals).Export()),
                 new("visualAssets.manifest", new[] { "visual_assets.json" }, visuals.WriteManifest, true,

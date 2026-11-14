@@ -69,6 +69,7 @@ public class NpcRoles
     public bool is_priestess { get; set; }
     public bool is_augmenter { get; set; }
     public bool is_guild_management { get; set; }
+    public bool is_chambers_of_chaos_keeper { get; set; }
 }
 
 public class ItemSold

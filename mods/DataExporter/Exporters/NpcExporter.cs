@@ -90,6 +90,8 @@ public class NpcExporter : BaseExporter
                     is_priestess = canonical.isPriestess,
                     is_augmenter = canonical.isAugmenter,
                     is_guild_management = canonical.isGuildManagement,
+                    // Source: server-scripts/Npc.cs:madMageTowerEntry — the entry flag identifies Chambers keepers independently of name or placement.
+                    is_chambers_of_chaos_keeper = canonical.madMageTowerEntry,
                 },
                 preferred_mercenary_race = canonical.preferredMercenaryRace ?? "",
 

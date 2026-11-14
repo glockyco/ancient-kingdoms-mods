@@ -242,6 +242,7 @@ public class ItemExporter : BaseExporter
         if (item.TryCast<Il2Cpp.FoodItem>() != null) return "food";
         if (item.TryCast<Il2Cpp.FriendlyPetFollowerItem>() != null) return "pet";
         if (item.TryCast<Il2Cpp.PotionItem>() != null) return "potion";
+        if (item.TryCast<Il2Cpp.AugmentUpgradeItem>() != null) return "augment_upgrade";
 
         // UsableItem subtypes (check before base EquipmentItem)
         if (item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.RecipeItem>() != null) return "recipe";
@@ -589,6 +590,10 @@ public class ItemExporter : BaseExporter
         }
         // Source: server-scripts/AugmentItem.cs:isDefensiveAugment; Utils.cs:229-239; UICraftingStation.cs:152 — isDefensiveAugment: true=Defensive (Head/Chest/Legs/Feet/Hands/Bracers/Belt/Shield), false=Offensive (every other equipment category)
         itemData.augment_is_defensive = augmentItem.isDefensiveAugment;
+        // Source: server-scripts/AugmentItem.cs:CanUpgrade — the game's check validates quality, next reference, stacking and defensive affinity.
+        itemData.augment_next_quality_id = augmentItem.CanUpgrade
+            ? SanitizeId(augmentItem.nextQuality.name)
+            : null;
     }
 
     private void PopulateTreasureMapFields(Il2Cpp.ScriptableItem item, ItemData itemData)
