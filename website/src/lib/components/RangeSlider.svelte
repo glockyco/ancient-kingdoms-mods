@@ -84,4 +84,19 @@
   input:focus-visible::-webkit-slider-thumb {
     box-shadow: 0 0 0 4px color-mix(in oklab, var(--ring) 40%, transparent);
   }
+  /* Fingers need about 44 px to grab the thumb reliably. */
+  @media (pointer: coarse) {
+    input {
+      height: 2.75rem;
+    }
+    input::-webkit-slider-thumb {
+      width: 24px;
+      height: 24px;
+      margin-top: -9px;
+    }
+    input::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+    }
+  }
 </style>

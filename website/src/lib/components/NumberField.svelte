@@ -111,6 +111,13 @@
       border-color 0.15s ease,
       transform 0.06s ease;
   }
+  /* Fingers need about 44 px to hit a button reliably. */
+  @media (pointer: coarse) {
+    .stepbtn {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+  }
   .stepbtn:hover {
     background: var(--muted);
     border-color: var(--ring);

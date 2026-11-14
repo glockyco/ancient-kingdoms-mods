@@ -6493,6 +6493,9 @@
     "Utils.cs:GetSuccessProbMining": {
       "span": 0
     },
+    "Utils.cs:defensiveEquipment": {
+      "span": 0
+    },
     "Utils.cs:getPrimalEssenceAmount": {
       "span": 0
     },
