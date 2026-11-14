@@ -68,7 +68,7 @@ function withHonesty(
     },
   };
 }
-// Source: server-scripts/Monster.cs:591-615 — only the Health contribution rounds, and normal monster reputation loss keeps its fraction.
+// Source: server-scripts/Monster.cs:693-717 — only the Health contribution rounds, and normal monster reputation loss keeps its fraction.
 export function reputationExample(
   level = 70,
   health = 3_000_000,
@@ -120,7 +120,7 @@ export function reputationExample(
   );
 }
 
-// Source: server-scripts/Npc.cs:1592-1593,1618-1628,1651-1661 — factionGain is level × 1.5, × 60 when isNotableNPC, while losses subtract level × 5.
+// Source: server-scripts/Npc.cs:1594-1595,1620-1630,1653-1663 — factionGain is level × 1.5, × 60 when isNotableNPC, while losses subtract level × 5.
 // Source: website/data/compendium.db npcs table — King Darin's level is 60.
 export function npcReputation(level = 60, notable = true): Calculation {
   const baseGain = multiplyF32(level, 1.5);

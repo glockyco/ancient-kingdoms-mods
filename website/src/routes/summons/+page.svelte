@@ -296,12 +296,12 @@
             <dt class="text-muted-foreground">Active</dt>
             <dd class="text-right">1 companion or familiar</dd>
           </div>
-          <!-- Source: server-scripts/SummonSkill.cs:99 — a familiar spawns at the summoning skill level, and a companion at the player level up to its cap. -->
+          <!-- Source: server-scripts/SummonSkill.cs:100 — a familiar spawns at the summoning skill level, and a companion at the player level up to its cap. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Level</dt>
             <dd class="text-right">Your level, up to {companionCaps}</dd>
           </div>
-          <!-- Source: server-scripts/Pet.cs:4124-4135 — a dead combat pet or familiar is removed. -->
+          <!-- Source: server-scripts/Pet.cs:4157-4168 — a dead combat pet or familiar is removed. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">On Death</dt>
             <dd class="text-right">Summon it again</dd>
@@ -398,7 +398,7 @@
           >
         </div>
         <dl class="divide-y">
-          <!-- Source: server-scripts/Player.cs:4522-4554 — up to three followers, keyed by whistle item, outside the summon slot. -->
+          <!-- Source: server-scripts/Player.cs:4580-4612 — up to three followers, keyed by whistle item, outside the summon slot. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Slot</dt>
             <dd class="text-right">Own pet slots</dd>
@@ -422,9 +422,9 @@
         >
           <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:34-55,84-96 — reusing the whistle dismisses its active follower. -->
           <li>Use the whistle again to dismiss the pet.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454 — a follower without its inventory whistle is removed. -->
+          <!-- Source: server-scripts/PetFriendly.cs:380-387,434-455 — a follower without its inventory whistle is removed. -->
           <li>The pet leaves if its whistle is not in your inventory.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:14645-14649 — petting grants 1–4 faction standing every 30 seconds per animal. -->
+          <!-- Source: server-scripts/PetFriendly.cs:689-703; server-scripts/Player.cs:15141-15145 — petting grants 1–4 faction standing every 30 seconds per animal. -->
           <li>
             <a
               href="/mechanics/reputation#pets"

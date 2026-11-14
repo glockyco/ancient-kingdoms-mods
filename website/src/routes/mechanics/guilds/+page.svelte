@@ -51,9 +51,9 @@
           hyphens, or underscores.</span
         >
       </p>
-      <!-- Source: server-scripts/GuildSystem.cs:17; Database.cs:1164-1181 — at most 10 member characters, counted from guild_members rows. -->
+      <!-- Source: server-scripts/GuildSystem.cs:17; Database.cs:1080-1097 — at most 10 member characters, counted from guild_members rows. -->
       <p>A guild holds up to 10 member characters, not 10 accounts.</p>
-      <!-- Source: server-scripts/Database.cs:1151-1162,1197-1209,1411-1453 and server-scripts/UIGuildManagement.cs:168-185,246-267 — membership is per character, leader permissions apply to guild members on the leader's account, and a guildless character on that account can join through Join if there is space. -->
+      <!-- Source: server-scripts/Database.cs:1067-1078,1113-1125,1327-1369 and server-scripts/UIGuildManagement.cs:168-185,246-267 — membership is per character, leader permissions apply to guild members on the leader's account, and a guildless character on that account can join through Join if there is space. -->
       <p>
         <span class="block"
           >Every guild member on the leader's account has leader permissions.</span
@@ -62,7 +62,7 @@
           >Another character on that account can join the guild if it has room.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:13121-13156 and server-scripts/Database.cs:1321-1364 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
+      <!-- Source: server-scripts/Player.cs:13613-13648 and server-scripts/Database.cs:1237-1280 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
       <p>
         <span class="block"
           >The leader can invite an online guildless character by name at the
@@ -70,7 +70,7 @@
         >
         <span class="block">A full guild cannot invite another member.</span>
       </p>
-      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:13088-13106,13144-13155 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
+      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:13580-13598,13636-13647 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
       <p>
         <span class="block">An invitation expires after 5 minutes.</span>
         <span class="block"
@@ -78,7 +78,7 @@
           account for 3 hours, or until the server restarts.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:13172-13187 and server-scripts/Database.cs:1456-1489,1796-1810 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
+      <!-- Source: server-scripts/Player.cs:13664-13679 and server-scripts/Database.cs:1372-1405,1712-1726 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
       <p>
         <span class="block"
           >Leaving at the registrar removes only that character and clears its
@@ -104,7 +104,7 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/GuildSystem.cs:AwardBossKillGuildPoints; server-scripts/UIGuildManagement.cs:Refresh; server-scripts/Database.cs:GetGuildManagementText — boss kills grant character-specific points, displayed for the player and as GP beside each member. -->
       <p>The guild window lists each member's contribution as GP.</p>
-      <!-- Source: server-scripts/Monster.cs:2981-2997,3010-3022 and server-scripts/GuildSystem.cs:266-279 — credited highest-threat player receives points only when the monster is a boss and the player belongs to a guild; pets resolve to owner. -->
+      <!-- Source: server-scripts/Monster.cs:3139-3155,3168-3180 and server-scripts/GuildSystem.cs:266-279 — credited highest-threat player receives points only when the monster is a boss and the player belongs to a guild; pets resolve to owner. -->
       <p>
         Only the character with <a
           href="/mechanics/party#shared-rewards"
@@ -146,7 +146,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/GuildSystem.cs:267-278,400-430 and server-scripts/Database.cs:1235-1263,1377-1395,1456-1478 — points are credited to character save, displayed by member, start at zero on join, clear on leave and synchronize for online guildmates. -->
+      <!-- Source: server-scripts/GuildSystem.cs:267-278,400-430 and server-scripts/Database.cs:1151-1179,1293-1311,1372-1394 — points are credited to character save, displayed by member, start at zero on join, clear on leave and synchronize for online guildmates. -->
       <p>
         <span class="block"
           >Points belong to the credited character, not guildmates or your other

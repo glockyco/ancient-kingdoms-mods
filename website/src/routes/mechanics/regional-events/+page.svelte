@@ -402,7 +402,7 @@
     <Card.Header><Card.Title>Prosperity</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEventProgress.cs:109-113,157-164; server-scripts/RegionalEvents.cs:188-195,363-375 — completion grants a regional 15% XP multiplier, floored, with dungeon combat mapped to its parent region. -->
-      <!-- Source: server-scripts/PlayerQuests.cs:385-406; server-scripts/Player.cs:14358-14361,14770-14783,15087-15089,15085-15089; server-scripts/Npc.cs:1608-1616,1641-1649 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
+      <!-- Source: server-scripts/PlayerQuests.cs:385-406; server-scripts/Player.cs:14850-14853,15266-15279,15558-15560,15581-15585; server-scripts/Npc.cs:1610-1618,1643-1651 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
       <p>
         When the goal is reached, the region prospers for
         {formatNumber(data.settings.prosperity_duration_minutes)} minutes. Everyone
@@ -497,7 +497,7 @@
         They only use their basic attack. They drop no loot or gold, and killing
         them does not change your reputation.
       </p>
-      <!-- Source: server-scripts/Npc.cs:1505-1510 — a citizen killed by a regional invader respawns 900 seconds after death. -->
+      <!-- Source: server-scripts/Npc.cs:1507-1512 — a citizen killed by a regional invader respawns 900 seconds after death. -->
       <p>
         Invaders deal 10 times their normal damage to townsfolk. Townsfolk deal
         only a tenth of their normal damage to invaders. A townsperson killed by

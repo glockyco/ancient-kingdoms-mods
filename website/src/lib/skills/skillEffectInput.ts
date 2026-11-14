@@ -58,7 +58,7 @@ interface AttributeSource {
   song: boolean;
 }
 
-// Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute,GetDebuffPowerAttribute; TargetBuffSkill.cs:453-464; AreaBuffSkill.cs:16-18,33-58 — the attribute each caster contributes.
+// Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute,GetDebuffPowerAttribute; TargetBuffSkill.cs:456-467; AreaBuffSkill.cs:16-18,33-58 — the attribute each caster contributes.
 function attributeSource(
   source: BuffBonusAttrSource | DebuffBonusAttrKind,
 ): AttributeSource | null {
@@ -126,7 +126,7 @@ function additiveLead(value: number, negative = false): string {
     ? `${sign}${number(value)}`
     : `${sign}${percent(value, { decimals: 2, preserveNonzero: true })} of`;
 }
-// Source: server-scripts/BuffSkill.cs:ScaleWithCharisma,246-263,480-543; Wisdom.cs:118-130 — song power multiplies a song's values by its share of the Charisma bonus, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
+// Source: server-scripts/BuffSkill.cs:ScaleWithCharisma,259-276,493-556; Wisdom.cs:118-130 — song power multiplies a song's values by its share of the Charisma bonus, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
 /** How an attribute source changes one listed value, as a note lead, or null when it does not. */
 function scalingLead(
   scaling: EffectScaling,
@@ -664,7 +664,7 @@ export function skillEffectInput(
     damage_over_time_execute_bonus: skill.damage_over_time_execute_bonus,
   };
 
-  // Source: server-scripts/MonsterSkills.cs:OnStartServer; Skill.cs:12; Npc.cs:845-848 — monsters and NPCs cast at rank 1 when learnDefault, otherwise rank 0.
+  // Source: server-scripts/MonsterSkills.cs:OnStartServer; Skill.cs:12; Npc.cs:847-850 — monsters and NPCs cast at rank 1 when learnDefault, otherwise rank 0.
   // A potion buff's rank is its buff level, which Elixir Endurance raises, so its duration keeps its rank formula.
   const resolvedLevel =
     runtimeLevel ??

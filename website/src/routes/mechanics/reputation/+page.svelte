@@ -251,7 +251,7 @@
         points. A total of 15&#8239;000 reads Friendly 14&#8239;000 /
         20&#8239;000.
       </p>
-      <!-- Source: server-scripts/Npc.cs:1742-1748; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
+      <!-- Source: server-scripts/Npc.cs:1745-1749; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
       <p>
         Quests may require reputation with a faction other than their quest
         giver's. See <a
@@ -272,7 +272,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:591-621 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
+      <!-- Source: server-scripts/Monster.cs:GetFactionGain,GetFactionLoss — GetFactionGain and GetFactionLoss calculate kill reputation. -->
       <p>
         Reputation gains depend on the monster's level, maximum Hit Points, and
         rank. Losses depend only on level and rank.
@@ -344,7 +344,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1592-1624 and 1639-1671 — party and solo faction changes on an NPC death. -->
+      <!-- Source: server-scripts/Npc.cs:1594-1626 and 1641-1673 — party and solo faction changes on an NPC death. -->
       <!-- Source: server-scripts/Npc.cs:OnDeath; website/data/compendium.db npcs.is_notable — Notable NPC kill changes use each NPC's faction lists. -->
       <ul class="list-disc space-y-2 pl-5">
         {#each data.notableNpcs as npc (npc.id)}
@@ -450,7 +450,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
+      <!-- Source: server-scripts/PetFriendly.cs:689-703 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
       <!-- Source: server-scripts/Player.cs:ApplyVirtueFactionGain — petting adds its value through the Honesty blessing like every other gain. -->
       <p>
         Click an animal within 3 yd to pet it. The same animal can grant
@@ -480,7 +480,7 @@
           the faction panel).
         </li>
         <li>
-          <!-- Source: server-scripts/UINpcTrading.cs:452-456 — per-item faction requirement against the vendor's faction. -->
+          <!-- Source: server-scripts/UINpcTrading.cs:454-458 — per-item faction requirement against the vendor's faction. -->
           <strong class="text-foreground">Some items</strong> require additional reputation
           with the selling NPC's faction, even when the NPC opens their shop.
         </li>
@@ -500,7 +500,7 @@
           the quest up.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1742-1748 — faction values below -500 select the lowFactionMessages branch instead of services. -->
+          <!-- Source: server-scripts/Npc.cs:1745-1749 — faction values below -500 select the lowFactionMessages branch instead of services. -->
           <strong class="text-foreground">Below −500</strong> reputation, NPCs of
           that faction refuse to talk to you, so you cannot shop, take quests, or
           use their services.
@@ -527,7 +527,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:14645-14649, Monster.cs:3253-3265, Npc.cs:1646-1656, PlayerQuests.cs:454-457, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:15141-15145, Monster.cs:3415-3427, Npc.cs:1648-1658, PlayerQuests.cs:454-457, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         Your reputation can keep rising above Exalted or falling below Hated.

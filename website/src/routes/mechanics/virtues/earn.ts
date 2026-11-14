@@ -265,7 +265,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       ],
     },
     {
-      // Source: server-scripts/VirtueCombat.cs:HostileAction,MonsterHit,BuffApplied,CrowdControl — that monster does not count.
+      // Source: server-scripts/VirtueCombat.cs:HostileAction,MonsterHit,BuffApplied — that monster does not count.
       title: "That Monster Gives No Points",
       kind: "no",
       items: [
@@ -301,7 +301,7 @@ export const VIRTUE_RULES: Record<VirtueId, RuleGroup[]> = {
       title: "Good to Know",
       kind: "info",
       items: [
-        // Source: server-scripts/VirtueEncounters.cs:LostItemsPerSearch,BeginHonestySearch — 10 belongings, 3 hours apart.
+        // Source: server-scripts/VirtueEncounters.cs:MaximumUncollectedBelongings,CreateHonestySearch — 10 belongings, 3 hours apart.
         "A search hides 10 belongings. The next can start 3 hours later.",
         // Source: server-scripts/Player.cs:UserCode_CmdActivateVirtue__VirtueShrine — the shrine refuses Honesty while belongings are out, unless Honesty is at rank 5.
         "Returns count even after the blessing ends, but below rank\u00a05 you must return everything before taking Honesty again.",

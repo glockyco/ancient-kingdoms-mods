@@ -2,7 +2,7 @@
   import { DEFENSE_RATES } from "$lib/calculation/combat";
 </script>
 
-<!-- Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike) -->
+<!-- Source: server-scripts/DamageSkill.cs:49-72 (TryConsumeWildStrike) -->
 <!-- Source: server-scripts/TargetDamageSkill.cs:244,291 (ApplyDamage) -->
 <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 (Apply) -->
 <!-- Source: server-scripts/Combat.cs:DealDamageAt — Magic Resist reduces the converted hit by 0.0005 per point, at most 90%. -->

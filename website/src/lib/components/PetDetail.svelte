@@ -167,7 +167,7 @@
 
   <section aria-labelledby="pet-stats-title" class="space-y-4">
     <h2 id="pet-stats-title" class="text-xl font-semibold">Base Stats</h2>
-    <!-- Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13; SummonSkill.cs:99 — stats scale from their base values with level, companions stop at Level.max, and familiars use the summoning skill rank. -->
+    <!-- Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13; SummonSkill.cs:100 — stats scale from their base values with level, companions stop at Level.max, and familiars use the summoning skill rank. -->
     <!-- Source: server-scripts/Health.cs:38; NecromancerPetStats.cs:50 — Health applies its exported multiplier before rounding, and the veteran Health bonus rounds separately from the unrounded multiplied base. -->
     <!-- Source: server-scripts/NecromancerPetStats.cs:GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus; NecromancerMercenaryPet.cs:GetDamageBonus,GetMagicDamageBonus,GetVeteranResistanceBonus — up to 200 veteran points add rounded bonuses to Health, damage, defense, and resistances for undead companions, and to damage and resistances for mercenary companions, not block or critical chance. -->
     <div class="overflow-x-auto rounded-md border bg-muted/30">
@@ -216,7 +216,7 @@
         </Table.Body>
       </Table.Root>
     </div>
-    <!-- Source: server-scripts/Skills.cs:174-185; SummonSkill.cs:84-97 — owner pet-health passives add maximum Health, while Symbiosis copies attributes, defense, and resistances at summon time. -->
+    <!-- Source: server-scripts/Skills.cs:174-185; SummonSkill.cs:84-99 — owner pet-health passives add maximum Health, while Symbiosis copies attributes, defense, and resistances at summon time. -->
     <p class="text-muted-foreground">
       These values exclude your passive skills and other buffs.
     </p>
@@ -328,7 +328,7 @@
           </dl>
         {:else if pet.kind === "Companion"}
           <dl class="space-y-2">
-            <!-- Source: server-scripts/SummonSkill.cs:99; NecromancerPetStats.cs:38 — companion level is capped by Level.max, and undead companions refresh from their owner's level. -->
+            <!-- Source: server-scripts/SummonSkill.cs:100; NecromancerPetStats.cs:38 — companion level is capped by Level.max, and undead companions refresh from their owner's level. -->
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
               <dd>
@@ -363,7 +363,7 @@
                 </dd>
               </div>
             {:else if pet.classLink.class_id === "druid"}
-              <!-- Source: server-scripts/SummonSkill.cs:73-97 — each rank of Symbiosis copies 0.1 of the Druid's attributes, defense, and resistances to the summoned pet. -->
+              <!-- Source: server-scripts/SummonSkill.cs:73-99 — each rank of Symbiosis copies 0.1 of the Druid's attributes, defense, and resistances to the summoned pet. -->
               <div class="flex gap-2">
                 <dt class="text-muted-foreground w-40 shrink-0">Symbiosis</dt>
                 <dd>
@@ -429,7 +429,7 @@
               <dd>It grants a buff but does not attack.</dd>
             </div>
             <div class="flex gap-2">
-              <!-- Source: server-scripts/SummonSkill.cs:99 — familiar level equals the summoning skill rank without the companion Level.max clamp. -->
+              <!-- Source: server-scripts/SummonSkill.cs:100 — familiar level equals the summoning skill rank without the companion Level.max clamp. -->
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
               <dd>
                 Its level matches your rank in

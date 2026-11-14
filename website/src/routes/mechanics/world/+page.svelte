@@ -31,7 +31,7 @@
       <Card.Title>Game Modes and Hardcore</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UICharacterSelection.cs:161-212,286-333 — modes 0, 1, and 2 select a local world, an online server list, or LAN hosting and IP joining. -->
+      <!-- Source: server-scripts/UICharacterSelection.cs:156-207,287-334 — modes 0, 1, and 2 select a local world, an online server list, or LAN hosting and IP joining. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -78,7 +78,7 @@
           >Hardcore starts unchecked for each new character.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:4452-4459,11033-11036 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
+      <!-- Source: server-scripts/Player.cs:4510-4517,11506-11509 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>
         <span class="block"
           >Hardcore death deletes that character instead of allowing a normal
@@ -124,7 +124,7 @@
           > shows mapped places and entrances.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:1218-1224,2251-2254 — some monsters only spawn within their configured in-game hour window. -->
+      <!-- Source: server-scripts/Monster.cs:1370-1376,2403-2406 — some monsters only spawn within their configured in-game hour window. -->
       <p>
         <span class="block"
           >Some monsters appear only during specific in-game hours.</span
@@ -135,7 +135,7 @@
           > for their timing rules.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMap.cs:176-192,454-471 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
+      <!-- Source: server-scripts/UIMap.cs:186-200,471-479 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
       <p>
         <span class="block"
           ><a
@@ -156,12 +156,12 @@
       <Card.Title>Personal Map Notes</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UIMapNotesController.cs:47-51,430-440,467-472,526-556 — note text is limited to 80 characters, empty notes cannot be saved, and a zone accepts at most 50 notes. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:47-51,437-447,474-479,533-563 — note text is limited to 80 characters, empty notes cannot be saved, and a zone accepts at most 50 notes. -->
       <p>
         <span class="block">Each map note holds up to 80 characters.</span>
         <span class="block">Each zone holds up to 50 notes.</span>
       </p>
-      <!-- Source: server-scripts/UIMapNotesController.cs:203-253,256-271 — notes persist in a single local PlayerPrefs key and render on the local map for their zone. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:210-260,263-278 — notes persist in a single local PlayerPrefs key and render on the local map for their zone. -->
       <p>
         <span class="block"
           >Map notes are saved on your computer, and every character you play on
@@ -171,7 +171,7 @@
           >Your notes appear on that zone's local map, not the world map.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMapNotesController.cs:123-142 and server-scripts/UIMap.cs:176-192 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:133-145 and server-scripts/UIMap.cs:186-200 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
       <p>Temple of Valaark has no map notes.</p>
     </Card.Content>
   </Card.Root>
@@ -213,7 +213,7 @@
       <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
       <!-- Source: the export's items.json — scroll_of_binding has level_required 30. -->
       <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget — a bind scroll is refused in a dungeon. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:831-835 — a bind spell is refused in a dungeon. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:844-848 — a bind spell is refused in a dungeon. -->
       <p>
         <span class="block"
           ><a
@@ -242,7 +242,7 @@
           Travel scrolls work in every other dungeon.</span
         >
       </p>
-      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:15422-15434 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
+      <!-- Source: server-scripts/NpcTeleport.cs:30-49 and server-scripts/Player.cs:15918-15930 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
       <p>
         <span class="block"
           >A <a
@@ -320,7 +320,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Player.cs:12425-12441,3890-3892, server-scripts/Skills.cs:1482-1502, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
+      <!-- Source: server-scripts/Player.cs:12913-12928,3948-3950, server-scripts/Skills.cs:1482-1502, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
           >Passing through a portal ends invisibility, including Resurrection

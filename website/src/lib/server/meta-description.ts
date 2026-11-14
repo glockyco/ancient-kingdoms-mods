@@ -65,7 +65,7 @@ export interface ItemMetaContext {
    * base value because the applied level depends on the player's veteran rank,
    * which is unknown at SSR time.
    * Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — non-bandage potions can use Elixir Endurance. Bandages keep their base buff level.
-   * Source: server-scripts/Pet.cs:2214-2227 — mercenary utility potions resolve their buff level from the owner's veteran rank.
+   * Source: server-scripts/Pet.cs:2228-2241 — mercenary utility potions resolve their buff level from the owner's veteran rank.
    */
   buffDurationSeconds?: number | null;
   /** Whether the linked relic buff is a cleanse spell. */
@@ -375,7 +375,7 @@ function buffPhrase(
 function potionDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/PotionItem.cs:24-39,174-176 — non-bandage buff
   // levels can use Elixir Endurance; bandages return their base buff level.
-  // Source: server-scripts/Pet.cs:2214-2238 — mercenary utility potions
+  // Source: server-scripts/Pet.cs:2228-2252 — mercenary utility potions
   // resolve that level from the owner's veteran rank.
   const isBandage = item.cooldown_category === "Bandages";
   // Source: server-scripts/PotionItem.cs:8-17,62-155 — health, mana, energy,
@@ -481,7 +481,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs:28-32; Player.cs:5623-5658 — one-time read,
+  // Source: server-scripts/BookItem.cs:28-32; Player.cs:5684-5719 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -512,12 +512,12 @@ function bookDescription(item: Item): string {
 }
 
 function mountDescription(item: Item): string {
-  // Source: server-scripts/MountItem.cs:8 and Player.cs:115-123,622-626.
+  // Source: server-scripts/MountItem.cs:8 and Player.cs:115-123,635-639.
   return `Mount with a speed of ${formatNumber(item.mount_speed, { decimals: 2 })}.${levelGate(item.level_required)} Cannot be mounted in dungeons or in combat.`;
 }
 
 function backpackDescription(item: Item): string {
-  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:219-230,651-665 (IsUniqueBackpackAlreadyEquipped)
+  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:324-335,756-770 (IsUniqueBackpackAlreadyEquipped)
   // — numSlots adds inventory capacity, and isUnique restricts duplicate equipped backpacks by nameItem.
   const slots = item.backpack_slots > 0 ? item.backpack_slots : 0;
   const slotPhrase =
@@ -595,7 +595,7 @@ function randomDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function augmentDescription(item: Item): string {
-  // Source: server-scripts/AugmentItem.cs:nameArmorSet; Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String; UINpcTrading.cs:285-290 — set augments grant set bonuses,
+  // Source: server-scripts/AugmentItem.cs:nameArmorSet; Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String; UINpcTrading.cs:285-291 — set augments grant set bonuses,
   // socketable augments are consumed at a crafting station, and Augmenter NPCs remove them for 5,000g, 10,000g or 15,000g by quality.
   const q = quality(item);
   if (item.augment_armor_set_name) {
@@ -654,7 +654,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:14141-14145,13087-13102
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:14633-14637,13579-13594
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -691,7 +691,7 @@ function keyDescription(ctx: ItemMetaContext): string {
   // portals gated by a key check `player.keys` (or any party member's
   // keyring) for the matching name. Source: server-scripts/ScriptableItem.cs:47
   // — items flagged `isKey` belong in the keyring.
-  // Source: server-scripts/PlayerLooting.cs:182-187; ChestItem.cs:51-54; GatherItem.cs:529-532 — these loot paths route keys to the keyring instead of taking an inventory slot.
+  // Source: server-scripts/PlayerLooting.cs:187-192; ChestItem.cs:51-54; GatherItem.cs:529-532 — these loot paths route keys to the keyring instead of taking an inventory slot.
   // Source: server-scripts/GatherInventoryQuest.cs:21,47 — the keyring also
   // counts as inventory for gather-inventory quest gates that name a key.
   const portals = ctx.usages?.portals ?? [];
@@ -1717,7 +1717,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32 — subtracts upgradeRequiredSkillPoints
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:7791-7801 and ScriptableSkill.cs:433-435
+  // Source: server-scripts/Player.cs:7862-7872 and ScriptableSkill.cs:433-435
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   // Veteran-tree skills with no player classes are mercenary-side veteran
@@ -1770,7 +1770,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:99; Player.cs:11838-11852,UpdateMercStatsByLevel — familiar level follows
+// Source: server-scripts/SummonSkill.cs:100; Player.cs:12311-12325,UpdateMercStatsByLevel — familiar level follows
 // summoning skill rank, companions match the summoner up to Level.max, and
 // mercenaries hire at player level and gain attributes per level.
 
@@ -1807,13 +1807,13 @@ function petOriginPhrase(input: PetDescriptionInput): string {
     : null;
   switch (input.kind) {
     case "Familiar":
-      // Source: server-scripts/SummonSkill.cs:99 — level = skillLevel
+      // Source: server-scripts/SummonSkill.cs:100 — level = skillLevel
       if (input.summoning_skill_name && className) {
         return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level follows the skill rank, up to rank ${input.effective_max_level}.`;
       }
       return ` Summoned by a class skill. Level follows the skill rank, up to rank ${input.effective_max_level}.`;
     case "Companion":
-      // Source: server-scripts/SummonSkill.cs:99 — level = min(petMaxLevel, playerLevel)
+      // Source: server-scripts/SummonSkill.cs:100 — level = min(petMaxLevel, playerLevel)
       // Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner — a mercenary companion takes its owner's level, up to Level.max.
       if (input.summoning_mercenary_name) {
         return ` Companion of the ${input.summoning_mercenary_name}, summoned by ${input.summoning_skill_name ?? "its summon skill"}. Level matches its owner, up to level ${input.level_max}.`;
@@ -1826,7 +1826,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return ` Summoned by a class skill. Its level matches yours, up to level ${input.level_max}.`;
     case "Mercenary":
-      // Source: server-scripts/Player.cs:11838-11852; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:12311-12325; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
       return " Hire one from any Mercenary Recruiter. Its level matches yours.";
   }
 }
@@ -1906,7 +1906,7 @@ export function altarDescription(altar: AltarDescriptionInput): string {
 // =============================================================================
 //
 // Role labels come from curated class metadata.
-// Source: server-scripts/Player.cs:1711-1737 — classes display Mana, Rage or Active Songs.
+// Source: server-scripts/Player.cs:1738-1764 — classes display Mana, Rage or Active Songs.
 
 interface ClassDescriptionInput {
   name: string;

@@ -170,7 +170,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       `You need at least ${formatNumber(15000)} reputation with this faction (Friendly ${formatNumber(14000)} / ${formatNumber(20000)} in the faction panel).`,
     ],
   },
-  // Source: server-scripts/Npc.cs:InteractNpc; server-scripts/UINpcTrading.cs:581-590 — the trading window offers only equipment with durability above zero.
+  // Source: server-scripts/Npc.cs:InteractNpc; server-scripts/UINpcTrading.cs:582-591 — the trading window offers only equipment with durability above zero.
   is_essence_trader: {
     description:
       'Trade Magic-quality or better equipment for <a href="/items/primal_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Primal Essence</a>.',
@@ -199,7 +199,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       `The reset costs ${formatNumber(10000)} gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.`,
     ],
   },
-  // Source: server-scripts/Player.cs:5491-5506,12348-12366 — reset clears the current specialization allocation and refuses curses or debuffs.
+  // Source: server-scripts/Player.cs:5552-5567,12832-12850 — reset clears the current specialization allocation and refuses curses or debuffs.
   is_reset_attributes: {
     description: "Resets attribute points for your current specialization.",
     details: [
@@ -211,7 +211,7 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_soul_binder: {
     description: "Sets your bind point to your current position.",
   },
-  // Source: server-scripts/Npc.cs:1767-1790 — the innkeeper offers a drink for 25 gold.
+  // Source: server-scripts/Npc.cs:1783-1806 — the innkeeper offers a drink for 25 gold.
   is_inkeeper: {
     description: "Serves you a random drink from its stock for 25 gold.",
   },
@@ -230,12 +230,12 @@ export const ROLE_DESCRIPTIONS: Partial<
       `You can have 1 active mercenary at levels ${formatRange(10, 19)}, 2 at ${formatRange(20, 29)}, 3 at ${formatRange(30, 39)}, and 4 at 40+.`,
     ],
   },
-  // Source: server-scripts/Npc.cs:1876-1890
+  // Source: server-scripts/Npc.cs:1892-1906
   is_priestess: {
     description:
       'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',
   },
-  // Source: server-scripts/UINpcTrading.cs:285-290,350-355 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
+  // Source: server-scripts/UINpcTrading.cs:285-291,351-357 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
   is_augmenter: {
     description: "Removes augments from equipment and returns them to you.",
     details: [

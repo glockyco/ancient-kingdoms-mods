@@ -23,7 +23,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You gain Rage when your auto attacks deal damage and when a single-target physical melee hit damages you.",
         source:
-          "Source: server-scripts/Combat.cs:1115-1128,1114-1149,1176-1181 — Rage gain from targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Combat.cs:1465-1486,1501-1505 — Rage gain from targeted physical melee hits and auto attacks",
         href: "/mechanics/combat#rage-generation",
         linkText: "Rage Formulas",
       },
@@ -51,7 +51,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Cleanse removes only poison and disease effects. A debuff with Cleanse Resist above 0% can need more than one cast. At 100% Cleanse Resist it cannot be cleansed.",
         source:
-          "Source: server-scripts/TargetBuffSkill.cs:153-178,338-358 — matching debuff types and cleanse counters; server-scripts/BuffSkill.cs:GetCleanseCountersRemoved — resistance changes counters removed",
+          "Source: server-scripts/TargetBuffSkill.cs:156-181,341-361 — matching debuff types and cleanse counters; server-scripts/BuffSkill.cs:GetCleanseCountersRemoved — resistance changes counters removed",
         href: "/mechanics/combat#cleanse",
         linkText: "Cleanse Rules",
       },
@@ -72,12 +72,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:832-837,1082-1085; server-scripts/Player.cs:12434-12440 — dungeon casting restriction and buff removal",
+          "Source: server-scripts/PlayerSkills.cs:844-848,1093-1096; server-scripts/Player.cs:12922-12928 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
         source:
-          "Source: server-scripts/SummonSkill.cs:44-61,112-119 — an occupied active-pet slot prevents Druid summoning",
+          "Source: server-scripts/SummonSkill.cs:44-61,113-120 — an occupied active-pet slot prevents Druid summoning",
         href: "/summons#how-summons-work",
         linkText: "Pet Rules",
       },
@@ -103,7 +103,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Wild Strike turns your next melee or bow auto attack into magic damage.",
         source:
-          "Source: server-scripts/DamageSkill.cs:49-65 — a Ranger follow-up attack consumes Wild Strike and becomes Magic damage",
+          "Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — a Ranger follow-up attack consumes Wild Strike and becomes Magic damage",
         href: "/mechanics/combat#wild-strike",
         linkText: "Wild Strike Damage",
       },
@@ -129,7 +129,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when a single-target physical melee hit damages you. Passive skills and buffs can add regeneration.",
         source:
-          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:448-466; server-scripts/Combat.cs:1115-1128,1114-1149,1176-1181 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:448-466; server-scripts/Combat.cs:1465-1486,1501-1505 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
         href: "/mechanics/character#resources",
         linkText: "Resource Rules",
       },
@@ -150,19 +150,19 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Mystic Spark costs no Mana and gives back 35% of its damage as Mana, rounded down. Damage beyond the target's remaining Hit Points does not count.",
         source:
-          "Source: server-scripts/Combat.cs:1195-1204,1205-1254 — Mystic Spark caps mana return by target health and restores it before ward absorption",
+          "Source: server-scripts/Combat.cs:1109-1117,1118-1167 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
         text: "Mana Shield spends 1 Mana per damage point absorbed. Damage beyond your remaining Mana reaches your Hit Points and ends the shield.",
         source:
-          "Source: server-scripts/Combat.cs:1255-1285 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
+          "Source: server-scripts/Combat.cs:1168-1198 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
         href: "/skills/mana_shield",
         linkText: "Mana Shield",
       },
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
         source:
-          "Source: server-scripts/Combat.cs:807-810; server-scripts/Skills.cs:1666-1683 — damage ends movement-lock sleep effects",
+          "Source: server-scripts/Combat.cs:828-831; server-scripts/Skills.cs:1666-1683 — damage ends movement-lock sleep effects",
       },
     ],
   },
@@ -181,14 +181,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You can keep two songs active at once. Polyphony removes this limit.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1706-1721 — base two-song limit plus passive slots, removed by an unlimited passive",
+          "Source: server-scripts/PlayerSkills.cs:1717-1732 — base two-song limit plus passive slots, removed by an unlimited passive",
         href: "/mechanics/bard#songs",
         linkText: "Song Rules",
       },
       {
         text: "Without Polyphony, a new song replaces the oldest one when both slots are full.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1381-1415 — active songs refresh or displace the oldest while a limit applies",
+          "Source: server-scripts/PlayerSkills.cs:1392-1426 — active songs refresh or displace the oldest while a limit applies",
       },
       {
         text: "Virtuosity and Final Cadence need at least three active songs, so they require Polyphony.",
@@ -203,7 +203,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. It also strengthens Bone Aegis's Ward, Mend Undead's Health Regeneration, Ossuary Bulwark's Armor Class, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum Hit Points per point but no Health Regeneration.",
       source:
-        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:480-543; server-scripts/Buff.cs:56-69,122-159; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
+        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:493-556; server-scripts/Buff.cs:56-69,122-159; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
@@ -214,12 +214,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You can have one active pet. Summoning a different undead companion replaces your current pet. Using the active companion's summon skill commands it to attack.",
         source:
-          "Source: server-scripts/SummonSkill.cs:12-32,56,106-118 — Necromancer UsesPetAttackCommand checks MatchesPet; a different non-familiar summon destroys and replaces NetworkactivePet",
+          "Source: server-scripts/SummonSkill.cs:12-32,56,107-119 — Necromancer UsesPetAttackCommand checks MatchesPet; a different non-familiar summon destroys and replaces NetworkactivePet",
         href: "/summons#how-summons-work",
         linkText: "Pet Rules",
       },
       {
-        // Source: server-scripts/NecromancerPetStats.cs:38; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in the export's pets.json.
+        // Source: server-scripts/NecromancerPetStats.cs:38; SummonSkill.cs:100 — companion level clamps to Level.max, exported as 50 for every undead pet in the export's pets.json.
         text: "Your undead companion follows your level, up to level 50. Each of your total veteran points adds 1% of its base Attack Power and Spell Power and 0.25% of its base maximum Hit Points, Armor Class and every resist, rounded to whole points. These bonuses stop growing at 200 total veteran points.",
         source:
           "Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — RefreshFromOwner caps pet level at Level.max and veteran points at 200; damage and magic damage use 0.01 and the other base stats 0.0025, each with RoundToInt",

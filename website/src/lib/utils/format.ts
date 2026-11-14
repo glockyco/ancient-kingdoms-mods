@@ -303,7 +303,7 @@ export function formatGatheringRespawn(
   type: string,
   respawnTime: number,
 ): string {
-  // Source: server-scripts/GatherItem.cs:286-289,379-382 — Random.Range(100f, 3600f)
+  // Source: server-scripts/GatherItem.cs:289-292,379-382 — Random.Range(100f, 3600f)
   if (type === "gathering_spark" || type === "Radiant Spark") {
     return formatRange("1m40s", "1h");
   }

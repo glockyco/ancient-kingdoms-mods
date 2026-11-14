@@ -422,7 +422,7 @@ export function getPetById(petId: string): PetDetailView | null {
   }
 
   // Familiars take the summoning skill rank without the companion level clamp.
-  // Source: server-scripts/SummonSkill.cs:99 — familiar level equals skillLevel.
+  // Source: server-scripts/SummonSkill.cs:100 — familiar level equals skillLevel.
   let effective_max_level = row.level_max;
   if (row.is_familiar && classLink.skill_id) {
     const skillMaxLevel = queryOne<{ max_level: number }>(

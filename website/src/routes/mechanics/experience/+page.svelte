@@ -721,7 +721,7 @@
           20&#8239;000 XP. Resetting refunds only 1 of the 2 points.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:12263-12298; server-scripts/Npc.cs:1832-1850; server-scripts/PlayerSkills.cs:1931-1958 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
+          <!-- Source: server-scripts/Player.cs:12747-12782; server-scripts/Npc.cs:1848-1866; server-scripts/PlayerSkills.cs:1942-1969 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
           {#if data.veteranMaster}
             <a
               href="/npcs/{data.veteranMaster.id}"
@@ -998,7 +998,7 @@
                 >
                 <td class="p-2 text-right">100% more XP</td>
               </tr>
-              <!-- Source: server-scripts/Monster.cs:3207-3210,3244-3247; server-scripts/RegionalEvents.cs:188-195,363-375; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity adds 15% monster XP in the region and its dungeons after the other multipliers, rounded down. -->
+              <!-- Source: server-scripts/Monster.cs:3369-3372,3406-3409; server-scripts/RegionalEvents.cs:188-195,363-375; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity adds 15% monster XP in the region and its dungeons after the other multipliers, rounded down. -->
               <tr class="hover:bg-muted/30">
                 <td class="p-2"
                   ><a
@@ -1018,17 +1018,17 @@
         <p class="text-sm text-muted-foreground">
           Multiple Double XP buffs do not stack. Forgotten Altar monsters give
           40% more XP after Double XP, rounded to the nearest whole XP.
-          <!-- Source: server-scripts/Monster.cs:3207-3210,3244-3247; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity multiplies the award after Double XP and the Forgotten Altar bonus, then floors it. -->
+          <!-- Source: server-scripts/Monster.cs:3369-3372,3406-3409; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity multiplies the award after Double XP and the Forgotten Altar bonus, then floors it. -->
           Prosperity comes last and rounds down.
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,826 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:14770-14783 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:14778-14783 — double XP applies to scribing -->
+        <!-- Source: server-scripts/Player.cs:15266-15279 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:15274-15279 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — Double XP applies to attaching augments. -->
         <!-- Source: server-scripts/PlayerQuests.cs:404-405 — no double XP for quests -->
-        <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:14358-14361 — no double XP for zone discovery -->
+        <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:14850-14853 — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
           <span class="block"
             >Double XP buffs double the XP you earn from kills, gathering,
@@ -1043,7 +1043,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Party XP</h3>
         <!-- Source: server-scripts/Experience.cs:CalculateExperienceShare -->
-        <!-- Source: server-scripts/Monster.cs:3182-3211 — party kill XP award loop -->
+        <!-- Source: server-scripts/Monster.cs:3344-3373 — party kill XP award loop -->
         <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
         <!-- Source: server-scripts/Monster.cs:OnDeath, Experience.cs:CalculateExperienceShare — the kill passes 1.25f as bonusPercentagePerMember. -->
@@ -1091,7 +1091,7 @@
             </tbody>
           </table>
         </div>
-        <!-- Source: server-scripts/Monster.cs:3182-3211 — the award loop counts and pays party players in proximity, not their mercenaries. -->
+        <!-- Source: server-scripts/Monster.cs:3344-3373 — the award loop counts and pays party players in proximity, not their mercenaries. -->
         <p class="text-sm text-muted-foreground">
           Mercenaries take none of your kill XP and do not count toward party
           sharing.
@@ -1280,7 +1280,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:14770-14777 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:15266-15273 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1346,8 +1346,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:15018-15024 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:15034-15069 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:15514-15520 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:15530-15565 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1386,7 +1386,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:15018-15024 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:15514-15520 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1478,7 +1478,7 @@
       <Card.Description>
         Experience earned the first time you discover a zone.
       </Card.Description>
-      <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:14358-14361 — no multipliers apply to zone discovery XP -->
+      <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:14850-14853 — no multipliers apply to zone discovery XP -->
     </Card.Header>
     <Card.Content class="space-y-4">
       <!-- Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — discovery XP amounts -->

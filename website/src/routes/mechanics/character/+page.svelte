@@ -98,7 +98,7 @@
                   >Poison damage from Rogue attacks gains 250% of Dexterity,
                   rounded. With 100 Dexterity, it gains 250 damage.</span
                 >
-                <!-- Source: server-scripts/BuffSkill.cs:501-543 — non-melee poison and disease without Intelligence scaling use Dexterity times 1.5. -->
+                <!-- Source: server-scripts/BuffSkill.cs:514-556 — non-melee poison and disease without Intelligence scaling use Dexterity times 1.5. -->
                 <!-- Source: website/data/compendium.db skills — Critical Pain and Virulent Slash are non-melee poison/disease effects without Intelligence scaling. -->
                 <span class="block"
                   >Non-melee poison and disease damage-over-time effects that do
@@ -126,7 +126,7 @@
                   of Intelligence, rounded. With 100 Intelligence, the reduction
                   grows by 50.</span
                 >
-                <!-- Source: server-scripts/BuffSkill.cs:501-543 — fire, cold, magic and Intelligence-scaled poison/disease use the skill's Intelligence coefficient, except Charisma-scaled effects. -->
+                <!-- Source: server-scripts/BuffSkill.cs:514-556 — fire, cold, magic and Intelligence-scaled poison/disease use the skill's Intelligence coefficient, except Charisma-scaled effects. -->
                 <!-- Source: website/data/compendium.db skills. Venom of the Grave and Wasting Plague use Intelligence. Class skills use a 1.25 coefficient except Ensnare's 1.15. -->
                 <span class="block"
                   >Fire, cold, magic, and Intelligence-scaled poison and disease
@@ -148,7 +148,7 @@
               </td>
             </tr>
             <!-- Source: server-scripts/Wisdom.cs:GetHealBonus — direct heals gain 0.3% per Wisdom point, tripled for Rangers and capped at 500%. -->
-            <!-- Source: server-scripts/Buff.cs:healthMaxBonus,defenseBonus,magicResistBonus; server-scripts/BuffSkill.cs:GetBuffPowerAttribute; server-scripts/TargetBuffSkill.cs:453-464; server-scripts/AreaBuffSkill.cs:33-45 — protective buffs select Intelligence or Wisdom, with targeted Ranger buffs tripling that attribute. -->
+            <!-- Source: server-scripts/Buff.cs:healthMaxBonus,defenseBonus,magicResistBonus; server-scripts/BuffSkill.cs:GetBuffPowerAttribute; server-scripts/TargetBuffSkill.cs:456-467; server-scripts/AreaBuffSkill.cs:33-45 — protective buffs select Intelligence or Wisdom, with targeted Ranger buffs tripling that attribute. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Wisdom</th>
               <td class="p-2">
@@ -251,12 +251,12 @@
         >
       </p>
       <!-- Source: server-scripts/PlayerEquipment.cs:190-221,259-285 — equipment and augments apply attribute bonuses. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:1887-1909 — passive skills apply attribute bonuses. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1898-1920 — passive skills apply attribute bonuses. -->
       <!-- Source: server-scripts/Skills.cs:1558-1590 — active buffs can change attribute values. -->
       <p>
         Equipment, augments, passive skills, and buffs can also change your
         attributes.
-        <!-- Source: server-scripts/Player.cs:13606-13641 — reading attribute books permanently raises their listed attributes. -->
+        <!-- Source: server-scripts/Player.cs:14098-14133 — reading attribute books permanently raises their listed attributes. -->
         Reading certain
         <a
           href="/professions/lore_keeping"
@@ -331,7 +331,7 @@
           <tbody>
             <!-- Source: server-scripts/Mana.cs:28-54 — max mana and mana recovery have distinct calculations. -->
             <!-- Source: server-scripts/Intelligence.cs:21-28,96-99 and server-scripts/Wisdom.cs:29-37,104-107 — Intelligence adds pool but neither attribute adds recovery. -->
-            <!-- Source: server-scripts/Player.cs:1711-1722 — Cleric, Druid, Ranger, Wizard and Necromancer use Mana. -->
+            <!-- Source: server-scripts/Player.cs:1738-1749 — Cleric, Druid, Ranger, Wizard and Necromancer use Mana. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Mana</th>
               <td class="p-2">Cleric, Druid, Necromancer, Ranger, Wizard</td>
@@ -346,7 +346,7 @@
               </td>
             </tr>
             <!-- Source: server-scripts/Energy.cs:12-17,27-51 and server-scripts/Strength.cs:80-87 — rage capacity scales with Strength and baseline recovery is zero. -->
-            <!-- Source: server-scripts/Combat.cs:1073-1084,1113-1130,1114-1149,1176-1181 — damaging auto attacks and received single-target physical skill hits generate rage, with no melee-range check. -->
+            <!-- Source: server-scripts/Combat.cs:1094-1105,1465-1499,1501-1505,1519-1525 — damaging auto attacks and received single-target physical skill hits generate rage, with no melee-range check. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Rage</th>
               <td class="p-2">Warrior, Rogue</td>
@@ -385,8 +385,8 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Combat.cs:1196-1204 — Wizard Mystic Spark restores floor(35% times min(hit damage, target health before hit)) as mana. -->
-      <!-- Source: server-scripts/Combat.cs:1255-1285 — Mana Shield spends one mana per point of damage absorbed. -->
+      <!-- Source: server-scripts/Combat.cs:1109-1117 — Wizard Mystic Spark restores floor(35% times min(hit damage, target health before hit)) as mana. -->
+      <!-- Source: server-scripts/Combat.cs:1168-1198 — Mana Shield spends one mana per point of damage absorbed. -->
       <p>
         <span class="block"
           ><a
@@ -435,14 +435,14 @@
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Learning Skills</h3>
         <!-- Source: server-scripts/ScriptableSkill.cs:53-70 — requirements include spent points, up to two ranked predecessors, level, and tier. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:2010-2068 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:2021-2079 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
         <p>
           Skill ranks may require a level, enough points, earlier spending in
           the same skill tree, and up to two prerequisite skills. Armor-set
           bonuses do not count toward prerequisite ranks.
         </p>
-        <!-- Source: server-scripts/PlayerSkills.cs:1855-1864 — prerequisite checks exclude armor-set bonus levels. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:2036-2068 — new choices are limited by tier, but existing choices can be upgraded. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1866-1875 — prerequisite checks exclude armor-set bonus levels. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:2047-2079 — new choices are limited by tier, but existing choices can be upgraded. -->
         <p>
           <span class="block"
             >You can choose up to two different skills in tiers 1 and 3.</span
@@ -456,7 +456,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Veteran Skills</h3>
         <!-- Source: server-scripts/Experience.cs:38-38,45-53,366-408 — at the level cap filled XP bars grant Veteran Points with a separate maximum. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:59-68,2023-2034,2581-2604 — veteran upgrades spend Veteran Points, not class skill points. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:59-68,2034-2045,2592-2615 — veteran upgrades spend Veteran Points, not class skill points. -->
         <!-- Source: server-scripts/PlayerSkills.cs:CanLearnTierSkill; website/data/compendium.db skills.tier — all veteran skills have tier 0, which allows every choice. -->
         <p>
           <span class="block"
@@ -477,7 +477,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Second Specialization</h3>
         <!-- Source: server-scripts/UISkills.cs:DualSpecButton2 — second specialization unlocks at level 50 for 10,000 gold. -->
-        <!-- Source: server-scripts/UISkills.cs:295-326 — switching requires no unspent class skill points, no combat, an idle living player, and a 10-minute interval. -->
+        <!-- Source: server-scripts/UISkills.cs:292-323 — switching requires no unspent class skill points, no combat, an idle living player, and a 10-minute interval. -->
         <p>
           <span class="block"
             >At level 50, a second specialization costs 10&#8239;000 gold.</span
@@ -489,7 +489,7 @@
           <span class="block">You must wait 10 minutes between switches.</span>
         </p>
         <!-- Source: server-scripts/Player.cs:UserCode_CmdSetCurrentSpec__Int32__List_00601__List_00601 — switching loads the chosen class-skill ranks and its skillbar, removes the pet, and leaves veteran ranks untouched. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1880-1928 — specialization changes reset class skills, stop Bard songs, and preserve veteran skills. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1891-1939 — specialization changes reset class skills, stop Bard songs, and preserve veteran skills. -->
         <p>
           Each specialization has its own class skills and skillbar, but both
           share veteran skills. Switching removes your pet and stops Bard songs.
@@ -512,7 +512,7 @@
             >Veteran point counting and reset losses</a
           > explains how the game miscounts ranks that cost 2 veteran points.
         </p>
-        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16447-16450 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
+        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16943-16947 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
           On some saved characters, the first specialization switch resets
           assigned attributes for free.
@@ -547,8 +547,8 @@
           resets your assigned attribute points for the same price, but not while
           a debuff is on you.
         </p>
-        <!-- Source: server-scripts/Player.cs:12231-12237,12263-12297 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1880-1973 — each reset returns points only for its own skill pool. -->
+        <!-- Source: server-scripts/Player.cs:12715-12721,12747-12781 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1891-1984 — each reset returns points only for its own skill pool. -->
         <p>
           <span class="block"
             >Resetting class skills refunds class skill points but leaves

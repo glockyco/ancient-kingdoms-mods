@@ -35,7 +35,7 @@ public class PetData
 
     /// <summary>
     /// Level.max: a summoned non-familiar pet takes its owner's level up to this cap.
-    /// Source: server-scripts/SummonSkill.cs:99
+    /// Source: server-scripts/SummonSkill.cs:100
     /// </summary>
     public int level_max { get; set; }
 

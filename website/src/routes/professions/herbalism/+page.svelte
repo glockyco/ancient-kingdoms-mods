@@ -133,7 +133,7 @@
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
     <h2 class="text-xl font-semibold">How Gathering Plants Works</h2>
-    <!-- Source: server-scripts/GatherItem.cs:208-250,327-350 — a growing plant is not ready and a low-skill attempt is refused. -->
+    <!-- Source: server-scripts/GatherItem.cs:211-253,327-350 — a growing plant is not ready and a low-skill attempt is refused. -->
     <p class="text-muted-foreground">
       <span class="block">A growing plant cannot be gathered.</span>
       <span class="block"

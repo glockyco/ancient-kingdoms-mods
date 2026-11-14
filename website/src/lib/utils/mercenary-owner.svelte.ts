@@ -12,7 +12,7 @@ export interface MercenaryOwner {
   charisma: number;
 }
 
-/** Source: server-scripts/NetworkManagerMMO.cs:813-816 — the player level cap is 50. */
+/** Source: server-scripts/NetworkManagerMMO.cs:817-820 — the player level cap is 50. */
 export const MAX_LEVEL = 50;
 /** Charisma above 125 gives no more discount. The limit matches the Mercenary Stats calculator. */
 export const MAX_CHARISMA = 200;

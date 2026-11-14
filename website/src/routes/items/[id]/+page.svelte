@@ -1559,7 +1559,7 @@
             {/if}
             {#if isBackpack && data.item.backpack_is_unique}
               <div class={styles.fact}>
-                <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:651-665 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
+                <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:756-770 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
                 <dt class={styles.label}>Unique</dt>
                 <dd>Yes</dd>
               </div>
@@ -2155,7 +2155,7 @@
         {/if}
         {#if isPet}
           <div class="space-y-2 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:4523-4553 — using the item summons the pet, or dismisses the one it already summoned. -->
+            <!-- Source: server-scripts/Player.cs:4581-4611 — using the item summons the pet, or dismisses the one it already summoned. -->
             <p>
               Use the whistle to summon the pet. Using it again dismisses that
               pet. Three pets can follow you at once.
@@ -2167,8 +2167,8 @@
               apostrophes, and hyphens. Without a name the pet is called
               "&lt;your character&gt;'s pet".
             </p>
-            <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-            <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454 — a follower without its inventory whistle is removed. -->
+            <!-- Source: server-scripts/PetFriendly.cs:390-397 — the follower teleports to its owner past 24 units. -->
+            <!-- Source: server-scripts/PetFriendly.cs:380-387,434-455 — a follower without its inventory whistle is removed. -->
             <p>
               The pet follows you and catches up when it falls far behind. It
               leaves if its whistle is not in your inventory. It is cosmetic and
@@ -2651,7 +2651,7 @@
           </div>
           <div class={styles.fact}>
             <dt class={styles.label}>Cost</dt>
-            <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1830-1837 -->
+            <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1846-1856 -->
             <dd>{formatNumber(10000)}g + Token of Redemption</dd>
           </div>
           <div class={styles.fact}>

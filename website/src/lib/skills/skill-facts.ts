@@ -63,7 +63,7 @@ export interface ImmuneDebuffBypass {
  * A boss lets through only damage over time, optionally with a slow, that changes nothing else.
  * Other monsters with Immune to Debuffs also let through that damage over time,
  * resistance-decrease skills and positive Health Regeneration.
- * Source: server-scripts/BuffSkill.cs:173-203; TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191 — flagged non-boss monsters accept the boss rule and the two extra cases.
+ * Source: server-scripts/BuffSkill.cs:190-216; TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191 — flagged non-boss monsters accept the boss rule and the two extra cases.
  */
 export function immuneDebuffBypass(
   skill: SkillDetailView,
@@ -95,9 +95,9 @@ export function immuneDebuffBypass(
 /**
  * How each damage type is mitigated and avoided, mirroring the game one row per type.
  *
- * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:911-928 — the
+ * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:932-949 — the
  * per-damage-type switch, each read multiplied by 0.0005.
- * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:721-730 —
+ * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:742-751 —
  * Normal damage goes to GetProbResistMeleeDamage, every other type to its own GetProbResist*.
  *
  * Physical is the one type whose stat does double duty. `defense` reduces the damage at 0.0005
@@ -411,7 +411,7 @@ export function skillFacts(
   const isDebuffType =
     skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff";
 
-  // Source: server-scripts/Combat.cs:1628-1672 — melee debuffs resist with Defense, the others with their matching resistance.
+  // Source: server-scripts/Combat.cs:1647-1691 — melee debuffs resist with Defense, the others with their matching resistance.
   const debuffResistance = skill.is_melee_debuff
     ? statName("armor_class")
     : skill.is_poison_debuff

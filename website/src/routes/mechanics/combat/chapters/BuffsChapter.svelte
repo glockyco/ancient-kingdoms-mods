@@ -112,7 +112,7 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/Buff.cs:56-237; Wisdom.cs:118-129; Combat.cs:984-997 — positive non-song effects add the selected attribute, with per-effect rounding. -->
+    <!-- Source: server-scripts/Buff.cs:56-237; Wisdom.cs:118-129; Combat.cs:1005-1018 — positive non-song effects add the selected attribute, with per-effect rounding. -->
     <!-- Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus — Leadership adds its stored buff attribute to both listed damage bonuses. -->
     <!-- Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity. -->
     <RefTable caption="What the Buff Attribute Adds to Each Effect">
@@ -248,7 +248,7 @@
       the target's chance to resist them, to at least 0%. Other debuffs that lower
       resists get no such bonus.
     </p>
-    <!-- Source: server-scripts/TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191; BuffSkill.cs:173-203 — immunity accepts pure damage over time with an optional slow, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
+    <!-- Source: server-scripts/TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191; BuffSkill.cs:190-217 — immunity accepts pure damage over time with an optional slow, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
     <p>
       Monsters whose pages list Immune to Debuffs ignore debuffs, with these
       exceptions:
@@ -263,7 +263,7 @@
         still affect such a monster.
       </li>
     </ul>
-    <!-- Source: server-scripts/Monster.cs:469-481 — bosses and monsters flagged immune to debuffs ignore every slow. -->
+    <!-- Source: server-scripts/Monster.cs:493-505 — bosses and monsters flagged immune to debuffs ignore every slow. -->
     <p>Bosses and monsters with Immune to Debuffs ignore the slow.</p>
     <SeeAlso
       links={[{ href: "#root", label: "Root, for Bosses and Slowing Debuffs" }]}
@@ -314,8 +314,8 @@
       Players and mercenaries use their own attributes. Debuffs from monsters,
       NPCs, companions and familiars add nothing.
     </p>
-    <!-- Source: server-scripts/Buff.cs:78-237; BuffSkill.cs:501-543; Skills.cs:GetFinalDamageDoT — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
-    <!-- Source: server-scripts/BuffSkill.cs:14-35,536-543 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
+    <!-- Source: server-scripts/Buff.cs:78-237; BuffSkill.cs:514-556; Skills.cs:GetFinalDamageDoT — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
+    <!-- Source: server-scripts/BuffSkill.cs:14-35,549-556 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
     <RefTable caption="What the Debuff Attribute Adds to Each Effect">
       <thead>
         <tr>

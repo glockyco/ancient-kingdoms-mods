@@ -622,7 +622,7 @@
           {/if}
         </dl>
         {#if losesVeteranPoints}
-          <!-- Source: server-scripts/PlayerSkills.cs:1867-1877,1931-1971,2600-2603 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
+          <!-- Source: server-scripts/PlayerSkills.cs:1878-1888,1942-1982,2611-2614 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
           <!-- Runtime verification: docs/game-bugs/two-point-veteran-skills-lose-points-and-progression.md -->
           <p
             class="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
@@ -713,7 +713,7 @@
           {/if}
         </dl>
         {#if shortensCast || timingModels.has("player_auto") || hasteCooldownCasters}
-          <!-- Source: server-scripts/Skills.cs:932-941,1149-1181; Player.cs:3712-3749 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
+          <!-- Source: server-scripts/Skills.cs:932-941,1149-1181; Player.cs:3752-3789 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
           <div class="mt-3 space-y-1 text-sm text-muted-foreground">
             {#if shortensCast && skill.cast_time}
               <!-- Source: server-scripts/Pet.cs:TryStartAttackIfInRange; server-scripts/BardMercenarySkills.cs:StartSongCast; Combat.cs:spellHaste — mercenary casts use the mercenary's own spell haste, bounded to −50%–50%. -->
@@ -1501,7 +1501,7 @@
               </p>
             {/if}
             {#if skill.is_invisibility}
-              <!-- Source: server-scripts/Entity.cs:387-403 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
+              <!-- Source: server-scripts/Entity.cs:388-404 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
               <!-- Source: server-scripts/Skills.cs:1020, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
               <p class="text-purple-600 dark:text-purple-400">
                 <span class="block"

@@ -49,8 +49,8 @@ interface NpcKillReputationInput {
  * Reputation changed per kill for a monster, formatted as a range across its
  * spawn levels (level_min..level_max).
  *
- * Source: server-scripts/Monster.cs:591-617 (formula),
- * 3216-3228 and 3253-3265 (party/solo reward application).
+ * Source: server-scripts/Monster.cs:693-719 (formula),
+ * 3378-3390 and 3415-3427 (party/solo reward application).
  * Improve adds (level.current + Mathf.RoundToInt(health.max / 2000)) *
  * (boss 20 / elite 10 / normal 1); decrease subtracts level.current *
  * (boss 2 / elite 1 / normal 0.75).
@@ -109,7 +109,7 @@ export function monsterKillReputation(
  * Reputation changed per kill for an NPC. An invincible NPC cannot be killed,
  * so it changes no reputation.
  *
- * Source: server-scripts/Npc.cs:1592-1624 (party) / 1639-1671 (solo).
+ * Source: server-scripts/Npc.cs:1594-1626 (party) / 1641-1673 (solo).
  * Improve adds level.current * 1.5, multiplied by 60 for a notable NPC.
  * Decrease subtracts level.current * 5.
  * Source: server-scripts/Combat.cs:DealDamageAt — every hit on an invincible target is blocked.

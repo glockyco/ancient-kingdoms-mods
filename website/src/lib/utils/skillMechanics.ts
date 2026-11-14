@@ -439,7 +439,7 @@ export function computeMechanicsSpec(
           // Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — scalesWithIntelligence selects intelligence, otherwise wisdom.
           src = skill.scales_with_intelligence ? "player_int" : "player_wis";
         } else if (cls === "ranger") {
-          // Source: server-scripts/TargetBuffSkill.cs:453-456; BuffSkill.cs:GetBuffPowerAttribute — Rangers triple the selected buff attribute.
+          // Source: server-scripts/TargetBuffSkill.cs:456-459; BuffSkill.cs:GetBuffPowerAttribute — Rangers triple the selected buff attribute.
           src = skill.scales_with_intelligence
             ? "player_ranger_int"
             : "player_ranger_wis";
@@ -483,7 +483,7 @@ export function computeMechanicsSpec(
   // ---------- timing ----------
   // Populated for follow-up attacks and non-spell combat-pet skill 0.
   // Source: server-scripts/Skills.cs:1149-1167; Combat.cs:340-346 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
-  // Source: server-scripts/Player.cs:3712-3749 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
+  // Source: server-scripts/Player.cs:3752-3789 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ caster: Caster; model: TimingModel }> = [];
 
@@ -520,7 +520,7 @@ export function computeMechanicsSpec(
       });
     }
     if (hasMonsters) {
-      // Source: server-scripts/Monster.cs:2074-2080; Npc.cs:1307-1313 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
+      // Source: server-scripts/Monster.cs:2226-2232; Npc.cs:1309-1315 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
       const model: TimingModel = isSpell ? "monster_spell" : "monster";
       timingPairs.push({ caster: { kind: "monster" }, model });
     }
@@ -579,7 +579,7 @@ export function computeMechanicsSpec(
         bonusAttrKind: playerMercKind,
       });
     }
-    // Source: server-scripts/TargetDamageSkill.cs:246-288; ProjectileSkillEffect.cs:196; TargetDebuffSkill.cs:343-347; BuffSkill.cs:GetDebuffPowerAttribute — weapon procs apply at rank one using their caster's debuff attribute, except scrolls use zero.
+    // Source: server-scripts/TargetDamageSkill.cs:246-288; ProjectileSkillEffect.cs:191; TargetDebuffSkill.cs:343-347; BuffSkill.cs:GetDebuffPowerAttribute — weapon procs apply at rank one using their caster's debuff attribute, except scrolls use zero.
     // Proc skills need no player_classes entries for that attribute scaling.
     if (isWeaponProc) {
       debuffPairs.push({
