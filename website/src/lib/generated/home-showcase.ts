@@ -104,9 +104,9 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Augments",
       href: "/items?items.item_type=augment",
-      count: 36,
+      count: 48,
       icon: {
-        src: "/images/items/great_sapphire_of_winter/icon.webp",
+        src: "/images/items/legendary_sapphire_of_winter/icon.webp",
         width: 25,
         height: 25,
       },
@@ -124,7 +124,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Consumables",
       href: "/items?items.item_type=potion%2Cfood%2Cscroll%2Ctravel",
-      count: 146,
+      count: 147,
       icon: {
         src: "/images/items/scroll_of_illumination/icon.webp",
         width: 19,
@@ -836,6 +836,18 @@ export const HOME_SHOWCASE: HomeShowcase = {
       href: "/zones/old_valorath",
       shot: {
         src: "/images/zones/old_valorath/shot.webp",
+        width: 960,
+        height: 540,
+      },
+    },
+    {
+      id: "chambers_of_chaos",
+      name: "Chambers of Chaos",
+      levelMedian: null,
+      isDungeon: true,
+      href: "/zones/chambers_of_chaos",
+      shot: {
+        src: "/images/zones/chambers_of_chaos/shot.webp",
         width: 960,
         height: 540,
       },
