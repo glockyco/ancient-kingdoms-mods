@@ -5,7 +5,6 @@ import { acquisitionQuery } from "$lib/server/acquisition";
 import { loadChambersRules } from "$lib/chambers/rules";
 import {
   DEFAULT_VETERAN_POINTS,
-  entryChanceRows,
   trialDraws,
   type ChainFamily,
   type ChainItem,
@@ -13,11 +12,9 @@ import {
 } from "$lib/components/chambers/model";
 import { loadChambersOverview } from "$lib/queries/chambers.server";
 import { formatItemType } from "$lib/utils/format";
+import type { Dropper } from "$lib/components/chambers/EntryItemDroppers.svelte";
 
 export const prerender = true;
-
-/** The chart starts this many levels below the lowest level with a chance. */
-const ENTRY_CHART_LEAD = 10;
 
 interface ItemRow {
   id: string;
@@ -38,16 +35,19 @@ export const load: PageServerLoad = async () => {
     veteranPoints: [DEFAULT_VETERAN_POINTS],
   });
 
-  const lowestChance = Math.min(
-    ...[...rules.entryItemChances]
-      .filter(([, chance]) => chance > 0)
-      .map(([level]) => level),
-  );
-  const entryChances = entryChanceRows(
-    rules,
-    Math.max(1, lowestChance - ENTRY_CHART_LEAD),
-    Math.max(...rules.entryItemChances.keys()),
-  );
+  // Source: server-scripts/Monster.cs:OnDeath — the entry item drops through the monsters' own drop tables.
+  const droppers = db
+    .prepare(
+      `SELECT m.id, m.name, m.level, d.chance, va.public_path AS visual_public_path
+         FROM chambers_entry_item_droppers d
+         JOIN monsters m ON m.id = d.monster_id
+         LEFT JOIN visual_assets va
+           ON va.domain = 'monster' AND va.entity_id = m.id AND va.kind = 'primary'
+        WHERE d.definition_id = ?
+        ORDER BY d.chance DESC, m.level DESC, m.name`,
+    )
+    .all(overview.definition.id) as Dropper[];
+  if (droppers.length === 0) error(500, "No monster drops the entry item");
 
   const bag = (
     db
@@ -132,7 +132,7 @@ export const load: PageServerLoad = async () => {
   return {
     ...overview,
     rules,
-    entryChances,
+    droppers,
     draws: trialDraws(bag),
     families,
     catalyst: {

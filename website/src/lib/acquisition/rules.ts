@@ -24,7 +24,6 @@ import type {
   Profession,
   EvaluatedQuantity,
 } from "./types";
-import { altarVeteranLevelBonus } from "../calculation/altar";
 import { dataError } from "./queries";
 
 export const CODE_DEFINED_RULES = ruleData;
@@ -290,27 +289,6 @@ export function methodProbabilityFactors(
   )
     factors.push("chest_access");
   return Object.freeze(factors);
-}
-
-/** The native corpse roll of a kill context: one fixed corpse item outside the loot pool. */
-function isCodeRoll(output: OutputRow): boolean {
-  return (
-    output.resource_kind === "item" &&
-    output.yield_rule === "fixed" &&
-    output.delivery === "corpse" &&
-    output.condition_slot === null &&
-    output.amount_min === 1 &&
-    output.amount_max === 1
-  );
-}
-
-/** The game's chance at one live level. A level outside the exported table fails. */
-function entryItemChance(rows: AcquisitionRows, level: number): number {
-  const row = (rows.facts.chambers_entry_item_chances ?? []).find(
-    (candidate) => candidate.level === level,
-  );
-  if (!row) dataError("chambers", `no exported chance for level ${level}`);
-  return Number(row.chance);
 }
 
 export function calculateMethodProbabilities(
@@ -809,34 +787,6 @@ export function calculateMethodProbabilities(
         probability,
       );
     }
-    if (detail.code_roll_scaling) {
-      const roll = outputs.find(isCodeRoll);
-      if (!roll) dataError(method.id, "missing native roll output");
-      let chance: number | null =
-        (detail.code_roll_chance as number | null) ?? null;
-      if (detail.code_roll_scaling === "activator") {
-        // Source: server-scripts/DefaultEvent.cs:SummonMonsters — a wave monster's level is its authored level plus the activator's level and veteran bonus, minus 30.
-        chance =
-          assumptions.activatorLevel != null &&
-          assumptions.totalVeteranPoints != null
-            ? entryItemChance(
-                rows,
-                Number(detail.code_roll_level) +
-                  assumptions.activatorLevel +
-                  altarVeteranLevelBonus(assumptions.totalVeteranPoints) -
-                  30,
-              )
-            : null;
-      }
-      emit(
-        roll.withheld
-          ? { kind: "withheld_item", ordinal: roll.ordinal, delivery: "corpse" }
-          : { kind: "item", itemId: String(roll.item_id), delivery: "corpse" },
-        event,
-        chance,
-        chance,
-      );
-    }
     const dynamicGold = outputs.some(
       (output) => output.resource_kind === "gold" && output.amount_min === null,
     );
@@ -979,8 +929,6 @@ export function calculateMethodProbabilities(
   const existing = new Set(results.map((result) => result.outcomeKey));
   for (const output of outputs) {
     if (output.withheld || output.yield_rule === "pool") continue;
-    // The native roll has its own chance and is emitted with the kill context.
-    if (detail.code_roll_scaling && isCodeRoll(output)) continue;
     const target: Extract<ProbabilityTarget, { kind: "gold" | "item" }> | null =
       output.resource_kind === "gold"
         ? {

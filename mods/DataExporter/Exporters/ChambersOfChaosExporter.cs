@@ -80,17 +80,8 @@ public sealed class ChambersOfChaosExporter : BaseExporter
             puzzle_penalty_guards = MadMageTowerRules.PuzzlePenaltyGuards,
             combat_experience_multiplier = MadMageTowerRules.CombatExperienceMultiplier
         };
-        // Include every integer through the largest authored/template/event level, plus the seal plateau boundary.
-        // Summon triggers refer to the exported authored placements rather than a separate level domain.
-        var maximumSealLevel = Math.Max(55, progression.max_level);
-        foreach (var file in new[] { "monsters.json", "monster_spawns.json" })
-            foreach (var row in JArray.Parse(File.ReadAllText(Path.Combine(ExportPath, file))))
-                maximumSealLevel = Math.Max(maximumSealLevel, row.Value<int>("level"));
-        var regional = JObject.Parse(File.ReadAllText(Path.Combine(ExportPath, "regional_events.json")));
-        foreach (var invasion in regional["invasions"] ?? throw new InvalidOperationException("Missing regional invasions."))
-            maximumSealLevel = Math.Max(maximumSealLevel, invasion.Value<int>("maximum_level"));
-        ChambersRows.Tabulate(rules, progression.max_level, Experience.maxVeteranLevel, maximumSealLevel,
-            MadMageTowerRules.SealDropChance, MadMageTowerRules.CompletionExperience,
+        ChambersRows.Tabulate(rules, progression.max_level, Experience.maxVeteranLevel,
+            MadMageTowerRules.CompletionExperience,
             MadMageTowerRules.MaximumEnemyLevelBonus, MadMageTowerRules.Health, MadMageTowerRules.Power);
         ChambersRows.AddStochasticMetadata(rules);
         foreach (var seed in new[] { 0, 1, 42, int.MaxValue })

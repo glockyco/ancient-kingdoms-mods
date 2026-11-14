@@ -2,27 +2,20 @@
 
 ## ADDED Requirements
 
-### Requirement: Seal drops use eligible live-level contexts
+### Requirement: Seal drops come from monster drop tables
 
-Private acquisition data SHALL model Seal of Chaos as a separate corpse roll on non-boss elites with live level at least 40 in the normal death path, using exported game-calculated chance. Published elite drops SHALL retain that chance through the existing redacted-item placeholder, not the excluded identity. Provider locations SHALL include only qualifying contexts. Tower deaths SHALL NOT inherit the roll.
+Seal of Chaos SHALL reach the acquisition model through the ordinary drop tables of the monsters that name it. Published monster drops SHALL show it as the existing redacted-item placeholder with the authored chance, not the excluded identity. The Chambers rules page SHALL list those monsters with their chances. Tower deaths SHALL NOT drop it.
 
-#### Scenario: Template level differs from spawn level
+#### Scenario: An elite that names the seal dies
 
-- **WHEN** an elite template is level 40 but its live spawn is level 33
-- **THEN** that spawn supplies no Seal of Chaos source or source geometry
+- **WHEN** a monster whose drop table names Seal of Chaos at 5% dies in the normal player-loot path
+- **THEN** the private acquisition model holds Seal of Chaos at 5% in that monster's loot pool
+- **AND** the published monster drop shows "Redacted item" at 5% without the excluded name, icon, link or identifier
 
-#### Scenario: An eligible elite dies
+#### Scenario: The rules page names the sources
 
-- **WHEN** a level 40 non-boss elite reaches the normal player-loot death path
-- **THEN** the private acquisition model adds one Seal of Chaos at the exported 1% corpse-roll chance
-- **AND** the published elite drop shows "Redacted item" at that chance without the excluded name, icon, link or identifier
-- **AND** the native roll remains separate from the template's ordinary loot pool
-
-#### Scenario: Excluded death contexts
-
-- **WHEN** an elite is below 40, is also a boss or belongs to a private Chambers run
-- **THEN** that context supplies no seal roll
-- **AND** eligible summoned or event elites are not rejected solely because they are not authored spawns
+- **WHEN** the Chambers rules page is built
+- **THEN** it lists every monster whose drop table names the entry item, with its chance, highest first
 
 ### Requirement: Chaos Tokens are a conditional guardian corpse reward
 

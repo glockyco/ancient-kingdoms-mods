@@ -1024,6 +1024,15 @@ CREATE TABLE chambers_pool_monsters (
     UNIQUE (definition_id, monster_id)
 );
 
+-- The monsters whose drop table holds the run's entry item, with the chance each
+-- drops it. The item stays excluded, so the row names only the monster.
+CREATE TABLE chambers_entry_item_droppers (
+    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
+    monster_id TEXT NOT NULL REFERENCES monsters(id),
+    chance REAL NOT NULL CHECK (chance > 0 AND chance <= 1),
+    PRIMARY KEY (definition_id, monster_id)
+);
+
 CREATE TABLE chambers_encounter_groups (
     id TEXT PRIMARY KEY,
     definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
@@ -1049,19 +1058,11 @@ CREATE TABLE chambers_trial_bag (
 --   veteran_points      total veteran points
 --   enemy_level         every level an enemy can have
 --   room_index          zero-based chamber index
---   entry_item_drop_level  live monster level of the entry item's corpse roll
 CREATE TABLE chambers_rule_domains (
     definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
-    domain TEXT NOT NULL CHECK (domain IN ('player_level','veteran_points','enemy_level','room_index','entry_item_drop_level')),
+    domain TEXT NOT NULL CHECK (domain IN ('player_level','veteran_points','enemy_level','room_index')),
     value INTEGER NOT NULL,
     PRIMARY KEY (definition_id, domain, value)
-);
-
-CREATE TABLE chambers_entry_item_chances (
-    definition_id TEXT NOT NULL REFERENCES chambers_definitions(id),
-    level INTEGER NOT NULL,
-    chance REAL NOT NULL CHECK (chance >= 0 AND chance <= 1),
-    PRIMARY KEY (definition_id, level)
 );
 
 CREATE TABLE chambers_completion_experience (
@@ -1937,15 +1938,6 @@ CREATE TABLE acquisition_kill_details (
     gold_min INTEGER NOT NULL,
     gold_max INTEGER NOT NULL,
     gold_probability REAL NOT NULL CHECK (gold_probability >= 0 AND gold_probability <= 1),
-    -- A native corpse roll that depends on the monster's live level and is not part of
-    -- the loot pool. 'fixed' has a live level and the chance it gives. 'activator'
-    -- scales the level from the player who starts an event, so the chance is open.
-    code_roll_scaling TEXT CHECK (code_roll_scaling IN ('fixed','activator')),
-    code_roll_level INTEGER,
-    code_roll_chance REAL CHECK (code_roll_chance IS NULL OR (code_roll_chance >= 0 AND code_roll_chance <= 1)),
-    CHECK ((code_roll_scaling IS NULL AND code_roll_level IS NULL AND code_roll_chance IS NULL)
-        OR (code_roll_scaling = 'fixed' AND code_roll_level IS NOT NULL AND code_roll_chance IS NOT NULL)
-        OR (code_roll_scaling = 'activator' AND code_roll_level IS NOT NULL AND code_roll_chance IS NULL)),
     CHECK ((loot_zone_withheld=1 AND loot_zone_number IS NULL AND loot_zone_id IS NULL) OR (loot_zone_withheld=0 AND loot_zone_number IS NOT NULL))
 );
 CREATE TABLE acquisition_vendor_details (

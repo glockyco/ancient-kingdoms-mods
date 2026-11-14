@@ -85,7 +85,7 @@
           <td>Shortens cooldown</td>
           <td>No effect</td>
         </tr>
-        <!-- Source: server-scripts/Monster.cs:3609,2226-2232; Npc.cs:673,1307-1315; Skills.cs:FinishCast — monster and NPC casts receive zero spell haste, and spells keep their cooldowns. -->
+        <!-- Source: server-scripts/Monster.cs:3605,2226-2232; Npc.cs:673,1307-1315; Skills.cs:FinishCast — monster and NPC casts receive zero spell haste, and spells keep their cooldowns. -->
         <tr>
           <th scope="row">Monster and NPC Spells</th>
           <td>Cast time + cooldown</td>

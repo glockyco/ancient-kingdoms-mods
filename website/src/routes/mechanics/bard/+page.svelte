@@ -41,7 +41,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-5 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerSkills.cs:1159-1168,1211-1306,2391-2427 — song casts repeat during movement or ordinary casting while the Bard can continue. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1159-1168,1211-1306,2392-2428 — song casts repeat during movement or ordinary casting while the Bard can continue. -->
       <p>
         A song keeps repeating while you move or cast other skills.<br />
         Selecting another song changes which song repeats.
@@ -52,7 +52,7 @@
         a barber, or unequip your instrument.<br />
         Click a song's icon in your buff bar to remove its effects and stop it repeating.
       </p>
-      <!-- Source: server-scripts/ScriptableSkill.cs:102-137, PlayerSkills.cs:CanContinueBardSong; PlayerSkills.cs:2391-2427 — Instrument requirements are checked before starting and during continued performance. -->
+      <!-- Source: server-scripts/ScriptableSkill.cs:102-137, PlayerSkills.cs:CanContinueBardSong; PlayerSkills.cs:2392-2428 — Instrument requirements are checked before starting and during continued performance. -->
       <p>Bard songs require an equipped instrument.</p>
       <!-- Source: server-scripts/PlayerSkills.cs:1383-1427,1717-1732,1747-1759,1776-1788 — the default limit is two, an unlimited passive removes it, and at a limit a new song displaces the oldest refreshed entry. -->
       <p>
@@ -305,7 +305,7 @@
           class="text-blue-600 dark:text-blue-400 hover:underline">song limit</a
         > above.
       </p>
-      <!-- Source: server-scripts/BardCharmSongSkill.cs:33-59, PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:2391-2427 — repeated casts keep the original charm target and require range and visibility to renew it. -->
+      <!-- Source: server-scripts/BardCharmSongSkill.cs:33-59, PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:2392-2428 — repeated casts keep the original charm target and require range and visibility to renew it. -->
       <p>
         Repeating the song renews your existing charm, regardless of your
         selection. Keep the creature visible and within cast range.

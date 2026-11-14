@@ -673,7 +673,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:14633-14637,13579-13594
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:14634-14638,13580-13595
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -1796,7 +1796,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:100; Player.cs:12311-12325,UpdateMercStatsByLevel — familiar level follows
+// Source: server-scripts/SummonSkill.cs:100; Player.cs:12312-12326,UpdateMercStatsByLevel — familiar level follows
 // summoning skill rank, companions match the summoner up to Level.max, and
 // mercenaries hire at player level and gain attributes per level.
 
@@ -1852,7 +1852,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return ` Summoned by a class skill. Its level matches yours, up to level ${input.level_max}.`;
     case "Mercenary":
-      // Source: server-scripts/Player.cs:12311-12325; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:12312-12326; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
       return " Hire one from any Mercenary Recruiter. Its level matches yours.";
   }
 }

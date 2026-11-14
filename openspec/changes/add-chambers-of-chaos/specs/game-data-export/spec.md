@@ -20,7 +20,7 @@ The export SHALL provide the Chambers keeper, seal and reward item identities, m
 
 ### Requirement: Chambers rule values use game calculations
 
-Exported Chambers rules SHALL call the game's static calculations where callable, with deterministic declared input domains. They SHALL cover entry, timing, trial limits, seal chance, enemy scaling, token rewards and experience. Exact stochastic distributions SHALL retain their rules rather than be inferred from samples. The exporting character and run SHALL NOT select the rule data.
+Exported Chambers rules SHALL call the game's static calculations where callable, with deterministic declared input domains. They SHALL cover entry, timing, trial limits, enemy scaling, token rewards and experience. Exact stochastic distributions SHALL retain their rules rather than be inferred from samples. The exporting character and run SHALL NOT select the rule data.
 
 #### Scenario: Exporting with another character
 

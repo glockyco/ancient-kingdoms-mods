@@ -6,7 +6,6 @@ import {
   completionExperience,
   enemyLevelDistribution,
   enemyScaling,
-  entryItemChance,
   rewardBands,
 } from "$lib/calculation/chambers";
 import type { AcquisitionQuery } from "$lib/acquisition/types";
@@ -45,19 +44,6 @@ function fixture(): Database.Database {
   );
   for (let o = -3; o <= 6; o++)
     offset.run(id, o, 7 - Math.abs(o), 1, o >= 0 ? 1 : 0);
-  const chance = db.prepare(
-    "INSERT INTO chambers_entry_item_chances VALUES (?,?,?)",
-  );
-  for (const [level, value] of [
-    [39, 0],
-    [40, 0.01],
-    [50, 0.050000004],
-    [54, 0.09],
-    [55, 0.1],
-    [56, 0.1],
-    [72, 0.1],
-  ])
-    chance.run(id, level, value);
   const experience = db.prepare(
     "INSERT INTO chambers_completion_experience VALUES (?,?,?)",
   );
@@ -120,16 +106,6 @@ describe("Chambers rules", () => {
     // 100 veteran points raise the bonus from 1 to 6.
     expect(enemyLevelDistribution(rules, 40, 100, true).at(-1)?.level).toBe(46);
     expect(enemyLevelDistribution(rules, 40, 99, true).at(-1)?.level).toBe(45);
-  });
-
-  it("answers the seal chance at the threshold and plateau, and refuses other levels", async () => {
-    const rules = await loadChambersRules(query(fixture()));
-    expect(entryItemChance(rules, 39)).toBe(0);
-    expect(entryItemChance(rules, 40)).toBe(0.01);
-    expect(entryItemChance(rules, 50)).toBeCloseTo(0.05, 6);
-    expect(entryItemChance(rules, 55)).toBe(0.1);
-    expect(entryItemChance(rules, 72)).toBe(0.1);
-    expect(() => entryItemChance(rules, 73)).toThrow(RangeError);
   });
 
   it("reads rounded Health and Power and completion experience as exported", async () => {

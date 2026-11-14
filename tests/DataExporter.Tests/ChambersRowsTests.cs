@@ -94,8 +94,8 @@ public sealed class ChambersRowsTests
     private static ChambersRulesData Rules(int cap = 50, int veteranCap = 200)
     {
         var rules = new ChambersRulesData { minimum_level = 40, room_count = 3 };
-        ChambersRows.Tabulate(rules, cap, veteranCap, 60,
-            level => level / 100f, level => level * 10000L, veteran => 1 + Math.Min(veteran, 100) / 20,
+        ChambersRows.Tabulate(rules, cap, veteranCap,
+            level => level * 10000L, veteran => 1 + Math.Min(veteran, 100) / 20,
             (level, veteran, room, guardian) => level * 10000 + veteran * 10 + room + (guardian ? 1 : 0),
             (level, veteran, room, guardian) => level + veteran + room + (guardian ? 1 : 0));
         ChambersRows.AddStochasticMetadata(rules);
@@ -110,8 +110,6 @@ public sealed class ChambersRowsTests
         Assert.Equal(Enumerable.Range(0, 201), rules.veteran_points);
         Assert.Equal(Enumerable.Range(37, 20), rules.enemy_levels);
         Assert.Equal(new[] { 0, 1, 2 }, rules.room_indices);
-        Assert.Equal(Enumerable.Range(1, 60), rules.seal_drop_levels);
-        Assert.Equal(60, rules.seal_drop_chances.Count);
         Assert.Equal(50, rules.completion_experience.Count);
         Assert.Equal(201, rules.maximum_enemy_level_bonus.Count);
         Assert.Equal(20 * 201 * 3 * 2, rules.scaling.Count);
@@ -129,7 +127,7 @@ public sealed class ChambersRowsTests
     public void TabulationRetainsIntegerGameResultsExactly()
     {
         var rules = new ChambersRulesData { minimum_level = 40, room_count = 3 };
-        ChambersRows.Tabulate(rules, 40, 0, 55, _ => 0.014000001f, _ => 150000,
+        ChambersRows.Tabulate(rules, 40, 0, _ => 150000,
             _ => 1, (_, _, room, guardian) => guardian ? 17976 : new[] { 4200, 4347, 4494 }[room],
             (_, _, room, guardian) => guardian ? 265 : new[] { 180, 184, 189 }[room]);
         var ordinary = rules.scaling.Single(row => row.enemy_level == 40 && row.room_index == 1 && !row.guardian);
@@ -137,18 +135,16 @@ public sealed class ChambersRowsTests
         Assert.Equal(184, ordinary.power);
         var restored = JsonConvert.DeserializeObject<ChambersRulesData>(ExportJson.Serialize(rules))!;
         Assert.Equal(rules.scaling.Select(row => row.health), restored.scaling.Select(row => row.health));
-        Assert.Equal(rules.seal_drop_chances[0].chance, restored.seal_drop_chances[0].chance);
     }
 
     [Theory]
-    [InlineData(39, 200, 55)]
-    [InlineData(50, -1, 55)]
-    [InlineData(50, 200, 54)]
-    public void InvalidDomainsFail(int cap, int veteranCap, int sealCap)
+    [InlineData(39, 200)]
+    [InlineData(50, -1)]
+    public void InvalidDomainsFail(int cap, int veteranCap)
     {
         Assert.Throws<InvalidOperationException>(() => ChambersRows.Tabulate(
-            new() { minimum_level = 40, room_count = 3 }, cap, veteranCap, sealCap,
-            _ => 0, _ => 0, _ => 1, (_, _, _, _) => 0, (_, _, _, _) => 0));
+            new() { minimum_level = 40, room_count = 3 }, cap, veteranCap,
+            _ => 0, _ => 1, (_, _, _, _) => 0, (_, _, _, _) => 0));
     }
 
     [Theory]

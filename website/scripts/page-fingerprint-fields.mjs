@@ -34,6 +34,7 @@ export const PAGE_FINGERPRINT_FIELDS = Object.freeze({
     "power",
   ],
   chambers_trial_bag: ["definition_id", "ordinal", "trial_kind"],
+  chambers_entry_item_droppers: ["definition_id", "monster_id", "chance"],
   chests: [
     "id",
     "name",

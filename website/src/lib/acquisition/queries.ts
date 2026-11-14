@@ -85,7 +85,6 @@ const FACT_TABLES = [
   "item_pool_definitions",
   "acquisition_global_roots",
   "luck_tokens",
-  "chambers_entry_item_chances",
   "summon_trigger_placeholders",
   "item_seasons",
 ] as const;

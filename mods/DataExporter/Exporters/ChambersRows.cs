@@ -44,19 +44,16 @@ public static class ChambersRows
     }
 
     public static void Tabulate(ChambersRulesData rules, int maximumLevel, int maximumVeteranPoints,
-        int maximumSealLevel, Func<int, float> sealChance, Func<int, long> completionExperience,
+        Func<int, long> completionExperience,
         Func<int, int> maximumBonus, Func<int, int, int, bool, int> health,
         Func<int, int, int, bool, int> power)
     {
         if (rules.minimum_level < 1 || maximumLevel < rules.minimum_level || maximumVeteranPoints < 0
-            || maximumSealLevel < 55 || rules.room_count < 1)
+            || rules.room_count < 1)
             throw new InvalidOperationException("Chambers progression or rule domain is invalid.");
         rules.player_levels = Enumerable.Range(rules.minimum_level, maximumLevel - rules.minimum_level + 1).ToList();
         rules.veteran_points = Enumerable.Range(0, maximumVeteranPoints + 1).ToList();
         rules.room_indices = Enumerable.Range(0, rules.room_count).ToList();
-        rules.seal_drop_levels = Enumerable.Range(1, maximumSealLevel).ToList();
-        foreach (var level in rules.seal_drop_levels)
-            rules.seal_drop_chances.Add(new() { level = level, chance = sealChance(level) });
         // Completion uses current level at the guardian's death, not the entry snapshot.
         foreach (var level in Enumerable.Range(1, maximumLevel))
             rules.completion_experience.Add(new() { level = level, experience = completionExperience(level) });

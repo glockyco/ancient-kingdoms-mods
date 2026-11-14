@@ -2,13 +2,7 @@ import Database from "better-sqlite3";
 import { describe, expect, test } from "vitest";
 import type { AcquisitionQuery } from "$lib/acquisition/types";
 import { loadChambersRules } from "$lib/chambers/rules";
-import {
-  bandCovers,
-  entryChanceRows,
-  quantityLabel,
-  scalingView,
-  trialDraws,
-} from "./model";
+import { bandCovers, quantityLabel, scalingView, trialDraws } from "./model";
 
 // Expected values are the game's own results for these entries, called through the
 // exporter. A run at level 40 with no veteran points and a run at level 50 with 100.
@@ -86,20 +80,6 @@ describe("Chambers reward bands", () => {
       expect(covering).toHaveLength(1);
       expect(quantityLabel(covering[0])).toBe(quantity);
     }
-  });
-});
-
-describe("Chambers entry item chance rows", () => {
-  test("are zero below level 40, rise from 1% and stop at 10%", () => {
-    const rows = entryChanceRows(rules, 30, 72);
-    const chance = (level: number) =>
-      rows.find((row) => row.level === level)?.chance;
-    expect(chance(39)).toBe(0);
-    expect(chance(40)).toBeCloseTo(0.01, 6);
-    expect(chance(50)).toBeCloseTo(0.05, 6);
-    expect(chance(55)).toBeCloseTo(0.1, 6);
-    expect(chance(72)).toBeCloseTo(0.1, 6);
-    expect(() => entryChanceRows(rules, 30, 73)).toThrow(RangeError);
   });
 });
 

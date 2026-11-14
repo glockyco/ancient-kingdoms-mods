@@ -1109,7 +1109,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-199,204-217;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:9492-9509 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:9493-9510 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — while active, a Rogue's
   // followupDefaultAttack skill, Stab, switches to Poison damage and adds the rounded 250% Dexterity

@@ -10,10 +10,6 @@ from compendium.denormalizers.acquisition import (
 )
 from compendium.loaders.catalog import DATASETS, LoadContext, load_dataset
 
-CHANCES = {level: 0.0 for level in range(1, 40)}
-CHANCES.update({40: 0.01, 45: 0.03, 50: 0.050000004, 55: 0.1, 58: 0.1})
-for _level in range(41, 60):
-    CHANCES.setdefault(_level, 0.1 if _level >= 55 else 0.02)
 BANDS = [
     {
         "minimum_level": 40,
@@ -63,7 +59,6 @@ def export(max_level=41, max_veteran=2):
         {"offset": o, "weight": 7 - abs(o), "ordinary": True, "guardian": o >= 0}
         for o in range(-3, 7)
     ]
-    chance_levels = list(range(1, 60))
     return {
         "id": "chambers_of_chaos",
         "zone_id": "chambers_of_chaos",
@@ -98,10 +93,6 @@ def export(max_level=41, max_veteran=2):
             "veteran_points": veteran,
             "enemy_levels": enemy,
             "room_indices": [0, 1, 2],
-            "seal_drop_levels": chance_levels,
-            "seal_drop_chances": [
-                {"level": level, "chance": CHANCES[level]} for level in chance_levels
-            ],
             "completion_experience": [
                 {"level": level, "experience": 150000 if level >= 40 else 0}
                 for level in range(1, 51)
@@ -168,6 +159,9 @@ def prepare(tmp_path, payload=None, roles=True):
         INSERT INTO zones(id,zone_id,name) VALUES ('chambers_of_chaos',26,'Chambers of Chaos');
         INSERT INTO items(id,name,item_type) VALUES ('seal','Seal','general'),('token','Token','general');
         INSERT INTO monsters(id,name,level) VALUES ('skeleton','Skeleton',40),('orc','Orc',40);
+        INSERT INTO _acquisition_input_monsters VALUES
+          ('skeleton','{"drops":[{"item_id":"seal","rate":0.05}]}'),
+          ('orc','{"drops":[]}');
         INSERT INTO progression_rules VALUES (1,50,200,1,1);
         """
     )
@@ -202,6 +196,9 @@ def test_valid_export_round_trips_without_spawns_or_bounds(tmp_path):
     assert conn.execute("SELECT count(*) FROM chambers_pool_monsters").fetchone() == (
         2,
     )
+    assert conn.execute(
+        "SELECT monster_id,chance FROM chambers_entry_item_droppers"
+    ).fetchall() == [("skeleton", 0.05)]
     assert conn.execute("SELECT count(*) FROM monster_spawns").fetchone() == (0,)
     assert conn.execute("SELECT count(*) FROM chambers_scaling").fetchone() == (
         len(full_export()["rules"]["scaling"]),
@@ -241,10 +238,6 @@ def test_missing_file_fails_composition(tmp_path):
         (
             lambda d: d["rules"]["player_levels"].pop(),
             "player_levels is not the declared domain",
-        ),
-        (
-            lambda d: d["rules"]["seal_drop_chances"].pop(),
-            "seal_drop_levels is not the declared domain",
         ),
         (
             lambda d: d["rules"]["reward_bands"][0].update(maximum_level=48),
@@ -294,7 +287,7 @@ def test_reward_bands_have_one_band_at_each_boundary(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Native Seal of Chaos roll and the guardian provider
+# The guardian provider
 # ---------------------------------------------------------------------------
 
 
@@ -304,9 +297,6 @@ def staged_chambers():
         "seal_item_id": "seal",
         "reward_item_id": "token",
         "minimum_level": 40,
-        "seal_drop_chances": [
-            {"level": level, "chance": chance} for level, chance in CHANCES.items()
-        ],
         "reward_bands": copy.deepcopy(BANDS),
     }
 
@@ -331,106 +321,27 @@ def spawn(identity, monster_id, level, **loot):
     }
 
 
-def roll_state(tmp_path, spawns, monsters=None, chambers=True):
+def guardian_state(tmp_path):
     conn = database(tmp_path)
-    monsters = monsters or [monster("elite", level=40, is_elite=True)]
     build = normalizer(
         conn,
         items=[item("seal"), item("token")],
-        monsters=monsters,
-        monster_spawns=spawns,
-        chambers=[staged_chambers()] if chambers else [],
+        monsters=[monster("elite", level=40, is_elite=True)],
+        monster_spawns=[],
+        chambers=[staged_chambers()],
     )
-    for row in spawns:
-        conn.execute(
-            "INSERT INTO monster_spawns(id,monster_id,zone_id,level,position_x,position_y,position_z) "
-            "VALUES (?,?,'zone',?,0,0,0)",
-            (row["id"], row["monster_id"], row["level"]),
-        )
     build.item_definitions()
     build.monsters_and_events()
-    if chambers:
-        conn.execute("INSERT INTO npcs(id,name,roles) VALUES ('keeper','Keeper','{}')")
-        conn.execute(
-            "INSERT INTO chambers_definitions VALUES ('chambers_of_chaos','zone','keeper',3,1200,40,3,20,30,2,3,'Guardian')"
-        )
-        build.chambers_run()
-    rolls = dict(
-        conn.execute(
-            """SELECT p.monster_spawn_id,
-                      d.code_roll_scaling||':'||coalesce(d.code_roll_level,'')||':'||coalesce(d.code_roll_chance,'')
-               FROM acquisition_kill_details d
-               JOIN acquisition_providers_monster_spawns p ON p.method_id=d.id
-               WHERE d.code_roll_scaling IS NOT NULL"""
-        ).fetchall()
+    conn.execute("INSERT INTO npcs(id,name,roles) VALUES ('keeper','Keeper','{}')")
+    conn.execute(
+        "INSERT INTO chambers_definitions VALUES ('chambers_of_chaos','zone','keeper',3,1200,40,3,20,30,2,3,'Guardian')"
     )
-    return conn, build, rolls
-
-
-@pytest.mark.parametrize(
-    "level,chance",
-    [(40, 0.01), (50, 0.050000004), (55, 0.1), (58, 0.1)],
-)
-def test_eligible_elites_roll_at_the_exported_chance(tmp_path, level, chance):
-    conn, _, rolls = roll_state(tmp_path, [spawn("s", "elite", level)])
-    assert rolls == {"s": f"fixed:{level}:{chance}"}
-    assert conn.execute(
-        "SELECT item_id,amount_min,amount_max,yield_rule,delivery FROM acquisition_outputs o "
-        "JOIN acquisition_kill_details d ON d.id=o.method_id WHERE d.code_roll_scaling IS NOT NULL"
-    ).fetchall() == [("seal", 1, 1, "fixed", "corpse")]
-
-
-def test_a_level_below_40_has_no_roll(tmp_path):
-    _, _, rolls = roll_state(tmp_path, [spawn("s", "elite", 39)])
-    assert rolls == {}
-
-
-def test_the_spawn_level_decides_not_the_template_level(tmp_path):
-    spawns = [spawn("low", "elite", 33), spawn("high", "elite", 40)]
-    conn, _, rolls = roll_state(tmp_path, spawns)
-    assert set(rolls) == {"high"}
-    # The level-33 spawn keeps its own method without the roll.
-    assert conn.execute(
-        "SELECT count(*) FROM acquisition_kill_details WHERE code_roll_scaling IS NULL"
-    ).fetchone() == (1,)
-
-
-@pytest.mark.parametrize(
-    "loot",
-    [{"loot_is_boss": True}, {"loot_is_elite": False}],
-)
-def test_bosses_and_ordinary_monsters_have_no_roll(tmp_path, loot):
-    _, _, rolls = roll_state(tmp_path, [spawn("s", "elite", 55, **loot)])
-    assert rolls == {}
-
-
-def test_a_dummy_has_no_roll(tmp_path):
-    dummy = monster("elite", level=50, is_elite=True, is_dummy=True)
-    _, _, rolls = roll_state(tmp_path, [spawn("s", "elite", 50)], monsters=[dummy])
-    assert rolls == {}
-
-
-def test_without_a_chambers_definition_nothing_rolls(tmp_path):
-    _, _, rolls = roll_state(tmp_path, [spawn("s", "elite", 55)], chambers=False)
-    assert rolls == {}
-
-
-def test_a_live_level_outside_the_exported_table_fails(tmp_path):
-    with pytest.raises(
-        ValueError, match="outside the exported entry item chance domain"
-    ):
-        roll_state(tmp_path, [spawn("s", "elite", 99)])
-
-
-def test_summoned_elites_roll_like_any_elite(tmp_path):
-    _, _, rolls = roll_state(
-        tmp_path, [spawn("s", "elite", 55, loot_is_summoned_pet=True)]
-    )
-    assert rolls == {"s": "fixed:55:0.1"}
+    build.chambers_run()
+    return conn
 
 
 def test_the_guardian_is_a_provider_without_spawn_or_kill_context(tmp_path):
-    conn, _, _ = roll_state(tmp_path, [])
+    conn = guardian_state(tmp_path)
     # Tower deaths take another branch, so no kill context exists for the run.
     assert conn.execute("SELECT count(*) FROM acquisition_kill_details").fetchone() == (
         0,
@@ -448,7 +359,7 @@ def test_the_guardian_is_a_provider_without_spawn_or_kill_context(tmp_path):
 
 
 def test_guardian_reward_bands_and_a_single_entry_charge(tmp_path):
-    conn, _, _ = roll_state(tmp_path, [])
+    conn = guardian_state(tmp_path)
     assert conn.execute(
         "SELECT condition_slot,item_id,amount_min,amount_max,delivery FROM acquisition_outputs "
         "ORDER BY condition_slot"
@@ -470,7 +381,7 @@ def test_guardian_reward_bands_and_a_single_entry_charge(tmp_path):
 # ---------------------------------------------------------------------------
 
 
-def chain(tmp_path, vendor=True, spawn_level=50):
+def chain(tmp_path, vendor=True, seal_drop=True):
     conn = database(tmp_path)
     items = [
         item("seal"),
@@ -515,11 +426,16 @@ def chain(tmp_path, vendor=True, spawn_level=50):
         conn,
         items=items,
         monsters=[
-            monster("elite", level=spawn_level, is_elite=True),
+            monster("elite", level=50, is_elite=True),
             monster("dropper", level=10, drops=[{"item_id": "epic", "rate": 0.5}]),
         ],
         monster_spawns=[
-            spawn("s", "elite", spawn_level),
+            spawn(
+                "s",
+                "elite",
+                50,
+                loot_drops=[{"item_id": "seal", "rate": 0.05}] if seal_drop else [],
+            ),
             spawn(
                 "d",
                 "dropper",
@@ -538,7 +454,7 @@ def chain(tmp_path, vendor=True, spawn_level=50):
     conn.execute(
         "INSERT INTO monster_spawns(id,monster_id,zone_id,level,position_x,position_y,position_z) "
         "VALUES ('s','elite','zone',?,0,0,0)",
-        (spawn_level,),
+        (50,),
     )
     conn.execute(
         "INSERT INTO npc_spawns(id,npc_id,zone_id) VALUES ('q','quirin','zone')"
@@ -575,7 +491,7 @@ def test_a_missing_catalyst_offer_breaks_the_chain(tmp_path):
         verify_private_reachability(conn)
 
 
-def test_without_an_eligible_elite_the_entry_item_has_no_source(tmp_path):
-    conn = chain(tmp_path, spawn_level=39)
-    with pytest.raises(ValueError, match="no eligible elite drops the entry item"):
+def test_without_a_dropping_monster_the_entry_item_has_no_source(tmp_path):
+    conn = chain(tmp_path, seal_drop=False)
+    with pytest.raises(ValueError, match="entry item seal has no reachable source"):
         verify_private_reachability(conn)

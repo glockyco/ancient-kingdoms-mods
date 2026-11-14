@@ -57,8 +57,7 @@ export async function loadChambersRules(
         .filter((row) => row.domain === name)
         .map((row) => number(row, "value")),
     );
-  const [chances, experience, bonuses, offsets, bands] = await Promise.all([
-    rows("chambers_entry_item_chances", "level"),
+  const [experience, bonuses, offsets, bands] = await Promise.all([
     rows("chambers_completion_experience", "level"),
     rows("chambers_veteran_level_bonuses", "veteran_points"),
     rows("chambers_enemy_level_offsets", "level_offset"),
@@ -106,9 +105,6 @@ export async function loadChambersRules(
     veteranPoints: domain("veteran_points"),
     enemyLevels: domain("enemy_level"),
     roomIndices: domain("room_index"),
-    entryItemChances: new Map(
-      chances.map((row) => [number(row, "level"), number(row, "chance")]),
-    ),
     completionExperience: new Map(
       experience.map((row) => [
         number(row, "level"),

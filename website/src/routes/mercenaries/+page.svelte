@@ -336,7 +336,7 @@
         <div>
           <div>Summon it into your party.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/UIMercenaries.cs:506-508,584, Player.cs:12285-12290,12473-12492 -->
+            <!-- Source: server-scripts/UIMercenaries.cs:506-508,584, Player.cs:12286-12291,12474-12493 -->
             <p>
               <span class="block">
                 You can keep up to {MAX_HIRED} hired mercenaries.
@@ -358,7 +358,7 @@
               A party holds at most {MAX_PARTY} members, including active mercenaries.
               Make room before summoning one.
             </p>
-            <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean,12285-12290 — a hire spawns only while the party and the level limit have room, otherwise it is saved to the roster. -->
+            <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean,12286-12291 — a hire spawns only while the party and the level limit have room, otherwise it is saved to the roster. -->
             <p>
               A new hire joins your party right away when there is room.
               Otherwise it waits in your roster.
@@ -366,7 +366,7 @@
           </div>
         </div>
       </div>
-      <!-- Source: server-scripts/UITarget.cs:477-502; UIEquipmentMercenary.cs:CanDisband; UIMercenaries.cs:CanUseRecruiter,OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:12679-12701 — combat prevents dismissal and every recruiter action, recall rejects dead mercenaries, and deletion checks equipped gear. -->
+      <!-- Source: server-scripts/UITarget.cs:477-502; UIEquipmentMercenary.cs:CanDisband; UIMercenaries.cs:CanUseRecruiter,OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:12680-12702 — combat prevents dismissal and every recruiter action, recall rejects dead mercenaries, and deletion checks equipped gear. -->
       <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
@@ -401,7 +401,7 @@
         <div>
           <div>It levels up with you.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,5150-5175,12532-12547; PetSkills.cs:RefreshSkillLevels; Health.cs:32-56; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:69-78 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
+            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,5150-5175,12533-12548; PetSkills.cs:RefreshSkillLevels; Health.cs:32-56; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:69-78 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
             <p>
               <span class="block">A mercenary always has your level.</span>
               <span class="block">
@@ -437,7 +437,7 @@
             <Alert variant="info">
               <Info />
               <div>
-                <!-- Source: server-scripts/Player.cs:12322-12328,12535-12542 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
+                <!-- Source: server-scripts/Player.cs:12323-12329,12536-12543 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
                 <p class="font-medium">Veteran Attack Power and Spell Power</p>
                 <p>
                   Each of your total veteran points adds 1 to the mercenary's
@@ -601,7 +601,7 @@
                 </span>
               {/if}
             </p>
-            <!-- Source: server-scripts/TargetHealSkill.cs:275-296, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,12608 -->
+            <!-- Source: server-scripts/TargetHealSkill.cs:275-296, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,12609 -->
             <div class="overflow-x-auto">
               <table class="text-sm">
                 <thead>
@@ -679,7 +679,7 @@
         <div class="text-sm text-muted-foreground">7</div>
         <div>
           <div>If you die, your mercenaries leave.</div>
-          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,14989-14993, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,12428-12447 -->
+          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,14990-14994, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,12429-12448 -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
               Living mercenaries return when you respawn or when someone

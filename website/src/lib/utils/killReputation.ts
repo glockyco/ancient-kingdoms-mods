@@ -50,7 +50,7 @@ interface NpcKillReputationInput {
  * spawn levels (level_min..level_max).
  *
  * Source: server-scripts/Monster.cs:693-719 (formula),
- * 3378-3390 and 3415-3427 (party/solo reward application).
+ * 3374-3386 and 3411-3423 (party/solo reward application).
  * Improve adds (level.current + Mathf.RoundToInt(health.max / 2000)) *
  * (boss 20 / elite 10 / normal 1); decrease subtracts level.current *
  * (boss 2 / elite 1 / normal 0.75).

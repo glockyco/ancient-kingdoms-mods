@@ -1,6 +1,6 @@
 <!-- Source: server-scripts/Player.cs:3914-3945 — a respawn in zone 26 returns to the remembered Chambers entrance instead of the bind point. -->
 <!-- Source: server-scripts/TravelItem.cs:Use — Gate Scroll is refused only in zone 23, so inside the Chambers it still travels to the bind point. -->
-<!-- Source: server-scripts/Player.cs:12950-12959 — leaving zone 26 through a portal finishes the run. -->
+<!-- Source: server-scripts/Player.cs:12951-12960 — leaving zone 26 through a portal finishes the run. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Bind Point</h3>
   <p class="text-muted-foreground">

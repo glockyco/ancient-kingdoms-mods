@@ -294,7 +294,7 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:413 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:15313-15338 and 15348-15376 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:15314-15339 and 15349-15377 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -421,7 +421,7 @@
         <p>
           <span class="block"
             ><!-- Source: server-scripts/CustomStrucUI.cs:289-312 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:148-154, 415-434 and Player.cs:15064-15076 — move mode hides the structure, then repositions the same one without charging gold. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:148-154, 415-434 and Player.cs:15065-15077 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -437,7 +437,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:140-145 and 346-364 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:170-181 and Player.cs:12136-12169 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:170-181 and Player.cs:12137-12170 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >

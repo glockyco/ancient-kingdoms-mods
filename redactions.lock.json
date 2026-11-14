@@ -723,7 +723,7 @@
     }
   },
   "snapshot": {
-    "game_version": "0.10.4.0",
+    "game_version": "0.10.4.1",
     "keys": "placement"
   },
   "suppressed_positions": {

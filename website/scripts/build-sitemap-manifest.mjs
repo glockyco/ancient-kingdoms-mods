@@ -991,6 +991,7 @@ async function addMechanicsHashes(db, addHash, context) {
               "chambers_rule_domains",
               "chambers_scaling",
               "chambers_trial_bag",
+              "chambers_entry_item_droppers",
               "items",
               "npcs",
               "npc_spawns",

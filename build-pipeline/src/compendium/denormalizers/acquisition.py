@@ -141,16 +141,11 @@ class _Normalizer:
         }
         self.config = inputs["game_config"][0]
         self.chambers = inputs["chambers"][0] if inputs["chambers"] else None
-        self.entry_item_chances: dict[int, float] = {}
         if self.chambers is not None:
             if self.chambers["seal_item_id"] not in self.items:
                 raise ValueError("Chambers entry item is not a staged item")
             if self.chambers["reward_item_id"] not in self.items:
                 raise ValueError("Chambers reward item is not a staged item")
-            self.entry_item_chances = {
-                row["level"]: row["chance"]
-                for row in self.chambers["seal_drop_chances"]
-            }
         self.pool_by_item: dict[str, str] = {}
         self.recipe_by_definition: dict[str, str] = {}
         self.kill_methods: dict[str, str] = {}
@@ -1069,40 +1064,6 @@ class _Normalizer:
             origin="cap_xp",
         )
 
-    def code_roll(
-        self,
-        identity: Any,
-        context: dict[str, Any],
-        level: int | None,
-        scaling: str,
-    ) -> tuple[str | None, int | None, float | None]:
-        """The native corpse roll a kill context adds, as scaling, level and chance.
-
-        The roll is in no loot pool. It depends on the live level of the monster that
-        dies, so a template's level says nothing about a spawn that stands lower.
-        """
-        # Source: server-scripts/Monster.cs:OnDeath — only a non-boss elite that reaches the player-loot branch rolls, a training dummy never does, and a Chambers tower clone takes the other branch.
-        if (
-            self.chambers is None
-            or level is None
-            or not context["is_elite"]
-            or context["is_boss"]
-            or context.get("is_dummy")
-        ):
-            return None, None, None
-        if scaling == "activator":
-            # Source: server-scripts/DefaultEvent.cs:SummonMonsters — a Forgotten Altar wave monster takes the activator's level, so its chance is open.
-            return "activator", level, None
-        chance = self.entry_item_chances.get(level)
-        if chance is None:
-            raise ValueError(
-                f"Kill context {identity}: live level {level} is outside the exported entry item chance domain"
-            )
-        # Source: server-scripts/Monster.cs:OnDeath; MadMageTowerRules.cs:SealDropChance — the roll needs live level 40 and the game's chance is 0 below it.
-        if chance <= 0:
-            return None, None, None
-        return "fixed", level, chance
-
     def kill_context(
         self,
         identity: Any,
@@ -1117,11 +1078,8 @@ class _Normalizer:
         parent: str | None = None,
         setup: str | None = None,
         tier_slot: int | None = None,
-        roll_level: int | None = None,
-        roll_scaling: str = "fixed",
     ) -> None:
         lootless = event == "lootless" or context["is_summoned_pet"]
-        roll = self.code_roll(identity, context, roll_level, roll_scaling)
         entries = [] if lootless else context["drops"]
         rewards = (
             [
@@ -1168,8 +1126,6 @@ class _Normalizer:
                     parent=parent,
                     setup=setup,
                     tier_slot=ordinal,
-                    roll_level=roll_level,
-                    roll_scaling=roll_scaling,
                 )
             return
         rule = (
@@ -1211,7 +1167,6 @@ class _Normalizer:
             member,
             parent,
             tier_slot,
-            roll,
             "lootless" if lootless else event,
             0 if lootless else context["gold_min"],
             0 if lootless else context["gold_max"],
@@ -1264,9 +1219,6 @@ class _Normalizer:
             gold_min=0 if lootless else context["gold_min"],
             gold_max=0 if lootless else context["gold_max"],
             gold_probability=0 if lootless else context["probability_drop_gold"],
-            code_roll_scaling=roll[0],
-            code_roll_level=roll[1],
-            code_roll_chance=roll[2],
         )
         self.provider(provider[0], method, provider[1])
         self.bind_pool(
@@ -1274,15 +1226,6 @@ class _Normalizer:
             pool,
             "eligible_kill" if event == "altar_final" else "corpse_generation",
         )
-        if roll[0] is not None:
-            assert self.chambers is not None  # a roll exists only with Chambers data
-            # Source: server-scripts/Monster.cs:OnDeath — the roll adds one item to the corpse after the ordinary loot, whatever the template's drops.
-            self.output(
-                method,
-                self.chambers["seal_item_id"],
-                1,
-                delivery="corpse",
-            )
         if lootless:
             return
         if gold_override:
@@ -1348,7 +1291,6 @@ class _Normalizer:
                 monster,
                 context,
                 provider=("monster_spawns", spawn["id"]),
-                roll_level=spawn["level"] if self.chambers else None,
             )
             if (
                 monster["placeholder_monster_id"]
@@ -1359,7 +1301,6 @@ class _Normalizer:
                     ["placeholder", spawn["id"], child["id"]],
                     child,
                     child,
-                    roll_level=child["level"] if self.chambers else None,
                     provider=("monster_spawns", spawn["id"]),
                     event="placeholder",
                     parent=spawn["id"],
@@ -1390,10 +1331,6 @@ class _Normalizer:
                         wave=wave["wave_number"],
                         member=member,
                         setup=setup,
-                        roll_level=entry["base_level"] if self.chambers else None,
-                        roll_scaling="activator"
-                        if altar["type"] == "forgotten"
-                        else "fixed",
                     )
 
     def chambers_run(self) -> None:
@@ -2270,13 +2207,6 @@ def verify_private_reachability(conn: sqlite3.Connection) -> None:
                 "WHERE m.kind='chambers_guardian'",
             )
         }
-        roll_methods = {
-            row["id"]
-            for row in _rows(
-                conn,
-                "SELECT id FROM acquisition_kill_details WHERE code_roll_scaling IS NOT NULL",
-            )
-        }
         rooted_awards: dict[str, set[str]] = defaultdict(set)
         for row in _rows(
             conn,
@@ -2310,8 +2240,6 @@ def verify_private_reachability(conn: sqlite3.Connection) -> None:
         method = row["method_id"]
         if not state[method][0] or state[method][1] is None:
             problems.append(f"guardian run {method} is not reachable")
-    if not roll_methods:
-        problems.append("no eligible elite drops the entry item")
     for item in sorted(entry_items):
         if "kill" not in rooted_awards[item]:
             problems.append(f"entry item {item} has no reachable source")
@@ -2498,38 +2426,6 @@ def validate(conn: sqlite3.Connection) -> None:
                 raise ValueError(
                     f"Acquisition method {identity}: damaged monster pool binding"
                 )
-            roll = [
-                row["code_roll_scaling"],
-                row["code_roll_level"],
-                row["code_roll_chance"],
-            ]
-            roll_outputs = conn.execute(
-                """
-                SELECT count(*) FROM acquisition_outputs
-                WHERE method_id=? AND resource_kind='item' AND yield_rule='fixed'
-                  AND delivery='corpse' AND amount_min=1 AND amount_max=1
-            """,
-                (identity,),
-            ).fetchone()[0]
-            if roll_outputs != int(roll[0] is not None):
-                raise ValueError(
-                    f"Acquisition method {identity}: code roll and its corpse output disagree"
-                )
-            if roll[0] is not None:
-                if not row["is_elite"] or row["is_boss"]:
-                    raise ValueError(
-                        f"Acquisition method {identity}: code roll on a non-elite or boss"
-                    )
-                if roll[0] == "fixed":
-                    # The chance is the exported game call's value at the live level.
-                    table = conn.execute(
-                        "SELECT chance FROM chambers_entry_item_chances WHERE level=?",
-                        (roll[1],),
-                    ).fetchone()
-                    if table is None or table[0] != roll[2] or roll[2] <= 0:
-                        raise ValueError(
-                            f"Acquisition method {identity}: code roll chance is not the exported value"
-                        )
         if kind == "chambers_guardian":
             definition = _rows(
                 conn,

@@ -266,7 +266,6 @@ CANONICAL_DIRECTIONS: dict[tuple[str, str], Direction] = {
 for _table, _column in (
     ("chambers_trial_bag", "definition_id"),
     ("chambers_rule_domains", "definition_id"),
-    ("chambers_entry_item_chances", "definition_id"),
     ("chambers_completion_experience", "definition_id"),
     ("chambers_veteran_level_bonuses", "definition_id"),
     ("chambers_enemy_level_offsets", "definition_id"),
@@ -276,10 +275,12 @@ for _table, _column in (
     ("chambers_rune_puzzles", "definition_id"),
     ("chambers_pool_monsters", "definition_id"),
     ("chambers_encounter_groups", "definition_id"),
+    ("chambers_entry_item_droppers", "definition_id"),
 ):
     CANONICAL_DIRECTIONS[(_table, _column)] = "provided_by"
 CANONICAL_DIRECTIONS[("chambers_definitions", "keeper_npc_id")] = "none"
 CANONICAL_DIRECTIONS[("chambers_pool_monsters", "monster_id")] = "none"
+CANONICAL_DIRECTIONS[("chambers_entry_item_droppers", "monster_id")] = "none"
 CANONICAL_DIRECTIONS[("chambers_encounter_groups", "guards_monster_id")] = "none"
 CANONICAL_DIRECTIONS[("chambers_encounter_groups", "support_monster_id")] = "none"
 for _domain, _column in PROVIDER_COLUMNS.items():

@@ -42,8 +42,6 @@ public sealed class ChambersRulesData
     public List<int> veteran_points { get; set; } = new();
     public List<int> enemy_levels { get; set; } = new();
     public List<int> room_indices { get; set; } = new();
-    public List<int> seal_drop_levels { get; set; } = new();
-    public List<ChambersSealChanceData> seal_drop_chances { get; set; } = new();
     public List<ChambersCompletionExperienceData> completion_experience { get; set; } = new();
     public List<ChambersMaximumBonusData> maximum_enemy_level_bonus { get; set; } = new();
     public List<ChambersScalingData> scaling { get; set; } = new();
@@ -53,12 +51,6 @@ public sealed class ChambersRulesData
     public string final_trial { get; set; } = "";
     public List<ChambersRandomProbeData> random_probes { get; set; } = new();
     public List<ChambersTrialProbeData> trial_probes { get; set; } = new();
-}
-
-public sealed class ChambersSealChanceData
-{
-    public int level { get; set; }
-    public float chance { get; set; }
 }
 
 public sealed class ChambersCompletionExperienceData

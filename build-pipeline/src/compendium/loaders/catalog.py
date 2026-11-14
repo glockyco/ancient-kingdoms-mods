@@ -323,10 +323,10 @@ DATASETS: tuple[Dataset, ...] = (
         (
             "chambers_definitions",
             "chambers_pool_monsters",
+            "chambers_entry_item_droppers",
             "chambers_encounter_groups",
             "chambers_trial_bag",
             "chambers_rule_domains",
-            "chambers_entry_item_chances",
             "chambers_completion_experience",
             "chambers_veteran_level_bonuses",
             "chambers_enemy_level_offsets",

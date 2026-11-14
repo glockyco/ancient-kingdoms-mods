@@ -175,10 +175,6 @@ export interface KillDetailRow extends DataRow {
   readonly gold_min: number;
   readonly gold_max: number;
   readonly gold_probability: number;
-  /** A native corpse roll outside the loot pool, by the monster's live level. */
-  readonly code_roll_scaling: "fixed" | "activator" | null;
-  readonly code_roll_level: number | null;
-  readonly code_roll_chance: number | null;
 }
 export interface VendorDetailRow extends DataRow {
   readonly npc_id: string;

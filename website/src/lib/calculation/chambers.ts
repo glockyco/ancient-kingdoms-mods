@@ -31,8 +31,6 @@ export interface ChambersRules {
   readonly veteranPoints: ReadonlySet<number>;
   readonly enemyLevels: ReadonlySet<number>;
   readonly roomIndices: ReadonlySet<number>;
-  /** Live monster level to the Seal of Chaos corpse-roll chance. */
-  readonly entryItemChances: ReadonlyMap<number, number>;
   /** Level at the guardian's death to completion experience. */
   readonly completionExperience: ReadonlyMap<number, number>;
   /** Total veteran points to the highest enemy level above the player's. */
@@ -137,16 +135,6 @@ export function completionExperience(
   if (value === undefined)
     throw new RangeError(
       `level ${level} is outside the exported Chambers rules`,
-    );
-  return value;
-}
-
-/** The chance that an eligible elite of this live level drops the entry item. */
-export function entryItemChance(rules: ChambersRules, level: number): number {
-  const value = rules.entryItemChances.get(level);
-  if (value === undefined)
-    throw new RangeError(
-      `monster level ${level} is outside the exported Chambers rules`,
     );
   return value;
 }

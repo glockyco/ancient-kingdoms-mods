@@ -256,7 +256,7 @@
       <p>
         Equipment, augments, passive skills, and buffs can also change your
         attributes.
-        <!-- Source: server-scripts/Player.cs:14098-14133 — reading attribute books permanently raises their listed attributes. -->
+        <!-- Source: server-scripts/Player.cs:14099-14134 — reading attribute books permanently raises their listed attributes. -->
         Reading certain
         <a
           href="/professions/lore_keeping"
@@ -435,14 +435,14 @@
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Learning Skills</h3>
         <!-- Source: server-scripts/ScriptableSkill.cs:53-70 — requirements include spent points, up to two ranked predecessors, level, and tier. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:2021-2079 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:2022-2080 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
         <p>
           Skill ranks may require a level, enough points, earlier spending in
           the same skill tree, and up to two prerequisite skills. Armor-set
           bonuses do not count toward prerequisite ranks.
         </p>
         <!-- Source: server-scripts/PlayerSkills.cs:1866-1875 — prerequisite checks exclude armor-set bonus levels. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:2047-2079 — new choices are limited by tier, but existing choices can be upgraded. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:2048-2080 — new choices are limited by tier, but existing choices can be upgraded. -->
         <p>
           <span class="block"
             >You can choose up to two different skills in tiers 1 and 3.</span
@@ -456,7 +456,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Veteran Skills</h3>
         <!-- Source: server-scripts/Experience.cs:38-38,45-53,366-408 — at the level cap filled XP bars grant Veteran Points with a separate maximum. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:59-68,2034-2045,2592-2615 — veteran upgrades spend Veteran Points, not class skill points. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:59-68,2035-2046,2593-2616 — veteran upgrades spend Veteran Points, not class skill points. -->
         <!-- Source: server-scripts/PlayerSkills.cs:CanLearnTierSkill; website/data/compendium.db skills.tier — all veteran skills have tier 0, which allows every choice. -->
         <p>
           <span class="block"
@@ -512,7 +512,7 @@
             >Veteran point counting and reset losses</a
           > explains how the game miscounts ranks that cost 2 veteran points.
         </p>
-        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16943-16947 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
+        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:16944-16948 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
           On some saved characters, the first specialization switch resets
           assigned attributes for free.
@@ -547,8 +547,8 @@
           resets your assigned attribute points for the same price, but not while
           a debuff is on you.
         </p>
-        <!-- Source: server-scripts/Player.cs:12715-12721,12747-12781 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1891-1984 — each reset returns points only for its own skill pool. -->
+        <!-- Source: server-scripts/Player.cs:12716-12722,12748-12782 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1891-1985 — each reset returns points only for its own skill pool. -->
         <p>
           <span class="block"
             >Resetting class skills refunds class skill points but leaves

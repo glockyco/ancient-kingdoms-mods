@@ -74,11 +74,6 @@ def validate_rules(
     enemy = range(rules.enemy_levels[0], rules.enemy_levels[-1] + 1)
     _exact("enemy_levels", rules.enemy_levels, enemy)
 
-    chances = {row.level for row in rules.seal_drop_chances}
-    if len(chances) != len(rules.seal_drop_chances):
-        raise _fail("seal_drop_chances holds duplicate levels")
-    _exact("seal_drop_levels", rules.seal_drop_levels, range(1, max(chances) + 1))
-    _exact("seal_drop_chances levels", chances, rules.seal_drop_levels)
     _exact(
         "completion_experience levels",
         [row.level for row in rules.completion_experience],
@@ -270,6 +265,23 @@ def load_chambers(conn: sqlite3.Connection, export_dir: Path) -> None:
             for ordinal, monster in enumerate(export.monster_pool)
         ],
     )
+    # Source: server-scripts/Monster.cs:OnDeath — the entry item drops through ordinary drop
+    # tables, so its sources are the monsters whose table names it.
+    droppers = [
+        (definition, monster_id, entry["rate"])
+        for monster_id, payload in conn.execute(
+            "SELECT id, payload FROM _acquisition_input_monsters"
+        )
+        for entry in json.loads(payload).get("drops") or []
+        if entry.get("item_id") == export.seal_item_id and entry.get("rate", 0) > 0
+    ]
+    if not droppers:
+        raise _fail("no monster drops the entry item")
+    cursor.executemany(
+        "INSERT INTO chambers_entry_item_droppers (definition_id, monster_id, chance) "
+        "VALUES (?,?,?)",
+        droppers,
+    )
     cursor.executemany(
         "INSERT INTO chambers_encounter_groups (id, definition_id, ordinal, name, "
         "guards_monster_id, support_monster_id) VALUES (?,?,?,?,?,?)",
@@ -294,16 +306,11 @@ def load_chambers(conn: sqlite3.Connection, export_dir: Path) -> None:
         ("veteran_points", rules.veteran_points),
         ("enemy_level", rules.enemy_levels),
         ("room_index", rules.room_indices),
-        ("entry_item_drop_level", rules.seal_drop_levels),
     ):
         cursor.executemany(
             "INSERT INTO chambers_rule_domains (definition_id, domain, value) VALUES (?,?,?)",
             [(definition, domain, value) for value in values],
         )
-    cursor.executemany(
-        "INSERT INTO chambers_entry_item_chances (definition_id, level, chance) VALUES (?,?,?)",
-        [(definition, row.level, row.chance) for row in rules.seal_drop_chances],
-    )
     cursor.executemany(
         "INSERT INTO chambers_completion_experience (definition_id, level, experience) "
         "VALUES (?,?,?)",
@@ -405,10 +412,6 @@ def load_chambers(conn: sqlite3.Connection, export_dir: Path) -> None:
                     "seal_item_id": export.seal_item_id,
                     "reward_item_id": export.reward_item_id,
                     "minimum_level": rules.minimum_level,
-                    "seal_drop_chances": [
-                        {"level": row.level, "chance": row.chance}
-                        for row in rules.seal_drop_chances
-                    ],
                     "reward_bands": [
                         band.model_dump(mode="json") for band in rules.reward_bands
                     ],

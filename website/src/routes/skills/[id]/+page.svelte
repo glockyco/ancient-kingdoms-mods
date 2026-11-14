@@ -622,7 +622,7 @@
           {/if}
         </dl>
         {#if losesVeteranPoints}
-          <!-- Source: server-scripts/PlayerSkills.cs:1878-1888,1942-1982,2611-2614 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
+          <!-- Source: server-scripts/PlayerSkills.cs:1878-1888,1942-1982,2612-2615 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
           <!-- Runtime verification: docs/game-bugs/two-point-veteran-skills-lose-points-and-progression.md -->
           <p
             class="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"

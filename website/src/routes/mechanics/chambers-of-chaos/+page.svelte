@@ -10,7 +10,7 @@
   import RedactedEntry from "$lib/components/RedactedEntry.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import CaptureFigure from "$lib/components/chambers/CaptureFigure.svelte";
-  import EntryChanceChart from "$lib/components/chambers/EntryChanceChart.svelte";
+  import EntryItemDroppers from "$lib/components/chambers/EntryItemDroppers.svelte";
   import KeeperCard from "$lib/components/chambers/KeeperCard.svelte";
   import LevelDistributionChart from "$lib/components/chambers/LevelDistributionChart.svelte";
   import PoolList from "$lib/components/chambers/PoolList.svelte";
@@ -165,12 +165,11 @@
         </p>
       </div>
       <div class="space-y-3">
-        <h3 class="font-semibold text-foreground">Entry Item Drop Chance</h3>
-        <!-- Source: server-scripts/Monster.cs:OnDeath — a non-boss elite of level 40 or higher adds one entry item to its corpse with the chance MadMageTowerRules.SealDropChance(level) gives. -->
-        <EntryChanceChart
-          rows={data.entryChances}
-          initialLevel={view.entryLevel}
-        />
+        <h3 class="font-semibold text-foreground">
+          Where the Entry Item Drops
+        </h3>
+        <!-- Source: server-scripts/Monster.cs:OnDeath — the entry item drops through these monsters' own drop tables. -->
+        <EntryItemDroppers droppers={data.droppers} />
       </div>
     </div>
   </section>

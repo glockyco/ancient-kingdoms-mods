@@ -178,27 +178,6 @@ export function bandCovers(
   );
 }
 
-export interface EntryChanceRow {
-  readonly level: number;
-  readonly chance: number;
-}
-
-/** The entry item's drop chances from a level up to a level, in level order. */
-export function entryChanceRows(
-  rules: ChambersRules,
-  from: number,
-  to: number,
-): EntryChanceRow[] {
-  const rows: EntryChanceRow[] = [];
-  for (let level = from; level <= to; level++) {
-    const chance = rules.entryItemChances.get(level);
-    if (chance === undefined)
-      throw new RangeError(`monster level ${level} has no exported chance`);
-    rows.push({ level, chance });
-  }
-  return rows;
-}
-
 export interface TrialDraw {
   readonly kind: string;
   /** How many of the bag's entries are this kind. */

@@ -551,8 +551,6 @@ export function assembleAcquisitionModel(
             "is_summoned_pet",
           ])
             flag(detail, field);
-          if (detail.code_roll_scaling !== null)
-            enumField(detail, "code_roll_scaling", ["fixed", "activator"]);
           integer(detail, "loot_zone_number", 0, true);
           if (detail.loot_zone_withheld) {
             if (
@@ -866,7 +864,7 @@ export function assembleAcquisitionModel(
             );
           if (classes.length) parts.push(combine("any", classes));
         }
-        // Source: server-scripts/Player.cs:15191-15232; server-scripts/TableUI.cs:71-98.
+        // Source: server-scripts/Player.cs:15192-15233; server-scripts/TableUI.cs:71-98.
         // Scribing uses Alchemy success but does not require learning the recipe.
         if (method.rule_id === "alchemy")
           parts.push(

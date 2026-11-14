@@ -20,7 +20,7 @@ The Chambers rules page SHALL receive a compare-options review of two to four st
 
 ### Requirement: Chambers visualizations explain the decisions a run requires
 
-The reviewed page SHALL include visual treatments of chamber sequence, trial kinds, enemy level, Health and Power across player level and total veteran points, reward quantity bands, entry-item drop chance by monster level and the run timeline. Excluded items SHALL use existing redacted placeholders without names, icons or links. Real in-run screenshots and game art SHALL accompany equivalent numeric facts and explanations in prerendered content.
+The reviewed page SHALL include visual treatments of chamber sequence, trial kinds, enemy level, Health and Power across player level and total veteran points, reward quantity bands, the monsters that drop the entry item with their chances and the run timeline. Excluded items SHALL use existing redacted placeholders without names, icons or links. Real in-run screenshots and game art SHALL accompany equivalent numeric facts and explanations in prerendered content.
 
 #### Scenario: Inspecting scaling without interacting
 

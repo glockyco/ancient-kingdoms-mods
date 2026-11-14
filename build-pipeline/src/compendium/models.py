@@ -1212,13 +1212,6 @@ class ChambersEncounterGroupData(BaseModel):
     support_monster_id: str | None = None
 
 
-class ChambersSealChanceData(BaseModel):
-    """The game's Seal of Chaos corpse-roll chance at one live monster level."""
-
-    level: int = Field(ge=1)
-    chance: float = Field(ge=0, le=1)
-
-
 class ChambersCompletionExperienceData(BaseModel):
     """Experience for finishing a run, by the player's level at the guardian's death."""
 
@@ -1309,8 +1302,6 @@ class ChambersRulesData(BaseModel):
     veteran_points: list[int] = Field(min_length=1)
     enemy_levels: list[int] = Field(min_length=1)
     room_indices: list[int] = Field(min_length=1)
-    seal_drop_levels: list[int] = Field(min_length=1)
-    seal_drop_chances: list[ChambersSealChanceData] = Field(min_length=1)
     completion_experience: list[ChambersCompletionExperienceData] = Field(min_length=1)
     maximum_enemy_level_bonus: list[ChambersLevelBonusData] = Field(min_length=1)
     scaling: list[ChambersScalingData] = Field(min_length=1)

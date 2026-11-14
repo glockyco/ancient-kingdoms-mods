@@ -96,7 +96,7 @@
   <Card.Root id="shared-rewards" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Shared Rewards</Card.Title>
-      <!-- Source: server-scripts/Monster.cs:3168-3180,3344-3372 — nearby party members receive loot access and experience on a credited kill. -->
+      <!-- Source: server-scripts/Monster.cs:3168-3180,3340-3368 — nearby party members receive loot access and experience on a credited kill. -->
       <Card.Description
         >Nearby party players can share loot and XP from a monster kill.</Card.Description
       >
@@ -116,7 +116,7 @@
           them get loot access. Living players receive a share of the kill XP.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:3344-3372 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
+      <!-- Source: server-scripts/Monster.cs:3340-3368 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>
         See <MechanicsLink section="experience#kill-xp"
           >Experience</MechanicsLink
@@ -135,7 +135,7 @@
         matching unfinished quest for each nearby party member. Nobody receives
         the drop in their inventory.
       </p>
-      <!-- Source: server-scripts/PlayerLooting.cs:203-220 and server-scripts/Monster.cs:4826-4865 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
+      <!-- Source: server-scripts/PlayerLooting.cs:203-220 and server-scripts/Monster.cs:4822-4861 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
       <p>
         <span class="block"
           >The collector receives items that do not require a roll.</span
@@ -167,7 +167,7 @@
         You have 2 minutes to answer. The roll resolves when everyone answers or
         time runs out. No answer counts as Pass.
       </p>
-      <!-- Source: server-scripts/Player.cs:15671-15677 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
+      <!-- Source: server-scripts/Player.cs:15672-15678 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
