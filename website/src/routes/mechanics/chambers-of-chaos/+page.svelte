@@ -321,15 +321,15 @@
             lines={[TRIAL_BY_KIND.Guardian.phrase]}
           />
         {/snippet}
-        <!-- Source: server-scripts/MadMageTower.cs:MonsterDied,Interact; MadMageTowerText.cs:loot — chamber 3 spawns its guardians first, and the final guardian appears when one kill remains. Its death gives the reward, and the exit refuses to open while the final guardian still holds loot. -->
+        <!-- Source: server-scripts/MadMageTower.cs:MonsterDied,Interact; MadMageTowerText.cs:loot — chamber 3 spawns its guardians first, and the final guardian appears when one kill remains. Its death gives the reward, and the exit refuses to let the player leave while the final guardian still holds loot. -->
         <p>
           Guardians fill the chamber first. When one kill remains, the final
           guardian appears. It is one of the {data.monsters.length} monsters listed
           under Who Is Inside, under a new name.
         </p>
         <p>
-          Kill it and take its reward from its remains before you leave. The
-          exit stays closed until you do.
+          Kill it and take its reward from its remains. The exit opens when it
+          dies, but you cannot leave until you have taken the reward.
         </p>
       </TrialCard>
     </ul>
