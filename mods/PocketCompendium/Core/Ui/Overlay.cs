@@ -68,12 +68,14 @@ public static class Overlay
         }
 
         var reference = _gameScaler != null ? _gameScaler.referenceResolution : new Vector2(ReferenceWidth, ReferenceHeight);
+        // Source: server-scripts/UISettings.cs:ConfigureCanvasScaling — game canvases use Expand, including on wide screens.
+        var mode = _gameScaler != null ? _gameScaler.screenMatchMode : CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
         float match = _gameScaler != null ? _gameScaler.matchWidthOrHeight : 0.5f;
-        _panels?.Follow(reference / InterfaceFactor, match);
-        _windows?.Follow(reference / InterfaceFactor, match);
+        _panels?.Follow(reference / InterfaceFactor, mode, match);
+        _windows?.Follow(reference / InterfaceFactor, mode, match);
     }
 
-    // Source: UISettings.cs:SetScalingUI sets the localScale of every window in scalingUIRects,
+    // Source: server-scripts/UISettings.cs:SetScalingUI sets the localScale of every window in scalingUIRects,
     // also while the slider moves and before the value is saved, so a window's scale is the
     // setting as the player sees it.
     private static float ReadInterfaceFactor()
@@ -155,9 +157,10 @@ public static class Overlay
 
         public RectTransform Root { get; }
 
-        public void Follow(Vector2 reference, float match)
+        public void Follow(Vector2 reference, CanvasScaler.ScreenMatchMode mode, float match)
         {
             if (_scaler.referenceResolution != reference) _scaler.referenceResolution = reference;
+            if (_scaler.screenMatchMode != mode) _scaler.screenMatchMode = mode;
             if (!Mathf.Approximately(_scaler.matchWidthOrHeight, match)) _scaler.matchWidthOrHeight = match;
         }
 

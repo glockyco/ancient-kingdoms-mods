@@ -101,11 +101,11 @@ public sealed class GatheringFeature : Feature
 
         var nodes = _catalogue.Zone(_zone);
         bool hideGrowing = _settings.Growing.Value == GrowingNodes.Hide;
-        // The local map covers the minimap while open. Temple of Valaark has no map, so its nodes stay off the minimap too.
+        // The local map covers the minimap while open. Static maps cannot position live node icons.
         var map = UIMap.singleton;
         bool mapShown = map != null && map.panel != null && map.panel.activeSelf;
         if (!_settings.Minimap.Value) _minimap.Destroy();
-        else if (mapShown || _zone == MapOverlay.MaplessZone) _minimap.HideAll();
+        else if (mapShown || MapOverlay.IsMaplessZone(_zone)) _minimap.HideAll();
         else _minimap.Update(_now);
         if (_settings.MapPins.Value) _mapPins.Update(nodes, _watched, _catalogue, _now, hideGrowing, _version);
         else _mapPins.Destroy();

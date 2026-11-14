@@ -135,7 +135,8 @@ public sealed class PocketCompendiumMod : MelonMod
 
     public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
     {
-        _tracker.EndSession();
+        // Source: server-scripts/MadMageTowerScenes.cs:Create — each Chambers of Chaos run loads and unloads a private scene, so only the World scene ends the tracker session.
+        if (sceneName == "World") _tracker.EndSession();
         _features.OnSceneUnloaded(sceneName);
         if (sceneName == "World") _worldLogged = false;
     }

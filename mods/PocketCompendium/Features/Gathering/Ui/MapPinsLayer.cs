@@ -35,7 +35,7 @@ internal sealed class MapPinsLayer
         camera = tracking != null ? tracking.mapCamera : null;
         var player = Player.localPlayer;
         return map != null && map.localMap != null && map.panel.activeSelf && map.localMap.enabled && camera != null
-               && player != null && player.idZone != MapOverlay.MaplessZone;
+               && player != null && !MapOverlay.IsMaplessZone(player.idZone);
     }
 
     /// <summary>Shows the pins while the map is open. They move only when the map's view or the times change.</summary>

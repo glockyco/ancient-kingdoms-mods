@@ -10,8 +10,8 @@ namespace PocketCompendium.Features.MapPins;
 /// <summary>What map pins and dungeon entrances share: when the local map shows, a layer over it, and a click on a monster.</summary>
 internal static class MapOverlay
 {
-    // The game closes the live map in Temple of Valaark.
-    internal const int MaplessZone = 23;
+    // Source: server-scripts/UIMap.cs:186-200 — the game closes the live map and shows a static one in Temple of Valaark and the Chambers of Chaos.
+    internal static bool IsMaplessZone(int zone) => zone is 23 or 26;
 
     /// <summary>Whether the local map is open in a zone that has one, with a ready tracker.</summary>
     public static bool Open(out Tracker tracker, out Player player, out UIMap map, out Camera camera)
@@ -22,7 +22,7 @@ internal static class MapOverlay
         var questTracking = UIQuestTracking.singleton;
         camera = questTracking != null ? questTracking.mapCamera : null;
         return tracker != null && tracker.Ready && !tracker.Failed && player != null && map != null
-               && map.localMap != null && map.panel.activeSelf && map.localMap.enabled && player.idZone != MaplessZone
+               && map.localMap != null && map.panel.activeSelf && map.localMap.enabled && !IsMaplessZone(player.idZone)
                && camera != null;
     }
 
