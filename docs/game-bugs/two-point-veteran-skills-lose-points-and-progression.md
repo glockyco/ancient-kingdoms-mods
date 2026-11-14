@@ -16,6 +16,8 @@ Bards spending points on Virtuosity, Verse of Beguilement or Final Cadence have 
 
 Source also shows that companion skill ranks, newly materialized mercenary veteran bonuses and hire prices use the same undercounted total. Those companion outcomes were not measured in this run.
 
+In 0.10.4.0 the Chambers of Chaos read the same total when a run begins (`server-scripts/MadMageTower.cs:Begin`). Its reward, enemy levels, enemy Health and enemy power are therefore set from fewer points than the Bard earned. This was not measured either.
+
 ## Steps to reproduce
 
 No mods are needed.
