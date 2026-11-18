@@ -713,6 +713,18 @@
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
     },
+    "npc_skills:[\"npc_skill\",\"ambient_adventurer\",0]": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every member it is composed of was removed",
+      "via": [
+        "npcs:ambient_adventurer"
+      ]
+    },
+    "npcs:ambient_adventurer": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "npcs:compassion_escort": {
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
@@ -723,7 +735,7 @@
     }
   },
   "snapshot": {
-    "game_version": "0.10.4.1",
+    "game_version": "0.10.5.0",
     "keys": "placement"
   },
   "suppressed_positions": {

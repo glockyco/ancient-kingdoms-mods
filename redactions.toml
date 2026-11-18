@@ -54,11 +54,19 @@ zone_ids = []
 # VirtueEscortStats.cs), so the prefab's own name, level and Health are values
 # no player meets. Its row looks like any other NPC published without a
 # placement.
+#
+# ambient_adventurer: the prefab the game copies for every NPC adventurer that
+# roams the open world. Each copy gets a generated name, a random look, and a
+# random level from 1 to 50 that sets its Health (AmbientAdventurer.cs
+# Initialize and ApplyStats, AmbientWorldPopulation.cs Spawn), so the prefab's
+# own name, level 1 and stats are values no player meets. Its row looks like
+# any other NPC published without a placement.
 [entities.exclude]
 ids = [
     "new_skill_placeholder",
     "compassion_escort",
     "valaarks_corrupted_seal",
+    "ambient_adventurer",
 ]
 
 # Chambers of Chaos riddle and rune-puzzle content. Each family lists the fields
