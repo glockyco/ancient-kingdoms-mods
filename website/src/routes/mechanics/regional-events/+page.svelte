@@ -28,6 +28,19 @@
     data.regions.filter((region) => !needsLevel35Player(region.zone_number)),
   );
 
+  // Every invasion grants the same standing, so the rewards card names one amount. A
+  // patch that varies it fails the build here instead of publishing a wrong number.
+  const invasionStanding = $derived.by(() => {
+    const amounts = new Set(
+      data.invasions
+        .map((invasion) => invasion.faction_reward)
+        .filter((amount) => amount > 0),
+    );
+    if (amounts.size !== 1)
+      throw new Error("City invasions grant different faction standing");
+    return [...amounts][0];
+  });
+
   // Source: server-scripts/RegionalEventText.cs:30-40 — the six activity titles.
   const EVENTS = [
     { name: "The Apothecaries' Call", counts: "Each plant you gather." },
@@ -390,10 +403,12 @@
       </div>
       <!-- Source: server-scripts/RegionalEventProgress.cs:84-113,139-154; server-scripts/RegionalEvents.cs:316-347 — three contributions qualify for rewards, computed from the first contribution's level and XP requirement, and only connected players in the region at completion receive them. -->
       <!-- Source: server-scripts/RegionalEvents.cs:TickServer; server-scripts/Experience.cs:current — the quarter-level reward is added to the experience pool, which becomes Veteran XP at level 50. -->
+      <!-- Source: server-scripts/RegionalEvents.cs:Record,GrantInvasionReputation — each player who earns the reward of a city invasion gains the invasion's faction standing. -->
       <p>
         Help at least 3 times and be in the region when the goal is reached. You
         get 20 + 10 × your level in gold (520 at level 50) and 25% of a full
-        level's XP. At level 50 this is Veteran XP.
+        level's XP. At level 50 this is Veteran XP. Defending a city also raises
+        your standing with its faction by {formatNumber(invasionStanding)}.
       </p>
     </Card.Content>
   </Card.Root>
@@ -426,6 +441,7 @@
           <thead
             ><tr class="border-b"
               ><th class="p-3 text-left font-medium text-foreground">City</th
+              ><th class="p-3 text-left font-medium text-foreground">Faction</th
               ><th class="p-3 text-left font-medium text-foreground"
                 >Invader Level</th
               ><th class="p-3 text-left font-medium text-foreground"
@@ -451,6 +467,14 @@
                     class="text-blue-600 hover:underline dark:text-blue-400"
                     >{invasion.zone_name}</a
                   ></td
+                >
+                <!-- Source: server-scripts/RegionalEvents.cs:GrantInvasionReputation — a successful defense raises the invasion's reward faction. -->
+                <td class="p-3"
+                  >{#if invasion.reward_faction_id && invasion.reward_faction_name}<a
+                      href="/factions/{invasion.reward_faction_id}"
+                      class="text-blue-600 hover:underline dark:text-blue-400"
+                      >{invasion.reward_faction_name}</a
+                    >{:else}None{/if}</td
                 >
                 <td class="p-3 whitespace-nowrap"
                   >{formatRange(

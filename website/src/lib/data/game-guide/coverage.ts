@@ -395,6 +395,6 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "world.regional-events": {
     href: "/mechanics/regional-events#activities",
     reviewedBodySha256:
-      "4bee9cb90d5277f0704dfc66afc1e7b0b2bc9c1ff5e21929c47c4f7c7e44530c",
+      "5785721335ec14d0c62e6ddbb98eee43fb00b3ed93b96cd89962fa52c122a94d",
   },
 };

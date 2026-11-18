@@ -16,6 +16,11 @@ export interface RegionalInvasion {
   health_multiplier: number;
   minimum_level: number;
   maximum_level: number;
+  /** Faction a successful defense raises, or null when the invasion grants no standing. */
+  reward_faction_id: string | null;
+  reward_faction_name: string | null;
+  /** Standing each rewarded defender gains, before the Honesty blessing. */
+  faction_reward: number;
 }
 
 export interface RegionalInvasionAttacker {
@@ -35,8 +40,9 @@ export function getRegionalEventSettings(): RegionalEventSettings {
 
 export function getRegionalInvasions(): RegionalInvasion[] {
   return query<RegionalInvasion>(`
-    SELECT ri.*, z.name AS zone_name
+    SELECT ri.*, z.name AS zone_name, f.name AS reward_faction_name
     FROM regional_invasions ri JOIN zones z ON z.id = ri.zone_id
+    LEFT JOIN factions f ON f.id = ri.reward_faction_id
     ORDER BY z.zone_id, ri.city_name
   `);
 }
@@ -53,8 +59,9 @@ export function getMonsterRegionalInvasions(
   monsterId: string,
 ): RegionalInvasion[] {
   return query<RegionalInvasion>(
-    `SELECT ri.*, z.name AS zone_name
+    `SELECT ri.*, z.name AS zone_name, f.name AS reward_faction_name
      FROM regional_invasions ri JOIN zones z ON z.id = ri.zone_id
+     LEFT JOIN factions f ON f.id = ri.reward_faction_id
      WHERE EXISTS (
        SELECT 1 FROM regional_invasion_attackers ria
        WHERE ria.invasion_id = ri.id AND ria.monster_id = ?
