@@ -358,6 +358,10 @@
           <th scope="row">Every Other Type</th>
           <td>
             Listed damage + 125% of Intelligence, <RoundedTerm />.
+            <a href="/skills/clinging_darkness">Clinging Darkness</a>,
+            <a href="/skills/funeral_pyre">Funeral Pyre</a>,
+            <a href="/skills/venom_of_the_grave">Venom of the Grave</a> and
+            <a href="/skills/wasting_plague">Wasting Plague</a> add 120%, and
             <a href="/skills/ensnare">Ensnare</a> adds 115%
           </td>
         </tr>

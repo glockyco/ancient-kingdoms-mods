@@ -201,7 +201,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   necromancer: {
     attributes: {
-      text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. It also strengthens Bone Aegis's Ward, Mend Undead's Health Regeneration, Ossuary Bulwark's Armor Class, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum Hit Points per point but no Health Regeneration.",
+      text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. It also strengthens Bone Aegis's Ward, Mend Undead's Health Regeneration, Ossuary Bulwark's Armor Class, and Death Bloom's healing. Each tick of your damage-over-time spells gains 120% of your Intelligence as damage, rounded. Constitution adds 25 maximum Hit Points per point but no Health Regeneration.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:493-556; server-scripts/Buff.cs:56-69,122-159; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },

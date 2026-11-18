@@ -127,17 +127,38 @@
                   grows by 50.</span
                 >
                 <!-- Source: server-scripts/BuffSkill.cs:514-556 — fire, cold, magic and Intelligence-scaled poison/disease use the skill's Intelligence coefficient, except Charisma-scaled effects. -->
-                <!-- Source: website/data/compendium.db skills. Venom of the Grave and Wasting Plague use Intelligence. Class skills use a 1.25 coefficient except Ensnare's 1.15. -->
+                <!-- Source: website/data/compendium.db skills. Venom of the Grave and Wasting Plague use Intelligence. Class skills use a 1.25 coefficient except Clinging Darkness, Funeral Pyre, Venom of the Grave and Wasting Plague at 1.2 and Ensnare at 1.15. -->
                 <span class="block"
                   >Fire, cold, magic, and Intelligence-scaled poison and disease
                   damage-over-time effects (such as Venom of the Grave and
                   Wasting Plague) gain the skill's percentage of Intelligence
                   per tick, rounded. Class skills use 125%, except <a
+                    href="/skills/clinging_darkness"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Clinging Darkness</a
+                  >,
+                  <a
+                    href="/skills/funeral_pyre"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Funeral Pyre</a
+                  >,
+                  <a
+                    href="/skills/venom_of_the_grave"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Venom of the Grave</a
+                  >
+                  and
+                  <a
+                    href="/skills/wasting_plague"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Wasting Plague</a
+                  >, which use 120%, and
+                  <a
                     href="/skills/ensnare"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Ensnare</a
-                  >, which uses 115%. With 100 Intelligence, that gives 125 or
-                  115 damage per tick. Bard song damage-over-time gains no
+                  >, which uses 115%. With 100 Intelligence, that gives 125, 120
+                  or 115 damage per tick. Bard song damage-over-time gains no
                   Intelligence bonus. Charisma raises its power instead (see
                   <a
                     href="/mechanics/combat#songs"
