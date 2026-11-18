@@ -62,6 +62,7 @@
   import { getNpcSpecialMechanics } from "$lib/special-mechanics";
   import Cog from "@lucide/svelte/icons/cog";
   import CircleHelp from "@lucide/svelte/icons/circle-help";
+  import { effectiveBlockChance, statAtLevel } from "$lib/utils/monster-stats";
 
   const categoryColors: Record<RoleCategory, string> = {
     quest: "text-orange-500",
@@ -131,22 +132,81 @@
     data.npc.welcome_messages.length > 0 || data.npc.shout_messages.length > 0,
   );
 
+  // A copy of a rolled NPC has its own level, so its stats are read at a chosen level.
+  let rolledLevel = $state((() => data.rolled?.levelMax ?? data.npc.level)());
+  const stats = $derived.by(() => {
+    const npc = data.npc;
+    if (!data.rolled)
+      return {
+        level: npc.level,
+        health: npc.health,
+        mana: npc.mana,
+        damage: npc.damage,
+        magic_damage: npc.magic_damage,
+        defense: npc.defense,
+        magic_resist: npc.magic_resist,
+        poison_resist: npc.poison_resist,
+        fire_resist: npc.fire_resist,
+        cold_resist: npc.cold_resist,
+        disease_resist: npc.disease_resist,
+        block_chance: npc.block_chance,
+        critical_chance: npc.critical_chance,
+        accuracy: npc.accuracy,
+      };
+    const level = rolledLevel;
+    const at = (base: number, perLevel: number) =>
+      statAtLevel(base, perLevel, level);
+    const defense = at(npc.defense_base, npc.defense_per_level);
+    return {
+      level,
+      health: at(npc.health_base, npc.health_per_level),
+      mana: at(npc.mana_base, npc.mana_per_level),
+      damage: at(npc.damage_base, npc.damage_per_level),
+      magic_damage: at(npc.magic_damage_base, npc.magic_damage_per_level),
+      defense,
+      magic_resist: at(npc.magic_resist_base, npc.magic_resist_per_level),
+      poison_resist: at(npc.poison_resist_base, npc.poison_resist_per_level),
+      fire_resist: at(npc.fire_resist_base, npc.fire_resist_per_level),
+      cold_resist: at(npc.cold_resist_base, npc.cold_resist_per_level),
+      disease_resist: at(npc.disease_resist_base, npc.disease_resist_per_level),
+      // Source: server-scripts/Combat.cs:blockChance,criticalChance,accuracy — the chances follow the level curves, and Armor Class adds to block.
+      block_chance: effectiveBlockChance({
+        base: npc.block_chance_base,
+        perLevel: npc.block_chance_per_level,
+        level,
+        defense,
+      }),
+      critical_chance: at(
+        npc.critical_chance_base,
+        npc.critical_chance_per_level,
+      ),
+      accuracy: at(npc.accuracy_base, npc.accuracy_per_level),
+    };
+  });
+  const rolledLevelText = $derived(
+    data.rolled
+      ? data.rolled.playerLevelOffset !== null
+        ? `Level within ${data.rolled.playerLevelOffset} of yours`
+        : `Level ${formatRange(data.rolled.levelMin, data.rolled.levelMax)}`
+      : null,
+  );
+
   // Check if NPC has combat stats (health > 0 indicates a combatant)
   const hasCombatStats = $derived(data.npc.health > 0);
 
   // Build resistances array for display (only non-zero values)
   const resistances = $derived.by(() => {
     const resists: { name: string; value: number }[] = [];
-    if (data.npc.magic_resist !== 0)
-      resists.push({ name: "Magic", value: data.npc.magic_resist });
-    if (data.npc.poison_resist !== 0)
-      resists.push({ name: "Poison", value: data.npc.poison_resist });
-    if (data.npc.fire_resist !== 0)
-      resists.push({ name: "Fire", value: data.npc.fire_resist });
-    if (data.npc.cold_resist !== 0)
-      resists.push({ name: "Cold", value: data.npc.cold_resist });
-    if (data.npc.disease_resist !== 0)
-      resists.push({ name: "Disease", value: data.npc.disease_resist });
+    if (stats.magic_resist !== 0)
+      resists.push({ name: "Magic", value: stats.magic_resist });
+    if (stats.poison_resist !== 0)
+      resists.push({ name: "Poison", value: stats.poison_resist });
+    if (stats.fire_resist !== 0)
+      resists.push({ name: "Fire", value: stats.fire_resist });
+    if (stats.cold_resist !== 0)
+      resists.push({ name: "Cold", value: stats.cold_resist });
+    if (stats.disease_resist !== 0)
+      resists.push({ name: "Disease", value: stats.disease_resist });
     return resists;
   });
 
@@ -641,7 +701,7 @@
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
-      <span>Level {data.npc.level}</span>
+      <span>{rolledLevelText ?? `Level ${data.npc.level}`}</span>
       <OnKillFactions
         effects={npcKillReputation(data.npc)}
         factionIds={data.factionIds}
@@ -671,18 +731,18 @@
     imageAlt={`${data.npc.name} NPC sprite`}
     imageWidth={data.visualAsset?.width}
     imageHeight={data.visualAsset?.height}
-    health={data.npc.health}
-    damage={data.npc.damage}
-    magicDamage={data.npc.magic_damage}
-    defense={data.npc.defense}
-    magicResist={data.npc.magic_resist}
-    poisonResist={data.npc.poison_resist}
-    fireResist={data.npc.fire_resist}
-    coldResist={data.npc.cold_resist}
-    diseaseResist={data.npc.disease_resist}
+    health={stats.health}
+    damage={stats.damage}
+    magicDamage={stats.magic_damage}
+    defense={stats.defense}
+    magicResist={stats.magic_resist}
+    poisonResist={stats.poison_resist}
+    fireResist={stats.fire_resist}
+    coldResist={stats.cold_resist}
+    diseaseResist={stats.disease_resist}
   >
     {#snippet metadata()}
-      {#if data.npc.race}
+      {#if data.npc.race && !data.rolled}
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
           title="Race"
@@ -721,6 +781,56 @@
       {/if}
     {/snippet}
   </EntityCombatSummary>
+
+  {#if data.rolled}
+    <!-- Source: server-scripts/AmbientAdventurer.cs:Initialize — each copy gets a generated name and the look of one appearance template, picked at random. -->
+    <section>
+      <h2 class="mb-4 flex items-center gap-2 text-xl font-semibold">
+        <User class="h-5 w-5 text-slate-500" />
+        Name and Look
+      </h2>
+      <div class="space-y-4 rounded-md border bg-muted/30 p-4">
+        <p class="text-sm text-muted-foreground">
+          Each {data.npc.name} has a random name and the look of one of these NPCs.
+        </p>
+        <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {#each data.rolled.looks as look (look.id)}
+            <li>
+              <a
+                href="/npcs/{look.id}"
+                class="flex h-full items-center gap-3 rounded-lg border bg-card py-1.5 pl-2 pr-3 hover:bg-muted/50"
+              >
+                <span class="flex h-10 w-6 shrink-0 justify-center">
+                  {#if look.image}
+                    <img
+                      src="{base}/{look.image.public_path}"
+                      alt=""
+                      width={look.image.width}
+                      height={look.image.height}
+                      class="h-10 w-auto max-w-none [image-rendering:pixelated]"
+                      loading="lazy"
+                    />
+                  {/if}
+                </span>
+                <span class="flex flex-col leading-tight">
+                  <span
+                    class="text-sm whitespace-nowrap text-blue-600 dark:text-blue-400"
+                    >{look.name}</span
+                  >
+                  {#if look.race}
+                    <span
+                      class="text-xs whitespace-nowrap text-muted-foreground"
+                      >{look.race}</span
+                    >
+                  {/if}
+                </span>
+              </a>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    </section>
+  {/if}
 
   {#if specialMechanics.length > 0}
     <section>
@@ -780,62 +890,80 @@
         Combat Stats
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
+        {#if data.rolled}
+          <div class="mb-4 js-only">
+            <div class="flex flex-wrap items-center gap-4">
+              <label for="npc-level" class="text-sm text-muted-foreground">
+                {data.npc.name} Level
+              </label>
+              <input
+                id="npc-level"
+                type="range"
+                min={data.rolled.levelMin}
+                max={data.rolled.levelMax}
+                bind:value={rolledLevel}
+                class="flex-1 max-w-xs"
+              />
+              <span class="text-sm font-medium w-8">{rolledLevel}</span>
+            </div>
+          </div>
+        {/if}
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div>
             <div class="text-sm text-muted-foreground">Level</div>
-            <div class="font-medium">{data.npc.level}</div>
+            <div class="font-medium">{stats.level}</div>
           </div>
           <div>
             <div class="text-sm text-muted-foreground">
               {statName("health")}
             </div>
-            <div class="font-medium">{formatNumber(data.npc.health)}</div>
+            <div class="font-medium">{formatNumber(stats.health)}</div>
           </div>
-          {#if data.npc.mana > 0}
+          {#if stats.mana > 0}
             <div>
               <div class="text-sm text-muted-foreground">Mana</div>
-              <div class="font-medium">{formatNumber(data.npc.mana)}</div>
+              <div class="font-medium">{formatNumber(stats.mana)}</div>
             </div>
           {/if}
           <div>
             <div class="text-sm text-muted-foreground">Attack Power</div>
-            <div class="font-medium">{formatNumber(data.npc.damage)}</div>
+            <div class="font-medium">{formatNumber(stats.damage)}</div>
           </div>
-          {#if data.npc.magic_damage > 0}
+          {#if stats.magic_damage > 0}
             <div>
               <div class="text-sm text-muted-foreground">Spell Power</div>
               <div class="font-medium">
-                {formatNumber(data.npc.magic_damage)}
+                {formatNumber(stats.magic_damage)}
               </div>
             </div>
           {/if}
           <div>
             <div class="text-sm text-muted-foreground">Armor Class</div>
-            <div class="font-medium">{formatNumber(data.npc.defense)}</div>
+            <div class="font-medium">{formatNumber(stats.defense)}</div>
           </div>
-          {#if data.npc.block_chance > 0}
+          {#if stats.block_chance > 0}
             <div>
               <div class="text-sm text-muted-foreground">Block Chance</div>
               <div class="font-medium">
-                {formatPercent(data.npc.block_chance)}
+                {formatPercent(stats.block_chance)}
               </div>
             </div>
           {/if}
-          {#if data.npc.critical_chance > 0}
+          {#if stats.critical_chance > 0}
             <div>
               <div class="text-sm text-muted-foreground">Critical Strike</div>
               <div class="font-medium">
-                {formatPercent(data.npc.critical_chance)}
+                {formatPercent(stats.critical_chance)}
               </div>
             </div>
           {/if}
-          {#if data.npc.accuracy > 0}
+          {#if stats.accuracy > 0}
             <div>
               <div class="text-sm text-muted-foreground">
                 {statName("accuracy")}
               </div>
               <div class="font-medium">
-                {formatPercent(data.npc.accuracy)}
+                {formatPercent(stats.accuracy)}
               </div>
             </div>
           {/if}

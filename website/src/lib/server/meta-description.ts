@@ -955,6 +955,8 @@ interface NpcDescriptionInput {
   level?: number;
   sub_zone_name?: string | null;
   kill_reputation_summary?: string | null;
+  /** Whether the NPC roams the open world instead of standing at a spawn. */
+  roams?: boolean;
 }
 
 /**
@@ -1009,7 +1011,9 @@ export function npcDescription(
   const primary = capitalizeFirst(primaryRole);
 
   let location = "";
-  if (zoneNames.length === 1) {
+  if (npc.roams) {
+    location = " that roams the open world";
+  } else if (zoneNames.length === 1) {
     location = ` in ${zoneNames[0]}`;
   } else if (zoneNames.length === 2 || zoneNames.length === 3) {
     location = ` in ${joinList(zoneNames)}`;

@@ -9,6 +9,7 @@ import type {
   NpcItemSold,
   NpcSpawnLocation,
   NpcSkill,
+  NpcRollRules,
 } from "$lib/types/npcs";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import { npcDescription } from "$lib/server/meta-description";
@@ -367,6 +368,13 @@ export const load: PageServerLoad = async ({
     cold_resist_per_level: (npcRaw.cold_resist_per_level as number) || 0,
     disease_resist_base: (npcRaw.disease_resist_base as number) || 0,
     disease_resist_per_level: (npcRaw.disease_resist_per_level as number) || 0,
+    block_chance_base: (npcRaw.block_chance_base as number) || 0,
+    block_chance_per_level: (npcRaw.block_chance_per_level as number) || 0,
+    critical_chance_base: (npcRaw.critical_chance_base as number) || 0,
+    critical_chance_per_level:
+      (npcRaw.critical_chance_per_level as number) || 0,
+    accuracy_base: (npcRaw.accuracy_base as number) || 0,
+    accuracy_per_level: (npcRaw.accuracy_per_level as number) || 0,
 
     // Combat flags
     invincible: Boolean(npcRaw.invincible),
@@ -410,6 +418,60 @@ export const load: PageServerLoad = async ({
          WHERE domain = 'npc' AND entity_id = ? AND kind = 'primary'`,
       )
       .get(params.id) as EntityVisualAsset | undefined) ?? null;
+
+  // Source: server-scripts/AmbientWorldPopulation.cs:Spawn; server-scripts/AmbientAdventurer.cs:Initialize — the game rolls each copy's level and name and gives it the look of one appearance template.
+  const rolled: NpcRollRules | null =
+    npcRaw.rolled_level_min == null
+      ? null
+      : {
+          levelMin: npcRaw.rolled_level_min as number,
+          levelMax: npcRaw.rolled_level_max as number,
+          playerLevelOffset:
+            (npcRaw.rolled_player_level_offset as number | null) ?? null,
+          generatedName: Boolean(npcRaw.generated_name),
+          looks: (
+            db
+              .prepare(
+                `SELECT n.id, n.name, n.race,
+                        va.public_path, va.width, va.height, va.source_field, va.source_type
+                 FROM npc_looks l
+                 JOIN npcs n ON n.id = l.look_npc_id
+                 LEFT JOIN visual_assets va
+                   ON va.domain = 'npc' AND va.entity_id = n.id AND va.kind = 'primary'
+                 WHERE l.npc_id = ?
+                 ORDER BY n.race, n.name`,
+              )
+              .all(params.id) as Array<{
+              id: string;
+              name: string;
+              race: string | null;
+              public_path: string | null;
+              width: number | null;
+              height: number | null;
+              source_field: string | null;
+              source_type: string | null;
+            }>
+          ).map((row) => ({
+            id: row.id,
+            name: row.name,
+            race: row.race,
+            image:
+              row.public_path !== null &&
+              row.width !== null &&
+              row.height !== null &&
+              row.source_field !== null &&
+              row.source_type !== null
+                ? {
+                    public_path: row.public_path,
+                    width: row.width,
+                    height: row.height,
+                    source_field: row.source_field,
+                    source_type: row.source_type,
+                  }
+                : null,
+          })),
+        };
+
   // Source: server-scripts/SummonMonster.cs:AreAllPlaceholdersDead,Update.
   const summonTriggers = db
     .prepare(
@@ -445,6 +507,7 @@ export const load: PageServerLoad = async ({
             `Killing this NPC ${effect.direction === "improve" ? "grants" : "costs"} ${formatNumber(effect.amount_min)} reputation with ${effect.factions.join(" and ")}.`,
         )
         .join(" "),
+      roams: rolled !== null && spawns.length === 0,
     },
     zoneNames,
   );
@@ -467,5 +530,6 @@ export const load: PageServerLoad = async ({
     worldBosses,
     teleportRoutes,
     visualAsset,
+    rolled,
   };
 };

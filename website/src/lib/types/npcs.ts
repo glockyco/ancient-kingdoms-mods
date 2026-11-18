@@ -72,6 +72,12 @@ export interface NpcInfo {
   cold_resist_per_level: number;
   disease_resist_base: number;
   disease_resist_per_level: number;
+  block_chance_base: number;
+  block_chance_per_level: number;
+  critical_chance_base: number;
+  critical_chance_per_level: number;
+  accuracy_base: number;
+  accuracy_per_level: number;
 
   // Combat flags
   invincible: boolean;
@@ -205,6 +211,25 @@ export interface NpcDetailPageData {
   }>;
   teleportRoutes: TeleportRoute[];
   visualAsset: EntityVisualAsset | null;
+  /** How the game rolls each copy of an ambient NPC, or null for an NPC with its own level, name and look. */
+  rolled: NpcRollRules | null;
+}
+
+export interface NpcRollRules {
+  levelMin: number;
+  levelMax: number;
+  /** How many levels a copy can differ from the player it appears for, or null when its level ignores the player. */
+  playerLevelOffset: number | null;
+  generatedName: boolean;
+  /** The NPCs whose look a copy takes, one of them at random. */
+  looks: NpcLook[];
+}
+
+export interface NpcLook {
+  id: string;
+  name: string;
+  race: string | null;
+  image: EntityVisualAsset | null;
 }
 
 // List page types
