@@ -51,6 +51,10 @@ public class RegionalInvasionData
     public float health_multiplier { get; set; }
     public int minimum_level { get; set; }
     public int maximum_level { get; set; }
+    /// <summary>Name of the faction a successful defense raises, or null when the invasion names none.</summary>
+    public string reward_faction { get; set; }
+    /// <summary>Standing each rewarded defender gains with <see cref="reward_faction"/>, before the Honesty blessing.</summary>
+    public int faction_reward { get; set; }
     /// <summary>Attacker monster IDs in the order the waves cycle through them.</summary>
     public List<string> attacker_monster_ids { get; set; } = new();
 }

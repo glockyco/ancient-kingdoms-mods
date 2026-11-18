@@ -248,6 +248,8 @@ CANONICAL_DIRECTIONS: dict[tuple[str, str], Direction] = {
     ("item_class_requirements", "class_id"): "none",
     ("skill_predecessors", "skill_id"): "provided_by",
     ("skill_predecessors", "predecessor_skill_id"): "none",
+    # A defended city raises a faction that exists without it.
+    ("regional_invasions", "reward_faction_id"): "none",
     # An invasion spawns each of its attackers in its city.
     ("regional_invasion_attackers", "invasion_id"): "provided_by",
     ("regional_invasion_attackers", "monster_id"): "provides",

@@ -1842,7 +1842,18 @@ class RegionalInvasionData(BaseModel):
     health_multiplier: float
     minimum_level: int
     maximum_level: int
+    # The exporter omits a null faction, so an invasion without a reward has neither.
+    reward_faction: str | None = None
+    faction_reward: int = Field(default=0, ge=0)
     attacker_monster_ids: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _reward_pairs(self) -> "RegionalInvasionData":
+        if (self.reward_faction is None) != (self.faction_reward == 0):
+            raise ValueError(
+                f"Regional invasion {self.id} has a faction reward without both a faction and an amount"
+            )
+        return self
 
 
 class RegionalHuntTargetData(BaseModel):

@@ -16,7 +16,8 @@ namespace DataExporter.Exporters;
 /// The game loads the definitions with <c>Resources.LoadAll</c> from <c>RegionalEvents</c>, and the
 /// exporter reads them the same way. Region activities come from the game's own discovery, which
 /// needs the hosted world because it finds each city's boundary among spawned zone triggers.
-/// Schedules, goals and rewards are code, not data.
+/// Schedules, goals and the gold and experience rewards are code, not data. The faction reward
+/// for a successful defense is data on each definition.
 /// Source: server-scripts/RegionalInvasions.cs:Definitions — Resources.LoadAll from RegionalEvents.
 /// Source: server-scripts/NetworkManagerMMO.cs:regionalEvents — the server's RegionalEventSettings.
 /// Source: server-scripts/RegionalEventActivities.cs:Discover — fishing, cooking and hunting options per region.
@@ -72,6 +73,9 @@ public class RegionalEventExporter : BaseExporter
                 health_multiplier = definition.healthMultiplier,
                 minimum_level = definition.minimumLevel,
                 maximum_level = definition.maximumLevel,
+                // Source: server-scripts/RegionalEvents.cs:Record,GrantInvasionReputation — every player who earns the defense reward gains factionReward standing with rewardFaction, raised by the Honesty blessing. A blank faction or a zero amount grants nothing.
+                reward_faction = GrantsReputation(definition) ? definition.rewardFaction : null,
+                faction_reward = GrantsReputation(definition) ? definition.factionReward : 0,
             };
             for (var i = 0; i < definition.attackers.Length; i++)
             {
@@ -90,6 +94,9 @@ public class RegionalEventExporter : BaseExporter
         WriteJson(data, "regional_events.json");
         Logger.Msg($"✓ Exported {data.invasions.Count} regional invasions and {data.regions.Count} event regions");
     }
+
+    private static bool GrantsReputation(Il2Cpp.RegionalInvasionDefinition definition) =>
+        !string.IsNullOrWhiteSpace(definition.rewardFaction) && definition.factionReward > 0;
 
     // Source: server-scripts/RegionalEvents.cs:TryStart — the goal counts up to five players in the region.
     private const int MaxCountedPlayers = 5;

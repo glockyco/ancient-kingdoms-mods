@@ -1106,16 +1106,27 @@ def load_regional_events(conn: sqlite3.Connection, export_dir: Path) -> None:
         ),
     )
     monsters = {row[0] for row in cursor.execute("SELECT id FROM monsters")}
+    # The game names the faction by its display name, as factions.name holds it.
+    faction_ids = dict(cursor.execute("SELECT name, id FROM factions").fetchall())
     for invasion in events.invasions:
         missing = [m for m in invasion.attacker_monster_ids if m not in monsters]
         if missing:
             raise ValueError(
                 f"Regional invasion {invasion.id} names unknown monsters: {missing}"
             )
+        reward_faction_id = None
+        if invasion.reward_faction is not None:
+            reward_faction_id = faction_ids.get(invasion.reward_faction)
+            if reward_faction_id is None:
+                raise ValueError(
+                    f"Regional invasion {invasion.id} rewards unknown faction "
+                    f"{invasion.reward_faction!r}"
+                )
         cursor.execute(
             "INSERT INTO regional_invasions "
-            "(id, city, city_name, zone_id, health_multiplier, minimum_level, maximum_level) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "(id, city, city_name, zone_id, health_multiplier, minimum_level, maximum_level, "
+            "reward_faction_id, faction_reward) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 invasion.id,
                 invasion.city,
@@ -1124,6 +1135,8 @@ def load_regional_events(conn: sqlite3.Connection, export_dir: Path) -> None:
                 invasion.health_multiplier,
                 invasion.minimum_level,
                 invasion.maximum_level,
+                reward_faction_id,
+                invasion.faction_reward,
             ),
         )
         cursor.executemany(

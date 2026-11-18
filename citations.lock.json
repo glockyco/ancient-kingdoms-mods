@@ -5071,6 +5071,12 @@
     "RegionalEvents.cs:CombatRegion": {
       "span": 0
     },
+    "RegionalEvents.cs:GrantInvasionReputation": {
+      "span": 0
+    },
+    "RegionalEvents.cs:Record": {
+      "span": 0
+    },
     "RegionalEvents.cs:RecordCooking": {
       "span": 0
     },

@@ -788,7 +788,7 @@ CREATE INDEX idx_summon_placeholders_spawn ON summon_trigger_placeholders(spawn_
 -- REGIONAL EVENTS (Dynamic Events)
 -- =============================================================================
 
--- The server's Dynamic Events settings. Schedules, goals and rewards are code.
+-- The server's Dynamic Events settings. Schedules, goals and the gold and experience rewards are code.
 CREATE TABLE regional_event_settings (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     enabled BOOLEAN NOT NULL,
@@ -803,7 +803,12 @@ CREATE TABLE regional_invasions (
     zone_id TEXT NOT NULL REFERENCES zones(id),
     health_multiplier REAL NOT NULL,
     minimum_level INTEGER NOT NULL,
-    maximum_level INTEGER NOT NULL CHECK (maximum_level >= minimum_level)
+    maximum_level INTEGER NOT NULL CHECK (maximum_level >= minimum_level),
+    -- Standing each player who earns the defense reward gains with this faction, before the
+    -- Honesty blessing. NULL and 0 when the invasion grants none.
+    reward_faction_id TEXT REFERENCES factions(id),
+    faction_reward INTEGER NOT NULL DEFAULT 0 CHECK (faction_reward >= 0),
+    CHECK ((reward_faction_id IS NULL) = (faction_reward = 0))
 );
 
 -- Attackers in the order the waves cycle through them.
