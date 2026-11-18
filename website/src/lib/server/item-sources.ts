@@ -340,6 +340,8 @@ export function itemSourcesFromModel(
         npc_id: npc.id,
         npc_name: str(npc, "name"),
         zones: methodZones(model, method),
+        // Source: server-scripts/AmbientWorldPopulation.cs:Spawn — an ambient NPC is copied into the open world around players and has no spawn of its own.
+        roams: npc.rolled_level_min != null,
         npc_faction: faction,
         is_faction_vendor: num(offered, "faction_required_to_buy") > 0,
         price: currency?.amount ?? gold?.amount ?? 0,

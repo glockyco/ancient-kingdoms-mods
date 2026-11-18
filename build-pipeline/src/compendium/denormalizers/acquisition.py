@@ -1744,6 +1744,18 @@ def _physical_seeds(conn: sqlite3.Connection) -> tuple[set[str], dict[str, int]]
         # A shop is reached where its vendor stands, like a chest or a gathering spot.
         zone = row["level_median"] if row["kind"] == "vendor" else None
         add(row["method_id"], max(base, zone or 0))
+    # An ambient NPC has no spawn record. The game copies it into the open world
+    # around players, so its offers are reached there, at any level.
+    for row in _rows(
+        conn,
+        """
+        SELECT p.method_id FROM acquisition_providers_npcs p
+        JOIN npcs n ON n.id=p.npc_id
+        WHERE n.rolled_level_min IS NOT NULL
+          AND NOT EXISTS (SELECT 1 FROM npc_spawns s WHERE s.npc_id=n.id)
+    """,
+    ):
+        add(row["method_id"], 1)
     for family, target, target_column, zone_column in (
         (
             "resource_spawns",

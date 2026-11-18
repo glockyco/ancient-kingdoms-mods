@@ -91,6 +91,8 @@ export interface VendorSource {
   npc_name: string;
   /** Zones the NPC spawns in, sorted by name. */
   zones: readonly { zone_id: string; zone_name: string }[];
+  /** Whether the NPC roams the open world instead of standing at a spawn. */
+  roams: boolean;
   npc_faction: string | null;
   is_faction_vendor: boolean;
   price: number;

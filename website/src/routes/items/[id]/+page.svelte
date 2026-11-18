@@ -914,7 +914,13 @@
       </span>
     {/if}
   {:else if cell.column.id === "zone"}
-    {@render zoneList(vendor.zones)}
+    {#if vendor.roams}
+      <a href="/mechanics/adventurers#merchants" class={styles.link}
+        >Roams the open world</a
+      >
+    {:else}
+      {@render zoneList(vendor.zones)}
+    {/if}
   {/if}
 {/snippet}
 
