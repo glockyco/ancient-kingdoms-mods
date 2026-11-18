@@ -63,7 +63,7 @@ export interface ImmuneDebuffBypass {
  * A boss lets through only damage over time, optionally with a slow, that changes nothing else.
  * Other monsters with Immune to Debuffs also let through that damage over time,
  * resistance-decrease skills and positive Health Regeneration.
- * Source: server-scripts/BuffSkill.cs:190-216; TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191 — flagged non-boss monsters accept the boss rule and the two extra cases.
+ * Source: server-scripts/BuffSkill.cs:190-216; TargetDebuffSkill.cs:177-185; AreaDebuffSkill.cs:188-196 — flagged non-boss monsters accept the boss rule and the two extra cases.
  */
 export function immuneDebuffBypass(
   skill: SkillDetailView,
@@ -95,9 +95,9 @@ export function immuneDebuffBypass(
 /**
  * How each damage type is mitigated and avoided, mirroring the game one row per type.
  *
- * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:932-949 — the
+ * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:955-972 — the
  * per-damage-type switch, each read multiplied by 0.0005.
- * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:742-751 —
+ * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:758-767 —
  * Normal damage goes to GetProbResistMeleeDamage, every other type to its own GetProbResist*.
  *
  * Physical is the one type whose stat does double duty. `defense` reduces the damage at 0.0005
@@ -368,7 +368,7 @@ export function skillFacts(
       : [],
   );
 
-  // Source: server-scripts/Skills.cs:932-941 — player and mercenary spells subtract their spell-haste percentage of the cast time; monsters cast with 0 spell haste.
+  // Source: server-scripts/Skills.cs:947-956 — player and mercenary spells subtract their spell-haste percentage of the cast time; monsters cast with 0 spell haste.
   const shortensCast =
     skill.is_spell &&
     !skill.is_scroll &&
@@ -378,7 +378,7 @@ export function skillFacts(
   const timingModels = new Set(
     mechanicsSpec.timingContexts.map((ctx) => ctx.model),
   );
-  // Source: server-scripts/Skills.cs:1149-1181 — Haste shortens the cooldown of mercenary auto attacks, a companion's first non-spell skill and monster or NPC non-spell attacks.
+  // Source: server-scripts/Skills.cs:1164-1196 — Haste shortens the cooldown of mercenary auto attacks, a companion's first non-spell skill and monster or NPC non-spell attacks.
   const hasteCooldownCasters = new Intl.ListFormat("en", {
     type: "conjunction",
   }).format(
@@ -411,7 +411,7 @@ export function skillFacts(
   const isDebuffType =
     skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff";
 
-  // Source: server-scripts/Combat.cs:1647-1691 — melee debuffs resist with Defense, the others with their matching resistance.
+  // Source: server-scripts/Combat.cs:1705-1749 — melee debuffs resist with Defense, the others with their matching resistance.
   const debuffResistance = skill.is_melee_debuff
     ? statName("armor_class")
     : skill.is_poison_debuff

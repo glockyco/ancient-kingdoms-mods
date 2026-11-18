@@ -8,7 +8,7 @@
 <Chapter id="crowd-control">
   <Panel>
     <!-- Source: server-scripts/Monster.cs:UpdateServer_STUNNED,UpdateServer_FEAR,UpdateServer_IDLE — a stunned monster waits, a feared monster runs to random points, a rooted monster still uses skills in range, and a sleeping monster does nothing. -->
-    <!-- Source: server-scripts/Combat.cs:DealDamageAt; TargetDebuffSkill.cs:144-180; AreaDebuffSkill.cs:155-191; BuffSkill.cs:190-217 — stun skips feared targets and most Bear Mount riders, fear skips bosses and fear-immune targets, knockback skips targets 15 or more levels above a non-boss attacker, and bosses and elites resist base Movement Speed bonuses below -10 unless IgnoreImmuneDebuff passes. -->
+    <!-- Source: server-scripts/Combat.cs:DealDamageAt; TargetDebuffSkill.cs:149-185; AreaDebuffSkill.cs:160-196; BuffSkill.cs:190-217 — stun skips feared targets and most Bear Mount riders, fear skips bosses and fear-immune targets, knockback skips targets 15 or more levels above a non-boss attacker, and bosses and elites resist base Movement Speed bonuses below -10 unless IgnoreImmuneDebuff passes. -->
     <RefTable caption="Crowd Control Effects Compared" minWidth="44rem">
       <thead>
         <tr>
@@ -95,7 +95,7 @@
         Equipment and skills add Fear Resist up to 100%, which makes you immune.
         Fear dismounts a player.
       </li>
-      <!-- Source: server-scripts/Combat.cs:1338-1343; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
+      <!-- Source: server-scripts/Combat.cs:1204-1209; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
       <li>
         A monster or NPC feared by a Necromancer player runs at half its
         Movement Speed.
@@ -154,13 +154,13 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/TargetDebuffSkill.cs:144-180; AreaDebuffSkill.cs:155-191; BuffSkill.cs:190-217 — bosses and elites resist base speed bonuses below -10 unless the immunity bypass passes. -->
+    <!-- Source: server-scripts/TargetDebuffSkill.cs:149-185; AreaDebuffSkill.cs:160-196; BuffSkill.cs:190-217 — bosses and elites resist base speed bonuses below -10 unless the immunity bypass passes. -->
     <p>
       Bosses and elite monsters automatically resist debuffs with a base
       Movement Speed bonus below −10, except damage over time with no other
       effect besides a slow.
     </p>
-    <!-- Source: server-scripts/Monster.cs:493-505; Skills.cs:1274-1298 — bosses and immune monsters ignore all slows, elites ignore speed bonuses at most -10, and these monsters skip the strong-slow movement reset. -->
+    <!-- Source: server-scripts/Monster.cs:497-509; Skills.cs:1289-1326 — bosses and immune monsters ignore all slows, elites ignore speed bonuses at most -10, and these monsters skip the strong-slow movement reset. -->
     <p>
       Bosses and monsters with Immune to Debuffs ignore every slow. Elite
       monsters ignore Movement Speed bonuses of −10 or lower.
@@ -171,8 +171,8 @@
     <!-- Source: server-scripts/Skills.cs:BreakMezz — Movement Speed at most −50 is Sleep. -->
     <!-- Source: server-scripts/Monster.cs:UpdateServer_IDLE; Pet.cs:UpdateServer_IDLE; Npc.cs:UpdateServer_IDLE — the at-most-−50 Sleep branch precedes the at-most-−10 Root branch. -->
     <!-- Source: server-scripts/Combat.cs:DealDamageAt (damage > 0 calls BreakMezz) -->
-    <!-- Source: server-scripts/Skills.cs:251-256 — damage-over-time recovery ticks call BreakMezz except NecromancerReaperFormSkill. -->
-    <!-- Source: server-scripts/Monster.cs:1714-1728 (monster self-break: magic resist roll every 6s) -->
+    <!-- Source: server-scripts/Skills.cs:251-260 — damage-over-time recovery ticks call BreakMezz except NecromancerReaperFormSkill. -->
+    <!-- Source: server-scripts/Monster.cs:1722-1736 (monster self-break: magic resist roll every 6s) -->
     <p>
       A debuff that brings Movement Speed to −50 or lower puts the target to
       sleep instead of rooting it.

@@ -96,13 +96,13 @@
   <Card.Root id="shared-rewards" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Shared Rewards</Card.Title>
-      <!-- Source: server-scripts/Monster.cs:3168-3180,3340-3368 — nearby party members receive loot access and experience on a credited kill. -->
+      <!-- Source: server-scripts/Monster.cs:3241-3253,3413-3441 — nearby party members receive loot access and experience on a credited kill. -->
       <Card.Description
         >Nearby party players can share loot and XP from a monster kill.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:3139-3155,3168-3180 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
+      <!-- Source: server-scripts/Monster.cs:3212-3228,3241-3253 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
       <!-- Source: server-scripts/PlayerParty.cs:76-90 — party proximity checks network observers and strictly less than 40 world units from the relevant player. -->
       <!-- Mirror.dll and Mirror.Components.dll in the server build of Steam build 25863605: NetworkServer.RebuildObserversCustom adds a player's own connection to its observers, so the credited player always shares. SpatialHashingInterestManagement (visRange 96 at runtime, 48-unit cells, 3×3 neighbourhood) makes every player closer than 40 yd an observer, rebuilt once per second, and ignores invisibility. -->
       <p>
@@ -116,7 +116,7 @@
           them get loot access. Living players receive a share of the kill XP.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:3340-3368 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
+      <!-- Source: server-scripts/Monster.cs:3413-3441 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>
         See <MechanicsLink section="experience#kill-xp"
           >Experience</MechanicsLink
@@ -135,7 +135,7 @@
         matching unfinished quest for each nearby party member. Nobody receives
         the drop in their inventory.
       </p>
-      <!-- Source: server-scripts/PlayerLooting.cs:203-220 and server-scripts/Monster.cs:4822-4861 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
+      <!-- Source: server-scripts/PlayerLooting.cs:203-220 and server-scripts/Monster.cs:4895-4934 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
       <p>
         <span class="block"
           >The collector receives items that do not require a roll.</span
@@ -167,7 +167,7 @@
         You have 2 minutes to answer. The roll resolves when everyone answers or
         time runs out. No answer counts as Pass.
       </p>
-      <!-- Source: server-scripts/Player.cs:15672-15678 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
+      <!-- Source: server-scripts/Player.cs:15941-15947 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -288,13 +288,13 @@
         Local, party, guild, and whisper messages longer than 120 characters are
         not sent.
       </p>
-      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:4289-4309,4372-4393 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
+      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:4302-4322,4385-4406 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
       <p>
         Select a living player in your zone and enter <code>/follow</code>. You
         follow within 1 yd, without attacking. You do not need to be in their
         party.
       </p>
-      <!-- Source: server-scripts/Player.cs:4312-4335,4339-4371 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
+      <!-- Source: server-scripts/Player.cs:4325-4348,4352-4384 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
       <p>
         Moving or using a skill cancels follow. It also ends if either player
         dies, the target disappears or changes zone, or they move more than 8 yd

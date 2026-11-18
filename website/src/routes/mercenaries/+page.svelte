@@ -336,7 +336,7 @@
         <div>
           <div>Summon it into your party.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/UIMercenaries.cs:506-508,584, Player.cs:12286-12291,12474-12493 -->
+            <!-- Source: server-scripts/UIMercenaries.cs:506-508,584, Player.cs:12605-12610,12793-12812 -->
             <p>
               <span class="block">
                 You can keep up to {MAX_HIRED} hired mercenaries.
@@ -358,7 +358,7 @@
               A party holds at most {MAX_PARTY} members, including active mercenaries.
               Make room before summoning one.
             </p>
-            <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean,12286-12291 — a hire spawns only while the party and the level limit have room, otherwise it is saved to the roster. -->
+            <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean,12605-12610 — a hire spawns only while the party and the level limit have room, otherwise it is saved to the roster. -->
             <p>
               A new hire joins your party right away when there is room.
               Otherwise it waits in your roster.
@@ -366,7 +366,7 @@
           </div>
         </div>
       </div>
-      <!-- Source: server-scripts/UITarget.cs:477-502; UIEquipmentMercenary.cs:CanDisband; UIMercenaries.cs:CanUseRecruiter,OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:12680-12702 — combat prevents dismissal and every recruiter action, recall rejects dead mercenaries, and deletion checks equipped gear. -->
+      <!-- Source: server-scripts/UITarget.cs:477-502; UIEquipmentMercenary.cs:CanDisband; UIMercenaries.cs:CanUseRecruiter,OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:13021-13043 — combat prevents dismissal and every recruiter action, recall rejects dead mercenaries, and deletion checks equipped gear. -->
       <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
@@ -401,7 +401,7 @@
         <div>
           <div>It levels up with you.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,5150-5175,12533-12548; PetSkills.cs:RefreshSkillLevels; Health.cs:32-56; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:69-78 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
+            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,5167-5192,12852-12867; PetSkills.cs:RefreshSkillLevels; Health.cs:32-56; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:69-78 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
             <p>
               <span class="block">A mercenary always has your level.</span>
               <span class="block">
@@ -437,7 +437,7 @@
             <Alert variant="info">
               <Info />
               <div>
-                <!-- Source: server-scripts/Player.cs:12323-12329,12536-12543 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
+                <!-- Source: server-scripts/Player.cs:12642-12648,12855-12862 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
                 <p class="font-medium">Veteran Attack Power and Spell Power</p>
                 <p>
                   Each of your total veteran points adds 1 to the mercenary's
@@ -586,7 +586,7 @@
         <div>
           <div>If it dies, resurrect it.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD, Combat.cs:1413-1429,1251-1262 -->
+            <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD, Combat.cs:1473-1489,1439-1450 -->
             <p>
               <span class="block">The corpse stays for 5 minutes.</span>
               {#if deathSaveClasses.length > 0}
@@ -601,7 +601,7 @@
                 </span>
               {/if}
             </p>
-            <!-- Source: server-scripts/TargetHealSkill.cs:275-296, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,12609 -->
+            <!-- Source: server-scripts/TargetHealSkill.cs:275-296, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,12929 -->
             <div class="overflow-x-auto">
               <table class="text-sm">
                 <thead>
@@ -653,7 +653,7 @@
                 >Resurrecting all requires enough gold for the complete group.</span
               >
             </p>
-            <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:808-824 -->
+            <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:828-844 -->
             <p>
               Gear stays on the mercenary at its current durability after death.
             </p>
@@ -679,7 +679,7 @@
         <div class="text-sm text-muted-foreground">7</div>
         <div>
           <div>If you die, your mercenaries leave.</div>
-          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,14990-14994, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,12429-12448 -->
+          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,15259-15263, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,12748-12767 -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
               Living mercenaries return when you respawn or when someone
@@ -722,7 +722,7 @@
         shield or instrument.</span
       >
     </p>
-    <!-- Source: server-scripts/Pet.cs:OnDeath; Combat.cs:808-824. -->
+    <!-- Source: server-scripts/Pet.cs:OnDeath; Combat.cs:828-844. -->
     <p class="text-sm leading-6 text-muted-foreground">
       Gear stays equipped when the mercenary dies. Death does not lower its
       durability.

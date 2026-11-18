@@ -23,7 +23,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You gain Rage when your auto attacks deal damage and when a single-target physical melee hit damages you.",
         source:
-          "Source: server-scripts/Combat.cs:1465-1486,1501-1505 — Rage gain from targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Combat.cs:1148-1163,1530-1536,1454-1458 — Rage gain from targeted physical melee hits and auto attacks",
         href: "/mechanics/combat#rage-generation",
         linkText: "Rage Formulas",
       },
@@ -72,7 +72,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:844-848,1093-1096; server-scripts/Player.cs:12923-12929 — dungeon casting restriction and buff removal",
+          "Source: server-scripts/PlayerSkills.cs:849-853,1098-1101; server-scripts/Player.cs:5975-5981 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
@@ -129,7 +129,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when a single-target physical melee hit damages you. Passive skills and buffs can add regeneration.",
         source:
-          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:448-466; server-scripts/Combat.cs:1465-1486,1501-1505 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:463-481; server-scripts/Combat.cs:1148-1163,1530-1536,1454-1458 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
         href: "/mechanics/character#resources",
         linkText: "Resource Rules",
       },
@@ -150,19 +150,19 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Mystic Spark costs no Mana and gives back 35% of its damage as Mana, rounded down. Damage beyond the target's remaining Hit Points does not count.",
         source:
-          "Source: server-scripts/Combat.cs:1109-1117,1118-1167 — Mystic Spark caps mana return by target health and restores it before ward absorption",
+          "Source: server-scripts/Combat.cs:1290-1298,1299-1348 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
         text: "Mana Shield spends 1 Mana per damage point absorbed. Damage beyond your remaining Mana reaches your Hit Points and ends the shield.",
         source:
-          "Source: server-scripts/Combat.cs:1168-1198 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
+          "Source: server-scripts/Combat.cs:1349-1379 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
         href: "/skills/mana_shield",
         linkText: "Mana Shield",
       },
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
         source:
-          "Source: server-scripts/Combat.cs:828-831; server-scripts/Skills.cs:1666-1683 — damage ends movement-lock sleep effects",
+          "Source: server-scripts/Combat.cs:848-853; server-scripts/Skills.cs:1694-1711 — damage ends movement-lock sleep effects",
       },
     ],
   },
@@ -181,14 +181,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You can keep two songs active at once. Polyphony removes this limit.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1717-1732 — base two-song limit plus passive slots, removed by an unlimited passive",
+          "Source: server-scripts/PlayerSkills.cs:1722-1737 — base two-song limit plus passive slots, removed by an unlimited passive",
         href: "/mechanics/bard#songs",
         linkText: "Song Rules",
       },
       {
         text: "Without Polyphony, a new song replaces the oldest one when both slots are full.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1392-1426 — active songs refresh or displace the oldest while a limit applies",
+          "Source: server-scripts/PlayerSkills.cs:1397-1431 — active songs refresh or displace the oldest while a limit applies",
       },
       {
         text: "Virtuosity and Final Cadence need at least three active songs, so they require Polyphony.",

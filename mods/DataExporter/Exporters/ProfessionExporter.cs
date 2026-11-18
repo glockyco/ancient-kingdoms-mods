@@ -102,7 +102,7 @@ public class ProfessionExporter : BaseExporter
                 achievement_id = "LOREKEEPING_MASTER",
                 max_level = 100,
                 tracking_type = "count_based",
-                // Source: server-scripts/Player.cs:14092-14094 — Lorekeeping progress is books.Count / 17
+                // Source: server-scripts/Player.cs:14359-14361 — Lorekeeping progress is books.Count / 17
                 tracking_denominator = 17
             },
             new ProfessionData

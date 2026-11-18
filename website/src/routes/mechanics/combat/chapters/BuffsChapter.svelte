@@ -115,7 +115,7 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/Buff.cs:56-237; Wisdom.cs:118-129; Combat.cs:1005-1018 — positive non-song effects add the selected attribute, with per-effect rounding. -->
+    <!-- Source: server-scripts/Buff.cs:56-237; Wisdom.cs:118-129; Combat.cs:1029-1042 — positive non-song effects add the selected attribute, with per-effect rounding. -->
     <!-- Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus — Leadership adds its stored buff attribute to both listed damage bonuses. -->
     <!-- Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity. -->
     <RefTable caption="What the Buff Attribute Adds to Each Effect">
@@ -251,7 +251,7 @@
       the target's chance to resist them, to at least 0%. Other debuffs that lower
       resists get no such bonus.
     </p>
-    <!-- Source: server-scripts/TargetDebuffSkill.cs:172-180; AreaDebuffSkill.cs:183-191; BuffSkill.cs:190-217 — immunity accepts pure damage over time with an optional slow, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
+    <!-- Source: server-scripts/TargetDebuffSkill.cs:177-185; AreaDebuffSkill.cs:188-196; BuffSkill.cs:190-217 — immunity accepts pure damage over time with an optional slow, plus resistance-decrease skills and positive Health Regeneration on non-boss monsters. -->
     <p>
       Monsters whose pages list Immune to Debuffs ignore debuffs, with these
       exceptions:
@@ -266,7 +266,7 @@
         still affect such a monster.
       </li>
     </ul>
-    <!-- Source: server-scripts/Monster.cs:493-505 — bosses and monsters flagged immune to debuffs ignore every slow. -->
+    <!-- Source: server-scripts/Monster.cs:497-509 — bosses and monsters flagged immune to debuffs ignore every slow. -->
     <p>Bosses and monsters with Immune to Debuffs ignore the slow.</p>
     <SeeAlso
       links={[{ href: "#root", label: "Root, for Bosses and Slowing Debuffs" }]}
@@ -419,7 +419,7 @@
       cannot be cleansed. Each debuff starts with three layers and ends when the
       last one is removed.
     </p>
-    <!-- Source: server-scripts/Skills.cs:1963-1966 — ticks with two or one remaining layers deal 85% or 70%, rounded up. -->
+    <!-- Source: server-scripts/Skills.cs:2005-2008 — ticks with two or one remaining layers deal 85% or 70%, rounded up. -->
     <p>
       A debuff deals 85% of its <a href="#damage-over-time">damage over time</a>
       with two layers left and 70% with one, rounded up.

@@ -172,7 +172,7 @@ public class PetExporter : BaseExporter
 
             // Combat applies GameManager.invulWarriorSkill to a Warrior or Rogue
             // mercenary on a lethal hit, so it is an innate skill of both.
-            // Source: server-scripts/Combat.cs:1413-1429,1251-1262
+            // Source: server-scripts/Combat.cs:1473-1489,1439-1450
             if (pet.isMercenary && (pet.typeMonster == "Warrior" || pet.typeMonster == "Rogue"))
             {
                 var invulSkill = Il2Cpp.GameManager.singleton?.invulWarriorSkill;

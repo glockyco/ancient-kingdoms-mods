@@ -322,7 +322,7 @@ CREATE TABLE houses (
     description TEXT,
     -- The game applies player-specific modifiers on purchase, so this is the
     -- pre-modifier figure and must be labelled as a base price.
-    -- Source: server-scripts/Housing.cs:47 — CalculatePurchaseItemPrice(price_house, player)
+    -- Source: server-scripts/Housing.cs:50 — CalculatePurchaseItemPrice(price_house, player)
     base_price INTEGER NOT NULL DEFAULT 0,
     -- Deliberately not a foreign key to factions(id). The game stores a display
     -- name here, not a normalized id, so exported values look like

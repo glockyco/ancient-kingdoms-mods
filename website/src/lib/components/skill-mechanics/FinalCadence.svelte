@@ -63,7 +63,7 @@
       2 * skill.cast_range!.base_value,
     )} yd of the caster that are fighting that ally.
   </p>
-  <!-- Source: server-scripts/Combat.cs:742-751,932-949,1652-1693 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
+  <!-- Source: server-scripts/Combat.cs:758-767,955-972,1710-1751 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
   <p class="text-muted-foreground">
     The target's Magic Resist reduces this damage by {DEFENSE_RATES.reductionPerPoint}
     per point, up to {DEFENSE_RATES.maxReduction}.

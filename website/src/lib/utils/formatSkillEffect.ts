@@ -802,10 +802,10 @@ function formatBuffDebuffStats(
   }
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
   // Source: server-scripts/BuffSkill.cs:illusionRace,90-100 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:7272-7282 (ReSkinPlayer picks the illusion race)
+  // server-scripts/Player.cs:7391-7401 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
-  // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Player.cs:2071-2074,2087 — undeadIlussion redraws a player as undead.
+  // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Player.cs:2084-2087,2100 — undeadIlussion redraws a player as undead.
   if (skill.is_undead_illusion) parts.push("undead illusion");
 
   // 2. Movement (matches game tooltip order)
@@ -813,7 +813,7 @@ function formatBuffDebuffStats(
   // Sleep (speedBonus <= -50f): breaks on any damage hit or DoT tick (BreakMezz, Skills.cs).
   // Root (-50f < speedBonus <= -10f): does NOT break on damage; RemoveRoot self-break timer.
   // Slow (speedBonus > -10f and < 0): pure speed reduction, no CC mechanic.
-  // Source: server-scripts/Monster.cs:1714-1731; Npc.cs:830-847; Pet.cs:2189-2194,2297-2299 (FSM branches); Skills.cs:BreakMezz
+  // Source: server-scripts/Monster.cs:1722-1739; Npc.cs:830-847; Pet.cs:2189-2194,2297-2299 (FSM branches); Skills.cs:BreakMezz
   const speedBonus = parseLinearValue(skill.speed_bonus);
   if (speedBonus) {
     if (speedBonus.base_value <= -50) {
@@ -854,7 +854,7 @@ function formatBuffDebuffStats(
   );
 
   const lifetapHealing = parseLinearValue(skill.lifetap_healing_percent_bonus);
-  // Source: server-scripts/Combat.cs:1205-1216 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
+  // Source: server-scripts/Combat.cs:1393-1404 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
   if (lifetapHealing) {
     parts.push(
       `+${formatLinearPercent(lifetapHealing, options)} lifetap healing`,
@@ -955,7 +955,7 @@ function formatBuffDebuffStats(
   }
 
   // 10. Regen / DoT
-  // Source: server-scripts/Skills.cs:1710 — a negative regeneration value ticks as damage on whoever wears the buff.
+  // Source: server-scripts/Skills.cs:1752 — a negative regeneration value ticks as damage on whoever wears the buff.
   const hps = parseLinearValue(skill.healing_per_second_bonus);
   if (hps && hps.base_value !== 0) {
     if (hps.base_value > 0) {
@@ -977,7 +977,7 @@ function formatBuffDebuffStats(
     }
   }
 
-  // Source: server-scripts/Skills.cs:1691-1705,1975-1990 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second, after resists and DoT bonuses.
+  // Source: server-scripts/Skills.cs:1728-1747,1975-1990 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second, after resists and DoT bonuses.
   const hpPct = parseLinearValue(skill.health_percent_per_second_bonus);
   if (hpPct && hpPct.base_value !== 0) {
     if (hpPct.base_value > 0) {
@@ -1066,14 +1066,14 @@ function formatBuffDebuffStats(
 const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Combat.cs:DealDamageAt — learned Improved Backstab raises the from-behind bonus from 10% to 25% of the damage.
   improved_backstab: "from-behind bonus dmg 25% instead of 10%",
-  // Source: server-scripts/TargetBuffSkill.cs:Apply; Player.cs:UserCode_CmdBindPlayer,3927-3936; TravelItem.cs:25-30 — binding sets the respawn point that Gate Scroll also returns to, except that a Chambers of Chaos respawn returns to the run's entrance.
+  // Source: server-scripts/TargetBuffSkill.cs:Apply; Player.cs:UserCode_CmdBindPlayer,3940-3949; TravelItem.cs:25-30 — binding sets the respawn point that Gate Scroll also returns to, except that a Chambers of Chaos respawn returns to the run's entrance.
   bind_affinity:
     "set bind point (respawn & Gate Scroll destination, except Chambers of Chaos respawns)",
   binding:
     "set bind point (respawn & Gate Scroll destination, except Chambers of Chaos respawns)",
   // Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — every potion but Bandages applies its buff at 1 + rank, and each buff level adds 60s.
   elixir_endurance: "potion buff duration +60s × rank (not bandages)",
-  // Source: server-scripts/Monster.cs:1031-1051 — minimap marks never show in Temple of Valaark or the Chambers of Chaos.
+  // Source: server-scripts/Monster.cs:1039-1059 — minimap marks never show in Temple of Valaark or the Chambers of Chaos.
   veteran_awareness:
     "reveals nearby monsters on minimap (not in Temple of Valaark or Chambers of Chaos)",
   // Source: server-scripts/Combat.cs:DealDamageAt,isParry — during the cast, your target's single-target physical hits are blocked and 50% of the damage, rounded and clamped to 1-5,000, is dealt back.
@@ -1088,7 +1088,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   alchemy: "craft potions and elixirs",
   baking: "craft food and consumables",
   crafting: "craft equipment and items",
-  // Source: server-scripts/TableUI.cs:96-97; Player.cs:3607-3610 — the scribing table cast.
+  // Source: server-scripts/TableUI.cs:96-97; Player.cs:3630-3633 — the scribing table cast.
   crafting_scroll: "scribe scrolls",
   digging: "dig for buried treasure",
   // Source: server-scripts/Player.cs:CmdFishing — the fishing cast.
@@ -1109,7 +1109,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-199,204-217;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:9493-9510 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:9612-9629 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — while active, a Rogue's
   // followupDefaultAttack skill, Stab, switches to Poison damage and adds the rounded 250% Dexterity
@@ -1118,7 +1118,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
     "Stab deals poison dmg & adds 250% of DEX, resisted by poison res, 10s",
   // Source: server-scripts/DamageSkill.cs:49-52,TryConsumeWildStrike — the Ranger's next auto attack deals 20% more per buff rank as Magic damage and consumes the buff.
   wild_strike: "next auto attack deals +20% × rank dmg as magic dmg, 5s",
-  // Source: server-scripts/Combat.cs:540-559,771 — a living player Rogue's active Evasion avoids the next damaging area or frontal hit and ends.
+  // Source: server-scripts/Combat.cs:540-559,791 — a living player Rogue's active Evasion avoids the next damaging area or frontal hit and ends.
   evasion: "avoid the next area or frontal attack, 5s",
   // Source: server-scripts/TargetBuffSkill.cs:261-300 — isCallHeroes teleports all
   // active mercenaries to player position and clears their fear; returns before
@@ -1130,7 +1130,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // stats are in the DB but the gap-closer behavior is hardcoded.
   charge:
     "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
-  // Source: server-scripts/PlayerInventory.cs:2330-2344; Player.cs:3615-3622 — the cast before a travel item takes effect, refused in combat.
+  // Source: server-scripts/PlayerInventory.cs:2566-2580; Player.cs:3638-3645 — the cast before a travel item takes effect, refused in combat.
   teleport: "use travel items (out of combat)",
   // Source: server-scripts/Combat.cs:137 — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
   razor_of_wrath:
@@ -1271,7 +1271,7 @@ export function formatSkillEffect(
   // Only monsters enrage from a passive: DealDamageAt scans monster and NPC skill
   // lists alone, and no NPC carries a skill, so a player passive with the flag
   // changes no damage.
-  // Source: server-scripts/Combat.cs:880-923 (enrage scan and damage bonus, non-spell hits only)
+  // Source: server-scripts/Combat.cs:903-946 (enrage scan and damage bonus, non-spell hits only)
   if (skill.skill_type === "passive" && skill.is_enrage) {
     parts.push(`+${formatRange("50%", "75%")} non-spell dmg below 10% hp`);
   }
@@ -1313,7 +1313,7 @@ export function formatSkillEffect(
 
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — RemoveBuff when GetBuffIndexByName(nameSkill) >= 0; otherwise applies the buff.
   if (skill.is_necromancer_reaper_form) parts.push("toggle form");
-  // Source: server-scripts/PlayerSkills.cs:715-738; Buff.cs:371-381 — using a toggle stance again ends it, and it has no time limit.
+  // Source: server-scripts/PlayerSkills.cs:720-743; Buff.cs:371-381 — using a toggle stance again ends it, and it has no time limit.
   if (skill.is_toggle_stance) parts.push("toggle stance");
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet,CheckDistance — only the Necromancer's own living companion within cast range, never a familiar or mercenary.
   if (skill.is_necromancer_pet_buff) {

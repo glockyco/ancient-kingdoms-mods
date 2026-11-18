@@ -622,7 +622,7 @@
           {/if}
         </dl>
         {#if losesVeteranPoints}
-          <!-- Source: server-scripts/PlayerSkills.cs:1878-1888,1942-1982,2612-2615 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
+          <!-- Source: server-scripts/PlayerSkills.cs:1883-1893,1947-1987,2618-2621 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
           <!-- Runtime verification: docs/game-bugs/two-point-veteran-skills-lose-points-and-progression.md -->
           <p
             class="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
@@ -713,7 +713,7 @@
           {/if}
         </dl>
         {#if shortensCast || timingModels.has("player_auto") || hasteCooldownCasters}
-          <!-- Source: server-scripts/Skills.cs:932-941,1149-1181; Player.cs:3752-3789 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
+          <!-- Source: server-scripts/Skills.cs:947-956,1164-1196; Player.cs:3765-3802 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
           <div class="mt-3 space-y-1 text-sm text-muted-foreground">
             {#if shortensCast && skill.cast_time}
               <!-- Source: server-scripts/Pet.cs:TryStartAttackIfInRange; server-scripts/BardMercenarySkills.cs:StartSongCast; Combat.cs:spellHaste — mercenary casts use the mercenary's own spell haste, bounded to −50%–50%. -->
@@ -1381,7 +1381,7 @@
             {/if}
             {#if skill.health_percent_per_second_bonus}
               <div>
-                <!-- Source: server-scripts/Skills.cs:1691-1705 — Reaper Form drains the caster's maximum Health each second. -->
+                <!-- Source: server-scripts/Skills.cs:1728-1747 — Reaper Form drains the caster's maximum Health each second. -->
                 <dt class="text-muted-foreground">
                   {healthTickName(skill, "health_percent_per_second_bonus")}
                 </dt>
@@ -1502,7 +1502,7 @@
             {/if}
             {#if skill.is_invisibility}
               <!-- Source: server-scripts/Entity.cs:388-404 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
-              <!-- Source: server-scripts/Skills.cs:1020, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
+              <!-- Source: server-scripts/Skills.cs:1035, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
               <p class="text-purple-600 dark:text-purple-400">
                 <span class="block"
                   >Grants invisibility{#if skill.ignores_see_invisibility}, even

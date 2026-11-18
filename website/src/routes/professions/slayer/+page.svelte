@@ -85,8 +85,8 @@
   );
 
   // Source: server-scripts/EventAltar.cs:205-217; server-scripts/DefaultEvent.cs:200-213 — altar activation starts the event that spawns each wave.
-  // Source: server-scripts/Monster.cs:830-841,2392-2412 — summonable monsters start hidden and wait for readiness.
-  // Source: server-scripts/Monster.cs:3128-3137 — a slain monster can spawn its configured placeholder.
+  // Source: server-scripts/Monster.cs:834-845,2400-2420 — summonable monsters start hidden and wait for readiness.
+  // Source: server-scripts/Monster.cs:3201-3210 — a slain monster can spawn its configured placeholder.
   function requirementText(target: SlayerTarget): string {
     if (target.spawn_type === "altar") {
       const wave =
@@ -391,7 +391,7 @@
             Only these {formatNumber(data.targets.length)} targets give Slayer mastery.
             When you come near one, your Bestiary adds it with zero kills.
           </p>
-          <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:15634-15641; server-scripts/UIBestiaryDetail.cs:152-156 — approach discovery and loot discovery are separate records. -->
+          <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:15903-15910; server-scripts/UIBestiaryDetail.cs:152-156 — approach discovery and loot discovery are separate records. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             Finding a boss does not reveal its drops. You discover loot
             separately.

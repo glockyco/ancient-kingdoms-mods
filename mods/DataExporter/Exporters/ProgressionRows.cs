@@ -83,7 +83,7 @@ public static class ProgressionRows
         _ => throw new ArgumentOutOfRangeException(nameof(classId)),
     };
 
-    // Source: server-scripts/Player.cs:5628-5661 — every attribute starts at 1, and each race adds 5 to two attributes or 10 to one.
+    // Source: server-scripts/Player.cs:5656-5689 — every attribute starts at 1, and each race adds 5 to two attributes or 10 to one.
     private static IReadOnlyList<RaceProgressionData> RaceStartingAttributes() =>
         new RaceProgressionData[]
         {

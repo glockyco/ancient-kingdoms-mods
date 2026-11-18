@@ -352,7 +352,7 @@ export const load: PageServerLoad = async ({
           `SELECT id, name, cooldown, cooldown_category, scroll_instant_use FROM items WHERE id IN (${scrollItemIds.map(() => "?").join(",")}) ORDER BY name`,
           scrollItemIds,
         );
-  // Source: server-scripts/PlayerInventory.cs:223-247 — only instant-use scrolls bypass the 1-second cast.
+  // Source: server-scripts/PlayerInventory.cs:359-383 — only instant-use scrolls bypass the 1-second cast.
   const scrollCastTime =
     scrollItems.length > 0 &&
     scrollItems.every((item) => item.scroll_instant_use)

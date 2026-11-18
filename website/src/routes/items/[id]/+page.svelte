@@ -1562,7 +1562,7 @@
             {/if}
             {#if isBackpack && data.item.backpack_is_unique}
               <div class={styles.fact}>
-                <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:756-770 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
+                <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:892-906 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
                 <dt class={styles.label}>Unique</dt>
                 <dd>Yes</dd>
               </div>
@@ -2163,7 +2163,7 @@
         {/if}
         {#if isPet}
           <div class="space-y-2 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:4581-4611 — using the item summons the pet, or dismisses the one it already summoned. -->
+            <!-- Source: server-scripts/Player.cs:4598-4628 — using the item summons the pet, or dismisses the one it already summoned. -->
             <p>
               Use the whistle to summon the pet. Using it again dismisses that
               pet. Three pets can follow you at once.

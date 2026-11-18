@@ -208,7 +208,7 @@ export const pipelineCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/Combat.cs:739-766,858-863 — moving avoidance adjusts after from-behind avoidance, moving damage adjusts before variance.
+// Source: server-scripts/Combat.cs:755-782,881-886 — moving avoidance adjusts after from-behind avoidance, moving damage adjusts before variance.
 export const advantageCalculation: Calculation = {
   steps: [
     {
@@ -367,7 +367,7 @@ export const damageOverTimeCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/TargetDamageSkill.cs:249,291; AreaDamageSkill.cs:141,155-160; Combat.cs:654-665 — targeted and direct area hits add one third of maximum Health, rounded, to positive listed threat. That skill threat counts in full, while pre-pipeline damage and control threat are capped by current victim Health.
+// Source: server-scripts/TargetDamageSkill.cs:249,291; AreaDamageSkill.cs:141,155-160; Combat.cs:663-677 — targeted and direct area hits add one third of maximum Health, rounded, to positive listed threat. That skill threat counts in full, while pre-pipeline damage and control threat are capped by current victim Health.
 export function hitThreat(
   aggro: number,
   maximumHealth: number,

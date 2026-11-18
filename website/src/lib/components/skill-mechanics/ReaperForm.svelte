@@ -39,28 +39,28 @@
     </p>
     <RoundingDefinition />
   {/if}
-  <!-- Source: server-scripts/NetworkManagerMMO.cs:136 — UpdateEnergies repeats every 1 second. -->
-  <!-- Source: server-scripts/Skills.cs:251-256 — recovery ticks skip BreakMezz for NecromancerReaperFormSkill. -->
-  <!-- Source: server-scripts/Skills.cs:251-268,1691-1705 — the self-drain has no low-health guard and can kill the caster. -->
+  <!-- Source: server-scripts/NetworkManagerMMO.cs:139 — UpdateEnergies repeats every 1 second. -->
+  <!-- Source: server-scripts/Skills.cs:251-260 — recovery ticks skip BreakMezz for NecromancerReaperFormSkill. -->
+  <!-- Source: server-scripts/Skills.cs:251-279,1728-1747 — the self-drain has no low-health guard and can kill the caster. -->
   <p class="text-muted-foreground">
     The drain ignores resistances, Ward and critical hits. It can kill you. It
     does not break sleep.
   </p>
-  <!-- Source: server-scripts/MountItem.cs:58-63 — removes reaperForm.formSkill before mounting. -->
+  <!-- Source: server-scripts/MountItem.cs:68-71 — removes reaperForm.formSkill before mounting. -->
   <!-- Source: server-scripts/Skills.cs:OnDeath — buffs without remainAfterDeath are removed. -->
-  <!-- Source: server-scripts/UIBuffs.cs:340-360; server-scripts/Player.cs:12051-12075 — Reaper Form can be removed through the buff bar. -->
+  <!-- Source: server-scripts/UIBuffs.cs:340-360; server-scripts/Player.cs:12370-12394 — Reaper Form can be removed through the buff bar. -->
   <!-- Source: server-scripts/PlayerSkills.cs:TryUse — an active form can be dismissed before fear and stun checks. -->
   <p class="text-muted-foreground">
     It ends when you use the skill again (even while feared or stunned), remove
     it from your buff bar, mount{skill.remain_after_death ? "." : ", or die."}
     {#if skill.remain_after_death}The form survives death.{/if}
   </p>
-  <!-- Source: server-scripts/NetworkManagerMMO.cs:721-733 — restores NecromancerReaperFormSkill when saved remaining time is positive. -->
+  <!-- Source: server-scripts/NetworkManagerMMO.cs:735-747 — restores NecromancerReaperFormSkill when saved remaining time is positive. -->
   <p class="text-muted-foreground">
     The form persists when you log out and back in.
   </p>
   <!-- Source: server-scripts/Player.cs:HasActiveAppearanceIllusion — active NecromancerReaperFormSkill is an appearance illusion. -->
-  <!-- Source: server-scripts/Player.cs:11040-11043 — HasActiveAppearanceIllusion blocks the barber. -->
+  <!-- Source: server-scripts/Player.cs:11359-11362 — HasActiveAppearanceIllusion blocks the barber. -->
   <p class="text-muted-foreground">
     The barber cannot change your appearance while the form is active.
   </p>

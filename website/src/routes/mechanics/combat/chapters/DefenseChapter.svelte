@@ -119,14 +119,14 @@
       Your hits roll against the monster's Block Chance and resists, listed on
       its page.
     </p>
-    <!-- Source: server-scripts/Combat.cs:739-760 — the from-behind and moving-player adjustments apply after the 0–90% bounds. -->
+    <!-- Source: server-scripts/Combat.cs:755-776 — the from-behind and moving-player adjustments apply after the 0–90% bounds. -->
     <p>
       <a href="#combat-advantage">Combat Advantage</a> then lowers the chance for
       attacks from behind and for hits on a moving player.
     </p>
-    <!-- Source: server-scripts/Combat.cs:618-622 — returning-home monsters evade incoming hits. -->
+    <!-- Source: server-scripts/Combat.cs:627-631 — returning-home monsters evade incoming hits. -->
     <p>A monster returning home after a chase avoids every hit.</p>
-    <!-- Source: server-scripts/Combat.cs:540-559,771 — a living player Rogue's active Evasion avoids the next damaging area or frontal hit and ends. -->
+    <!-- Source: server-scripts/Combat.cs:540-559,791 — a living player Rogue's active Evasion avoids the next damaging area or frontal hit and ends. -->
     <p>
       A Rogue's active <a href="/skills/evasion">Evasion</a> avoids the next area
       or frontal attack that would deal damage, and that attack ends Evasion.

@@ -10,7 +10,7 @@
     A hit adds the skill's threat. Starting damage, stun and fear add threat up
     to the target's current Hit&nbsp;Points.
   </p>
-  <!-- Source: server-scripts/Combat.cs:654-675,771-801 — the monster's threat list is updated before the avoidance roll. -->
+  <!-- Source: server-scripts/Combat.cs:663-687,791-821 — the monster's threat list is updated before the avoidance roll. -->
   <p>
     Blocked, missed and resisted hits generate just as much threat as hits that
     land.

@@ -49,7 +49,7 @@
     },
   ];
 
-  // Source: server-scripts/RegionalEventProgress.cs:38-60; RegionalEvents.cs:559 — an invasion waits 1200 seconds for a player, then its attack runs 600 seconds. Neither is a server setting.
+  // Source: server-scripts/RegionalEventProgress.cs:38-60; RegionalEvents.cs:572 — an invasion waits 1200 seconds for a player, then its attack runs 600 seconds. Neither is a server setting.
   const INVASION_WARNING_MINUTES = 20;
   const INVASION_ATTACK_MINUTES = 10;
 
@@ -165,13 +165,13 @@
       <Card.Title>When Events Happen</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
-      <!-- Source: server-scripts/RegionalEvents.cs:120-125,377-432 — checks start 300 seconds after server start and repeat every 1800 seconds, with a 30% roll if connected players exist and no event is active or waiting. -->
+      <!-- Source: server-scripts/RegionalEvents.cs:120-125,390-445 — checks start 300 seconds after server start and repeat every 1800 seconds, with a 30% roll if connected players exist and no event is active or waiting. -->
       <p>
         Every 30 minutes there is a 30% chance that an event starts, as long as
         someone is online and no other event is running. The first chance comes
         5 minutes after the world starts.
       </p>
-      <!-- Source: server-scripts/RegionalEvents.cs:497-542 — zones 1 through 5 are candidates unless occupied by the current event or Prosperity. Northern Wastes requires an online level 35 player and an invasion definition. -->
+      <!-- Source: server-scripts/RegionalEvents.cs:510-555 — zones 1 through 5 are candidates unless occupied by the current event or Prosperity. Northern Wastes requires an online level 35 player and an invasion definition. -->
       <p>
         Events take place in
         {#each standardRegions as region, i (region.zone_id)}{#if i > 0}{i ===
@@ -191,9 +191,9 @@
         The same region never gets two events in a row, and a region gets no event
         while it prospers.
       </p>
-      <!-- Source: server-scripts/RegionalEvents.cs:433-440,536-559; server-scripts/RegionalEventProgress.cs:38-60 — ordinary requests use the configured activity duration. Invasions wait 1200 seconds for a living level 35 participant in the region, then run for 600 seconds. -->
+      <!-- Source: server-scripts/RegionalEvents.cs:446-453,549-572; server-scripts/RegionalEventProgress.cs:38-60 — ordinary requests use the configured activity duration. Invasions wait 1200 seconds for a living level 35 participant in the region, then run for 600 seconds. -->
       <!-- Source: server-scripts/RegionalEventSettings.cs:6-10 — enabled state and activity and Prosperity durations are configured settings. -->
-      <!-- Source: server-scripts/RegionalInvasions.cs:Tick; RegionalEvents.cs:433-442; RegionalEventProgress.cs:38-60,116-136 — no invaders spawn before the invasion starts. A living level 35 participant in the zone starts it, and an unstarted invasion expires after 1200 seconds. -->
+      <!-- Source: server-scripts/RegionalInvasions.cs:Tick; RegionalEvents.cs:446-455; RegionalEventProgress.cs:38-60,116-136 — no invaders spawn before the invasion starts. A living level 35 participant in the zone starts it, and an unstarted invasion expires after 1200 seconds. -->
       <!-- Source: server-scripts/RegionalEventProgress.cs:84-113,117-154; server-scripts/RegionalEventText.cs:Notice — reaching the goal starts Prosperity at once. An expired event pays nothing and has no penalty. -->
       <div class="space-y-6 pt-2">
         <h3 class="font-semibold text-foreground">How an Event Runs</h3>
@@ -300,7 +300,7 @@
   <Card.Root id="regions" class="bg-muted/30">
     <Card.Header><Card.Title>Events by Region</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
-      <!-- Source: server-scripts/RegionalEvents.cs:243-257,270-306,536-551 — gathering uses 5 yd, hunting uses 40 yd, fishing and cooking use 2.5 yd from the activity collider. Herbs exclude Northern Wastes. Ore uses zones 2, 3 and 5. -->
+      <!-- Source: server-scripts/RegionalEvents.cs:243-257,270-306,549-564 — gathering uses 5 yd, hunting uses 40 yd, fishing and cooking use 2.5 yd from the activity collider. Herbs exclude Northern Wastes. Ore uses zones 2, 3 and 5. -->
       <!-- Source: server-scripts/RegionalEventActivities.cs:Discover — fishing needs valid spots and fish, and cooking needs city ovens and dishes made from the city's animal meat. -->
       <!-- Source: server-scripts/RegionalEventActivities.cs:60-82 — a hunt animal needs at least three always-respawning spawns, each supplying 1 + floor(half the event duration / (respawn + corpse time)) kills, summing to at least the goal. -->
       <p>
@@ -371,7 +371,7 @@
   <Card.Root id="rewards" class="bg-muted/30">
     <Card.Header><Card.Title>Goals and Rewards</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
-      <!-- Source: server-scripts/RegionalEventProgress.cs:38-48; server-scripts/RegionalEvents.cs:220-227,527-559 — goals count living, connected players in the chosen region at event creation, with at most four extra participants. -->
+      <!-- Source: server-scripts/RegionalEventProgress.cs:38-48; server-scripts/RegionalEvents.cs:220-227,540-572 — goals count living, connected players in the chosen region at event creation, with at most four extra participants. -->
       <p>
         The goal depends on how many players are in the region when the event
         starts, up to 5. Players who arrive later do not change it.
@@ -388,7 +388,7 @@
           <p>60 invaders, plus 10 for each extra player (60 - 100)</p>
         </div>
       </div>
-      <!-- Source: server-scripts/RegionalEventProgress.cs:84-113,139-154; server-scripts/RegionalEvents.cs:316-344 — three contributions qualify for rewards, computed from the first contribution's level and XP requirement, and only connected players in the region at completion receive them. -->
+      <!-- Source: server-scripts/RegionalEventProgress.cs:84-113,139-154; server-scripts/RegionalEvents.cs:316-347 — three contributions qualify for rewards, computed from the first contribution's level and XP requirement, and only connected players in the region at completion receive them. -->
       <!-- Source: server-scripts/RegionalEvents.cs:TickServer; server-scripts/Experience.cs:current — the quarter-level reward is added to the experience pool, which becomes Veteran XP at level 50. -->
       <p>
         Help at least 3 times and be in the region when the goal is reached. You
@@ -401,8 +401,8 @@
   <Card.Root id="prosperity" class="bg-muted/30">
     <Card.Header><Card.Title>Prosperity</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
-      <!-- Source: server-scripts/RegionalEventProgress.cs:109-113,157-164; server-scripts/RegionalEvents.cs:188-195,363-375 — completion grants a regional 15% XP multiplier, floored, with dungeon combat mapped to its parent region. -->
-      <!-- Source: server-scripts/PlayerQuests.cs:385-406; server-scripts/Player.cs:14851-14854,15267-15280,15559-15561,15582-15586; server-scripts/Npc.cs:1610-1618,1643-1651 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
+      <!-- Source: server-scripts/RegionalEventProgress.cs:109-113,157-164; server-scripts/RegionalEvents.cs:188-195,376-388 — completion grants a regional 15% XP multiplier, floored, with dungeon combat mapped to its parent region. -->
+      <!-- Source: server-scripts/PlayerQuests.cs:385-406; server-scripts/Player.cs:15120-15123,15536-15549,15828-15830,15851-15855; server-scripts/Npc.cs:1610-1618,1643-1651 — quest, discovery, crafting and NPC kill XP bypass the Prosperity multiplier. -->
       <p>
         When the goal is reached, the region prospers for
         {formatNumber(data.settings.prosperity_duration_minutes)} minutes. Everyone

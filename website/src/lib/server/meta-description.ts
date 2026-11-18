@@ -497,7 +497,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs:28-32; Player.cs:5684-5719 — one-time read,
+  // Source: server-scripts/BookItem.cs:28-32; Player.cs:5712-5747 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -528,12 +528,12 @@ function bookDescription(item: Item): string {
 }
 
 function mountDescription(item: Item): string {
-  // Source: server-scripts/MountItem.cs:8 and Player.cs:115-123,635-639.
+  // Source: server-scripts/MountItem.cs:8 and Player.cs:115-123,645-649.
   return `Mount with a speed of ${formatNumber(item.mount_speed, { decimals: 2 })}.${levelGate(item.level_required)} Cannot be mounted in dungeons or in combat.`;
 }
 
 function backpackDescription(item: Item): string {
-  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:324-335,756-770 (IsUniqueBackpackAlreadyEquipped)
+  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:460-471,892-906 (IsUniqueBackpackAlreadyEquipped)
   // — numSlots adds inventory capacity, and isUnique restricts duplicate equipped backpacks by nameItem.
   const slots = item.backpack_slots > 0 ? item.backpack_slots : 0;
   const slotPhrase =
@@ -673,7 +673,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:14634-14638,13580-13595
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:14901-14905,13847-13862
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -1713,7 +1713,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // Source: server-scripts/NecromancerDeathBloomSkill.cs:CorrectedTarget — another living Player or non-familiar Pet only.
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet — owned living combat pet, not a familiar or mercenary.
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — toggles the form buff.
-  // Source: server-scripts/PlayerSkills.cs:715-738 — using a toggle stance again ends it.
+  // Source: server-scripts/PlayerSkills.cs:720-743 — using a toggle stance again ends it.
   // Source: server-scripts/SummonSkill.cs:56 — Necromancer non-familiar summons can replace an active pet when MatchesPet is false.
   const typeLabel = skill.is_necromancer_death_bloom
     ? "Hit Points-sacrificing heal for another player or non-familiar pet"
@@ -1743,7 +1743,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32 — subtracts upgradeRequiredSkillPoints
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:7862-7872 and ScriptableSkill.cs:433-435
+  // Source: server-scripts/Player.cs:7981-7991 and ScriptableSkill.cs:433-435
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   // Veteran-tree skills with no player classes are mercenary-side veteran
@@ -1796,7 +1796,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:100; Player.cs:12312-12326,UpdateMercStatsByLevel — familiar level follows
+// Source: server-scripts/SummonSkill.cs:100; Player.cs:12631-12645,UpdateMercStatsByLevel — familiar level follows
 // summoning skill rank, companions match the summoner up to Level.max, and
 // mercenaries hire at player level and gain attributes per level.
 
@@ -1852,7 +1852,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return ` Summoned by a class skill. Its level matches yours, up to level ${input.level_max}.`;
     case "Mercenary":
-      // Source: server-scripts/Player.cs:12312-12326; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:12631-12645; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
       return " Hire one from any Mercenary Recruiter. Its level matches yours.";
   }
 }
@@ -1932,7 +1932,7 @@ export function altarDescription(altar: AltarDescriptionInput): string {
 // =============================================================================
 //
 // Role labels come from curated class metadata.
-// Source: server-scripts/Player.cs:1738-1764 — classes display Mana, Rage or Active Songs.
+// Source: server-scripts/Player.cs:1750-1776 — classes display Mana, Rage or Active Songs.
 
 interface ClassDescriptionInput {
   name: string;
