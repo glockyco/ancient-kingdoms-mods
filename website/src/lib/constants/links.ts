@@ -6,6 +6,8 @@ export const KOFI_URL = "https://ko-fi.com/wowmuch";
 export const STEAM_GUIDE_URL =
   "https://steamcommunity.com/sharedfiles/filedetails/?id=3616580411";
 export const DISCORD_URL = "https://discord.gg/8MkSWjXwab";
+/** Redirects to WoW_Much's Discord profile, whose Message button starts a direct message. */
+export const CONTACT_URL = "https://ancient-kingdoms.compendiums.org/contact";
 
 /**
  * Ancient Kingdoms Monitor by Thero: a third-party desktop app that manages a
