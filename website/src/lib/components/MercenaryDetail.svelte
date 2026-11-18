@@ -67,6 +67,8 @@
   onMount(loadRemembered);
 
   const cls = $derived(pet.type_monster);
+  // Source: server-scripts/TrapDetection.cs:Update — an active Rogue or Bard mercenary walks to a detected trap and disarms it, whatever the player's class or skills.
+  const disarmsTraps = $derived(cls === "Rogue" || cls === "Bard");
   const classDef = $derived(CLASSES[cls]);
   const veteranRaisesMana = $derived(
     classDef.role === "mana" && cls !== "Bard",
@@ -838,6 +840,18 @@
         <Zap class="h-5 w-5 text-purple-500" />
         Skills ({pet.skills.length})
       </h2>
+      {#if disarmsTraps}
+        <Alert variant="info" class="mb-3">
+          <Info />
+          <p>
+            Besides these skills, it disarms traps near you automatically.
+            <a
+              href="/traps"
+              class="text-blue-600 dark:text-blue-400 hover:underline">Traps</a
+            >
+          </p>
+        </Alert>
+      {/if}
       <PetSkillsTable skills={pet.skills} urlKey="pet-{pet.id}-skills" />
     </section>
   {/if}
