@@ -72,8 +72,7 @@
       >{/each}.
   </p>
   <p class="text-sm text-muted-foreground">
-    Each row runs from the Small augment to the Legendary one, one catalyst per
-    step.
+    Each row runs from the Small augment to the Legendary one.
   </p>
   <AugmentFamilyGrid {families} />
 </div>

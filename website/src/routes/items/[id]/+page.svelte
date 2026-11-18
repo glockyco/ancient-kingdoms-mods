@@ -2761,16 +2761,7 @@
             : "Augment Upgrade Uses"}</Card.Title
         ></Card.Header
       >
-      <Card.Content class="space-y-4">
-        <!-- Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade,TryUpgradeSocketed,GetTargetAugment; PlayerInventory.cs:GetAugmentUpgradeEquipment — a loose augment is consumed with the catalyst, while an augment socketed in gear in the bags, worn by the player or worn by an active mercenary improves in place and only the catalyst is consumed. -->
-        <p class="text-sm text-muted-foreground">
-          Each upgrade consumes both inputs. The target must be a loose
-          inventory augment with no augment of its own. The result needs room in
-          inventory, including space freed by the consumed inputs or an eligible
-          stack. You can also use the catalyst on gear that carries an augment,
-          in your bags, on you or on an active mercenary. Only the catalyst is
-          used up, and the augment improves in place.
-        </p>
+      <Card.Content>
         <AugmentUpgradeChains
           catalyst={data.augmentChains.catalyst}
           families={data.augmentChains.families}

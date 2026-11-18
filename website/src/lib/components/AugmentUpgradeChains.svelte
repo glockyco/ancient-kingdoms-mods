@@ -27,14 +27,21 @@
   const family = $derived(currentId === null ? null : families[0]);
 </script>
 
+{#snippet catalystName()}
+  {#if currentId === null}{catalyst.name}{:else}<a
+      href={resolve("/items/[id]", { id: catalyst.id })}
+      class={link}>{catalyst.name}</a
+    >{/if}
+{/snippet}
+
 <div class="space-y-4">
+  <!-- Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade,TryUpgradeSocketed,GetTargetAugment; PlayerInventory.cs:GetAugmentUpgradeEquipment — a loose augment is consumed with the catalyst, while an augment socketed in gear in the bags, worn by the player or worn by an active mercenary improves in place and only the catalyst is consumed. -->
+  <p class="text-sm text-muted-foreground">
+    A {@render catalystName()} raises one augment by one quality, either a loose one
+    or one socketed in gear you or an active mercenary carry. Each step uses up its
+    own catalyst, and a loose augment is used up too.
+  </p>
   {#if family}
-    <p class="text-sm text-muted-foreground">
-      Each step uses one <a
-        href={resolve("/items/[id]", { id: catalyst.id })}
-        class={link}>{catalyst.name}</a
-      >.
-    </p>
     <ol
       class="flex flex-col items-start gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-3"
       aria-label={`${family.name} upgrade steps`}
@@ -55,8 +62,7 @@
     </ol>
   {:else}
     <p class="text-sm text-muted-foreground">
-      Each row runs from the Small augment to the Legendary one, one catalyst
-      per step.
+      Each row runs from the Small augment to the Legendary one.
     </p>
     <AugmentFamilyGrid {families} />
   {/if}
