@@ -62,6 +62,15 @@ export interface FactionQuestGrantRow {
   gain: number;
 }
 
+export interface FactionInvasionGrantRow {
+  /** The city slug the Regional Events page anchors each invasion row on. */
+  city: string;
+  city_name: string;
+  zone_id: string;
+  zone_name: string;
+  gain: number;
+}
+
 export interface FactionVendorRow {
   id: string;
   name: string;
@@ -110,6 +119,7 @@ export interface FactionDetail {
   npcKillsDecrease: FactionNpcKillRow[];
   chests: FactionChestRow[];
   questGrants: FactionQuestGrantRow[];
+  invasionGrants: FactionInvasionGrantRow[];
   members: FactionMemberRow[];
   vendors: FactionVendorRow[];
   gatedItems: FactionGatedItemRow[];
@@ -328,6 +338,16 @@ export function getFactionDetail(id: string): FactionDetail | null {
     [name],
   );
 
+  // Source: server-scripts/RegionalEvents.cs:GrantInvasionReputation — a successful defense raises the invasion's reward faction.
+  const invasionGrants = query<FactionInvasionGrantRow>(
+    `SELECT ri.city, ri.city_name, ri.zone_id, z.name AS zone_name, ri.faction_reward AS gain
+     FROM regional_invasions ri
+     JOIN zones z ON z.id = ri.zone_id
+     WHERE ri.reward_faction_id = ?
+     ORDER BY ri.city_name`,
+    [faction.id],
+  );
+
   const gatedItems = query<FactionGatedItemRow>(
     `SELECT DISTINCT i.id, i.name, i.quality, iva.public_path AS visual_public_path,
             i.tooltip_html, i.faction_required_to_buy,
@@ -406,6 +426,7 @@ export function getFactionDetail(id: string): FactionDetail | null {
     npcKillsDecrease: getNpcKills(name, "decrease"),
     chests,
     questGrants,
+    invasionGrants,
     members,
     vendors,
     gatedItems,

@@ -42,6 +42,7 @@ export const load: PageServerLoad = ({ params }) => {
     npc_source_count: faction.npcKillsImprove.length,
     chest_source_count:
       faction.name === "The Forsaken" ? faction.chests.length : 0,
+    invasion_city_names: faction.invasionGrants.map((grant) => grant.city_name),
     unlock_count:
       faction.gatedItems.length +
       faction.houses.length +

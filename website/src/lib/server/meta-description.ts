@@ -1963,6 +1963,8 @@ export interface FactionDescriptionInput {
   quest_source_count: number;
   npc_source_count?: number;
   chest_source_count?: number;
+  /** Cities whose successful defense raises this faction. */
+  invasion_city_names?: readonly string[];
   unlock_count: number;
   /** Highest reputation any of this faction's unlocks asks for, 0 when none. */
   top_requirement: number;
@@ -1988,6 +1990,8 @@ export function factionDescription(faction: FactionDescriptionInput): string {
     sources.push(
       `opening ${plural(faction.chest_source_count!, "chest", "chests")}`,
     );
+  if (faction.invasion_city_names?.length)
+    sources.push(`defending ${joinList([...faction.invasion_city_names])}`);
   if (sources.length > 0) {
     clauses.push(`${joinList(sources)} can raise it`);
   }

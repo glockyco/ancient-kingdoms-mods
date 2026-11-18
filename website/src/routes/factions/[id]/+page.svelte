@@ -23,6 +23,7 @@
     FactionChestRow,
     FactionGatedItemRow,
     FactionHouseRow,
+    FactionInvasionGrantRow,
     FactionMemberRow,
     FactionMonsterRow,
     FactionNpcKillRow,
@@ -39,6 +40,7 @@
   import Box from "@lucide/svelte/icons/box";
   import KeyRound from "@lucide/svelte/icons/key-round";
   import Scroll from "@lucide/svelte/icons/scroll";
+  import Shield from "@lucide/svelte/icons/shield";
   import Skull from "@lucide/svelte/icons/skull";
   import Users from "@lucide/svelte/icons/users";
 
@@ -209,6 +211,12 @@
     { accessorKey: "gain", header: "On Completion", size: 150 },
   ];
 
+  const invasionGrantColumns: ColumnDef<FactionInvasionGrantRow>[] = [
+    { accessorKey: "city_name", header: "City", minSize: 220 },
+    { accessorKey: "zone_name", header: "Zone", minSize: 180 },
+    { accessorKey: "gain", header: "On Defense", size: 150 },
+  ];
+
   const memberColumns: ColumnDef<FactionMemberRow>[] = [
     { accessorKey: "name", header: "NPC", minSize: 220 },
     { accessorKey: "level", header: "Level", size: 110 },
@@ -262,6 +270,32 @@
   <span class={positive ? GAIN_CLASS : LOSS_CLASS}>
     {positive ? "+" : "−"}{formatNumber(Math.abs(value))}
   </span>
+{/snippet}
+
+{#snippet renderInvasionGrantCell({
+  cell,
+  row,
+}: {
+  cell: Cell<FactionInvasionGrantRow, unknown>;
+  row: Row<FactionInvasionGrantRow>;
+})}
+  {#if cell.column.id === "city_name"}
+    <a
+      href="/mechanics/regional-events#invasion-{row.original.city}"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
+      >{row.original.city_name}</a
+    >
+  {:else if cell.column.id === "zone_name"}
+    <a
+      href="/zones/{row.original.zone_id}"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
+      >{row.original.zone_name}</a
+    >
+  {:else if cell.column.id === "gain"}
+    {@render reputationValue(row.original.gain, true)}
+  {:else}
+    {cell.getValue()}
+  {/if}
 {/snippet}
 
 {#snippet requirementValue(value: number)}
@@ -810,6 +844,26 @@
           { id: "name", desc: false },
         ]}
         urlKey="faction-{data.faction.id}-quest-grants"
+        pageSize={10}
+        zebraStripe={true}
+        class="bg-muted/30"
+      />
+    </section>
+  {/if}
+
+  {#if data.faction.invasionGrants.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Shield class="h-5 w-5 text-sky-500" />
+        Reputation Gained by Defending Cities ({data.faction.invasionGrants
+          .length})
+      </h2>
+      <DataTable
+        data={data.faction.invasionGrants}
+        columns={invasionGrantColumns}
+        renderCell={renderInvasionGrantCell}
+        initialSorting={[{ id: "city_name", desc: false }]}
+        urlKey="faction-{data.faction.id}-invasions"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"

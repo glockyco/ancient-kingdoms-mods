@@ -424,6 +424,29 @@
     </Card.Content>
   </Card.Root>
 
+  <Card.Root id="invasions" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Defending Cities</Card.Title>
+      <Card.Description>
+        Defending a city from an invasion gives {formatNumber(
+          data.invasionStanding,
+        )}
+        reputation with the city's faction.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
+      <!-- Source: server-scripts/RegionalEvents.cs:GrantInvasionReputation — every player who earns the defense reward gains the invasion's faction reward through ApplyVirtueFactionGain. -->
+      <p>
+        <a
+          href="/mechanics/regional-events#invasions"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Regional Events</a
+        >
+        lists each city's faction. {@render honesty()}
+      </p>
+    </Card.Content>
+  </Card.Root>
+
   <Card.Root id="chests" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Looting Faction Chests</Card.Title>

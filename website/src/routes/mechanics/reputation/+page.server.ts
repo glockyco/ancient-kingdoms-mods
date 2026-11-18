@@ -13,6 +13,8 @@ export interface ReputationMechanicsPageData {
     improveFactions: { id: string; name: string }[];
     decreaseFactions: { id: string; name: string }[];
   }[];
+  /** Standing a successful city defense grants, the same for every city. */
+  invasionStanding: number;
 }
 
 export const load: PageServerLoad = (): ReputationMechanicsPageData => {
@@ -44,5 +46,18 @@ export const load: PageServerLoad = (): ReputationMechanicsPageData => {
       ),
     };
   });
-  return { tiers: getReputationTiers(), notableNpcs };
+  // Source: server-scripts/RegionalEvents.cs:GrantInvasionReputation — a successful defense raises the invasion's reward faction by its faction reward.
+  const amounts = query<{ gain: number }>(
+    "SELECT DISTINCT faction_reward AS gain FROM regional_invasions WHERE reward_faction_id IS NOT NULL",
+  );
+  // The card names one amount. A patch that varies it fails the build instead of publishing a wrong number.
+  if (amounts.length !== 1)
+    throw new Error(
+      `City invasions grant ${amounts.length} different faction rewards`,
+    );
+  return {
+    tiers: getReputationTiers(),
+    notableNpcs,
+    invasionStanding: amounts[0].gain,
+  };
 };

@@ -86,6 +86,7 @@ export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
       { id: "monsters", label: "Killing Monsters" },
       { id: "npcs", label: "Killing NPCs" },
       { id: "quests", label: "Completing Quests" },
+      { id: "invasions", label: "Defending Cities" },
       { id: "chests", label: "Looting Faction Chests" },
       { id: "pets", label: "Petting Animals" },
       { id: "unlocks", label: "What Reputation Unlocks" },
