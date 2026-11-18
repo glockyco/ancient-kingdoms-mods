@@ -2,7 +2,7 @@
 
 ## Why
 
-A player read the Mana Shard's augment mark as empty. Its icon is a flat, dark teal shard with wide transparent padding, so in the 14-pixel space of the mark it shrinks to a few pixels. The marks also cover only the player's storage windows, while augmented gear also shows in a mercenary's equipment, trades, merchant lists, the Sacrifice shrine and the skillbar.
+A player reported that the +mana regen augment has no icon, unlike the others. Testing did not reproduce a missing icon, and the report's window and version are not known. Testing did show two weaknesses. The Mana Shard's icon is a flat, dark teal shard with wide transparent padding, so in the 14-pixel space of the mark it shrinks to a few pixels. The marks also cover only the player's storage windows, while augmented gear also shows in a mercenary's equipment, trades, merchant lists, the Sacrifice shrine and the skillbar.
 
 ## What Changes
 
