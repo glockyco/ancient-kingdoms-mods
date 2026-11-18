@@ -4374,6 +4374,9 @@
     "PlayerInventory.cs:UpdateScrollCast": {
       "span": 0
     },
+    "PlayerInventory.cs:UserCode_CmdSwapMount__Int32__Int32__Int32": {
+      "span": 0
+    },
     "PlayerLooting.cs:126-165": {
       "sha256": "447d75cc6485d0347ffac4add7ca86cfd0b1ea767e773db612bc555d9907e072",
       "span": 40
@@ -6163,6 +6166,9 @@
       "span": 0
     },
     "UIHousing.cs:Start": {
+      "span": 0
+    },
+    "UIInventoryTravelSlots.cs:Initialize": {
       "span": 0
     },
     "UIInventoryTravelSlots.cs:OpenHomes": {

@@ -110,7 +110,8 @@
           </thead>
           <tbody>
             <!-- Source: server-scripts/UIHousing.cs:Start — online houses are bound to the server on which they were purchased. -->
-            {#each [["Inventory", "Character", "24 base inventory slots plus backpack storage", "Equip backpacks"], ["Backpack slots", "Character", "9 dedicated bag slots", "Fixed"], ["Bank item storage", "Character", "300 slots, 30 per tab", "Unlock bank tabs with gold"], ["House chests", "Account (on the server where you bought the house)", "560 slots, 8 chest sections", "Buy a house, then buy chests"], ["Banked gold", "Account", "Separate gold vault", "Fixed"], ["Equipment", "Character", "16 equipped slots", "Fixed"], ["Keys", "Character", "Separate key storage", "Fixed"]] as row (row[0])}
+            <!-- Source: server-scripts/UIInventoryTravelSlots.cs:Initialize; server-scripts/PlayerInventory.cs:UserCode_CmdSwapMount__Int32__Int32__Int32 — the equipment's mount slot holds one mount, swapped out of the bag slot it came from. -->
+            {#each [["Inventory", "Character", "24 base inventory slots plus backpack storage", "Equip backpacks"], ["Backpack slots", "Character", "9 dedicated bag slots", "Fixed"], ["Mount slot", "Character", "1 mount, outside your bags", "Fixed"], ["Bank item storage", "Character", "300 slots, 30 per tab", "Unlock bank tabs with gold"], ["House chests", "Account (on the server where you bought the house)", "560 slots, 8 chest sections", "Buy a house, then buy chests"], ["Banked gold", "Account", "Separate gold vault", "Fixed"], ["Equipment", "Character", "16 equipped slots", "Fixed"], ["Keys", "Character", "Separate key storage", "Fixed"]] as row (row[0])}
               <tr class="border-b border-border/50 hover:bg-muted/30">
                 <td class="py-2 pr-4 font-medium">{row[0]}</td>
                 <td class="py-2 pr-4">{row[1]}</td>
