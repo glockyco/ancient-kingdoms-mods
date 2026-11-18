@@ -8,6 +8,60 @@
       "sha256": "180b374927f184d7fce2a8a212347b2263d6ee99f5e8bcd6c80a3b94aa032e39",
       "span": 4
     },
+    "AmbientAdventurer.cs:ApplyStats": {
+      "span": 0
+    },
+    "AmbientAdventurer.cs:FinishGatheringActivity": {
+      "span": 0
+    },
+    "AmbientAdventurer.cs:HasCustomer": {
+      "span": 0
+    },
+    "AmbientAdventurer.cs:Initialize": {
+      "span": 0
+    },
+    "AmbientAdventurer.cs:InitializeCombatRole": {
+      "span": 0
+    },
+    "AmbientAdventurer.cs:OnInteract": {
+      "span": 0
+    },
+    "AmbientAdventurer.cs:UserCode_CmdGreetTraveler__NetworkConnectionToClient": {
+      "span": 0
+    },
+    "AmbientWorldCombat.cs:AdjustDamage": {
+      "span": 0
+    },
+    "AmbientWorldCombat.cs:AllowsCombat": {
+      "span": 0
+    },
+    "AmbientWorldCombat.cs:IsEligible": {
+      "span": 0
+    },
+    "AmbientWorldCombat.cs:OnMonsterDeath": {
+      "span": 0
+    },
+    "AmbientWorldPlacement.cs:AvailableHuntTarget": {
+      "span": 0
+    },
+    "AmbientWorldPlacement.cs:IsExteriorZone": {
+      "span": 0
+    },
+    "AmbientWorldPopulation.cs:ChooseActivity": {
+      "span": 0
+    },
+    "AmbientWorldPopulation.cs:IsUnobserved": {
+      "span": 0
+    },
+    "AmbientWorldPopulation.cs:Spawn": {
+      "span": 0
+    },
+    "AmbientWorldPopulation.cs:TickServer": {
+      "span": 0
+    },
+    "AmbientWorldPopulation.cs:VisitTavern": {
+      "span": 0
+    },
     "AreaBuffSkill.cs:16-18": {
       "sha256": "07d3ca4f05e26d24f69bc4fbcd86457001866bd1411bc4259e31276b463df39a",
       "span": 3

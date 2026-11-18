@@ -590,6 +590,24 @@ class NpcQuestOffer(BaseModel):
     complete_here: bool
 
 
+class NpcRollData(BaseModel):
+    """The values the game rolls for an NPC it copies into the world around players."""
+
+    level_min: int = Field(ge=1)
+    level_max: int
+    # How many levels a copy can differ from the player it appears for, or None
+    # when its level ignores the player.
+    player_level_offset: int | None = Field(ge=0)
+    generated_name: bool
+    look_npc_ids: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _level_range(self) -> "NpcRollData":
+        if self.level_max < self.level_min:
+            raise ValueError("A rolled NPC's highest level is below its lowest")
+        return self
+
+
 class NpcData(BaseModel):
     """NPC data from npcs.json"""
 
@@ -648,6 +666,12 @@ class NpcData(BaseModel):
     cold_resist_per_level: int = 0
     disease_resist_base: int = 0
     disease_resist_per_level: int = 0
+    block_chance_base: float = 0.0
+    block_chance_per_level: float = 0.0
+    critical_chance_base: float = 0.0
+    critical_chance_per_level: float = 0.0
+    accuracy_base: float = 0.0
+    accuracy_per_level: float = 0.0
 
     # Combat flags
     invincible: bool = False
@@ -682,6 +706,10 @@ class NpcData(BaseModel):
 
     # Skills (for guards and hostile NPCs)
     skill_ids: list[str] = []
+
+    # The rules the game rolls the level, name and look by, or None when they
+    # are the NPC's own.
+    rolled: NpcRollData | None = None
 
     @field_validator("quest_offers")
     @classmethod

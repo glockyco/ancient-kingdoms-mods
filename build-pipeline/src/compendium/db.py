@@ -219,6 +219,15 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
         # Handle NpcRoles object
         elif field_name == "roles" and value is not None:
             values["roles"] = json.dumps(value.model_dump())
+        # An NPC's roll rules fill their own columns. Their look list becomes
+        # npc_looks rows.
+        elif field_name == "rolled":
+            values["rolled_level_min"] = value.level_min if value else None
+            values["rolled_level_max"] = value.level_max if value else None
+            values["rolled_player_level_offset"] = (
+                value.player_level_offset if value else None
+            )
+            values["generated_name"] = bool(value and value.generated_name)
         # Handle faction field - convert empty string to NULL for FK constraint
         elif field_name == "faction":
             values[field_name] = value if value else None

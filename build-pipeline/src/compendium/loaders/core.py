@@ -25,6 +25,7 @@ from compendium.models import (
     HouseData,
     ItemData,
     MonsterData,
+    NpcData,
     PetData,
     ProfessionData,
     ProgressionExportData,
@@ -727,6 +728,31 @@ def load_monster_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {count} monster-skill links")
+
+
+def load_npc_looks(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Record the NPCs whose look each copy of an ambient NPC can take."""
+    console.print("Loading NPC looks...")
+
+    filepath = export_dir / "npcs.json"
+    _require_export(filepath)
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    npcs = [NpcData(**item) for item in data]
+    known = {row[0] for row in conn.execute("SELECT id FROM npcs")}
+    rows: list[tuple[str, str]] = []
+    for npc in npcs:
+        if npc.rolled is None:
+            continue
+        missing = [look for look in npc.rolled.look_npc_ids if look not in known]
+        if missing:
+            raise ValueError(f"NPC {npc.id} takes the look of unknown NPCs: {missing}")
+        rows.extend((npc.id, look) for look in npc.rolled.look_npc_ids)
+    conn.executemany("INSERT INTO npc_looks (npc_id, look_npc_id) VALUES (?, ?)", rows)
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(rows)} NPC looks")
 
 
 def load_pets(conn: sqlite3.Connection, export_dir: Path) -> None:

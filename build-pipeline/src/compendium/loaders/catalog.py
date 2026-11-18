@@ -42,6 +42,7 @@ from compendium.loaders.core import (
     load_houses,
     load_items,
     load_monster_skills,
+    load_npc_looks,
     load_pet_skills,
     load_pets,
     load_professions,
@@ -316,6 +317,13 @@ DATASETS: tuple[Dataset, ...] = (
         ("npc_spawns",),
         after=("zones", "zone_triggers", "npcs"),
         model=NpcSpawnData,
+    ),
+    Dataset(
+        "npc_looks",
+        ("npcs.json",),
+        ("npc_looks",),
+        after=("npcs",),
+        handler=_plain(load_npc_looks),
     ),
     Dataset(
         "chambers",

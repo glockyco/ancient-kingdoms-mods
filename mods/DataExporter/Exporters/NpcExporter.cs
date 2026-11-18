@@ -134,6 +134,12 @@ public class NpcExporter : BaseExporter
                 cold_resist_per_level = canonical.combat?.baseColdResist.bonusPerLevel ?? 0,
                 disease_resist_base = canonical.combat?.baseDiseaseResist.baseValue ?? 0,
                 disease_resist_per_level = canonical.combat?.baseDiseaseResist.bonusPerLevel ?? 0,
+                block_chance_base = canonical.combat?.baseBlockChance.baseValue ?? 0,
+                block_chance_per_level = canonical.combat?.baseBlockChance.bonusPerLevel ?? 0,
+                critical_chance_base = canonical.combat?.baseCriticalChance.baseValue ?? 0,
+                critical_chance_per_level = canonical.combat?.baseCriticalChance.bonusPerLevel ?? 0,
+                accuracy_base = canonical.combat?.baseAccuracy.baseValue ?? 0,
+                accuracy_per_level = canonical.combat?.baseAccuracy.bonusPerLevel ?? 0,
 
                 // Combat flags
                 invincible = canonical.combat?.invincible ?? false,
@@ -283,6 +289,16 @@ public class NpcExporter : BaseExporter
                 }
             }
 
+            // Source: server-scripts/AmbientWorldPopulation.cs:Spawn; server-scripts/AmbientAdventurer.cs:Initialize,ApplyStats — the game copies an ambient NPC into the world around players, rolls each copy's level, names it, gives it the look of one appearance template and replaces its Health curve.
+            var ambient = canonical.TryCast<Il2Cpp.AmbientAdventurer>();
+            if (ambient != null)
+            {
+                npcData.rolled = RollData(name, ambient);
+                npcData.health_base = AmbientHealthBase + AmbientHealthPerLevel;
+                npcData.health_per_level = AmbientHealthPerLevel;
+                npcData.health = AmbientHealthBase + AmbientHealthPerLevel * npcData.level;
+            }
+
             var sceneVisualSource = group.FirstOrDefault(n =>
                 n.gameObject != null && n.gameObject.scene.IsValid());
             var visualSource = SelectEntityVisualSource(
@@ -299,4 +315,33 @@ public class NpcExporter : BaseExporter
         Logger.Msg($"✓ Exported {npcList.Count} canonical NPCs and {spawnList.Count} spawn points");
     }
 
+    // Source: server-scripts/AmbientAdventurer.cs:ApplyStats — a copy's Health is 150 + 60 per level, replacing the NPC's own curve.
+    private const int AmbientHealthBase = 150;
+    private const int AmbientHealthPerLevel = 60;
+
+    // Source: server-scripts/AmbientWorldPopulation.cs:Spawn — a merchant rolls within 2 levels of the player it appears for, any other copy rolls any level, and every level lies from 1 to 50.
+    private const int AmbientLevelMin = 1;
+    private const int AmbientLevelMax = 50;
+    private const int MerchantPlayerLevelOffset = 2;
+
+    private static NpcRollData RollData(string id, Il2Cpp.AmbientAdventurer ambient)
+    {
+        if (ambient.appearances == null || ambient.appearances.Length == 0)
+            throw new InvalidOperationException($"{id}: an ambient NPC without appearance templates.");
+        var looks = new List<string>();
+        foreach (var appearance in ambient.appearances)
+        {
+            if (appearance == null || string.IsNullOrEmpty(appearance.name))
+                throw new InvalidOperationException($"{id}: a missing appearance template at index {looks.Count}.");
+            looks.Add(SanitizeId(appearance.name));
+        }
+        return new NpcRollData
+        {
+            level_min = AmbientLevelMin,
+            level_max = AmbientLevelMax,
+            player_level_offset = ambient.isMerchant ? MerchantPlayerLevelOffset : null,
+            generated_name = true,
+            look_npc_ids = looks,
+        };
+    }
 }

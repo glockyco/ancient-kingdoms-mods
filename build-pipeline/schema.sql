@@ -923,6 +923,12 @@ CREATE TABLE npcs (
     cold_resist_per_level INTEGER DEFAULT 0,
     disease_resist_base INTEGER DEFAULT 0,
     disease_resist_per_level INTEGER DEFAULT 0,
+    block_chance_base REAL DEFAULT 0.0,
+    block_chance_per_level REAL DEFAULT 0.0,
+    critical_chance_base REAL DEFAULT 0.0,
+    critical_chance_per_level REAL DEFAULT 0.0,
+    accuracy_base REAL DEFAULT 0.0,
+    accuracy_per_level REAL DEFAULT 0.0,
 
     -- Combat flags
     invincible BOOLEAN DEFAULT 0,
@@ -957,9 +963,27 @@ CREATE TABLE npcs (
     aggro_message_probability REAL DEFAULT 0.0,
     summon_message TEXT DEFAULT '',
 
+    -- The level range the game rolls each copy of an ambient NPC in, and how many
+    -- levels a copy can differ from the player it appears for. NULL for an NPC
+    -- whose level is its own, and an offset of NULL when the roll ignores the player.
+    rolled_level_min INTEGER CHECK (rolled_level_min >= 1),
+    rolled_level_max INTEGER CHECK (rolled_level_max >= rolled_level_min),
+    rolled_player_level_offset INTEGER CHECK (rolled_player_level_offset >= 0),
+    -- Whether each copy gets a generated name instead of the NPC's own
+    generated_name BOOLEAN NOT NULL DEFAULT 0,
 
     -- Search keywords (generated: service types from roles JSON)
-    keywords TEXT
+    keywords TEXT,
+
+    CHECK ((rolled_level_min IS NULL) = (rolled_level_max IS NULL)),
+    CHECK (rolled_level_min IS NOT NULL OR rolled_player_level_offset IS NULL)
+);
+
+-- The NPCs whose look a copy of an ambient NPC takes, one of them at random.
+CREATE TABLE npc_looks (
+    npc_id TEXT NOT NULL REFERENCES npcs(id) DEFERRABLE INITIALLY DEFERRED,
+    look_npc_id TEXT NOT NULL REFERENCES npcs(id) DEFERRABLE INITIALLY DEFERRED,
+    PRIMARY KEY (npc_id, look_npc_id)
 );
 
 -- =============================================================================

@@ -244,6 +244,10 @@ CANONICAL_DIRECTIONS: dict[tuple[str, str], Direction] = {
     ("npc_quest_memberships", "quest_id"): "provides",
     ("npc_skills", "npc_id"): "provided_by",
     ("npc_skills", "skill_id"): "provides",
+    # A copy of an ambient NPC takes one of its looks, and a look names an NPC
+    # that exists without it.
+    ("npc_looks", "npc_id"): "provided_by",
+    ("npc_looks", "look_npc_id"): "none",
     ("item_class_requirements", "item_id"): "provided_by",
     ("item_class_requirements", "class_id"): "none",
     ("skill_predecessors", "skill_id"): "provided_by",

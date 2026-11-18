@@ -149,6 +149,12 @@ public class NpcData
     public int cold_resist_per_level { get; set; }
     public int disease_resist_base { get; set; }
     public int disease_resist_per_level { get; set; }
+    public float block_chance_base { get; set; }
+    public float block_chance_per_level { get; set; }
+    public float critical_chance_base { get; set; }
+    public float critical_chance_per_level { get; set; }
+    public float accuracy_base { get; set; }
+    public float accuracy_per_level { get; set; }
 
     // Combat flags
     public bool invincible { get; set; }
@@ -186,4 +192,26 @@ public class NpcData
 
     // Skills (for guards and hostile NPCs)
     public List<string> skill_ids { get; set; } = new();
+
+    /// <summary>The rules the game rolls this NPC's level, name and look by each time it appears, or null when they are the NPC's own.</summary>
+    public NpcRollData? rolled { get; set; }
+}
+
+/// <summary>
+/// The values the game rolls for an NPC it copies into the world around players. The NPC's own level,
+/// name, race and Health never reach the world, so a reader takes them from these rules instead.
+/// </summary>
+public sealed class NpcRollData
+{
+    /// <summary>The lowest level a copy can have.</summary>
+    public int level_min { get; set; }
+    /// <summary>The highest level a copy can have.</summary>
+    public int level_max { get; set; }
+    /// <summary>How many levels a copy can differ from the level of the player it appears for, or null when its level ignores the player.</summary>
+    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
+    public int? player_level_offset { get; set; }
+    /// <summary>Whether each copy gets a generated name instead of the NPC's own.</summary>
+    public bool generated_name { get; set; }
+    /// <summary>The NPCs whose look a copy takes, one of them at random.</summary>
+    public List<string> look_npc_ids { get; set; } = new();
 }
