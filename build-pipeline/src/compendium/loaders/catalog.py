@@ -359,7 +359,7 @@ DATASETS: tuple[Dataset, ...] = (
             "regional_event_hunt_targets",
             "regional_event_dungeons",
         ),
-        after=("zones", "monsters", "items", "chambers"),
+        after=("static_data", "zones", "monsters", "items", "chambers"),
         handler=_plain(load_regional_events),
     ),
     Dataset(
