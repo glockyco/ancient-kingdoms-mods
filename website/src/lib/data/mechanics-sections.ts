@@ -12,6 +12,13 @@ import type { MechanicsHref } from "$lib/data/mechanics";
  */
 export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
   {
+    "/mechanics/adventurers": [
+      { id: "where", label: "Where They Appear" },
+      { id: "activities", label: "What They Do" },
+      { id: "fighting", label: "Fighting Beside Them" },
+      { id: "talking", label: "Talking to Them" },
+      { id: "merchants", label: "Wandering Merchants" },
+    ],
     "/mechanics/character": [
       { id: "attributes", label: "The Six Attributes" },
       {

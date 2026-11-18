@@ -152,6 +152,13 @@ export const MECHANICS_GROUPS = [
         summary: "Invasions and Prosperity",
       },
       {
+        title: "NPC Adventurers",
+        href: "/mechanics/adventurers",
+        description:
+          "Where they roam, fighting beside them, and the Wandering Merchant",
+        summary: "Roaming adventurers",
+      },
+      {
         title: "Seasonal Events",
         href: "/mechanics/seasonal-events",
         description:

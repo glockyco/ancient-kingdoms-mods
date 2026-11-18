@@ -7,6 +7,7 @@
   import Backpack from "@lucide/svelte/icons/backpack";
   import Calculator from "@lucide/svelte/icons/calculator";
   import Castle from "@lucide/svelte/icons/castle";
+  import Footprints from "@lucide/svelte/icons/footprints";
   import Globe from "@lucide/svelte/icons/globe";
   import Hammer from "@lucide/svelte/icons/hammer";
   import HeartCrack from "@lucide/svelte/icons/heart-crack";
@@ -39,6 +40,7 @@
     "/mechanics/guilds": Castle,
     "/mechanics/world": Globe,
     "/mechanics/regional-events": Globe,
+    "/mechanics/adventurers": Footprints,
     "/mechanics/chambers-of-chaos": DoorOpen,
     "/mechanics/seasonal-events": PartyPopper,
     "/mechanics/monster-spawns": Skull,
