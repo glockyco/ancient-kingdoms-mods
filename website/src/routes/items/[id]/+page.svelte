@@ -55,6 +55,7 @@
   let { data }: { data: PageData } = $props();
 
   import { QUALITY_NAMES, QUALITY_IDS } from "$lib/constants/quality";
+  import AugmentUpgradeChains from "$lib/components/AugmentUpgradeChains.svelte";
 
   const qualityColors = QUALITY_IDS.map((id) => `bg-quality-${id}`);
   const specialMechanics = $derived(getItemSpecialMechanics(data.item.id));
@@ -2751,47 +2752,31 @@
       rightAligned={["gold_min"]}
     />
   {/if}
-  {#each [{ title: "Augment Upgrade Sources", rows: data.sources.augmentUpgrades ?? [] }, { title: "Augment Upgrade Uses", rows: data.usages.augmentUpgrades ?? [] }] as section (section.title)}
-    {#if section.rows.length}
-      <Card.Root class="bg-muted/30">
-        <Card.Header
-          ><Card.Title level={2}>{section.title}</Card.Title></Card.Header
-        >
-        <Card.Content class="space-y-4">
-          <!-- Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade; server-scripts/AugmentItem.cs:CanUpgrade — each transformation consumes one catalyst and one loose, unaugmented target for its next quality. -->
-          <p class="text-sm text-muted-foreground">
-            Each upgrade consumes both inputs. The target must be a loose
-            inventory augment with no augment of its own. The result needs room
-            in inventory, including space freed by the consumed inputs or an
-            eligible stack.
-          </p>
-          {#each section.rows as upgrade (upgrade.method_id)}
-            <div class="flex flex-wrap items-center gap-2">
-              {#each upgrade.inputs as input, i (i)}
-                {#if i > 0}<span>+</span>{/if}
-                <span>{formatNumber(input.amount)}</span>
-                {#if input.item_id}
-                  <a
-                    href={resolve("/items/[id]", { id: input.item_id })}
-                    class={styles.link}>{input.item_name}</a
-                  >
-                {:else}
-                  <RedactedEntry kind="item" />
-                {/if}
-              {/each}
-              <span>becomes {formatNumber(upgrade.result_amount)}</span>
-              {#if upgrade.result_item_id}
-                <a
-                  href={resolve("/items/[id]", { id: upgrade.result_item_id })}
-                  class={styles.link}>{upgrade.result_item_name}</a
-                >
-              {:else}
-                <RedactedEntry kind="item" />
-              {/if}
-            </div>
-          {/each}
-        </Card.Content>
-      </Card.Root>
-    {/if}
-  {/each}
+  {#if data.augmentChains}
+    <Card.Root class="bg-muted/30">
+      <Card.Header
+        ><Card.Title level={2}
+          >{data.augmentChains.currentId
+            ? "Augment Upgrades"
+            : "Augment Upgrade Uses"}</Card.Title
+        ></Card.Header
+      >
+      <Card.Content class="space-y-4">
+        <!-- Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade,TryUpgradeSocketed,GetTargetAugment; PlayerInventory.cs:GetAugmentUpgradeEquipment — a loose augment is consumed with the catalyst, while an augment socketed in gear in the bags, worn by the player or worn by an active mercenary improves in place and only the catalyst is consumed. -->
+        <p class="text-sm text-muted-foreground">
+          Each upgrade consumes both inputs. The target must be a loose
+          inventory augment with no augment of its own. The result needs room in
+          inventory, including space freed by the consumed inputs or an eligible
+          stack. You can also use the catalyst on gear that carries an augment,
+          in your bags, on you or on an active mercenary. Only the catalyst is
+          used up, and the augment improves in place.
+        </p>
+        <AugmentUpgradeChains
+          catalyst={data.augmentChains.catalyst}
+          families={data.augmentChains.families}
+          currentId={data.augmentChains.currentId}
+        />
+      </Card.Content>
+    </Card.Root>
+  {/if}
 </div>

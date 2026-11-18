@@ -22,6 +22,10 @@ import { itemDescription, itemTitle } from "$lib/server/meta-description";
 import { itemUsagesFromModel } from "$lib/server/item-usages";
 import { getRecipeDefinitions } from "$lib/server/obtainability";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
+import {
+  loadAugmentChains,
+  type AugmentChains,
+} from "$lib/server/augment-chains";
 import { itemMapLocations, MAP_PROVIDER_CATEGORY } from "$lib/map/acquisition";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
@@ -82,6 +86,8 @@ export const load: PageServerLoad = async ({
     redactedRecipes: { result: number; material: number };
     /** Redacted quests that need this item. */
     redactedQuests: number;
+    /** The augment families this item moves along or belongs to, with the item marked. */
+    augmentChains: (AugmentChains & { currentId: string | null }) | null;
   }
 > => {
   const db = getDb();
@@ -526,8 +532,32 @@ export const load: PageServerLoad = async ({
   });
   const title = itemTitle(item);
 
+  let augmentChains: (AugmentChains & { currentId: string | null }) | null =
+    null;
+  if (
+    item.item_type === "augment_upgrade" ||
+    sources.augmentUpgrades.length > 0 ||
+    usages.augmentUpgrades.length > 0
+  ) {
+    const chains = loadAugmentChains(db);
+    if (item.item_type === "augment_upgrade") {
+      augmentChains = { ...chains, currentId: null };
+    } else {
+      const family = chains.families.find((candidate) =>
+        candidate.tiers.some((tier) => tier.id === item.id),
+      );
+      if (!family)
+        throw error(
+          500,
+          `Augment upgrade rows name ${item.id}, which no augment family holds`,
+        );
+      augmentChains = { ...chains, families: [family], currentId: item.id };
+    }
+  }
+
   return {
     item,
+    augmentChains,
     maxLevel: progression.max_level,
     chestRewards,
     consumableBuffEffect,

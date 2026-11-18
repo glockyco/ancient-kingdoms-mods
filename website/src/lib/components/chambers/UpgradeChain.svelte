@@ -1,16 +1,15 @@
 <!--
-  The guardian's reward buys the Chaos Catalyst, and each catalyst raises one loose augment
+  The guardian's reward buys the Chaos Catalyst, and each catalyst raises one augment
   by one quality. The price is paid in the excluded reward, so it shows as the existing
   "Redacted item" placeholder. Legendary augments are only reachable by this chain.
 -->
 <script lang="ts">
-  import ChevronRight from "@lucide/svelte/icons/chevron-right";
-  import EntityIcon from "$lib/components/EntityIcon.svelte";
+  import AugmentFamilyGrid from "$lib/components/AugmentFamilyGrid.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import ItemTooltipCard from "$lib/components/ItemTooltipCard.svelte";
   import RedactedEntry from "$lib/components/RedactedEntry.svelte";
   import { resolve } from "$app/paths";
-  import { formatNumber, getQualityBorderClass } from "$lib/utils/format";
+  import { formatNumber } from "$lib/utils/format";
   import type { ChainFamily, ChainItem, Vendor } from "./model";
 
   let {
@@ -76,48 +75,5 @@
     Each row runs from the Small augment to the Legendary one, one catalyst per
     step.
   </p>
-  <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-    {#each families as family (family.name)}
-      <li class="rounded-lg border bg-card p-3">
-        <p class="mb-2 text-sm font-medium text-foreground">{family.name}</p>
-        <ol
-          class="flex items-center gap-1"
-          aria-label={`${family.name} upgrade steps`}
-        >
-          {#each family.tiers as tier, index (tier.id)}
-            <li class="flex items-center gap-1">
-              {#if index > 0}
-                <ChevronRight
-                  class="size-3.5 shrink-0 text-muted-foreground"
-                  aria-hidden="true"
-                />
-              {/if}
-              <ItemTooltipCard
-                tooltipHtml={tier.tooltipHtml}
-                icon={tier.icon}
-                iconWidth={tier.iconWidth}
-                iconHeight={tier.iconHeight}
-              >
-                {#snippet trigger({ props })}
-                  <a
-                    {...props}
-                    href={resolve("/items/[id]", { id: tier.id })}
-                    aria-label={tier.name}
-                    class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
-                  >
-                    <EntityIcon
-                      src={tier.icon}
-                      alt=""
-                      size={32}
-                      borderClass={getQualityBorderClass(tier.quality)}
-                    />
-                  </a>
-                {/snippet}
-              </ItemTooltipCard>
-            </li>
-          {/each}
-        </ol>
-      </li>
-    {/each}
-  </ul>
+  <AugmentFamilyGrid {families} />
 </div>

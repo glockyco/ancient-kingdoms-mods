@@ -6,26 +6,14 @@ import { loadChambersRules } from "$lib/chambers/rules";
 import {
   DEFAULT_VETERAN_POINTS,
   trialDraws,
-  type ChainFamily,
-  type ChainItem,
   type Vendor,
 } from "$lib/components/chambers/model";
 import { loadChambersOverview } from "$lib/queries/chambers.server";
+import { loadAugmentChains } from "$lib/server/augment-chains";
 import { formatItemType } from "$lib/utils/format";
 import type { Dropper } from "$lib/components/chambers/EntryItemDroppers.svelte";
 
 export const prerender = true;
-
-interface ItemRow {
-  id: string;
-  name: string;
-  quality: number;
-  icon: string | null;
-  icon_width: number | null;
-  icon_height: number | null;
-  tooltip_html: string | null;
-  augment_next_quality_id: string | null;
-}
 
 export const load: PageServerLoad = async () => {
   const db = getDb();
@@ -57,60 +45,7 @@ export const load: PageServerLoad = async () => {
       .all(overview.definition.id) as { trial_kind: string }[]
   ).map((row) => row.trial_kind);
 
-  const items = db
-    .prepare(
-      `SELECT i.id, i.name, i.quality, i.augment_next_quality_id, i.tooltip_html,
-              va.public_path AS icon, va.width AS icon_width, va.height AS icon_height
-         FROM items i
-         LEFT JOIN visual_assets va
-           ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
-        WHERE i.augment_next_quality_id IS NOT NULL
-           OR i.id IN (SELECT augment_next_quality_id FROM items WHERE augment_next_quality_id IS NOT NULL)`,
-    )
-    .all() as ItemRow[];
-  const itemById = new Map(items.map((row) => [row.id, row]));
-  const successors = new Set(
-    items.flatMap((row) =>
-      row.augment_next_quality_id ? [row.augment_next_quality_id] : [],
-    ),
-  );
-  const asChainItem = (row: ItemRow): ChainItem => ({
-    id: row.id,
-    name: row.name,
-    quality: row.quality,
-    icon: row.icon ? `/${row.icon}` : null,
-    tooltipHtml: row.tooltip_html,
-    iconWidth: row.icon_width,
-    iconHeight: row.icon_height,
-  });
-  const families: ChainFamily[] = items
-    .filter((row) => !successors.has(row.id))
-    .map((start) => {
-      const tiers: ChainItem[] = [];
-      for (
-        let step: ItemRow | undefined = start;
-        step;
-        step = step.augment_next_quality_id
-          ? itemById.get(step.augment_next_quality_id)
-          : undefined
-      )
-        tiers.push(asChainItem(step));
-      return { name: start.name.replace(/^Small /, ""), tiers };
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
-
-  const catalyst = db
-    .prepare(
-      `SELECT i.id, i.name, i.quality, i.tooltip_html,
-              va.public_path AS icon, va.width AS icon_width, va.height AS icon_height
-         FROM items i
-         LEFT JOIN visual_assets va
-           ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
-        WHERE i.item_type = 'augment_upgrade'`,
-    )
-    .all() as Omit<ItemRow, "augment_next_quality_id">[];
-  if (catalyst.length !== 1)
-    error(500, `Expected one augment upgrade item, found ${catalyst.length}`);
+  const { catalyst, families } = loadAugmentChains(db);
 
   const offers = db
     .prepare(
@@ -123,7 +58,7 @@ export const load: PageServerLoad = async () => {
         WHERE o.item_id = ? AND input.role = 'currency'
         ORDER BY n.name`,
     )
-    .all(catalyst[0].id) as { id: string; name: string; price: number }[];
+    .all(catalyst.id) as { id: string; name: string; price: number }[];
   const prices = new Set(offers.map((offer) => offer.price));
   if (offers.length === 0 || prices.size !== 1)
     error(500, "The Chaos Catalyst needs one price at every merchant");
@@ -136,10 +71,7 @@ export const load: PageServerLoad = async () => {
     draws: trialDraws(bag),
     families,
     catalyst: {
-      item: asChainItem({
-        ...catalyst[0],
-        augment_next_quality_id: null,
-      }),
+      item: catalyst,
       typeLabel: formatItemType("augment_upgrade"),
       price: offers[0].price,
       vendors,
