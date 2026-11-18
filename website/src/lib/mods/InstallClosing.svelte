@@ -1,5 +1,6 @@
 <script lang="ts">
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
+  import { CONTACT_URL } from "$lib/constants/links";
 
   const REPORT_FORM =
     "https://github.com/glockyco/ancient-kingdoms-mods/issues/new?template=pocket-compendium-problem.yml";
@@ -23,8 +24,8 @@
   <p class="text-sm text-pretty text-muted-foreground">
     If something doesn't work, <a class="underline" href={REPORT_FORM}
       >report it on GitHub</a
-    >
-    or post in the compendium channel on the
-    <a class="underline" href={DISCORD}>game's Discord</a>.
+    >, post in the #compendium channel on the
+    <a class="underline" href={DISCORD}>game's Discord</a>, or
+    <a class="underline" href={CONTACT_URL}>message wow_much</a> on Discord.
   </p>
 </div>

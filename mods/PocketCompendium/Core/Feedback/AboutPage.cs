@@ -27,8 +27,11 @@ public sealed class AboutPage : ISettingsContent
     private ButtonView _report;
     private ButtonView _idea;
     private ButtonView _logFolder;
-    private Label _help;
-    private Label _reported;
+
+    // What the feedback buttons opened: nothing yet, the places to report a problem, or the
+    // places to suggest an idea. Survives rebuilds of the page while the game runs.
+    private Places _places;
+    private string _problemForm = ProblemReport.FormUrl;
 
     /// <param name="build">The commit the mod was built from. The page and reports show its first
     /// seven characters, which GitHub also links to the commit.</param>
@@ -36,7 +39,7 @@ public sealed class AboutPage : ISettingsContent
     {
         _version = version;
         _build = build.Length > 7 ? build.Substring(0, 7) : build;
-        ReportAction.Configure(_version, _build, features);
+        ReportAction.Configure(this, _version, _build, features);
     }
 
     public string Title => "About";
@@ -75,15 +78,43 @@ public sealed class AboutPage : ISettingsContent
         HudFactory.TopLeft(_idea.Rect, x + 182f, y, 160f, 32f);
         y += 42f;
 
-        _help = Wrapped("help", parent, "Each button opens a form on GitHub. No GitHub account? Post your problem or idea in the compendium channel on the game's Discord.", x, y, width, 12f, Theme.Dim);
-        _reported = Wrapped("reported", parent, "The form now holds your setup's details, and so does your clipboard. Please attach MelonLoader/Latest.log to the form.", x, y, width, 12f, Theme.Muted);
-        float reportedHeight = _reported.Rect.sizeDelta.y + 8f;
-        _logFolder = new ButtonView(parent, "Open the log folder", ButtonStyle.Secondary, 160f, 28f);
-        HudFactory.TopLeft(_logFolder.Rect, x, y + reportedHeight, 160f, 28f);
-        ShowReported(false);
-        y += reportedHeight + 28f;
+        switch (_places)
+        {
+            case Places.Problem:
+                y += Wrapped("problem", parent, "Your setup's details are on your clipboard. Choose where to report, and paste them in:", x, y, width, 12f, Theme.Muted).Rect.sizeDelta.y + 6f;
+                y = PlaceRows(parent, "Problem form, details filled in", _problemForm, x, y, width);
+                y += Wrapped("log", parent, "Please attach MelonLoader/Latest.log too.", x, y, width, 12f, Theme.Muted).Rect.sizeDelta.y + 8f;
+                _logFolder = new ButtonView(parent, "Open the log folder", ButtonStyle.Secondary, 160f, 28f);
+                HudFactory.TopLeft(_logFolder.Rect, x, y, 160f, 28f);
+                y += 28f;
+                break;
+            case Places.Idea:
+                y += Wrapped("idea", parent, "Choose where to share your idea:", x, y, width, 12f, Theme.Muted).Rect.sizeDelta.y + 6f;
+                y = PlaceRows(parent, "Idea form", ModLinks.IdeasForm, x, y, width);
+                break;
+            default:
+                y += Wrapped("places", parent, "You choose where: a form on GitHub, the #compendium channel on the game's Discord, or a message to wow_much.", x, y, width, 12f, Theme.Dim).Rect.sizeDelta.y;
+                break;
+        }
 
         return y - top;
+    }
+
+    /// <summary>Shows the places to report a problem, with the GitHub row opening <paramref name="form"/>.</summary>
+    internal void ShowProblemPlaces(string form)
+    {
+        _problemForm = form;
+        _places = Places.Problem;
+    }
+
+    private float PlaceRows(RectTransform parent, string github, string githubUrl, float x, float y, float width)
+    {
+        _links.Add(new LinkRow(parent, Icons.Code, "GitHub", github, githubUrl, x, y, width));
+        y += RowHeight + 2f;
+        _links.Add(new LinkRow(parent, Icons.MessageCircle, "Discord Server", "#compendium", ModLinks.Discord, x, y, width));
+        y += RowHeight + 2f;
+        _links.Add(new LinkRow(parent, Icons.MessageCircle, "Discord DM", "wow_much", ModLinks.DirectMessage, x, y, width));
+        return y + RowHeight + 8f;
     }
 
     public void HandleInput()
@@ -92,9 +123,13 @@ public sealed class AboutPage : ISettingsContent
             if (link.Update())
                 Application.OpenURL(link.Url);
 
-        if (_report.Update()) Report();
-        if (_idea.Update()) Application.OpenURL(ModLinks.IdeasForm);
-        if (_logFolder.Rect.gameObject.activeSelf && _logFolder.Update()) OpenLogFolder();
+        if (_report.Update()) ReportAction.Open();
+        if (_idea.Update())
+        {
+            _places = Places.Idea;
+            SettingsWindow.Current.OpenPage(this, toEnd: true);
+        }
+        if (_logFolder != null && _logFolder.Update()) OpenLogFolder();
     }
 
     public void Clear()
@@ -103,22 +138,9 @@ public sealed class AboutPage : ISettingsContent
         _report = null;
         _idea = null;
         _logFolder = null;
-        _help = null;
-        _reported = null;
     }
 
-    private void Report()
-    {
-        ReportAction.Open();
-        ShowReported(true);
-    }
-
-    private void ShowReported(bool reported)
-    {
-        _help.SetActive(!reported);
-        _reported.SetActive(reported);
-        _logFolder.Rect.gameObject.SetActive(reported);
-    }
+    private enum Places { None, Problem, Idea }
 
     // Under Wine, a shell-opened folder appears in Wine's own file manager, which can't hand the
     // log to the player's browser. winebrowser passes the URL to the host system instead, which

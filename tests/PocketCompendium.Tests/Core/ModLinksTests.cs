@@ -31,6 +31,7 @@ public sealed class ModLinksTests
     {
         Assert.Equal(ModLinks.Site, WebsiteConstant("website/src/lib/seo/site.ts", "SITE_URL"));
         Assert.Equal(ModLinks.Discord, WebsiteConstant("website/src/lib/constants/links.ts", "DISCORD_URL"));
+        Assert.Equal(ModLinks.DirectMessage, WebsiteConstant("website/src/lib/constants/links.ts", "CONTACT_URL"));
         Assert.Equal(ModLinks.KoFi, WebsiteConstant("website/src/lib/constants/links.ts", "KOFI_URL"));
     }
 

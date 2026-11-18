@@ -68,9 +68,11 @@ Marks each item that has an augment with the augment's icon, in your inventory, 
 
 ## Problems and ideas
 
-Use **Report a problem** or **Suggest an idea** on the About page of the settings. Without a GitHub account, post in the compendium channel on the [game's Discord](https://discord.gg/8MkSWjXwab).
+Report a problem or suggest an idea where it suits you: a [form on GitHub](https://github.com/glockyco/ancient-kingdoms-mods/issues/new/choose), the #📖-compendium channel on the [game's Discord](https://discord.gg/8MkSWjXwab), or a [message to wow_much](https://ancient-kingdoms.compendiums.org/contact) on Discord.
 
-When a feature stops after an error, a card names it. **Report** opens the problem form with your setup's details, and **Turn on again** restarts the feature. The feature's settings row also has **Report**, and its switch turns the feature on again.
+**Report a problem** on the About page of the settings copies your setup's details and then offers the three places. Paste the details into your report. The GitHub form already holds them. **Suggest an idea** offers the same places.
+
+When a feature stops after an error, a card names it. **Report** works like **Report a problem**, and **Turn on again** restarts the feature. The feature's settings row also has **Report**, and its switch turns the feature on again.
 
 ## License
 

@@ -10,6 +10,8 @@ public static class ModLinks
     public const string Site = AncientKingdomsMods.Shared.Updates.UpdateSite.Default;
     public const string Source = "https://github.com/glockyco/ancient-kingdoms-mods/tree/main/mods/PocketCompendium";
     public const string Discord = "https://discord.gg/8MkSWjXwab";
+    // Redirects to the author's Discord profile. The profile's user ID stays a website secret.
+    public const string DirectMessage = Site + "/contact";
     public const string KoFi = "https://ko-fi.com/wowmuch";
     public const string IdeasForm = ProblemReport.FormUrl + "?template=pocket-compendium-idea.yml";
 }

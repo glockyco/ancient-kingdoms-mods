@@ -5,7 +5,7 @@ labels: ["enhancement", "mods"]
 body:
   - type: markdown
     attributes:
-      value: No GitHub account? Post in the #📖-compendium channel on the [game's Discord](https://discord.gg/8MkSWjXwab) instead.
+      value: You can also post in the #📖-compendium channel on the [game's Discord](https://discord.gg/8MkSWjXwab) or [message wow_much](https://ancient-kingdoms.compendiums.org/contact) on Discord.
   - type: textarea
     id: goal
     attributes:

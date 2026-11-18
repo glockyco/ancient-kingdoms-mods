@@ -61,6 +61,8 @@ public sealed class SettingsWindow
     private float _scroll;
     private bool _dragging;
     private Vector2 _grab;
+    private ISettingsContent _pendingPage;
+    private bool _pendingToEnd;
 
     public SettingsWindow(IReadOnlyList<SettingsGroup> groups, LayoutSettings layout)
     {
@@ -113,15 +115,43 @@ public sealed class SettingsWindow
         _dragging = false;
     }
 
+    /// <summary>
+    /// Opens the window on the page that <paramref name="content"/> draws, rebuilt, and scrolled to
+    /// its end when <paramref name="toEnd"/>. It applies on the next update, so a page can ask for
+    /// it while handling its own input.
+    /// </summary>
+    public void OpenPage(ISettingsContent content, bool toEnd)
+    {
+        _pendingPage = content;
+        _pendingToEnd = toEnd;
+    }
+
     public void Update()
     {
         var key = _layout.SettingsKeyControl;
         if (key != null && key.wasPressedThisFrame && !Il2Cpp.UIUtils.AnyInputActive())
             Toggle();
+        if (_pendingPage != null) ShowPending();
         if (!IsOpen) return;
 
         Refresh();
         HandleInput();
+    }
+
+    private void ShowPending()
+    {
+        var content = _pendingPage;
+        _pendingPage = null;
+        Open();
+        for (int index = 0; index < _groups.Count; index++)
+        {
+            if (_groups[index].Content != content) continue;
+            Show(index, null);
+            break;
+        }
+        if (!_pendingToEnd) return;
+        _scroll = Mathf.Max(0f, _contentHeight - _viewport.sizeDelta.y);
+        _content.anchoredPosition = new Vector2(0f, _scroll);
     }
 
     public void Destroy()
