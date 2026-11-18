@@ -67,6 +67,9 @@ describe("regional event page data", () => {
         minimum_level: invasion.minimum_level,
         maximum_level: invasion.maximum_level,
         health_multiplier: invasion.health_multiplier,
+        reward_faction_id: invasion.reward_faction_id,
+        reward_faction_name: invasion.reward_faction_name,
+        faction_reward: invasion.faction_reward,
       }));
     const monster = await loadMonster({
       params: { id: monsterId },
