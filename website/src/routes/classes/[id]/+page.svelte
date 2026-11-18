@@ -945,7 +945,7 @@
         </span>
       </span>
       <span>
-        Races: <span class="text-foreground">{races.join(", ")}</span>
+        Starting Races: <span class="text-foreground">{races.join(", ")}</span>
       </span>
     </div>
     {#if data.class.id === "druid"}

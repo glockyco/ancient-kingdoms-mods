@@ -3945,6 +3945,9 @@
     "Player.cs:UserCode_CmdMakePotion__Int32": {
       "span": 0
     },
+    "Player.cs:UserCode_CmdRebirth__Int32__Int32__String": {
+      "span": 0
+    },
     "Player.cs:UserCode_CmdRemoveInvencibleValaark__Int32": {
       "span": 0
     },
@@ -4928,6 +4931,9 @@
       "span": 1
     },
     "ProjectileSkillEffect.cs:FixedUpdate": {
+      "span": 0
+    },
+    "RaceRebirthRules.cs:TryPrepare": {
       "span": 0
     },
     "RandomItem.cs:6": {
@@ -6336,6 +6342,9 @@
     "UIQuests.cs:152-168": {
       "sha256": "366afbbac58c54dcd25e9efdf8f1cfbf6453dfe2f6066b19894d86312d717c26",
       "span": 17
+    },
+    "UIRebirth.cs:Refresh": {
+      "span": 0
     },
     "UIRespawn.cs:30-63": {
       "sha256": "b68f40453bbf3835c5f3ba9ede225f57b007fef358e30efae0e5c880505b86a9",

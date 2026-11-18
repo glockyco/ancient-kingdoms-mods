@@ -84,12 +84,23 @@ const ERASIS_SPAWN: SpecialMechanic = {
   details: [],
 };
 
+// Source: server-scripts/UIRebirth.cs:Refresh — the window offers every race except the current one, whatever the class.
+// Source: server-scripts/Player.cs:UserCode_CmdRebirth__Int32__Int32__String; server-scripts/RaceRebirthRules.cs:TryPrepare — the race changes, the racial attribute bonus is swapped, and the level and assigned attribute points stay.
+const CHRYSALIS_REBIRTH: SpecialMechanic = {
+  title: "Rebirth",
+  summary: [
+    "You can pick any race, even one your class can't start as, such as a Dwarf Druid. You keep your level and the attribute points you assigned.",
+  ],
+  details: [],
+};
+
 const MONSTER_SPECIAL_MECHANICS: Record<string, SpecialMechanic[]> = {
   valaark: [VALAARK_INVULNERABILITY],
 };
 
 const ITEM_SPECIAL_MECHANICS: Record<string, SpecialMechanic[]> = {
   dragonbait_stew: [DRAGONBAIT_STEW_USE],
+  chrysalis_of_rebirth: [CHRYSALIS_REBIRTH],
 };
 
 const NPC_SPECIAL_MECHANICS: Record<string, SpecialMechanic[]> = {
