@@ -62,7 +62,7 @@ Warns you when killing your target would use your Fatecharm.
 
 ### Augment marks
 
-Marks each item that has an augment with the augment's icon, in your inventory, backpack, bank and house chest and on your mercenary's equipment. The frame takes the augment's quality colour.
+Marks each item that has an augment with the augment's icon, wherever the game shows the item: your inventory, backpack, bank and house chest, your mercenary's equipment, an inspected player's equipment, trades, merchant and Augmenter lists, the Sacrifice shrine and the skillbar. The frame takes the augment's quality colour.
 
 ![A Warrior's inventory in Dreadguard armor, with an augment's icon on every piece of gear and on two spare pieces in the bags.](../../assets/pocket-compendium-augments.webp)
 

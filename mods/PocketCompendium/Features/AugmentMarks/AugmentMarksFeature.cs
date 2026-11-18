@@ -10,11 +10,10 @@ namespace PocketCompendium.Features.AugmentMarks;
 
 /// <summary>
 /// Marks each item that has an augment with the augment's icon, in a frame of the augment's
-/// quality colour in the slot's top-right corner. The marks cover the inventory with its
-/// equipment slots, the combined backpack, the bank, the house chest and the mercenary's
-/// equipment, the places an augmented item can be kept or worn.
+/// quality colour in the icon's top-right corner, in every window that draws an augmentable
+/// item's icon. <c>AugmentMarksFeature.Windows.cs</c> finds the item behind each icon.
 /// </summary>
-public sealed class AugmentMarksFeature : Feature
+public sealed partial class AugmentMarksFeature : Feature
 {
     // Marks by the slot's icon, so each slot keeps one mark however often its window redraws.
     private readonly Dictionary<int, SlotMark> _marks = new();
@@ -45,96 +44,42 @@ public sealed class AugmentMarksFeature : Feature
         var player = Player.localPlayer;
         if (player == null) return;
 
-        var inventory = UIInventory.singleton;
-        if (Open(inventory != null ? inventory.panel : null))
-        {
-            var content = inventory.content;
-            for (int i = 0; i < content.childCount; i++)
-            {
-                var slot = content.GetChild(i).GetComponent<UIInventorySlot>();
-                if (slot != null) Mark(slot.image, slot.dragAndDropable, player.inventory.slots);
-            }
-
-            var equipment = UIEquipment.singleton;
-            if (equipment != null)
-            {
-                for (int i = 0; i < player.equipment.slots.Count; i++)
-                {
-                    var slot = equipment.GetEquipmentSlot(i);
-                    if (slot != null) Mark(slot.image, slot.dragAndDropable, player.equipment.slots);
-                }
-            }
-        }
-
-        // The backpack's own slots hold backpacks, which take no augment, so only its content counts.
-        var backpack = UIBigBackpack.singleton;
-        if (Open(backpack != null ? backpack.panel : null))
-        {
-            var content = backpack.content;
-            for (int i = 0; i < content.childCount; i++)
-            {
-                var slot = content.GetChild(i).GetComponent<UIInventorySlot>();
-                if (slot != null) Mark(slot.image, slot.dragAndDropable, player.inventory.slots);
-            }
-        }
-
-        var bank = UIBank.singleton;
-        if (Open(bank != null ? bank.panel : null))
-        {
-            var content = bank.content;
-            for (int i = 0; i < content.childCount; i++)
-            {
-                var slot = content.GetChild(i).GetComponent<UIBankSlot>();
-                if (slot != null) Mark(slot.image, slot.dragAndDropable, player.bank.slots);
-            }
-        }
-
-        var chest = UIChest.singleton;
-        if (Open(chest != null ? chest.panel : null))
-        {
-            var content = chest.content;
-            for (int i = 0; i < content.childCount; i++)
-            {
-                var slot = content.GetChild(i).GetComponent<UIChestSlot>();
-                if (slot != null) Mark(slot.image, slot.dragAndDropable, player.chestHouse.slots);
-            }
-        }
-
-        // The window also inspects another player's gear, which its inspectedPlayer names.
-        var mercenaryWindow = UIEquipmentMercenary.singleton;
-        if (Open(mercenaryWindow != null ? mercenaryWindow.panel : null) && mercenaryWindow.inspectedPlayer == null)
-        {
-            var mercenary = mercenaryWindow.mercenary;
-            if (mercenary != null && mercenary.equipment != null)
-            {
-                for (int i = 0; i < mercenary.equipment.slots.Count; i++)
-                {
-                    var slot = mercenaryWindow.GetEquipmentSlot(i);
-                    if (slot != null) Mark(slot.image, slot.dragAndDropable, mercenary.equipment.slots);
-                }
-            }
-        }
+        MarkStorage(player);
+        MarkCharacterSheet();
+        MarkPlayerTrade(player);
+        MarkNpcTrade(player);
+        MarkVirtueShrine();
+        MarkSkillbar(player);
     }
 
     private static bool Open(GameObject panel) => panel != null && panel.activeInHierarchy;
 
-    // Each window names a slot's drag handle after the index of the item it shows. The combined
-    // backpack leaves old names on the slots it no longer uses, so a slot counts only while it
-    // draws that item's icon.
+    // Each storage window names a slot's drag handle after the index of the item it shows. The
+    // combined backpack leaves old names on the slots it no longer uses, which the icon check in
+    // the other overload catches.
     private void Mark(Image icon, UIDragAndDropable drag, SyncList<ItemSlot> items)
+    {
+        var item = drag != null && int.TryParse(drag.name, out var index) ? At(items, index) : null;
+        Mark(icon, item);
+    }
+
+    private static ItemSlot At(SyncList<ItemSlot> items, int index) =>
+        items != null && index >= 0 && index < items.Count ? items[index] : null;
+
+    // A slot counts only while its icon draws that item's sprite, so a mark never names the
+    // augment of an item the slot no longer shows. Most windows put the icon inside a slot frame
+    // and the mark goes in the frame's corner. A window whose icon is not inside a frame of its
+    // own passes onIcon, and the mark goes in the icon's corner.
+    private void Mark(Image icon, ItemSlot item, bool onIcon = false)
     {
         if (icon == null) return;
 
         AugmentItem augment = null;
         string name = null;
-        if (drag != null && int.TryParse(drag.name, out var index) && index >= 0 && index < items.Count && icon.sprite != null)
+        if (item != null && item.amount > 0 && icon.enabled && icon.sprite != null && icon.sprite == item.item.image)
         {
-            var item = items[index];
-            if (item.amount > 0 && icon.sprite == item.item.image)
-            {
-                name = item.augmentName;
-                augment = Augment(item, name);
-            }
+            name = item.augmentName;
+            augment = Augment(item, name);
         }
 
         var key = icon.GetInstanceID();
@@ -147,7 +92,7 @@ public sealed class AugmentMarksFeature : Feature
 
         if (mark == null || !mark.Alive)
         {
-            mark = new SlotMark(icon.transform.parent);
+            mark = new SlotMark(onIcon ? icon.transform : icon.transform.parent);
             _marks[key] = mark;
         }
 
@@ -176,8 +121,10 @@ public sealed class AugmentMarksFeature : Feature
 /// <summary>A slot's augment icon in a frame of the augment's quality colour.</summary>
 internal sealed class SlotMark
 {
-    // Large enough that a small icon such as the flat Mana Shard reads at a glance.
-    private const float Size = 22f;
+    // The mark's share of its slot: 22 of an inventory slot's 58 units, large enough that a small
+    // icon such as the flat Mana Shard reads at a glance. Smaller slots, such as the skillbar's,
+    // get a smaller mark.
+    private const float Share = 22f / 58f;
     private static readonly Color Backing = new(0.05f, 0.06f, 0.08f, 0.9f);
 
     private readonly RectTransform _root;
@@ -188,9 +135,9 @@ internal sealed class SlotMark
     public SlotMark(Transform slot)
     {
         _root = HudFactory.Rect("PC_AugmentMark", slot).GetComponent<RectTransform>();
-        _root.anchorMin = _root.anchorMax = _root.pivot = new Vector2(1f, 1f);
-        _root.anchoredPosition = new Vector2(-1f, -1f);
-        _root.sizeDelta = new Vector2(Size, Size);
+        _root.anchorMin = new Vector2(1f - Share, 1f - Share);
+        _root.anchorMax = Vector2.one;
+        _root.offsetMin = _root.offsetMax = new Vector2(-1f, -1f);
         _root.SetAsLastSibling();
 
         _frame = HudFactory.Sliced("frame", _root, Shapes.Rounded, Color.white);
