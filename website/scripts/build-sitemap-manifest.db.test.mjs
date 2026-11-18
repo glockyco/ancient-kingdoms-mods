@@ -10,6 +10,7 @@ const EXCLUDED_ROUTES = {
   "/sitemap.xml": "XML sitemap endpoint, not a page to index.",
   "/items/list.json":
     "Item overview data loaded after first paint, not a page to index.",
+  "/contact": "Redirect to a Discord profile, not a page to index.",
   "/gather-items/ancient_fishing_spot":
     "Aggregate alias canonicalizes to its first suffixed fishing-spot variant.",
   "/gather-items/calm_fishing_spot":
@@ -50,6 +51,7 @@ test("every fixed-path route has a sitemap URL or a stated exclusion", async () 
   const routes = new Set(staticRoutes());
   expect(routes.delete("/sitemap.xml")).toBe(true);
   expect(routes.delete("/items/list.json")).toBe(true);
+  expect(routes.delete("/contact")).toBe(true);
   const { hashes, bareUrls } = sitemap;
   const sitemapUrls = new Set([...Object.keys(hashes), ...bareUrls]);
   for (const [route, reason] of Object.entries(EXCLUDED_ROUTES)) {
