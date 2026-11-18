@@ -128,7 +128,13 @@
     "AugmentItem.cs:nameArmorSet": {
       "span": 0
     },
+    "AugmentUpgradeItem.cs:GetTargetAugment": {
+      "span": 0
+    },
     "AugmentUpgradeItem.cs:TryUpgrade": {
+      "span": 0
+    },
+    "AugmentUpgradeItem.cs:TryUpgradeSocketed": {
       "span": 0
     },
     "AvatarEvent.cs:CheckPlayersUp": {
@@ -2098,6 +2104,9 @@
     "MadMageTower.cs:NormalizeCombat": {
       "span": 0
     },
+    "MadMageTower.cs:PopulationQuotas": {
+      "span": 0
+    },
     "MadMageTower.cs:Prepare": {
       "span": 0
     },
@@ -2153,16 +2162,10 @@
     "MadMageTowerRules.cs:EnemyLevel": {
       "span": 0
     },
-    "MadMageTowerRules.cs:HallGuards": {
-      "span": 0
-    },
     "MadMageTowerRules.cs:Health": {
       "span": 0
     },
     "MadMageTowerRules.cs:MaximumEnemyLevelBonus": {
-      "span": 0
-    },
-    "MadMageTowerRules.cs:PassageGuards": {
       "span": 0
     },
     "MadMageTowerRules.cs:Power": {
@@ -4342,6 +4345,9 @@
       "span": 0
     },
     "PlayerInventory.cs:EnumeratePreferredSlotsOrdered": {
+      "span": 0
+    },
+    "PlayerInventory.cs:GetAugmentUpgradeEquipment": {
       "span": 0
     },
     "PlayerInventory.cs:MoveAsMuchAsPossibleToBank": {

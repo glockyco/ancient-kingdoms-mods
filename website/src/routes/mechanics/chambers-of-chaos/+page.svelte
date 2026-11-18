@@ -49,10 +49,8 @@
   const battleShot = $derived(capture("shot"));
   const introShot = $derived(capture("illustration_2"));
   const manuscriptShot = $derived(capture("illustration_3"));
-  // A wave holds the chamber's whole population, so a chamber plays as Waves only while all waves together stay within the clear limit.
-  const wavePopulationLimit = $derived(
-    Math.floor(d.maximumClearTargets / d.waveCount),
-  );
+  // Source: server-scripts/MadMageTower.cs:PopulationQuotas — a wave holds the exit hall's quota, capped at 10 guardians.
+  const WAVE_GUARDIAN_CAP = 10;
 </script>
 
 {#snippet badge(n: number)}
@@ -85,7 +83,7 @@
   <section class="grid gap-6 lg:grid-cols-2" aria-label="Overview">
     <!-- The bottom padding matches the image caption's line, so the keeper card ends level with the image. -->
     <div class="flex flex-col justify-between gap-4 lg:pb-[22px]">
-      <!-- Source: server-scripts/MadMageTower.cs:Begin,Ready — entry needs level 40, no other player in the party, and one entry item, which is taken when chamber 1 opens. server-scripts/MadMageTowerRules.cs:RoomCount,RunDurationSeconds — 3 chambers and one 1200 second timer. -->
+      <!-- Source: server-scripts/MadMageTower.cs:Begin,Ready — entry needs level 40, no other player in the party, and one entry item, which is taken when chamber 1 opens. server-scripts/MadMageTowerRules.cs:RoomCount,RunDurationSeconds — 3 chambers and one 1800 second timer. -->
       <p class="text-lg text-muted-foreground">
         The Chambers of Chaos are a solo dungeon for characters of level {d.minimumLevel}
         and up. Mordrath lets you in for 1 entry item. You clear {d.roomCount}
@@ -181,7 +179,7 @@
     >
       {@render badge(2)} Time Limit
     </h2>
-    <!-- Source: server-scripts/MadMageTowerRules.cs:RunDurationSeconds; MadMageTower.cs:StartTrial — one 1200 second timer starts with chamber 1 and covers the whole run. -->
+    <!-- Source: server-scripts/MadMageTowerRules.cs:RunDurationSeconds; MadMageTower.cs:StartTrial — one 1800 second timer starts with chamber 1 and covers the whole run. -->
     <RunTimeline
       seconds={d.runDurationSeconds}
       roomCount={d.roomCount}
@@ -239,17 +237,11 @@
             lines={[TRIAL_BY_KIND.Waves.phrase]}
           />
         {/snippet}
-        <!-- Source: server-scripts/MadMageTower.cs:MonsterDied,StartTrial — waves 2 and 3 spawn 3 seconds after the last living guardian dies, and a Waves chamber whose three waves would exceed 30 guardians is played as Battle. -->
+        <!-- Source: server-scripts/MadMageTower.cs:StartTrial,PopulationQuotas,Spawn,MonsterDied — a Waves chamber spawns its exit hall's quota, at most 10 guardians, at the exit, three times, and each next wave 3 seconds after the last living guardian dies. -->
         <p>
-          {d.waveCount} waves of guardians arrive one after another. The next wave
-          comes 3 seconds after the last guardian of a wave dies. If a wave would
-          hold more than {wavePopulationLimit} guardians, the chamber is a Battle
-          chamber instead.
-        </p>
-        <!-- Source: server-scripts/MadMageTowerRules.cs:HallGuards,PassageGuards — every hall gets at least 6 Waves guardians and every passage at least 3, so a chamber with two halls cannot fit under the limit. The game-bug report in docs/game-bugs/ records 330 sampled layouts, none under it. -->
-        <p>
-          In this game version the chambers are larger than that, so in practice
-          a Waves draw plays as Battle. This looks like a game bug.
+          {d.waveCount} waves of up to {WAVE_GUARDIAN_CAP} guardians arrive one after
+          another at the chamber's exit. The next wave comes 3 seconds after the last
+          guardian of a wave dies.
         </p>
       </TrialCard>
 
@@ -437,11 +429,12 @@
     >
       {@render badge(6)} Spend It
     </h2>
-    <!-- Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade; AugmentItem.cs:CanUpgrade — a catalyst and one loose augment become the augment's next quality. -->
+    <!-- Source: server-scripts/AugmentUpgradeItem.cs:TryUpgrade,TryUpgradeSocketed,GetTargetAugment; PlayerInventory.cs:GetAugmentUpgradeEquipment — a catalyst raises a loose augment, used up with it, or the augment socketed in gear in the bags, worn by the player or worn by an active mercenary, which improves in place. -->
     <p class="text-muted-foreground">
       Adventurer merchants sell the {data.catalyst.item.name} for the reward. It raises
-      one loose augment by one quality. The catalyst and the augment are used up,
-      and each step needs its own catalyst.
+      one augment by one quality, either a loose one or one socketed in gear you or
+      an active mercenary carry. Each step uses up its own catalyst, and a loose augment
+      is used up too.
     </p>
     <UpgradeChain
       catalyst={data.catalyst.item}
