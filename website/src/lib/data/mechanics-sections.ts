@@ -41,6 +41,7 @@ export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
       { id: "zone-discovery-xp", label: "Zone Discovery XP" },
     ],
     "/mechanics/housing": [
+      { id: "return-home", label: "Return Home" },
       { id: "furniture", label: "Furniture and Home Workstations" },
       { id: "appearance", label: "Barbers and Appearance" },
     ],

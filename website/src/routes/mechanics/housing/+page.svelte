@@ -9,7 +9,7 @@
 
 <Seo
   title="Housing and Appearance - Ancient Kingdoms"
-  description="How to place home furniture, visit a barber, and use the costume wardrobe."
+  description="How to travel home, place home furniture, visit a barber, and use the costume wardrobe."
   path="/mechanics/housing"
 />
 
@@ -24,6 +24,30 @@
 
   <h1 class="text-4xl font-bold">Housing and Appearance</h1>
   <PageSections sections={MECHANICS_SECTIONS["/mechanics/housing"]} />
+  <Card.Root id="return-home" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Return Home</Card.Title>
+      <Card.Description
+        >The house button in your inventory takes you to your house.</Card.Description
+      >
+    </Card.Header>
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
+      <!-- Source: server-scripts/UIInventoryTravelSlots.cs:OpenHomes; server-scripts/Player.cs:UserCode_CmdStartHomeTravel__String,UserCode_CmdTravelHome__String,GetHomeTravelFailure — the house button casts Teleport, then moves you to the house's return point, and refuses in combat. -->
+      <p>
+        Click the house at the top right of your equipment in the inventory
+        window. After a 1.5-second cast, you arrive at your house. The cast
+        dismounts you, and you can't start it in combat.
+      </p>
+      <!-- Source: server-scripts/UIInventoryTravelSlots.cs:Update — the house button is interactable, and drawn at full strength, only while the account owns a house. -->
+      <p>
+        The button stays dimmed until your account owns a house. See <a
+          href="/mechanics/inventory#house-chests"
+          class="text-blue-600 hover:underline dark:text-blue-400"
+          >house chests and shared storage</a
+        > for buying one.
+      </p>
+    </Card.Content>
+  </Card.Root>
 
   <Card.Root id="furniture" class="bg-muted/30">
     <Card.Header>

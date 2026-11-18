@@ -3810,6 +3810,9 @@
     "Player.cs:ExportVirtues": {
       "span": 0
     },
+    "Player.cs:GetHomeTravelFailure": {
+      "span": 0
+    },
     "Player.cs:GetMercenaryResurrectionPrice": {
       "span": 0
     },
@@ -3970,6 +3973,12 @@
       "span": 0
     },
     "Player.cs:UserCode_CmdStartBarber__NetworkIdentity": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdStartHomeTravel__String": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdTravelHome__String": {
       "span": 0
     },
     "Player.cs:UserCode_TargetCompletedQuest__Int32__Int64": {
@@ -6154,6 +6163,12 @@
       "span": 0
     },
     "UIHousing.cs:Start": {
+      "span": 0
+    },
+    "UIInventoryTravelSlots.cs:OpenHomes": {
+      "span": 0
+    },
+    "UIInventoryTravelSlots.cs:Update": {
       "span": 0
     },
     "UIJournal.cs:270-303": {

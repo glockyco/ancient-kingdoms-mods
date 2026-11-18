@@ -179,7 +179,7 @@ export const MECHANICS_GROUPS = [
       {
         title: "Housing and Appearance",
         href: "/mechanics/housing",
-        description: "Furniture, wardrobe, and barbers",
+        description: "Return Home, furniture, wardrobe, and barbers",
         summary: "Furniture and wardrobe",
       },
     ],
