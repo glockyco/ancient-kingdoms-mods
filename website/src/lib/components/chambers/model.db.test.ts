@@ -17,7 +17,7 @@ describe("Chambers scaling view", () => {
     expect(view.ordinary.map((row) => row.level)).toEqual([37, 38, 39, 40, 41]);
     expect(view.guardian.map((row) => row.level)).toEqual([40, 41]);
     expect(view.chambers.map((row) => row.likely.health)).toEqual([
-      4200, 4347, 4494, 17976,
+      3360, 3478, 3595, 17976,
     ]);
     expect(view.chambers.map((row) => row.likely.power)).toEqual([
       180, 184, 189, 265,
@@ -36,7 +36,7 @@ describe("Chambers scaling view", () => {
       50, 51, 52, 53, 54, 55, 56,
     ]);
     expect(view.chambers.map((row) => row.likely.health)).toEqual([
-      13045, 13502, 13958, 55832,
+      10436, 10801, 11166, 55832,
     ]);
     expect(view.chambers.map((row) => row.likely.power)).toEqual([
       391, 401, 411, 575,
