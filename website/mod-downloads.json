@@ -14,6 +14,14 @@
       "description": "Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster, and marks the herbs, ores, fish and Radiant Sparks you're looking for.",
       "releases": [
         {
+          "version": "1.5.2",
+          "date": "2026-11-18",
+          "changes": [
+            "Makes augment marks larger and easier to read.",
+            "Shows augment marks wherever items with augments appear, such as your mercenary's equipment, shops and the skillbar."
+          ]
+        },
+        {
           "version": "1.5.1",
           "date": "2026-11-14",
           "changes": [
