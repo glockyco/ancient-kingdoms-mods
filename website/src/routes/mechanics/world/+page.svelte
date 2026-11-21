@@ -124,7 +124,7 @@
           > shows mapped places and entrances.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:1378-1384,2411-2414 — some monsters only spawn within their configured in-game hour window. -->
+      <!-- Source: server-scripts/Monster.cs:1382-1388,2415-2418 — some monsters only spawn within their configured in-game hour window. -->
       <p>
         <span class="block"
           >Some monsters appear only during specific in-game hours.</span
@@ -135,7 +135,7 @@
           > for their timing rules.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMap.cs:186-200,471-479 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
+      <!-- Source: server-scripts/UIMap.cs:206-220,491-499 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
       <p>
         <span class="block"
           ><a
@@ -171,7 +171,7 @@
           >Your notes appear on that zone's local map, not the world map.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMapNotesController.cs:133-145 and server-scripts/UIMap.cs:186-200 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:133-145 and server-scripts/UIMap.cs:206-220 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
       <p>Temple of Valaark has no map notes.</p>
     </Card.Content>
   </Card.Root>

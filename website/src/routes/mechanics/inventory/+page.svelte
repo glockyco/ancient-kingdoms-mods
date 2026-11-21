@@ -157,7 +157,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/UIBigBackpack.cs:317-329; server-scripts/PlayerInventory.cs:2672-2692,1059-1080 — clicking an equipped backpack moves it to the first empty base slot unless removal would lock occupied storage slots or all 24 base slots are full. -->
+          <!-- Source: server-scripts/UIBigBackpack.cs:317-329; server-scripts/PlayerInventory.cs:2663-2683,1059-1080 — clicking an equipped backpack moves it to the first empty base slot unless removal would lock occupied storage slots or all 24 base slots are full. -->
           To take a backpack off, click it in the Combined Backpack window. It moves
           to your main inventory, which needs a free slot.
         </li>
@@ -579,7 +579,7 @@
           storage slots.
         </li>
         <li>
-          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:2456-2470 — stack increases are clamped by target max stack. -->Matching
+          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:2447-2461 — stack increases are clamped by target max stack. -->Matching
           stacks merge up to the target stack limit.
         </li>
         <li>
@@ -587,7 +587,7 @@
           Shift while you drag a stack onto an empty slot, then choose how many
           items to move.
         </li>
-        <!-- Source: server-scripts/PlayerInventory.cs:989-1045,1083-1141,2378-2440 and server-scripts/PlayerBank.cs:60-79 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:989-1045,1083-1141,2369-2431 and server-scripts/PlayerBank.cs:60-79 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
         <li>
           <span class="block"
             >Splitting also works between inventory and bank or house chest

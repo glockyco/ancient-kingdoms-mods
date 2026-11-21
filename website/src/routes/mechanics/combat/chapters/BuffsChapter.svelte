@@ -266,7 +266,7 @@
         still affect such a monster.
       </li>
     </ul>
-    <!-- Source: server-scripts/Monster.cs:497-509 — bosses and monsters flagged immune to debuffs ignore every slow. -->
+    <!-- Source: server-scripts/Monster.cs:501-513 — bosses and monsters flagged immune to debuffs ignore every slow. -->
     <p>Bosses and monsters with Immune to Debuffs ignore the slow.</p>
     <SeeAlso
       links={[{ href: "#root", label: "Root, for Bosses and Slowing Debuffs" }]}

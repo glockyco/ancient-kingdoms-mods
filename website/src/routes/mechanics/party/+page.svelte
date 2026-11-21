@@ -96,13 +96,13 @@
   <Card.Root id="shared-rewards" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Shared Rewards</Card.Title>
-      <!-- Source: server-scripts/Monster.cs:3241-3253,3413-3441 — nearby party members receive loot access and experience on a credited kill. -->
+      <!-- Source: server-scripts/Monster.cs:3245-3257,3417-3445 — nearby party members receive loot access and experience on a credited kill. -->
       <Card.Description
         >Nearby party players can share loot and XP from a monster kill.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:3212-3228,3241-3253 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
+      <!-- Source: server-scripts/Monster.cs:3216-3232,3245-3257 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
       <!-- Source: server-scripts/PlayerParty.cs:76-90 — party proximity checks network observers and strictly less than 40 world units from the relevant player. -->
       <!-- Mirror.dll and Mirror.Components.dll in the server build of Steam build 25863605: NetworkServer.RebuildObserversCustom adds a player's own connection to its observers, so the credited player always shares. SpatialHashingInterestManagement (visRange 96 at runtime, 48-unit cells, 3×3 neighbourhood) makes every player closer than 40 yd an observer, rebuilt once per second, and ignores invisibility. -->
       <p>
@@ -116,7 +116,7 @@
           them get loot access. Living players receive a share of the kill XP.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:3413-3441 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
+      <!-- Source: server-scripts/Monster.cs:3417-3445 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>
         See <MechanicsLink section="experience#kill-xp"
           >Experience</MechanicsLink
@@ -135,7 +135,7 @@
         matching unfinished quest for each nearby party member. Nobody receives
         the drop in their inventory.
       </p>
-      <!-- Source: server-scripts/PlayerLooting.cs:203-220 and server-scripts/Monster.cs:4895-4934 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
+      <!-- Source: server-scripts/PlayerLooting.cs:203-220 and server-scripts/Monster.cs:4913-4952 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
       <p>
         <span class="block"
           >The collector receives items that do not require a roll.</span

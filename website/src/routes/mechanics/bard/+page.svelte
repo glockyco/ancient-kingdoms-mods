@@ -286,7 +286,7 @@
         Each point of Charisma adds 0.045% to that share, up to 100%. Negative Charisma
         counts as 0.
       </p>
-      <!-- Source: server-scripts/Monster.cs:2706-2790,2812-2906 — the charmed creature follows its Bard when idle and finds reachable nearby monsters that threaten the Bard's group. -->
+      <!-- Source: server-scripts/Monster.cs:2710-2794,2816-2910 — the charmed creature follows its Bard when idle and finds reachable nearby monsters that threaten the Bard's group. -->
       <p>
         Your charmed creature follows you and attacks nearby monsters
         threatening you or your party. Selecting a monster does not order it to
@@ -310,7 +310,7 @@
         Repeating the song renews your existing charm, regardless of your
         selection. Keep the creature visible and within cast range.
       </p>
-      <!-- Source: server-scripts/Monster.cs:2668-2687,2793-2809,3135-3138, PlayerSkills.cs:1680-1699,1752-1764,1865-1869; ZoneTrigger.cs:94-101 — charm ends on removal or expiry, monster death, Bard death, zone separation, or leaving the server. -->
+      <!-- Source: server-scripts/Monster.cs:2672-2691,2797-2813,3139-3142, PlayerSkills.cs:1680-1699,1752-1764,1865-1869; ZoneTrigger.cs:94-101 — charm ends on removal or expiry, monster death, Bard death, zone separation, or leaving the server. -->
       <p>
         Charm ends if its effect expires or is removed, or if the creature dies.<br
         />

@@ -104,7 +104,7 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/GuildSystem.cs:AwardBossKillGuildPoints; server-scripts/UIGuildManagement.cs:Refresh; server-scripts/Database.cs:GetGuildManagementText — boss kills grant character-specific points, displayed for the player and as GP beside each member. -->
       <p>The guild window lists each member's contribution as GP.</p>
-      <!-- Source: server-scripts/Monster.cs:3212-3228,3241-3253 and server-scripts/GuildSystem.cs:266-279 — credited highest-threat player receives points only when the monster is a boss and the player belongs to a guild; pets resolve to owner. -->
+      <!-- Source: server-scripts/Monster.cs:3216-3232,3245-3257 and server-scripts/GuildSystem.cs:266-279 — credited highest-threat player receives points only when the monster is a boss and the player belongs to a guild; pets resolve to owner. -->
       <p>
         Only the character with <a
           href="/mechanics/party#shared-rewards"

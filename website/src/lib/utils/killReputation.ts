@@ -49,7 +49,7 @@ interface NpcKillReputationInput {
  * Reputation changed per kill for a monster, formatted as a range across its
  * spawn levels (level_min..level_max).
  *
- * Source: server-scripts/Monster.cs:697-723 (formula),
+ * Source: server-scripts/Monster.cs:701-727 (formula),
  * 3447-3459 and 3484-3496 (party/solo reward application).
  * Improve adds (level.current + Mathf.RoundToInt(health.max / 2000)) *
  * (boss 20 / elite 10 / normal 1); decrease subtracts level.current *

@@ -998,7 +998,7 @@
                 >
                 <td class="p-2 text-right">100% more XP</td>
               </tr>
-              <!-- Source: server-scripts/Monster.cs:3438-3441,3475-3478; server-scripts/RegionalEvents.cs:188-195,376-388; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity adds 15% monster XP in the region and its dungeons after the other multipliers, rounded down. -->
+              <!-- Source: server-scripts/Monster.cs:3442-3445,3479-3482; server-scripts/RegionalEvents.cs:188-195,376-388; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity adds 15% monster XP in the region and its dungeons after the other multipliers, rounded down. -->
               <tr class="hover:bg-muted/30">
                 <td class="p-2"
                   ><a
@@ -1018,11 +1018,11 @@
         <p class="text-sm text-muted-foreground">
           Multiple Double XP buffs do not stack. Forgotten Altar monsters give
           40% more XP after Double XP, rounded to the nearest whole XP.
-          <!-- Source: server-scripts/Monster.cs:3438-3441,3475-3478; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity multiplies the award after Double XP and the Forgotten Altar bonus, then floors it. -->
+          <!-- Source: server-scripts/Monster.cs:3442-3445,3479-3482; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity multiplies the award after Double XP and the Forgotten Altar bonus, then floors it. -->
           Prosperity comes last and rounds down.
         </p>
         <!-- Source: server-scripts/MadMageTower.cs:AwardKillExperience — Chambers kills use dungeon balancing times 3 and Double XP only. -->
-        <!-- Source: server-scripts/Monster.cs:3155-3160 — Chambers enemies skip the normal reward path with its Forgotten Altar and Prosperity multipliers. -->
+        <!-- Source: server-scripts/Monster.cs:3159-3164 — Chambers enemies skip the normal reward path with its Forgotten Altar and Prosperity multipliers. -->
         <!-- Source: server-scripts/MadMageTowerRules.cs:97-104; server-scripts/MadMageTower.cs:1143-1146 — completion experience is a fixed level-based award without Double XP. -->
         <p class="text-sm text-muted-foreground">
           Kills in the
@@ -1041,7 +1041,7 @@
         <!-- Source: server-scripts/Player.cs:15544-15549 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — Double XP applies to attaching augments. -->
-        <!-- Source: server-scripts/PlayerQuests.cs:404-405 — no double XP for quests -->
+        <!-- Source: server-scripts/PlayerQuests.cs:723-724 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:15120-15123 — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
           <span class="block"
@@ -1057,7 +1057,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Party XP</h3>
         <!-- Source: server-scripts/Experience.cs:CalculateExperienceShare -->
-        <!-- Source: server-scripts/Monster.cs:3413-3442 — party kill XP award loop -->
+        <!-- Source: server-scripts/Monster.cs:3417-3446 — party kill XP award loop -->
         <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
         <!-- Source: server-scripts/Monster.cs:OnDeath, Experience.cs:CalculateExperienceShare — the kill passes 1.25f as bonusPercentagePerMember. -->
@@ -1105,7 +1105,7 @@
             </tbody>
           </table>
         </div>
-        <!-- Source: server-scripts/Monster.cs:3413-3442 — the award loop counts and pays party players in proximity, not their mercenaries. -->
+        <!-- Source: server-scripts/Monster.cs:3417-3446 — the award loop counts and pays party players in proximity, not their mercenaries. -->
         <p class="text-sm text-muted-foreground">
           Mercenaries take none of your kill XP and do not count toward party
           sharing.
@@ -1477,7 +1477,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/PlayerQuests.cs:404-405 — rewardExperience added directly, no multipliers -->
+      <!-- Source: server-scripts/PlayerQuests.cs:723-724 — rewardExperience added directly, no multipliers -->
       <p class="text-sm text-muted-foreground">
         XP varies per quest and is shown on each quest's page. No bonus or
         penalty changes it.

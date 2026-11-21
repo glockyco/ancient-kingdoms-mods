@@ -160,7 +160,7 @@
       Movement Speed bonus below −10, except damage over time with no other
       effect besides a slow.
     </p>
-    <!-- Source: server-scripts/Monster.cs:497-509; Skills.cs:1289-1326 — bosses and immune monsters ignore all slows, elites ignore speed bonuses at most -10, and these monsters skip the strong-slow movement reset. -->
+    <!-- Source: server-scripts/Monster.cs:501-513; Skills.cs:1289-1326 — bosses and immune monsters ignore all slows, elites ignore speed bonuses at most -10, and these monsters skip the strong-slow movement reset. -->
     <p>
       Bosses and monsters with Immune to Debuffs ignore every slow. Elite
       monsters ignore Movement Speed bonuses of −10 or lower.
@@ -172,7 +172,7 @@
     <!-- Source: server-scripts/Monster.cs:UpdateServer_IDLE; Pet.cs:UpdateServer_IDLE; Npc.cs:UpdateServer_IDLE — the at-most-−50 Sleep branch precedes the at-most-−10 Root branch. -->
     <!-- Source: server-scripts/Combat.cs:DealDamageAt (damage > 0 calls BreakMezz) -->
     <!-- Source: server-scripts/Skills.cs:251-260 — damage-over-time recovery ticks call BreakMezz except NecromancerReaperFormSkill. -->
-    <!-- Source: server-scripts/Monster.cs:1722-1736 (monster self-break: magic resist roll every 6s) -->
+    <!-- Source: server-scripts/Monster.cs:1726-1740 (monster self-break: magic resist roll every 6s) -->
     <p>
       A debuff that brings Movement Speed to −50 or lower puts the target to
       sleep instead of rooting it.

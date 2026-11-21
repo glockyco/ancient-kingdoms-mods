@@ -359,7 +359,7 @@
       class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
     >
       <ol class="divide-y [&>li:nth-child(even)]:bg-muted/30">
-        <!-- Source: server-scripts/PlayerQuests.cs:236-253 — any one completed predecessor meets the prerequisite. -->
+        <!-- Source: server-scripts/PlayerQuests.cs:249-266 — any one completed predecessor meets the prerequisite. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">1</span>
           <div>
@@ -370,7 +370,7 @@
             </p>
           </div>
         </li>
-        <!-- Source: server-scripts/UINpcQuests.cs:266-269; server-scripts/UIQuests.cs:152-168 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
+        <!-- Source: server-scripts/UINpcQuests.cs:272-275; server-scripts/UIQuests.cs:163-179 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">2</span>
           <div>
@@ -381,7 +381,7 @@
             </p>
           </div>
         </li>
-        <!-- Source: server-scripts/PlayerQuests.cs:477-483 — abandoning removes the quest record, including its progress. -->
+        <!-- Source: server-scripts/PlayerQuests.cs:796-802 — abandoning removes the quest record, including its progress. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">3</span>
           <div>
@@ -429,7 +429,7 @@
           </tr>
         </thead>
         <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
-          <!-- Source: server-scripts/PlayerQuests.cs:296-310,323-350; server-scripts/KillQuest.cs:16-47 — kill and location progress advances only for accepted quests. -->
+          <!-- Source: server-scripts/PlayerQuests.cs:796-810,316-345,504-519; server-scripts/KillQuest.cs:16-47 — kill and location progress advances only for accepted quests. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Kill" /></td>
             <td class="px-4 py-2">Kills after you accept</td>
@@ -440,7 +440,7 @@
             <td class="px-4 py-2">Reaching the place after you accept</td>
             <td class="px-4 py-2 text-muted-foreground">Nothing is taken</td>
           </tr>
-          <!-- Source: server-scripts/PlayerQuests.cs:334-350; server-scripts/LocationQuest.cs:13-26 — Find quests start fulfilled on acceptance. -->
+          <!-- Source: server-scripts/PlayerQuests.cs:326-328; server-scripts/LocationQuest.cs:13-26 — Find quests start fulfilled on acceptance. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Find" /></td>
             <td class="px-4 py-2">Done as soon as you accept</td>
@@ -448,7 +448,7 @@
               >Talk to the completion NPC</td
             >
           </tr>
-          <!-- Source: server-scripts/GatherQuest.cs:21-26,63-74; server-scripts/PlayerQuests.cs:100-108 — Gather quests record items collected after acceptance. -->
+          <!-- Source: server-scripts/GatherQuest.cs:21-26,63-74; server-scripts/PlayerQuests.cs:113-121 — Gather quests record items collected after acceptance. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Gather" /></td>
             <td class="px-4 py-2">Items you gather after you accept</td>

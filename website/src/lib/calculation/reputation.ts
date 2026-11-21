@@ -68,7 +68,7 @@ function withHonesty(
     },
   };
 }
-// Source: server-scripts/Monster.cs:697-721 — only the Health contribution rounds, and normal monster reputation loss keeps its fraction.
+// Source: server-scripts/Monster.cs:701-725 — only the Health contribution rounds, and normal monster reputation loss keeps its fraction.
 export function reputationExample(
   level = 70,
   health = 3_000_000,

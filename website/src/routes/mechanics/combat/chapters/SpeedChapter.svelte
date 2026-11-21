@@ -78,14 +78,14 @@
           <td>No effect</td>
           <td>Shortens cast</td>
         </tr>
-        <!-- Source: server-scripts/Skills.cs:FinishCastMeleeAttackMonster; Monster.cs:2234-2240; Npc.cs:1307-1315 — monster and NPC non-spell attacks reduce cooldown by their skill Haste bonus. -->
+        <!-- Source: server-scripts/Skills.cs:FinishCastMeleeAttackMonster; Monster.cs:2238-2244; Npc.cs:1307-1315 — monster and NPC non-spell attacks reduce cooldown by their skill Haste bonus. -->
         <tr>
           <th scope="row">Monster and NPC Non-Spell Attacks</th>
           <td>Cast time + cooldown × (100% − Haste)</td>
           <td>Shortens cooldown</td>
           <td>No effect</td>
         </tr>
-        <!-- Source: server-scripts/Monster.cs:3678,2234-2240; Npc.cs:673,1307-1315; Skills.cs:FinishCast — monster and NPC casts receive zero spell haste, and spells keep their cooldowns. -->
+        <!-- Source: server-scripts/Monster.cs:3682,2238-2244; Npc.cs:673,1307-1315; Skills.cs:FinishCast — monster and NPC casts receive zero spell haste, and spells keep their cooldowns. -->
         <tr>
           <th scope="row">Monster and NPC Spells</th>
           <td>Cast time + cooldown</td>

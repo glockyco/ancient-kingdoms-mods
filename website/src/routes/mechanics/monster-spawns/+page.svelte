@@ -226,7 +226,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:1120-1127 and Entity.cs:244-252 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
+          <!-- Source: server-scripts/Monster.cs:1124-1131 and Entity.cs:244-252 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
           Respawn timers keep running while the zone is empty. Monsters whose timers
           have ended return when someone enters.
         </li>
@@ -337,7 +337,7 @@
           </tr>
         </thead>
         <tbody class="text-muted-foreground">
-          <!-- Source: server-scripts/Monster.cs:3163-3173,912-922 — a dead boss waits for its saved respawn deadline. -->
+          <!-- Source: server-scripts/Monster.cs:3167-3177,916-926 — a dead boss waits for its saved respawn deadline. -->
           <tr class="border-b border-border/50">
             <td class="py-2 pr-4">Its respawn timer has not ended.</td>
             <td class="py-2"
@@ -346,7 +346,7 @@
               ></td
             >
           </tr>
-          <!-- Source: server-scripts/Monster.cs:2412-2415 — respawn waits for the configured in-game time window. -->
+          <!-- Source: server-scripts/Monster.cs:2416-2419 — respawn waits for the configured in-game time window. -->
           <tr class="border-b border-border/50">
             <td class="py-2 pr-4">Its spawn window is closed.</td>
             <td class="py-2"
@@ -355,7 +355,7 @@
               ></td
             >
           </tr>
-          <!-- Source: server-scripts/Monster.cs:2400-2406 — a failed appearance roll hides the monster and re-arms the timer. -->
+          <!-- Source: server-scripts/Monster.cs:2404-2410 — a failed appearance roll hides the monster and re-arms the timer. -->
           <tr class="border-b border-border/50">
             <td class="py-2 pr-4">Its rare-spawn roll failed.</td>
             <td class="py-2"
@@ -387,7 +387,7 @@
               ></td
             >
           </tr>
-          <!-- Source: server-scripts/Monster.cs:1796-1811,1953-1970 — a monster can return home and reset health rather than die. -->
+          <!-- Source: server-scripts/Monster.cs:1800-1815,1957-1974 — a monster can return home and reset health rather than die. -->
           <tr>
             <td class="py-2 pr-4"
               >It chased too far, returned home, and reset to full Hit Points.</td
@@ -413,7 +413,7 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:2402-2407 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
+        <!-- Source: server-scripts/Monster.cs:2406-2411 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
         <!-- Source: server-scripts/Monster.cs:Start,SetRespawnBosses — regular rares can roll at server start; rare bosses and elites instead wait for a timer. -->
         A failed roll means another full interval of waiting. If the zone is empty
         when a roll is due, it waits for someone to enter. Missed rolls do not accumulate.
@@ -668,7 +668,7 @@
           >Portals and Entry Requirements</MechanicsLink
         >.
       </p>
-      <!-- Source: server-scripts/Player.cs:16516-16528; Monster.cs:2400-2420 — a zeroed respawn deadline does not bypass summon, chance, seasonal, or time-window spawn checks. -->
+      <!-- Source: server-scripts/Player.cs:16516-16528; Monster.cs:2404-2424 — a zeroed respawn deadline does not bypass summon, chance, seasonal, or time-window spawn checks. -->
       <p class="text-sm text-muted-foreground">
         After renewal, summoned monsters need their guards dead together and
         rare monsters must pass their spawn roll. Monsters with limited spawn
@@ -677,7 +677,7 @@
       </p>
 
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:16516-16528 and Monster.cs:2402-2407 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
+        <!-- Source: server-scripts/Player.cs:16516-16528 and Monster.cs:2406-2411 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
         <span class="block"
           >Buy renewal once, then enter the dungeon to trigger one rare-spawn
           roll.</span
@@ -872,8 +872,8 @@
           >One in-game day lasts exactly one real hour, so each game hour is 2.5
           real minutes.</span
         >
-        <!-- Source: server-scripts/Monster.cs:2412-2415 — respawn is held while outside the spawn window. -->
-        <!-- Source: server-scripts/Monster.cs:EventTimeDespawn; Monster.cs:1863-1867 — outside its window a monster with no aggro is hidden and warped home. -->
+        <!-- Source: server-scripts/Monster.cs:2416-2419 — respawn is held while outside the spawn window. -->
+        <!-- Source: server-scripts/Monster.cs:EventTimeDespawn; Monster.cs:1867-1871 — outside its window a monster with no aggro is hidden and warped home. -->
         <span class="block"
           >These monsters respawn only during their listed hours.</span
         >
@@ -936,7 +936,7 @@
         </table>
       </div>
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:2408-2411 — Halloween monsters additionally only respawn while the Halloween event is active. -->
+        <!-- Source: server-scripts/Monster.cs:2412-2415 — Halloween monsters additionally only respawn while the Halloween event is active. -->
         <a
           href="/monsters/pumpkin_head"
           class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -962,7 +962,7 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:837-844 — summonable monsters start hidden; only chance-based non-elite summons start with their respawn timer armed. -->
+        <!-- Source: server-scripts/Monster.cs:841-848 — summonable monsters start hidden; only chance-based non-elite summons start with their respawn timer armed. -->
         <!-- Source: server-scripts/SummonMonster.cs:Update,AreAllPlaceholdersDead — checks the fixed placed group at one-second intervals; while the summon is dead the group must be observed with a living guard and then all dead. -->
         <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD — spawn rolls require an elapsed timer and current guard readiness; a configured arrival message is sent to the zone. -->
         Kill the specific guard group listed below quickly enough that all are dead
@@ -972,7 +972,7 @@
         roll succeeds. Many summons announce their arrival to the zone.
       </p>
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:2402-2407 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
+        <!-- Source: server-scripts/Monster.cs:2406-2411 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
         If the spawn roll fails, the summon waits another full interval before rolling
         again. Its guard group must be dead together for that next roll.
       </p>
@@ -1281,7 +1281,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:1953-1970 — on arriving home the monster heals to full, restores mana, clears aggro and debuffs, and destroys its summoned pets. -->
+          <!-- Source: server-scripts/Monster.cs:1957-1974 — on arriving home the monster heals to full, restores mana, clears aggro and debuffs, and destroys its summoned pets. -->
           <span class="block"
             >On returning home, a monster recovers full Hit Points and Mana,
             forgets enemies, loses harmful effects, and dismisses its summoned

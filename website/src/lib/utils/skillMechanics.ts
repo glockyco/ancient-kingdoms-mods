@@ -520,7 +520,7 @@ export function computeMechanicsSpec(
       });
     }
     if (hasMonsters) {
-      // Source: server-scripts/Monster.cs:2234-2240; Npc.cs:1309-1315 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
+      // Source: server-scripts/Monster.cs:2238-2244; Npc.cs:1309-1315 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
       const model: TimingModel = isSpell ? "monster_spell" : "monster";
       timingPairs.push({ caster: { kind: "monster" }, model });
     }

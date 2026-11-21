@@ -85,8 +85,8 @@
   );
 
   // Source: server-scripts/EventAltar.cs:205-217; server-scripts/DefaultEvent.cs:200-213 — altar activation starts the event that spawns each wave.
-  // Source: server-scripts/Monster.cs:834-845,2400-2420 — summonable monsters start hidden and wait for readiness.
-  // Source: server-scripts/Monster.cs:3201-3210 — a slain monster can spawn its configured placeholder.
+  // Source: server-scripts/Monster.cs:838-849,2404-2424 — summonable monsters start hidden and wait for readiness.
+  // Source: server-scripts/Monster.cs:3205-3214 — a slain monster can spawn its configured placeholder.
   function requirementText(target: SlayerTarget): string {
     if (target.spawn_type === "altar") {
       const wave =

@@ -720,7 +720,7 @@
                       name={reputationReward.faction}
                       id={data.factionIds[reputationReward.faction]}
                     />
-                    <!-- Source: server-scripts/PlayerQuests.cs:454-457; Player.cs:ApplyVirtueFactionGain — the quest gain goes through the Honesty blessing. -->
+                    <!-- Source: server-scripts/PlayerQuests.cs:773-776; Player.cs:ApplyVirtueFactionGain — the quest gain goes through the Honesty blessing. -->
                     <span class="text-muted-foreground"
                       >(more with <a
                         href={virtueHref("honesty")}

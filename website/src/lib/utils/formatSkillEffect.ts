@@ -813,7 +813,7 @@ function formatBuffDebuffStats(
   // Sleep (speedBonus <= -50f): breaks on any damage hit or DoT tick (BreakMezz, Skills.cs).
   // Root (-50f < speedBonus <= -10f): does NOT break on damage; RemoveRoot self-break timer.
   // Slow (speedBonus > -10f and < 0): pure speed reduction, no CC mechanic.
-  // Source: server-scripts/Monster.cs:1722-1739; Npc.cs:830-847; Pet.cs:2189-2194,2297-2299 (FSM branches); Skills.cs:BreakMezz
+  // Source: server-scripts/Monster.cs:1726-1743; Npc.cs:830-847; Pet.cs:2189-2194,2297-2299 (FSM branches); Skills.cs:BreakMezz
   const speedBonus = parseLinearValue(skill.speed_bonus);
   if (speedBonus) {
     if (speedBonus.base_value <= -50) {
@@ -1073,7 +1073,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
     "set bind point (respawn & Gate Scroll destination, except Chambers of Chaos respawns)",
   // Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — every potion but Bandages applies its buff at 1 + rank, and each buff level adds 60s.
   elixir_endurance: "potion buff duration +60s × rank (not bandages)",
-  // Source: server-scripts/Monster.cs:1039-1059 — minimap marks never show in Temple of Valaark or the Chambers of Chaos.
+  // Source: server-scripts/Monster.cs:1043-1063 — minimap marks never show in Temple of Valaark or the Chambers of Chaos.
   veteran_awareness:
     "reveals nearby monsters on minimap (not in Temple of Valaark or Chambers of Chaos)",
   // Source: server-scripts/Combat.cs:DealDamageAt,isParry — during the cast, your target's single-target physical hits are blocked and 50% of the damage, rounded and clamped to 1-5,000, is dealt back.
@@ -1130,7 +1130,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // stats are in the DB but the gap-closer behavior is hardcoded.
   charge:
     "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
-  // Source: server-scripts/PlayerInventory.cs:2566-2580; Player.cs:3638-3645 — the cast before a travel item takes effect, refused in combat.
+  // Source: server-scripts/PlayerInventory.cs:2557-2571; Player.cs:3638-3645 — the cast before a travel item takes effect, refused in combat.
   teleport: "use travel items (out of combat)",
   // Source: server-scripts/Combat.cs:137 — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
   razor_of_wrath:

@@ -217,7 +217,7 @@
                   >{tierSpan(tier.min_value, tier.max_value)}</td
                 >
                 <td class="py-2">
-                  <!-- Source: server-scripts/UIHousing.cs:Start; server-scripts/PlayerQuests.cs:131-143; server-scripts/UIFactions.cs:adaptTextFaction — house and quest requirements use total points, while the panel shows tier progress. Source: website/data/compendium.db:houses.faction_required, quests.faction_requirements — houses require 21,000 and Trial of the Ancients requires 21,000 with Elven Kingdom. -->
+                  <!-- Source: server-scripts/UIHousing.cs:Start; server-scripts/PlayerQuests.cs:144-156; server-scripts/UIFactions.cs:adaptTextFaction — house and quest requirements use total points, while the panel shows tier progress. Source: website/data/compendium.db:houses.faction_required, quests.faction_requirements — houses require 21,000 and Trial of the Ancients requires 21,000 with Elven Kingdom. -->
                   {#if tier.id === 5}
                     <a
                       href="/mechanics/housing"
@@ -251,7 +251,7 @@
         points. A total of 15&#8239;000 reads Friendly 14&#8239;000 /
         20&#8239;000.
       </p>
-      <!-- Source: server-scripts/Npc.cs:1745-1749; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
+      <!-- Source: server-scripts/Npc.cs:1745-1749; PlayerQuests.cs:144-156; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
       <p>
         Quests may require reputation with a faction other than their quest
         giver's. See <a
@@ -406,7 +406,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerQuests.cs:454-457 — quest completion raises the start NPC's faction. -->
+      <!-- Source: server-scripts/PlayerQuests.cs:773-776 — quest completion raises the start NPC's faction. -->
       <p>
         <span class="block"
           >Handing in an ordinary quest gives 20 reputation per recommended
@@ -517,7 +517,7 @@
           / 200&#8239;000 in the faction panel).
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerQuests.cs:131-143 — every quest faction requirement must be met. -->
+          <!-- Source: server-scripts/PlayerQuests.cs:144-156 — every quest faction requirement must be met. -->
           <strong class="text-foreground">Quests</strong> can require any amount with
           any faction. You have to meet every listed requirement before you can pick
           the quest up.
@@ -550,7 +550,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:15412-15416, Monster.cs:3484-3496, Npc.cs:1648-1658, PlayerQuests.cs:454-457, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:15412-15416, Monster.cs:3484-3496, Npc.cs:1648-1658, PlayerQuests.cs:773-776, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         Your reputation can keep rising above Exalted or falling below Hated.
