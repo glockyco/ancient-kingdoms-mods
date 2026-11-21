@@ -24,7 +24,7 @@ internal sealed class ProfessionsSettings
     {
         _page = page;
         page.Section("Look");
-        Style = page.Choice("Style", ProfessionStyle.List, "Style",
+        Style = page.Choice("Style", ProfessionStyle.Compact, "Style",
             "Compact shows icons and levels. Its header shows on hover.",
             (ProfessionStyle.List, "List"), (ProfessionStyle.Compact, "Compact"));
 
@@ -41,6 +41,7 @@ internal sealed class ProfessionsSettings
 
         Panel = new PanelHost(page, "Panel", PanelResize.Size,
             new Vector2(110f, 480f), new Vector2(384f, 300f), new Vector2(56f, 80f), new Vector2(520f, 1000f));
+            new Vector2(693f, -120f), new Vector2(256f, 300f), new Vector2(56f, 80f), new Vector2(520f, 1000f));
     }
 
     public ChoiceSetting<ProfessionStyle> Style { get; }

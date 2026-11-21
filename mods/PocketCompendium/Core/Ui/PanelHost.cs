@@ -247,7 +247,9 @@ public sealed class PanelHost
             return;
         }
 
-        if (_mode == Mode.Idle) KeepOnScreen();
+        // From the saved place, so a panel that a smaller screen or an early interface scale
+        // pushed inwards returns once there is room again.
+        if (_mode == Mode.Idle) KeepOnScreen(fromSaved: true);
     }
 
     private void StartDrag(IReadOnlyList<RectTransform> dragHandles)
@@ -281,13 +283,13 @@ public sealed class PanelHost
     }
 
     /// <summary>Moves the panel back inside the screen, keeping at least its header visible.</summary>
-    public void KeepOnScreen()
+    public void KeepOnScreen(bool fromSaved = false)
     {
         if (Rect == null) return;
 
         Vector2 canvas = Overlay.CanvasSize;
         float scale = Rect.localScale.x;
-        Vector2 position = Rect.anchoredPosition;
+        Vector2 position = fromSaved ? new Vector2(_x.Value, _y.Value) : Rect.anchoredPosition;
         var kept = PanelPlacement.KeepVisible(
             position.x, position.y, canvas.x, canvas.y,
             Mathf.Max(Rect.sizeDelta.x, HeaderWidth) * scale, Rect.sizeDelta.y * scale, VisibleHeader * scale, EdgeMargin);
