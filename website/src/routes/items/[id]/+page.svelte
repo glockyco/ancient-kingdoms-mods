@@ -1325,8 +1325,8 @@
       <div class={styles.proseFact}>
         <dt class={styles.label}>Bosses</dt>
         <dd>
-          {#each data.fatecharmBosses as boss, i (boss.id)}
-            {#if i > 0},&#32;{/if}<a
+          {#each data.fatecharmBosses as boss, i (boss.id)}{#if i > 0},{/if}
+            <a
               href="/monsters/{boss.id}"
               class="{styles.link} whitespace-nowrap">{boss.name}</a
             >
