@@ -17,5 +17,7 @@
 ## 3. Verification
 
 - [x] 3.1 Build and deploy, and check on the scratch save every kind and quality in the bags, and Mana Shard marks in the inventory, equipment, combined backpack, bank, mercenary window, Augmenter, sell, buyback, repair and essence lists and the skillbar
-- [ ] 3.3 Check the inspect window and both trade offers with a second player, and the Sacrifice shrine's lists, which the scratch save could not open
+- [ ] 3.3 Check the Sacrifice shrine's lists, which the scratch save could not open
 - [x] 3.2 Run the Pocket Compendium tests and strict OpenSpec validation
+
+The inspect window and both trade offers need a second player, and they are not checked in the game. Their marks share the slot code that 3.1 checked.
