@@ -48,6 +48,19 @@ public sealed class PortraitView
 
     public RectTransform Rect { get; }
 
+    /// <summary>
+    /// Draws the picture <paramref name="size"/> units wide, centred near the tile's top, so an
+    /// item icon keeps a margin inside its frame and above a caption band. Portraits fill the frame.
+    /// </summary>
+    public void Inset(float size, float top)
+    {
+        var rect = _portrait.rectTransform;
+        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 1f);
+        rect.pivot = new Vector2(0.5f, 1f);
+        rect.sizeDelta = new Vector2(size, size);
+        rect.anchoredPosition = new Vector2(0f, -top);
+    }
+
     /// <param name="dimmed">Dims the portrait in full, for a dead monster in a list row.</param>
     public void Set(Sprite sprite, Color tier, bool dimmed, bool watched, bool silhouette)
     {

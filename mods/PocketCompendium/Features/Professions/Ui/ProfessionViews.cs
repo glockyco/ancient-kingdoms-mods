@@ -67,6 +67,9 @@ internal sealed class ProfessionRowView
 internal sealed class ProfessionTileView
 {
     public const float Size = 44f;
+    // The game's profession icons fill their square, so they sit smaller than the tile.
+    private const float IconSize = 28f;
+    private const float IconTop = 4f;
 
     private readonly PortraitView _portrait;
     private readonly Label _caption;
@@ -77,6 +80,7 @@ internal sealed class ProfessionTileView
     public ProfessionTileView(Transform parent)
     {
         _portrait = new PortraitView(parent, Size, 2f);
+        _portrait.Inset(IconSize, IconTop);
         Rect = _portrait.Rect;
         Rect.GetComponent<Image>().raycastTarget = true;
         _tooltip = new HoverText(Rect);
