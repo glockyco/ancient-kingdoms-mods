@@ -8,7 +8,7 @@ Defines what an item detail page shows and in what order, so a player can see wh
 
 ### Requirement: The page opens with the tooltip beside the item's facts
 
-An item page SHALL open with the in-game tooltip and one list of the item's facts side by side, both ending at the same height. An item without a tooltip SHALL show the fact list across the full width. On a narrow screen the tooltip SHALL come first and the fact list below it.
+An item page SHALL open with the in-game tooltip and one list of the item's facts side by side, both ending at the same height. An item without a tooltip SHALL show the fact list across the full width. On a narrow screen the tooltip SHALL come first and the fact list below it. A fact whose value is a list of names SHALL keep the label-and-value row of the other facts and put one name on each line, as the Primal Fatecharm's Bosses row does, so the card's rows line up.
 
 #### Scenario: A weapon page on a desktop screen
 

@@ -1322,14 +1322,11 @@
       </div>
     {/if}
     {#if data.fatecharmBosses.length}
-      <div class={styles.proseFact}>
+      <div class={styles.fact}>
         <dt class={styles.label}>Bosses</dt>
-        <dd>
-          {#each data.fatecharmBosses as boss, i (boss.id)}{#if i > 0},{/if}
-            <a
-              href="/monsters/{boss.id}"
-              class="{styles.link} whitespace-nowrap">{boss.name}</a
-            >
+        <dd class="flex flex-col items-end gap-1 @2xl:items-start">
+          {#each data.fatecharmBosses as boss (boss.id)}
+            <a href="/monsters/{boss.id}" class={styles.link}>{boss.name}</a>
           {/each}
         </dd>
       </div>
