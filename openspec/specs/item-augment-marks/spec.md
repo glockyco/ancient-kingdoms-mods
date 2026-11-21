@@ -7,7 +7,7 @@ Pocket Compendium shows on each item slot which augment the item carries, so pla
 
 ### Requirement: An augmented item's slot shows its augment
 
-While augment marks is on, every slot that draws an augmentable item's icon SHALL show, for an item that has an augment, the augment's icon in a small frame in the slot's top-right corner. This covers the inventory window with its equipment slots, the combined backpack, the bank, the house chest, the equipment window of a mercenary or an inspected player, both offers of a player trade, the Augmenter's list, a merchant's sell, buyback and repair lists, an essence trader's list, the Sacrifice shrine's item list and offerings, and the skillbar. The icon SHALL fill the frame with its visible part, leaving out the transparent padding of the game's icon. The frame SHALL take 22 of an inventory slot's 58 units and the same share of any other slot. The frame SHALL take the augment's quality colour as the game colours items: green for Uncommon, blue for Magic, purple for Epic and orange for Legendary.
+While augment marks is on, every slot that draws an augmentable item's icon SHALL show, for an item that has an augment, the augment's icon in a small frame in the slot's top-right corner. The icon SHALL fill the frame without the transparent padding of the game's icon. The frame SHALL take 22 of an inventory slot's 58 units and the same share of any other slot, in the augment's quality colour: green for Uncommon, blue for Magic, purple for Epic and orange for Legendary.
 
 #### Scenario: A Great augment on worn armour
 
@@ -38,6 +38,15 @@ While augment marks is on, every slot that draws an augmentable item's icon SHAL
 
 - **WHEN** the skillbar holds a ring whose first copy in the inventory carries a Small Mana Shard
 - **THEN** the skillbar slot shows the Mana Shard's icon in a green frame sized to the skillbar slot
+
+### Requirement: Augment marks cover every window that shows items
+
+Augment marks SHALL cover the inventory window with its equipment slots, the combined backpack, the bank, the house chest, the equipment window of a mercenary or an inspected player, both offers of a player trade, the Augmenter's list, a merchant's sell, buyback and repair lists, an essence trader's list, the Sacrifice shrine's item list and offerings, and the skillbar.
+
+#### Scenario: A merchant's sell list
+
+- **WHEN** the player opens a merchant's sell list holding a ring with a Small Mana Shard
+- **THEN** the ring's slot shows the Mana Shard's icon in a green frame
 
 ### Requirement: Only augments get a mark
 

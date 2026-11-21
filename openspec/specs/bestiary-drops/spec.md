@@ -21,7 +21,7 @@ While drop chances are on, each drop on a Bestiary page SHALL show its chance pe
 
 ### Requirement: A Fatecharm's effect shows on the drops it improves
 
-A drop whose chance per kill the boss's Fatecharm raises SHALL carry that Fatecharm's icon. A boss's Fatecharm is its own one, such as the Primal Fatecharm of a world boss, and otherwise its dungeon's. While the Fatecharm is in the player's main inventory, the first 24 slots, the icon SHALL be lit and the slot SHALL show the raised chance. Otherwise the icon SHALL be dimmed and the slot SHALL show the chance without it. Its tooltip SHALL give both chances, name the Fatecharm, and say that a kill uses it up.
+A drop whose chance per kill the boss's Fatecharm raises SHALL carry that Fatecharm's icon. A boss's Fatecharm is its own, else its dungeon's. While it is in the player's main inventory, the first 24 slots, the icon SHALL be lit and the slot SHALL show the raised chance. Otherwise the icon SHALL be dimmed and the slot SHALL show the chance without it. Its tooltip SHALL give both chances, name the Fatecharm, and say that a kill uses it up.
 
 #### Scenario: The charm in the main inventory
 
