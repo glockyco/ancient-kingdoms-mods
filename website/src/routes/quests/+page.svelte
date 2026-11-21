@@ -359,14 +359,15 @@
       class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
     >
       <ol class="divide-y [&>li:nth-child(even)]:bg-muted/30">
-        <!-- Source: server-scripts/PlayerQuests.cs:249-266 — any one completed predecessor meets the prerequisite. -->
+        <!-- Source: server-scripts/PlayerQuests.cs:249-266,UserCode_CmdShareQuest__Int32; server-scripts/UIQuestSlot.cs:Awake — any one completed predecessor meets the prerequisite, and the quest log's share button offers an active quest to party members. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">1</span>
           <div>
             <p class="font-medium">Accept the quest.</p>
             <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
               If it lists several prerequisite quests, completing any one of
-              them is enough.
+              them is enough. A party member who has the quest can also share it
+              with you from their quest log.
             </p>
           </div>
         </li>

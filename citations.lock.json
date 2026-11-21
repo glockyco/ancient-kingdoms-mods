@@ -4647,6 +4647,9 @@
     "PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32__Int32": {
       "span": 0
     },
+    "PlayerQuests.cs:UserCode_CmdShareQuest__Int32": {
+      "span": 0
+    },
     "PlayerSkillbar.cs:Load": {
       "span": 0
     },
@@ -6398,6 +6401,9 @@
       "span": 0
     },
     "UINpcTrading.cs:Update": {
+      "span": 0
+    },
+    "UIQuestSlot.cs:Awake": {
       "span": 0
     },
     "UIQuestTracking.cs:LateUpdate": {
