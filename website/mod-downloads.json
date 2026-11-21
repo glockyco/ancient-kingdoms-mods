@@ -14,6 +14,14 @@
       "description": "Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster, and marks the herbs, ores, fish and Radiant Sparks you're looking for.",
       "releases": [
         {
+          "version": "1.6.0",
+          "date": "2026-11-21",
+          "changes": [
+            "Adds a Professions panel.",
+            "Adds a panel menu on the minimap."
+          ]
+        },
+        {
           "version": "1.5.3",
           "date": "2026-11-21",
           "changes": ["Supports the Primal Fatecharm."]
