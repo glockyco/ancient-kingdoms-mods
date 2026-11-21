@@ -27,6 +27,15 @@ The list style SHALL show each profession as a row with its icon, name and level
 - **WHEN** the player clicks the style button of the panel in the list style
 - **THEN** the panel shows tiles, and hovering the Mining tile names Mining
 
+### Requirement: The grip sets the panel's width
+
+The panel's grip SHALL set its width. The list SHALL put more than six rows into two columns, as the game's tab does, where two fit. The compact style SHALL put as many tiles on a line as the width holds.
+
+#### Scenario: A narrow list
+
+- **WHEN** the player drags the grip of the list until two columns no longer fit
+- **THEN** the 13 rows stand in one column
+
 ### Requirement: Watched professions can show alone
 
 Clicking a row or tile SHALL toggle whether its profession is watched, marked with the gold corner. A pin button in the header SHALL show only the watched professions, in either style, and is gold while it does. With the pin on and nothing watched, the panel SHALL show every profession. Watched professions and the pin SHALL persist across sessions.

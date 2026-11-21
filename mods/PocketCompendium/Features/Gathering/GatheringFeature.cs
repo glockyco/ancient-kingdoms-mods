@@ -3,6 +3,7 @@ using Il2Cpp;
 using PocketCompendium.Core;
 using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Game;
+using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.Gathering.Model;
 using PocketCompendium.Features.Gathering.Ui;
 using PocketCompendium.Features.MapPins;
@@ -11,7 +12,7 @@ using UnityEngine;
 namespace PocketCompendium.Features.Gathering;
 
 /// <summary>
-/// Lists every herb, ore, fish and spark behind a round button on the minimap, and marks the watched
+/// Lists every herb, ore, fish and spark in a panel the panel menu shows, and marks the watched
 /// ones on the map, the minimap and the screen's edge. Its work in a frame depends on the watched
 /// nodes of the current zone, and it searches the scene only when a world loads.
 /// </summary>
@@ -21,7 +22,6 @@ public sealed class GatheringFeature : Feature
 
     private readonly GatheringSettings _settings;
     private readonly GatherCatalogue _catalogue = new();
-    private readonly MinimapButton _button = new();
     private readonly MinimapIcons _minimap = new();
     private readonly MapPinsLayer _mapPins = new();
     private readonly GatherArrow _arrow = new();
@@ -43,6 +43,7 @@ public sealed class GatheringFeature : Feature
     {
         _settings = new GatheringSettings(Settings);
         Settings.Changed += () => _settingsChanged = true;
+        PanelMenu.Register(new PanelToggle("Gathering", () => Icons.Leaf, () => Running, _settings.Shown, _settings.Save));
     }
 
     protected internal override void Enable()
@@ -56,7 +57,6 @@ public sealed class GatheringFeature : Feature
     {
         _panel?.Destroy();
         _panel = null;
-        _button.Destroy();
         _minimap.Destroy();
         _mapPins.Destroy();
         _arrow.Destroy();
@@ -91,12 +91,6 @@ public sealed class GatheringFeature : Feature
         if (player.idZone != _zone || Time.unscaledTime >= _nextRefresh || settingsChanged || WatchedChanged())
             Refresh(player, position);
 
-        if (_button.Ensure() && _button.Update(_settings.Shown.Value))
-        {
-            _settings.Shown.Value = !_settings.Shown.Value;
-            _settings.Save();
-        }
-
         UpdatePanel(settingsChanged);
 
         var nodes = _catalogue.Zone(_zone);
@@ -116,8 +110,7 @@ public sealed class GatheringFeature : Feature
     protected internal override void OnSceneUnloaded(string sceneName)
     {
         if (sceneName != "World") return;
-        // Leaving a world destroys the game's interface the button, icons and pins sit in.
-        _button.Forget();
+        // Leaving a world destroys the game's interface the icons and pins sit in.
         _minimap.Forget();
         _mapPins.Forget();
         _arrow.Destroy();

@@ -22,7 +22,7 @@ const STROKE_WIDTH = 2.2;
 /** Output file name, Lucide icon name, and whether the shape is filled instead of stroked. */
 const ICONS = [
   ["check", "check"],
-  ["circle-alert", "circle-alert"],
+  ["circle-alert", "circle-exclamation-point"],
   ["circle-arrow-down", "circle-arrow-down"],
   ["circle-check", "circle-check"],
   ["book-open", "book-open"],
@@ -57,6 +57,7 @@ const ICONS = [
   ["sun", "sun"],
   ["swords", "swords"],
   ["timer", "timer"],
+  ["trending-up", "trending-up"],
   ["x", "x"],
 ];
 

@@ -1,6 +1,7 @@
 using PocketCompendium.Core.Features;
 using PocketCompendium.Core.Game;
 using PocketCompendium.Core.Tracking;
+using PocketCompendium.Core.Ui;
 using PocketCompendium.Features.BossList.Ui;
 
 namespace PocketCompendium.Features.BossList;
@@ -21,6 +22,7 @@ public sealed class BossListFeature : Feature
     {
         _settings = new BossListSettings(Settings);
         Settings.Changed += () => _settingsChanged = true;
+        PanelMenu.Register(new PanelToggle("Bosses", () => Icons.Skull, () => Running, _settings.Shown, Settings.Save));
     }
 
     public override bool UsesTracker => true;
@@ -44,6 +46,14 @@ public sealed class BossListFeature : Feature
         if (tracker == null || !tracker.Ready || tracker.Failed || !GameAccess.InWorld || GameAccess.LocalPlayer == null)
         {
             if (_panel.Exists) _panel.SetVisible(false);
+            return;
+        }
+
+        // Hidden from the panel menu. Watches, alerts and the other surfaces keep working.
+        if (!_settings.Shown.Value)
+        {
+            if (_panel.Exists) _panel.SetVisible(false);
+            _shownVersion = -1;
             return;
         }
 

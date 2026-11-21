@@ -58,7 +58,7 @@ internal sealed class GatheringSettings
     public ChoiceSetting<GrowingNodes> Growing { get; }
     public ChoiceSetting<ZoneScope> Zones { get; }
 
-    /// <summary>Whether the list shows. It starts hidden, so a player who doesn't gather sees only the button.</summary>
+    /// <summary>Whether the list shows, switched in the panel menu. It starts hidden for a player who does not gather yet.</summary>
     public MelonPreferences_Entry<bool> Shown { get; }
 
     /// <summary>The chosen tab, by <see cref="Model.GatherCategory"/>.</summary>

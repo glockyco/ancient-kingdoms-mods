@@ -14,7 +14,6 @@ internal sealed class TileView
     public const float Size = 44f;
 
     private static readonly Color UnknownCaption = new(0.725f, 0.761f, 0.800f, 1f);
-    private static readonly Color CaptionShade = new(0f, 0f, 0f, 0.85f);
 
     private readonly PortraitView _portrait;
     private readonly Image _icon;
@@ -30,10 +29,8 @@ internal sealed class TileView
         hit.raycastTarget = true;
         _tooltip = new HoverText(Rect);
 
-        // A shade under the caption keeps a gold "Up" readable on light portraits.
-        var shade = HudFactory.Box("shade", Rect, CaptionShade);
-        shade.sprite = Shapes.Shade;
-        HudFactory.Place(shade.rectTransform, Vector2.zero, new Vector2(1f, 0.6f), new Vector2(2f, 2f), new Vector2(-2f, 0f));
+        // A band under the caption keeps a gold "Up" readable on light portraits.
+        TileCaption.Band(Rect);
 
         _hover = HudFactory.Box("hover", Rect, new Color(1f, 1f, 1f, 0.12f));
         HudFactory.Stretch(_hover, new Vector2(2f, 2f), new Vector2(-2f, -2f));
@@ -47,10 +44,7 @@ internal sealed class TileView
         shadow.effectColor = new Color(0f, 0f, 0f, 0.9f);
         shadow.effectDistance = new Vector2(1f, -1f);
 
-        _caption = HudFactory.Label("caption", Rect, 12f, Color.white, Align.Center, bold: true, monospaced: true);
-        _caption.Text.extraPadding = true;
-        HudFactory.Outline(_caption.Text);
-        HudFactory.Place(_caption.Rect, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(-3f, -2f), new Vector2(3f, 17f));
+        _caption = TileCaption.Caption(Rect);
     }
 
     public RectTransform Rect { get; }

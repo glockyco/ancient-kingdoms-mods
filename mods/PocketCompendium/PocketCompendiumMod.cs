@@ -19,6 +19,7 @@ using PocketCompendium.Features.Fatecharms;
 using PocketCompendium.Features.Gathering;
 using PocketCompendium.Features.BossList;
 using PocketCompendium.Features.MapPins;
+using PocketCompendium.Features.Professions;
 using PocketCompendium.Features.BossSkills;
 using PocketCompendium.Features.Sharing;
 using PocketCompendium.Features.WorldMarkers;
@@ -61,6 +62,7 @@ public sealed class PocketCompendiumMod : MelonMod
         var fatecharms = new FatecharmsFeature();
         var augmentMarks = new AugmentMarksFeature();
         var gathering = new GatheringFeature();
+        var professions = new ProfessionsFeature();
         var sharing = new SharingFeature();
         _features.Add(bossList);
         _features.Add(worldMarkers);
@@ -75,6 +77,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _features.Add(fatecharms);
         _features.Add(augmentMarks);
         _features.Add(gathering);
+        _features.Add(professions);
         _features.Add(sharing);
 
         string build = ModBuild.Commit(typeof(PocketCompendiumMod).Assembly);
@@ -95,6 +98,7 @@ public sealed class PocketCompendiumMod : MelonMod
             SettingsGroup.Of("Respawns", Icons.Timer, bossList, mapPins, dungeonEntrances, worldMarkers, edgeArrows, alerts, sharing),
             SettingsGroup.Of("Bestiary", Icons.BookOpen, bestiaryPages, bestiaryCountdown, dropsFound),
             SettingsGroup.Of("Gathering", Icons.Leaf, gathering),
+            SettingsGroup.Of("Professions", Icons.TrendingUp, professions),
             SettingsGroup.Of("Combat", Icons.Swords, bossSkills, fatecharms, augmentMarks),
             SettingsGroup.Drawn(new UpdatesPage(_updates)),
             SettingsGroup.Drawn(new AboutPage(Info.Version, build, _features.Features)),
@@ -111,8 +115,11 @@ public sealed class PocketCompendiumMod : MelonMod
         _updates.Update();
         _startScreen.Update();
 
-        // The window updates first, so a click on it never reaches a panel below.
+        // The window updates first, so a click on it never reaches a panel below. The panel menu
+        // follows, as it opens over the panels.
         _settings.Update();
+        bool inWorld = GameAccess.InWorld && GameAccess.LocalPlayer != null;
+        PanelMenu.Update(inWorld);
         // The tracker refreshes before the features that read it.
         _tracker.Update(_features.TrackerWanted);
         _features.Update();
@@ -120,7 +127,6 @@ public sealed class PocketCompendiumMod : MelonMod
         Tooltip.Update();
 
         // A feature can stop before the player exists, so its card waits for the player.
-        bool inWorld = GameAccess.InWorld && GameAccess.LocalPlayer != null;
         _noticeCard.Update(inWorld);
         if (inWorld) LogWorldEntry();
     }
@@ -138,6 +144,7 @@ public sealed class PocketCompendiumMod : MelonMod
         // Source: server-scripts/MadMageTowerScenes.cs:Create — each Chambers of Chaos run loads and unloads a private scene, so only the World scene ends the tracker session.
         if (sceneName == "World") _tracker.EndSession();
         _features.OnSceneUnloaded(sceneName);
+        PanelMenu.OnSceneUnloaded(sceneName);
         if (sceneName == "World") _worldLogged = false;
     }
 
@@ -146,6 +153,7 @@ public sealed class PocketCompendiumMod : MelonMod
         _features.StopAll();
         _tracker.EndSession();
         _settings.Destroy();
+        PanelMenu.Destroy();
         _startScreen.Destroy();
         Overlay.Dispose();
         Tooltip.Dispose();

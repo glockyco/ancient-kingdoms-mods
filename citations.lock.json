@@ -6403,6 +6403,9 @@
     "UINpcTrading.cs:Update": {
       "span": 0
     },
+    "UIProfessions.cs:Update": {
+      "span": 0
+    },
     "UIQuestSlot.cs:Awake": {
       "span": 0
     },

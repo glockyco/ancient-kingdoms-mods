@@ -10,7 +10,6 @@ internal sealed class GatherTileView
 {
     public const float Size = 44f;
 
-    private static readonly Color CaptionShade = new(0f, 0f, 0f, 0.85f);
     private static readonly Color Elsewhere = new(0.42f, 0.42f, 0.45f, 1f);
 
     private readonly PortraitView _portrait;
@@ -28,18 +27,13 @@ internal sealed class GatherTileView
         _image = Rect.Find("image").GetComponent<Image>();
         _tooltip = new HoverText(Rect);
 
-        _shade = HudFactory.Box("shade", Rect, CaptionShade);
-        _shade.sprite = Shapes.Shade;
-        HudFactory.Place(_shade.rectTransform, Vector2.zero, new Vector2(1f, 0.6f), new Vector2(2f, 2f), new Vector2(-2f, 0f));
+        _shade = TileCaption.Band(Rect);
 
         _hover = HudFactory.Box("hover", Rect, new Color(1f, 1f, 1f, 0.12f));
         HudFactory.Stretch(_hover, new Vector2(2f, 2f), new Vector2(-2f, -2f));
         _hover.enabled = false;
 
-        _caption = HudFactory.Label("caption", Rect, 12f, Color.white, Align.Center, bold: true, monospaced: true);
-        _caption.Text.extraPadding = true;
-        HudFactory.Outline(_caption.Text);
-        HudFactory.Place(_caption.Rect, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(-3f, -2f), new Vector2(3f, 17f));
+        _caption = TileCaption.Caption(Rect);
     }
 
     public RectTransform Rect { get; }

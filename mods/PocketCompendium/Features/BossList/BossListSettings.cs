@@ -1,3 +1,4 @@
+using MelonLoader;
 using PocketCompendium.Core.Game;
 using PocketCompendium.Core.Settings;
 using PocketCompendium.Core.Ui;
@@ -41,6 +42,8 @@ public sealed class BossListSettings
             "State lists monsters that are up first, then the soonest to spawn. Distance lists the nearest first, Level the lowest.",
             (SortOrder.State, "State"), (SortOrder.Distance, "Distance"), (SortOrder.Level, "Level"));
 
+        Shown = page.Stored("Shown", true);
+
         Panel = new PanelHost(page, "Panel", PanelResize.Size,
             new Vector2(-810f, 235f), new Vector2(304f, 520f), new Vector2(240f, 120f), new Vector2(520f, 1000f));
     }
@@ -54,6 +57,9 @@ public sealed class BossListSettings
     public ChoiceSetting<SortOrder> Sort { get; }
     public ToggleSetting Direction { get; }
     public PanelHost Panel { get; }
+
+    /// <summary>Whether the list shows, switched in the panel menu.</summary>
+    public MelonPreferences_Entry<bool> Shown { get; }
 
     /// <summary>Copies the filters into <paramref name="filter"/>.</summary>
     public void Fill(ListFilter filter)
