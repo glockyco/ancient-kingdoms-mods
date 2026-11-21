@@ -55,7 +55,7 @@
       title: "Professions",
       text: "Shows your profession levels without opening the Skills window.",
       image: "/mod-pictures/card-professions.webp",
-      alt: "The Professions panel with the levels of all 13 professions, Cooking and Mining watched.",
+      alt: "The Professions panel listing all 13 profession levels, beside the minimap's panel menu with Bosses, Gathering and Professions switched on.",
     },
     {
       title: "Fatecharms",
