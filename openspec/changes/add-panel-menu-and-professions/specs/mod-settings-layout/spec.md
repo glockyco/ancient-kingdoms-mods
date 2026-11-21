@@ -28,6 +28,15 @@ A panel SHALL be as wide as what it shows, so no empty strip runs beside its las
 - **WHEN** the player drags the Gathering list's grip as far left as it goes
 - **THEN** the list shows four tiles to a line under its four tabs and its header
 
+### Requirement: Panels start clear of the game's windows
+
+At first start the boss list SHALL sit at the window's left edge above the chat, and the Gathering list and the Professions panel at the bottom right, high enough that their tallest views stay on a 16:9 screen. With the game's windows at their own defaults, no panel SHALL start under the game's frames, quest tracker, skillbar or chat.
+
+#### Scenario: A new player
+
+- **WHEN** a player starts Pocket Compendium for the first time with the game's windows at their defaults
+- **THEN** the compact boss list shows above the chat, and the Gathering list and the Professions panel at the bottom right, each clear of the game's windows
+
 ## RENAMED Requirements
 
 - FROM: `### Requirement: Features sit in four groups`

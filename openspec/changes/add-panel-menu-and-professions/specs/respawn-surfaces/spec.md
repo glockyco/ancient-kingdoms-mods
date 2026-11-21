@@ -16,6 +16,15 @@ The compact style SHALL show one portrait tile per monster with its time or stat
 
 ## ADDED Requirements
 
+### Requirement: The boss list starts compact
+
+At first start the boss list SHALL show in the compact style.
+
+#### Scenario: First start
+
+- **WHEN** a player starts Pocket Compendium for the first time
+- **THEN** the boss list shows portrait tiles with their times
+
 ### Requirement: The boss list hides without stopping its tracking
 
 The boss list SHALL show while its switch in the panel menu is on, which it is at first start. Hidden, it SHALL draw nothing, and watched monsters SHALL stay watched and raise their alerts.

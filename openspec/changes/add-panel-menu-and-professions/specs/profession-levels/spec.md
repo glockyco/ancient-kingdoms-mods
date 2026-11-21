@@ -45,11 +45,11 @@ Clicking a row or tile SHALL toggle whether its profession is watched, marked wi
 - **WHEN** the player watches Cooking, Mining and Fishing and turns the pin on
 - **THEN** the panel shows only those three
 
-### Requirement: The panel starts hidden and only reads
+### Requirement: The panel starts compact and only reads
 
-At first start the panel SHALL be hidden, with its row in the panel menu off. The panel SHALL only read the character's levels.
+At first start the panel SHALL show in the compact style. The panel SHALL only read the character's levels.
 
 #### Scenario: First start
 
 - **WHEN** a player starts the version that adds the panel for the first time
-- **THEN** no Professions panel shows until it is switched on in the panel menu
+- **THEN** the Professions panel shows its 13 tiles at the bottom right

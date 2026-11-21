@@ -20,6 +20,10 @@ Gathering keeps its `Shown` entry, so a player's open or closed list carries ove
 
 The caption band of `TileView`, `GatherTileView` and the profession tiles is a solid black at 0.78 alpha across the bottom 17 of 44 units, under a 13 px bold caption. Countdowns keep their monospaced digits. The Bestiary grid's countdowns keep their shade, because they sit among the game's own tiles.
 
+### Defaults
+
+New players start with all three panels shown and compact: the boss list at the left edge above the chat, Gathering on its ores tab and Professions at the bottom right. Positions stay relative to the screen's middle and panels grow down from their top-left corner, so the bottom-right places sit high enough for the fishing tab and the Professions list on a 16:9 screen. The notice card's first place, above the chat, overlaps the boss list's, which only matters while a stopped feature's card shows.
+
 ### Icons
 
 `generate-mod-icons.mjs` adds Lucide `hammer` for Professions in the menu and the settings. The skull, open book, leaf and pin already exist.

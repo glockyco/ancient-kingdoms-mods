@@ -10,14 +10,19 @@ The Gathering panel SHALL show one tab per category, herbs, ores, fishing and sp
 - **THEN** Chamomile, Spike and Violet come first with their ready counts
 - **AND** the other 16 herbs follow dimmed
 
-### Requirement: The list starts hidden
+### Requirement: The list starts shown on the ores tab
 
-At first start the list SHALL be hidden, with its row in the panel menu off.
+At first start the list SHALL show, on the ores tab, the shortest that still shows the list at work.
 
 #### Scenario: First start
 
-- **WHEN** a player starts the version that adds the gathering helper for the first time
-- **THEN** the minimap shows the panel button and the list is hidden
+- **WHEN** a player starts Pocket Compendium for the first time
+- **THEN** the Gathering list shows its ores tab at the bottom right
+
+## RENAMED Requirements
+
+- FROM: `### Requirement: The list starts hidden`
+- TO: `### Requirement: The list starts shown on the ores tab`
 
 ## REMOVED Requirements
 

@@ -13,7 +13,7 @@ public sealed class BossListSettings
     public BossListSettings(SettingsPage page)
     {
         page.Section("Look");
-        Style = page.Choice("Style", ListStyle.List, "Style",
+        Style = page.Choice("Style", ListStyle.Compact, "Style",
             "Compact shows only portraits and times. Its header appears when you hover over it.",
             (ListStyle.List, "List"), (ListStyle.Compact, "Compact"));
         Direction = page.Toggle("Direction", true, "Direction",
@@ -45,7 +45,7 @@ public sealed class BossListSettings
         Shown = page.Stored("Shown", true);
 
         Panel = new PanelHost(page, "Panel", PanelResize.Size,
-            new Vector2(-810f, 235f), new Vector2(304f, 520f), new Vector2(56f, 120f), new Vector2(520f, 1000f));
+            new Vector2(-949f, -120f), new Vector2(304f, 520f), new Vector2(56f, 120f), new Vector2(520f, 1000f));
     }
 
     public ChoiceSetting<ListStyle> Style { get; }

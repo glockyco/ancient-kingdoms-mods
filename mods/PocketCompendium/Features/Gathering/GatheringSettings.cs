@@ -45,11 +45,11 @@ internal sealed class GatheringSettings
         foreach (string key in _watched.Value ?? Array.Empty<string>())
             if (!string.IsNullOrEmpty(key))
                 _keys.Add(key);
-        Shown = page.Stored("Shown", false);
-        Tab = page.Stored("Tab", 0);
+        Shown = page.Stored("Shown", true);
+        Tab = page.Stored("Tab", 1);
 
         Panel = new PanelHost(page, "Panel", PanelResize.Size,
-            new Vector2(700f, 230f), new Vector2(222f, 300f), new Vector2(170f, 80f), new Vector2(520f, 1000f));
+            new Vector2(440f, -60f), new Vector2(222f, 300f), new Vector2(170f, 80f), new Vector2(520f, 1000f));
     }
 
     public ToggleSetting MapPins { get; }
@@ -58,7 +58,7 @@ internal sealed class GatheringSettings
     public ChoiceSetting<GrowingNodes> Growing { get; }
     public ChoiceSetting<ZoneScope> Zones { get; }
 
-    /// <summary>Whether the list shows, switched in the panel menu. It starts hidden for a player who does not gather yet.</summary>
+    /// <summary>Whether the list shows, switched in the panel menu. It starts shown, on the ores tab, the shortest that still shows the list at work.</summary>
     public MelonPreferences_Entry<bool> Shown { get; }
 
     /// <summary>The chosen tab, by <see cref="Model.GatherCategory"/>.</summary>

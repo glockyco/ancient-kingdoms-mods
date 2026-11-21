@@ -37,17 +37,16 @@ internal sealed class ProfessionsSettings
         foreach (string key in _watched.Value ?? Array.Empty<string>())
             if (!string.IsNullOrEmpty(key))
                 _keys.Add(key);
-        Shown = page.Stored("Shown", false);
+        Shown = page.Stored("Shown", true);
 
         Panel = new PanelHost(page, "Panel", PanelResize.Size,
-            new Vector2(110f, 480f), new Vector2(384f, 300f), new Vector2(56f, 80f), new Vector2(520f, 1000f));
             new Vector2(693f, -120f), new Vector2(256f, 300f), new Vector2(56f, 80f), new Vector2(520f, 1000f));
     }
 
     public ChoiceSetting<ProfessionStyle> Style { get; }
     public ToggleSetting WatchedOnly { get; }
 
-    /// <summary>Whether the panel shows, switched in the panel menu. It starts hidden.</summary>
+    /// <summary>Whether the panel shows, switched in the panel menu.</summary>
     public MelonPreferences_Entry<bool> Shown { get; }
 
     public PanelHost Panel { get; }
