@@ -73,7 +73,7 @@ public static class PanelMenu
 
         if (!_button.activeSelf) _button.SetActive(true);
         _icon.color = _open ? Theme.Golden : Color.white;
-        _tooltip.Text = "<b>Pocket Compendium</b>\nShow or hide its panels.";
+        _tooltip.Text = "<b>Pocket Compendium</b>\nChoose which panels show.";
 
         if (Pointer.Clicked(_buttonRect))
         {

@@ -38,7 +38,7 @@ The panel's grip SHALL set its width. The list SHALL put more than six rows into
 
 ### Requirement: Watched professions can show alone
 
-Clicking a row or tile SHALL toggle whether its profession is watched, marked with the gold corner. A pin button in the header SHALL show only the watched professions, in either style, and is gold while it does. With the pin on and nothing watched, the panel SHALL show every profession. Watched professions and the pin SHALL persist across sessions.
+Clicking a row or tile SHALL toggle whether its profession is watched, marked with the gold corner. A profession's tooltip SHALL give its name, its level as "47.36 of 100" and "Click to watch." or "Click to stop watching." A pin button in the header SHALL show only the watched professions, in either style, and is gold while it does. With the pin on and nothing watched, the panel SHALL show every profession. Watched professions and the pin SHALL persist across sessions.
 
 #### Scenario: Three watched
 

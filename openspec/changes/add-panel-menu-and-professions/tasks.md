@@ -16,7 +16,7 @@
 ## 3. Tiles
 
 - [x] 3.1 Put the captions of the boss, Gathering and profession tiles on the dark band
-- [x] 3.2 Add `trending-up` to `website/scripts/generate-mod-icons.mjs` and regenerate the icons
+- [x] 3.2 Add `hammer` to `website/scripts/generate-mod-icons.mjs` and regenerate the icons
 
 ## 4. Words
 

@@ -230,8 +230,8 @@ internal sealed class ProfessionsPanel
         bool pinned = _settings.WatchedOnly.Value;
         _pinButton.Active = pinned;
         _pinTooltip.Text = pinned
-            ? "<b>Show all</b>\nShow every profession."
-            : "<b>Watched only</b>\nShow only the professions you watch. Click one to watch it.";
+            ? "<b>Show all professions</b>\nAlso show the ones you don't watch."
+            : "<b>Show watched only</b>\nClick a profession to watch it.";
     }
 
     private void SetHeaderShown(bool shown)

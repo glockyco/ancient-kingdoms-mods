@@ -98,7 +98,7 @@ public sealed class PocketCompendiumMod : MelonMod
             SettingsGroup.Of("Respawns", Icons.Timer, bossList, mapPins, dungeonEntrances, worldMarkers, edgeArrows, alerts, sharing),
             SettingsGroup.Of("Bestiary", Icons.BookOpen, bestiaryPages, bestiaryCountdown, dropsFound),
             SettingsGroup.Of("Gathering", Icons.Leaf, gathering),
-            SettingsGroup.Of("Professions", Icons.TrendingUp, professions),
+            SettingsGroup.Of("Professions", Icons.Hammer, professions),
             SettingsGroup.Of("Combat", Icons.Swords, bossSkills, fatecharms, augmentMarks),
             SettingsGroup.Drawn(new UpdatesPage(_updates)),
             SettingsGroup.Drawn(new AboutPage(Info.Version, build, _features.Features)),

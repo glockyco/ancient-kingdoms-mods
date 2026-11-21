@@ -57,7 +57,7 @@ const ICONS = [
   ["sun", "sun"],
   ["swords", "swords"],
   ["timer", "timer"],
-  ["trending-up", "trending-up"],
+  ["hammer", "hammer"],
   ["x", "x"],
 ];
 

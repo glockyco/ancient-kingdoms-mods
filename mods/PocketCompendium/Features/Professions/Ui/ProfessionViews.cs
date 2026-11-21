@@ -17,6 +17,7 @@ internal sealed class ProfessionRowView
     private readonly Label _name;
     private readonly Label _level;
     private readonly RectTransform _corner;
+    private readonly HoverText _tooltip;
 
     public ProfessionRowView(Transform parent)
     {
@@ -28,6 +29,7 @@ internal sealed class ProfessionRowView
         _corner = WatchCorner.Create(_icon.rectTransform, CornerSize);
         _name = HudFactory.Label("name", Rect, 12.5f, Theme.Text, Align.Left);
         _level = HudFactory.Label("level", Rect, 12.5f, Theme.Text, Align.Right, bold: true);
+        _tooltip = new HoverText(Rect);
     }
 
     public RectTransform Rect { get; }
@@ -48,6 +50,7 @@ internal sealed class ProfessionRowView
         _name.Value = profession.Name;
         _level.Value = profession.LevelText;
         _level.Color = profession.Maxed ? Theme.LevelYellow : Theme.Text;
+        _tooltip.Text = ProfessionTooltip.Build(profession, watched);
         HudFactory.TopLeft(_name.Rect, 4f + IconSize + 6f, 0f, width - IconSize - 14f - LevelWidth, Height);
         HudFactory.TopLeft(_level.Rect, width - 4f - LevelWidth, 0f, LevelWidth, Height);
     }
@@ -99,7 +102,7 @@ internal sealed class ProfessionTileView
         _portrait.Set(profession.Icon, Theme.Steel, dimmed: false, watched, silhouette: false);
         _caption.Value = profession.LevelText;
         _caption.Color = profession.Maxed ? Theme.LevelYellow : Color.white;
-        _tooltip.Text = "<b>" + profession.Name + "</b>\n" + (profession.Fraction * 100f).ToString("N2") + " of 100";
+        _tooltip.Text = ProfessionTooltip.Build(profession, watched);
     }
 
     public bool UpdateHover(bool overPanel)
@@ -112,6 +115,18 @@ internal sealed class ProfessionTileView
         }
         return hovered;
     }
+}
+
+/// <summary>A profession's tooltip: its name, its level out of 100 and what a click does.</summary>
+internal static class ProfessionTooltip
+{
+    // The Gathering tiles' gap and grey click line.
+    private const string SectionGap = "\n<size=50%> </size>";
+    private const string Footer = "#6B7684";
+
+    public static string Build(ProfessionSource.Profession profession, bool watched) =>
+        "<b>" + profession.Name + "</b>\n" + (profession.Fraction * 100f).ToString("N2") + " of 100" + SectionGap +
+        "\n<size=90%><color=" + Footer + ">" + (watched ? "Click to stop watching." : "Click to watch.") + "</color></size>";
 }
 
 /// <summary>The gold diamond over an icon's top-right corner that marks a watched item, as on tiles.</summary>

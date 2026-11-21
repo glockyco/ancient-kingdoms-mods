@@ -25,12 +25,12 @@ internal sealed class ProfessionsSettings
         _page = page;
         page.Section("Look");
         Style = page.Choice("Style", ProfessionStyle.List, "Style",
-            "Compact shows only icons and levels. Its header appears when you hover over it.",
+            "Compact shows icons and levels. Its header shows on hover.",
             (ProfessionStyle.List, "List"), (ProfessionStyle.Compact, "Compact"));
 
         page.Section("Show");
         WatchedOnly = page.Toggle("WatchedOnly", false, "Watched only",
-            "Shows only the professions you watch, or all of them while you watch none.");
+            "Shows only the professions you watch.");
         page.Note("Click a profession in the panel to watch it.");
 
         _watched = page.Stored("Watched", Array.Empty<string>());

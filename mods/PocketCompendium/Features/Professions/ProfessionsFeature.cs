@@ -27,7 +27,7 @@ public sealed class ProfessionsFeature : Feature
     {
         _settings = new ProfessionsSettings(Settings);
         Settings.Changed += () => _dirty = true;
-        PanelMenu.Register(new PanelToggle("Professions", () => Icons.TrendingUp, () => Running, _settings.Shown, _settings.Save));
+        PanelMenu.Register(new PanelToggle("Professions", () => Icons.Hammer, () => Running, _settings.Shown, _settings.Save));
     }
 
     protected internal override void Enable()

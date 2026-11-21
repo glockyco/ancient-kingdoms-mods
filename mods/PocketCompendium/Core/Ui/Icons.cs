@@ -54,7 +54,7 @@ public static class Icons
     public static Sprite Sun => Get("sun");
     public static Sprite Swords => Get("swords");
     public static Sprite Timer => Get("timer");
-    public static Sprite TrendingUp => Get("trending-up");
+    public static Sprite Hammer => Get("hammer");
     public static Sprite X => Get("x");
 
     private static Sprite Get(string name)

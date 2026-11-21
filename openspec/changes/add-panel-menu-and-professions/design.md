@@ -22,7 +22,7 @@ The caption band of `TileView`, `GatherTileView` and the profession tiles is a s
 
 ### Icons
 
-`generate-mod-icons.mjs` adds Lucide `trending-up` for Professions in the menu. The skull, open book, leaf and pin already exist.
+`generate-mod-icons.mjs` adds Lucide `hammer` for Professions in the menu and the settings. The skull, open book, leaf and pin already exist.
 
 ## Open questions
 

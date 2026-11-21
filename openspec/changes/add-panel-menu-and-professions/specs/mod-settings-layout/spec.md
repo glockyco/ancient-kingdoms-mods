@@ -2,7 +2,7 @@
 
 ### Requirement: One round button shows and hides the panels
 
-A round button with an open book, in the minimap's own frame on its lower left, SHALL open a menu with a switch for each panel whose feature is on: Bosses with a skull, Gathering with a leaf, and Professions. A switch SHALL show or hide only its panel, and the button SHALL be gold while the menu is open. A hidden panel SHALL leave nothing on screen. Whether each panel shows SHALL persist across sessions. The button SHALL show only while at least one of these features is on.
+A round button with an open book, in the minimap's own frame on its lower left, SHALL open a menu with a switch for each panel whose feature is on: Bosses with a skull, Gathering with a leaf, and Professions with a hammer. A switch SHALL show or hide only its panel, and the button SHALL be gold while the menu is open. A hidden panel SHALL leave nothing on screen. Whether each panel shows SHALL persist across sessions. The button SHALL show only while at least one of these features is on.
 
 #### Scenario: Hiding the boss list
 
