@@ -370,7 +370,7 @@
             </p>
           </div>
         </li>
-        <!-- Source: server-scripts/UINpcQuests.cs:272-275; server-scripts/UIQuests.cs:163-179 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
+        <!-- Source: server-scripts/PlayerQuests.cs:CanStartQuest; server-scripts/UIQuests.cs:163-179 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">2</span>
           <div>
@@ -392,7 +392,7 @@
             </p>
           </div>
         </li>
-        <!-- Source: server-scripts/Player.cs:UserCode_TargetCompletedQuest__Int32__Int64; server-scripts/PlayerQuests.cs:CountComplete,UserCode_CmdAccept__NetworkIdentity__Int32 — each turn-in checks the completed quests in the log against 10, 20, 30 and 50. Accepting a daily quest again replaces its old entry, so it counts once. -->
+        <!-- Source: server-scripts/Player.cs:UserCode_TargetCompletedQuest__Int32__Int64; server-scripts/PlayerQuests.cs:CountComplete,TryStartQuest — each turn-in checks the completed quests in the log against 10, 20, 30 and 50. Accepting a daily quest again replaces its old entry, so it counts once. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">4</span>
           <div>
