@@ -52,6 +52,12 @@
       alt: "The Gathering list beside the minimap with Violet's tooltip, and an arrow to Chamomile 26 yd away.",
     },
     {
+      title: "Professions",
+      text: "Shows your profession levels without opening the Skills window.",
+      image: "/mod-pictures/card-professions.webp",
+      alt: "The Professions panel with the levels of all 13 professions, Cooking and Mining watched.",
+    },
+    {
       title: "Fatecharms",
       text: "Warns you on the target frame when killing a boss would use the Fatecharm in your main inventory.",
       image: "/mod-pictures/card-fatecharms.webp",

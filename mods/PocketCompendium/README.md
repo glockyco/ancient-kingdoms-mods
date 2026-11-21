@@ -19,7 +19,7 @@ The mod only displays information. It doesn't change combat, loot, or spawns.
 - Click a monster in the boss list to get an alert when it spawns.
 - Shift-click it, or hold Alt and click the monster in the world, to open its Bestiary page.
 - Hover over a row, map pin, skill or drop for details.
-- Click the leaf button on the minimap for the Gathering list.
+- Click the book on the minimap to choose which panels show.
 - Press F8 for the settings.
 
 ## Features
@@ -38,9 +38,15 @@ Marks respawn timers on the map and on spawn points, and points to monsters off 
 
 ### Gathering
 
-Marks the herbs, ores, fish and Radiant Sparks you watch on the map and the minimap, and points to the nearest ready one. The leaf button on the minimap opens the list where you choose them.
+Marks the herbs, ores, fish and Radiant Sparks you watch on the map and the minimap, and points to the nearest ready one. Show the list from the book on the minimap to choose them.
 
 ![The Gathering list beside the minimap with Violet's tooltip, and an arrow to Chamomile 26 yd away.](../../assets/pocket-compendium-gathering.webp)
+
+### Professions
+
+Shows your profession levels without opening the Skills window.
+
+![The Professions panel with the levels of all 13 professions, Cooking and Mining watched.](../../assets/pocket-compendium-professions.webp)
 
 ### Bestiary
 

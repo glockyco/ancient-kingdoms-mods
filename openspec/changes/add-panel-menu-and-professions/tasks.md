@@ -20,10 +20,10 @@
 
 ## 4. Words
 
-- [ ] 4.1 Draw the menu's and panel's words, tooltips, the Professions icon and the settings group in the built feature, choose them in a comparison, and update the specs
+- [x] 4.1 Draw the menu's and panel's words, tooltips, the Professions icon and the settings group in the built feature, choose them in a comparison, and update the specs
 
 ## 5. Documentation and verification
 
-- [ ] 5.1 Describe the menu and the Professions panel in `mods/PocketCompendium/README.md` and the `/mods` page
+- [x] 5.1 Describe the menu and the Professions panel in `mods/PocketCompendium/README.md` and the `/mods` page
 - [ ] 5.2 Build, deploy and check every scenario of this change on the scratch save
 - [ ] 5.3 Run the Pocket Compendium tests and strict OpenSpec validation
