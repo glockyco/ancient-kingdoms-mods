@@ -25,5 +25,7 @@
 ## 5. Documentation and verification
 
 - [x] 5.1 Describe the menu and the Professions panel in `mods/PocketCompendium/README.md` and the `/mods` page
-- [ ] 5.2 Build, deploy and check every scenario of this change on the scratch save
-- [ ] 5.3 Run the Pocket Compendium tests and strict OpenSpec validation
+- [x] 5.2 Build, deploy and check every scenario of this change on the scratch save
+- [x] 5.3 Run the Pocket Compendium tests and strict OpenSpec validation
+
+The alert for a watched boss that spawns while the list is hidden is not observed in the game. Hiding only stops the list from drawing, and alerts are a feature of their own.
