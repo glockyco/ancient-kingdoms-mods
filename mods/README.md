@@ -11,7 +11,7 @@ MelonLoader mods for Ancient Kingdoms players and for building the game's compen
 | Mod | What it does | Download |
 | --- | --- | --- |
 | [FieldDefaultValueHookFix](FieldDefaultValueHookFix/README.md) | Prevents the crash on world entry caused by an incorrect Il2CppInterop method lookup. The fixed MelonLoader already includes it. | [DLL](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll) |
-| [PocketCompendium](PocketCompendium/README.md) | Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster. It includes everything BossTracker, BossSkillTracker, and BetterBestiary did, so delete those DLLs first. | [DLL](https://ancient-kingdoms.compendiums.org/mods/PocketCompendium.dll) |
+| [PocketCompendium](PocketCompendium/README.md) | Quality-of-life features for Ancient Kingdoms: boss timers, monster info, gathering helpers and more. It includes everything BossTracker, BossSkillTracker, and BetterBestiary did, so delete those DLLs first. | [DLL](https://ancient-kingdoms.compendiums.org/mods/PocketCompendium.dll) |
 
 ## Parts of Pocket Compendium
 

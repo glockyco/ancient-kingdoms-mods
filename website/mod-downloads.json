@@ -11,7 +11,7 @@
       "id": "pocket-compendium",
       "project": "PocketCompendium",
       "name": "Pocket Compendium",
-      "description": "Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster, and marks the herbs, ores, fish and Radiant Sparks you're looking for.",
+      "description": "Quality-of-life features for Ancient Kingdoms: boss timers, monster info, gathering helpers and more.",
       "releases": [
         {
           "version": "1.6.0",

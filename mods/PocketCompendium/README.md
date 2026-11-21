@@ -1,6 +1,6 @@
 # Pocket Compendium
 
-Pocket Compendium is a MelonLoader mod for Ancient Kingdoms. It shows when bosses, elites, and fabled monsters spawn and where to find them, and marks the herbs, ores, fish and Radiant Sparks you're looking for. It also opens the full Bestiary page of any monster, even one you haven't discovered yet.
+Pocket Compendium is a MelonLoader mod with quality-of-life features for Ancient Kingdoms: boss timers, monster info, gathering helpers and more.
 
 The mod only displays information. It doesn't change combat, loot, or spawns.
 

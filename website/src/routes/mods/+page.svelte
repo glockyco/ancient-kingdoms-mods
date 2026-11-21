@@ -101,10 +101,8 @@
           >
         </p>
         <p class="text-lg text-pretty text-muted-foreground">
-          A mod for Ancient Kingdoms that shows when bosses, elites, and fabled
-          monsters spawn, where to find them, and their skill cooldowns in a
-          fight. It also opens the full Bestiary page of any monster and marks
-          the herbs, ores, fish and Radiant Sparks you're looking for.
+          Quality-of-life features for Ancient Kingdoms: boss timers, monster
+          info, gathering helpers and more.
         </p>
       </div>
       <div class="flex flex-wrap gap-3 lg:flex-col">

@@ -27,7 +27,7 @@ You need Ancient Kingdoms and MelonLoader. The latest official MelonLoader (0.7.
 | Mod | What it does | Download |
 | --- | --- | --- |
 | [FieldDefaultValueHookFix](mods/FieldDefaultValueHookFix/README.md) | Prevents a crash on world entry under MelonLoader. The fixed MelonLoader already includes it. | [DLL](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll) |
-| [PocketCompendium](mods/PocketCompendium/README.md) | Shows when bosses, elites, and fabled monsters spawn, their skill cooldowns during a fight, and the full Bestiary page of every monster. It includes everything BossTracker, BossSkillTracker, and BetterBestiary did, so delete those DLLs from `Mods` first. | [DLL](https://ancient-kingdoms.compendiums.org/mods/PocketCompendium.dll) |
+| [PocketCompendium](mods/PocketCompendium/README.md) | Quality-of-life features for Ancient Kingdoms: boss timers, monster info, gathering helpers and more. It includes everything BossTracker, BossSkillTracker, and BetterBestiary did, so delete those DLLs from `Mods` first. | [DLL](https://ancient-kingdoms.compendiums.org/mods/PocketCompendium.dll) |
 
 Click a mod for its controls and settings. The [mod catalogue](mods/README.md) also lists the mods behind the tooling.
 
