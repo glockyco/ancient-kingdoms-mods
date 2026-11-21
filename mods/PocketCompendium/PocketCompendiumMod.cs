@@ -23,7 +23,7 @@ using PocketCompendium.Features.BossSkills;
 using PocketCompendium.Features.Sharing;
 using PocketCompendium.Features.WorldMarkers;
 
-[assembly: MelonInfo(typeof(PocketCompendium.PocketCompendiumMod), "Pocket Compendium", "1.5.2", "WoW_Much")]
+[assembly: MelonInfo(typeof(PocketCompendium.PocketCompendiumMod), "Pocket Compendium", "1.5.3", "WoW_Much")]
 [assembly: MelonGame("ancientpixels", "ancientkingdoms")]
 [assembly: HarmonyDontPatchAll]
 
