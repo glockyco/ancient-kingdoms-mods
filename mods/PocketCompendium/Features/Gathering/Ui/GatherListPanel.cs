@@ -23,7 +23,9 @@ internal sealed class GatherListPanel
     private const float Gap = 6f;
     private const float ControlSize = 22f;
     private const float ControlIconSize = 15f;
-    private const float MinWidth = 210f;
+    // Four tiles, the least that leaves its tabs and header buttons room, so the panel's edge
+    // always meets a line of tiles.
+    private const float MinWidth = 2f * Pad + 4f * GatherTileView.Size + 3f * Gap;
 
     private static readonly GatherCategory[] Tabs = { GatherCategory.Herbs, GatherCategory.Ores, GatherCategory.Fishing, GatherCategory.Sparks };
     private static readonly Color TabActive = new(0.906f, 0.698f, 0.290f, 0.14f);
@@ -51,6 +53,7 @@ internal sealed class GatherListPanel
     {
         _settings = settings;
         _feature = feature;
+        settings.Panel.LeastWidth = MinWidth;
     }
 
     private PanelHost Host => _settings.Panel;

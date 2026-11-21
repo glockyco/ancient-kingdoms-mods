@@ -24,7 +24,7 @@ internal sealed class ProfessionsPanel
     // Rows go into two columns, as on the game's tab, once one column would be long and two fit.
     private const int OneColumnMost = 6;
     // Room for the title and the four header buttons.
-    private const float MinWidth = 224f;
+    private const float HeaderLeast = 224f;
 
     private readonly ProfessionsSettings _settings;
     private readonly Feature _feature;
@@ -89,6 +89,9 @@ internal sealed class ProfessionsPanel
     public void Rebuild(ProfessionSource source)
     {
         _compact = _settings.Style.Value == ProfessionStyle.Compact;
+        // The compact tiles can narrow to one, since their header shows only on hover. The list's
+        // header always shows, so it can narrow only as far as its buttons fit.
+        Host.LeastWidth = _compact ? 2f * Pad + ProfessionTileView.Size : HeaderLeast;
         var all = source.All;
         ProfessionLevels.Select(all.Length, index => _settings.Watched(all[index].Key), _settings.WatchedOnly.Value, _shown);
 
@@ -99,7 +102,7 @@ internal sealed class ProfessionsPanel
             int columns = Mathf.Max(1, Mathf.FloorToInt((Host.Width - 2f * Pad + Gap) / (ProfessionTileView.Size + Gap)));
             int used = Mathf.Max(1, Mathf.Min(columns, _shown.Count));
             int lines = (_shown.Count + columns - 1) / columns;
-            width = Mathf.Max(MinWidth, 2f * Pad + used * ProfessionTileView.Size + (used - 1) * Gap);
+            width = 2f * Pad + used * ProfessionTileView.Size + (used - 1) * Gap;
             height = 2f * Pad + lines * ProfessionTileView.Size + (lines - 1) * Gap;
             for (int index = 0; index < _shown.Count; index++)
             {
@@ -120,7 +123,7 @@ internal sealed class ProfessionsPanel
             bool twoFit = Host.Width >= 2f * Pad + 2f * RowWidth + ColumnGap;
             int columns = twoFit && _shown.Count > OneColumnMost ? 2 : 1;
             int lines = (_shown.Count + columns - 1) / columns;
-            width = Mathf.Max(MinWidth, 2f * Pad + columns * RowWidth + (columns - 1) * ColumnGap);
+            width = Mathf.Max(HeaderLeast, 2f * Pad + columns * RowWidth + (columns - 1) * ColumnGap);
             float rowWidth = columns == 1 ? width - 2f * Pad : RowWidth;
             height = 2f * Pad + lines * ProfessionRowView.Height;
             for (int index = 0; index < _shown.Count; index++)
@@ -139,7 +142,11 @@ internal sealed class ProfessionsPanel
 
         // The compact header sits above the panel, so the tiles start at its top.
         float top = _compact ? 0f : HeaderHeight;
-        _chrome.LayoutHeader(width, width - 4f * (ControlSize + 4f) - 16f);
+        // A compact panel fits its tiles exactly, and its header keeps room for its buttons, so
+        // over a few tiles the header is wider than the panel.
+        float headerWidth = Mathf.Max(width, HeaderLeast);
+        _chrome.LayoutHeader(headerWidth, headerWidth - 4f * (ControlSize + 4f) - 16f);
+        Host.HeaderWidth = headerWidth;
         _header.anchoredPosition = new Vector2(0f, _compact ? HeaderHeight : 0f);
         HudFactory.TopLeft(_body, 0f, top, width, height);
         Host.SetFittedSize(width, top + height);

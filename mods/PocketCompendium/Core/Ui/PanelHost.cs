@@ -51,6 +51,7 @@ public sealed class PanelHost
     private Vector2 _grab;
     private Vector2 _startSize;
     private float _startScale;
+    private float _leastWidth;
 
     private enum Mode
     {
@@ -105,7 +106,23 @@ public sealed class PanelHost
     public bool EffectivelyLocked => _locked.Value || LockAll();
 
     /// <summary>The width a <see cref="PanelResize.Size"/> panel lays out to.</summary>
-    public float Width => Mathf.Clamp(_width.Value, _minSize.x, _maxSize.x);
+    public float Width => Mathf.Clamp(_width.Value, LeastWidth, _maxSize.x);
+
+    /// <summary>
+    /// The narrowest width the grip allows, at least the panel's minimum size. The owner raises it to
+    /// what its content needs in the current style, such as one tile or a header's buttons.
+    /// </summary>
+    public float LeastWidth
+    {
+        get => Mathf.Max(_leastWidth, _minSize.x);
+        set => _leastWidth = value;
+    }
+
+    /// <summary>
+    /// The width of a header that is wider than the panel, such as a compact panel's header over a
+    /// single tile. The panel stays on screen with that width.
+    /// </summary>
+    public float HeaderWidth { get; set; }
 
     /// <summary>The height beyond which a <see cref="PanelResize.Size"/> panel scrolls its content.</summary>
     public float MaxHeight => Mathf.Clamp(_height.Value, _minSize.y, _maxSize.y);
@@ -251,7 +268,7 @@ public sealed class PanelHost
         {
             // The owner lays out to the new size, so the panel never shows a size its content
             // does not fill.
-            _width.Value = Mathf.Clamp(_startSize.x + delta.x, _minSize.x, _maxSize.x);
+            _width.Value = Mathf.Clamp(_startSize.x + delta.x, LeastWidth, _maxSize.x);
             if (ResizesHeight) _height.Value = Mathf.Clamp(_startSize.y - delta.y, _minSize.y, _maxSize.y);
             return;
         }
@@ -273,7 +290,7 @@ public sealed class PanelHost
         Vector2 position = Rect.anchoredPosition;
         var kept = PanelPlacement.KeepVisible(
             position.x, position.y, canvas.x, canvas.y,
-            Rect.sizeDelta.x * scale, Rect.sizeDelta.y * scale, VisibleHeader * scale, EdgeMargin);
+            Mathf.Max(Rect.sizeDelta.x, HeaderWidth) * scale, Rect.sizeDelta.y * scale, VisibleHeader * scale, EdgeMargin);
         if (!Mathf.Approximately(kept.X, position.x) || !Mathf.Approximately(kept.Y, position.y))
             Rect.anchoredPosition = new Vector2(kept.X, kept.Y);
     }

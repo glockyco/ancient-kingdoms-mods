@@ -40,7 +40,7 @@ internal sealed class ProfessionsSettings
         Shown = page.Stored("Shown", false);
 
         Panel = new PanelHost(page, "Panel", PanelResize.Size,
-            new Vector2(110f, 480f), new Vector2(384f, 300f), new Vector2(224f, 80f), new Vector2(520f, 1000f));
+            new Vector2(110f, 480f), new Vector2(384f, 300f), new Vector2(56f, 80f), new Vector2(520f, 1000f));
     }
 
     public ChoiceSetting<ProfessionStyle> Style { get; }

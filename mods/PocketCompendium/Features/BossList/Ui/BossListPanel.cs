@@ -23,8 +23,10 @@ internal sealed class BossListPanel
     private const float EmptyHeight = 40f;
     private const float ScrollStep = 46f;
 
-    // The compact header keeps room for its title, count and controls over a short row of tiles.
-    private const float CompactMinWidth = 210f;
+    // The compact header keeps room for its title, count and controls over a short row of tiles,
+    // and so does the list.
+    private const float HeaderLeast = 210f;
+    private const float ListLeast = 240f;
 
     private readonly BossListSettings _settings;
     private readonly Feature _feature;
@@ -112,6 +114,8 @@ internal sealed class BossListPanel
 
         _settings.Fill(_filter);
         _compact = _settings.Style.Value == ListStyle.Compact;
+        // The compact tiles can narrow to one, since their header shows only on hover.
+        Host.LeastWidth = _compact ? TileGrid.Width(1) : ListLeast;
         _exact = tracker.Exact;
         int playerLevel = player.level.current;
         int zone = player.idZone;
@@ -203,11 +207,11 @@ internal sealed class BossListPanel
         {
             int used = Mathf.Min(columns, rowCount);
             y = TileGrid.Height(rowCount, columns);
-            panelWidth = Mathf.Max(CompactMinWidth, TileGrid.Width(used));
+            panelWidth = TileGrid.Width(used);
         }
         else if (_compact)
         {
-            panelWidth = CompactMinWidth;
+            panelWidth = HeaderLeast;
         }
 
         _empty.SetActive(rowCount == 0 && _groups.Count == 0);
@@ -314,13 +318,16 @@ internal sealed class BossListPanel
 
     private void Layout(float width)
     {
-        // The header: title, count and level filter chip, with the controls on the right.
-        float x = _chrome.LayoutHeader(width, 70f);
+        // The header: title, count and level filter chip, with the controls on the right. A compact
+        // panel fits its tiles exactly, so over a few tiles its header is wider than the panel.
+        float headerWidth = _compact ? Mathf.Max(width, HeaderLeast) : width;
+        Host.HeaderWidth = headerWidth;
+        float x = _chrome.LayoutHeader(headerWidth, 70f);
         _header.anchoredPosition = new Vector2(0f, _compact ? HeaderHeight : 0f);
         float barMiddle = PanelChrome.AccentHeight;
 
         string chip = ChipText();
-        float controlsLeft = width - 8f - 3f * (ControlSize + 4f);
+        float controlsLeft = headerWidth - 8f - 3f * (ControlSize + 4f);
         _chip.gameObject.SetActive(chip != null);
         if (chip != null)
         {

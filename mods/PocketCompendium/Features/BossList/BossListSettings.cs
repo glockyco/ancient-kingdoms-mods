@@ -45,7 +45,7 @@ public sealed class BossListSettings
         Shown = page.Stored("Shown", true);
 
         Panel = new PanelHost(page, "Panel", PanelResize.Size,
-            new Vector2(-810f, 235f), new Vector2(304f, 520f), new Vector2(240f, 120f), new Vector2(520f, 1000f));
+            new Vector2(-810f, 235f), new Vector2(304f, 520f), new Vector2(56f, 120f), new Vector2(520f, 1000f));
     }
 
     public ChoiceSetting<ListStyle> Style { get; }

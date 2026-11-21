@@ -14,6 +14,20 @@ A round button with an open book, in the minimap's own frame on its lower left, 
 - **WHEN** the boss list, the gathering helper and the professions panel are all switched off in the settings
 - **THEN** the minimap shows no button of the mod's
 
+### Requirement: A panel's edge meets its content
+
+A panel SHALL be as wide as what it shows, so no empty strip runs beside its last column of tiles. The grip SHALL NOT narrow a panel below the width its always-shown parts need: the list styles keep room for their header, and the Gathering list keeps four tiles for its tabs. A compact panel whose header shows only on hover SHALL fit its tiles, down to one, and its header SHALL keep the width its title and buttons need, reaching past the tiles when they are fewer.
+
+#### Scenario: Three watched professions
+
+- **WHEN** the compact Professions panel shows only Cooking, Lorekeeping and Mining
+- **THEN** the panel ends at the third tile, and pointing at it shows the header with all four buttons above it
+
+#### Scenario: The Gathering list at its narrowest
+
+- **WHEN** the player drags the Gathering list's grip as far left as it goes
+- **THEN** the list shows four tiles to a line under its four tabs and its header
+
 ## RENAMED Requirements
 
 - FROM: `### Requirement: Features sit in four groups`
