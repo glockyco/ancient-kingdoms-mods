@@ -80,7 +80,7 @@
 
 <Seo
   title="Pocket Compendium - Ancient Kingdoms Mod"
-  description="Pocket Compendium shows when bosses, elites and fabled monsters spawn in Ancient Kingdoms, where they are, their skill cooldowns in a fight, and what they drop."
+  description="Pocket Compendium: quality-of-life features for Ancient Kingdoms, with boss timers, monster info, gathering helpers and more."
   path="/mods"
 />
 
