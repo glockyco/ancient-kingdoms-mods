@@ -89,6 +89,9 @@ const corpus = monsters
       is_boss: monster.is_boss,
       is_hunt: monster.is_hunt,
       loot_zone_number: 0,
+      // The corpus pins the calculator with and without a Fatecharm, so every
+      // boss gets one whatever its real charm is.
+      fatecharm_item_id: "parity:fatecharm",
     };
     const targets = drops.flatMap((drop, ordinal) => [
       { itemId: drop.itemId, ordinal },
