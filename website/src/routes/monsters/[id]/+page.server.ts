@@ -161,7 +161,7 @@ export const load: PageServerLoad = async ({
   const contextLabels = [...new Set(Object.values(lootContextLabels))];
   const lootCommonContext =
     contextLabels.length === 1 ? contextLabels[0] : null;
-  const contextualDrops = contextualMonsterDrops(
+  const perContextDrops = contextualMonsterDrops(
     db,
     loot.contexts,
     acquisition,
@@ -171,9 +171,7 @@ export const load: PageServerLoad = async ({
       (result) =>
         result.target.kind === "item" && result.target.itemId === drop.item_id,
     );
-    const labels = lootCommonContext
-      ? []
-      : [lootContextLabels[method.methodId]];
+    const labels: string[] = [];
     const conditional = method.outputs.find(
       (output) =>
         output.item_id === drop.item_id && output.condition_slot !== null,
@@ -194,9 +192,42 @@ export const load: PageServerLoad = async ({
     }
     return {
       ...drop,
-      note: labels.filter(Boolean).join(" · ") || null,
+      note: labels.join(" · ") || null,
       chance_event: result?.event ?? "eligible_kill",
     };
+  });
+  // A drop with the same chance in every loot context is one row without a
+  // context label. A drop that differs anywhere keeps one row per context.
+  const outcomeKey = (drop: (typeof perContextDrops)[number]) =>
+    JSON.stringify([
+      drop.item_id,
+      drop.rate,
+      drop.per_kill_chance,
+      drop.per_kill_chance_with_fatecharm,
+      drop.chance_event,
+      drop.note,
+    ]);
+  const contextsByOutcome = new Map<string, Set<string>>();
+  for (const drop of perContextDrops) {
+    const key = outcomeKey(drop);
+    const contexts = contextsByOutcome.get(key) ?? new Set<string>();
+    contexts.add(drop.method_id);
+    contextsByOutcome.set(key, contexts);
+  }
+  const emittedOutcomes = new Set<string>();
+  const contextualDrops = perContextDrops.flatMap((drop) => {
+    // One shared context label: every row keeps its own context, unlabeled.
+    if (lootCommonContext !== null) return [drop];
+    const key = outcomeKey(drop);
+    if (contextsByOutcome.get(key)!.size === loot.contexts.length) {
+      if (emittedOutcomes.has(key)) return [];
+      emittedOutcomes.add(key);
+      return [drop];
+    }
+    const note = [lootContextLabels[drop.method_id], drop.note]
+      .filter(Boolean)
+      .join(" · ");
+    return [{ ...drop, note: note || null }];
   });
   const drops = consolidateAltarTiers(
     contextualDrops,
