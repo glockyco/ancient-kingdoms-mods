@@ -2585,6 +2585,9 @@
     "Monster.cs:Start": {
       "span": 0
     },
+    "Monster.cs:TryGetBossFatecharm": {
+      "span": 0
+    },
     "Monster.cs:UpdateServer_CASTING": {
       "span": 0
     },
@@ -4629,13 +4632,16 @@
     "PlayerQuests.cs:CanAcceptInternal": {
       "span": 0
     },
+    "PlayerQuests.cs:CanStartQuest": {
+      "span": 0
+    },
     "PlayerQuests.cs:CountComplete": {
       "span": 0
     },
     "PlayerQuests.cs:OnTriggerEnter2D": {
       "span": 0
     },
-    "PlayerQuests.cs:UserCode_CmdAccept__NetworkIdentity__Int32": {
+    "PlayerQuests.cs:TryStartQuest": {
       "span": 0
     },
     "PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32__Int32": {
@@ -6348,10 +6354,6 @@
     },
     "UIMercenaries.cs:ResurrectAll": {
       "span": 0
-    },
-    "UINpcQuests.cs:272-275": {
-      "sha256": "64a6cb34644cd14996e35a8f3c74bdab0cb8e9f7b9475abdc8271b961a1accde",
-      "span": 4
     },
     "UINpcTrading.cs:156-163": {
       "sha256": "650a9179befa432c5bf4366b71c4e65a17aa42921c800151bb4f283591075502",

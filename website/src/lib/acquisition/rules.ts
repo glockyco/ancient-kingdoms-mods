@@ -226,14 +226,9 @@ export function methodProbabilityFactors(
       if (entry.child_pool_id) pending.push(entry.child_pool_id);
     }
   }
-  const zone = index.entities.get("zones")?.get(String(detail.loot_zone_id));
-  const luck = index.luckTokens.get(String(detail.loot_zone_id));
   if (
     method.kind === "kill" &&
-    detail.is_boss &&
-    Number(detail.loot_zone_number) > 0 &&
-    zone?.is_dungeon &&
-    typeof luck?.boss_luck_token_id === "string" &&
+    typeof detail.fatecharm_item_id === "string" &&
     entries.some((entry) => entry.guaranteed_equipment_candidate)
   )
     factors.push("fatecharm");
@@ -650,6 +645,8 @@ export function calculateMethodProbabilities(
     const poolId = String(detail.loot_pool_id),
       entries = index.entries.get(poolId) ?? [];
     const isBoss = !!detail.is_boss;
+    const usesFatecharm =
+      typeof detail.fatecharm_item_id === "string" && assumptions.fatecharm;
     const drops = entries.map((entry) => ({
       item_id: entry.item_id ?? `anonymous:${entry.duplicate_group}`,
       item_name: `group:${entry.duplicate_group}`,
@@ -690,7 +687,7 @@ export function calculateMethodProbabilities(
       let chance: number | null;
       if (isBoss) {
         chance = calculateBossLootChance(drops, itemId, {
-          fatecharm: assumptions.fatecharm,
+          fatecharm: usesFatecharm,
           neededQuestItemIds: scenario.neededQuestItemIds,
         });
       } else {
@@ -736,7 +733,7 @@ export function calculateMethodProbabilities(
       let chance: number;
       if (isBoss) {
         chance = calculateBossLootChance(drops, anonymous, {
-          fatecharm: assumptions.fatecharm,
+          fatecharm: usesFatecharm,
           neededQuestItemIds: new Set([anonymous]),
         });
       } else {

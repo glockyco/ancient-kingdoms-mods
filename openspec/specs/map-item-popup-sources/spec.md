@@ -44,7 +44,7 @@ The item popup SHALL fill its established source lists (dropped by, sold by, sea
 
 ### Requirement: Drop chances name their Fatecharm
 
-A dropped-by row SHALL show the chance without a Fatecharm. When a matching dungeon Fatecharm changes the chance, hovering, tapping or focusing the chance SHALL show the boosted chance and name and link the Fatecharm item that is consumed.
+A dropped-by row SHALL show the chance without a Fatecharm. When the boss's Fatecharm, its own or its dungeon's, changes the chance, hovering, tapping or focusing the chance SHALL show the boosted chance and name and link the Fatecharm item that is consumed.
 
 #### Scenario: Boss with a dungeon Fatecharm
 

@@ -108,6 +108,7 @@ public class MonsterExporter : BaseExporter
             {
                 // Identity
                 loot_zone_number = canonical.idZone,
+                boss_fatecharm_id = canonical.bossFatecharm != null ? SanitizeId(canonical.bossFatecharm.name) : null,
                 is_summoned_pet = canonical.isSummonedPet,
 
                 // Base stats

@@ -194,6 +194,7 @@ class MonsterData(BaseModel):
     id: str
     name: str
     loot_zone_number: int = Field(ge=0)
+    boss_fatecharm_id: str | None = None
     is_summoned_pet: bool
 
     # Base stats

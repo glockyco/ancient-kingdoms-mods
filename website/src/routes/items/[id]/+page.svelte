@@ -1314,6 +1314,28 @@
     height. The fact list has one fact per row, so it grows with the item as the
     tooltip does. An item without a tooltip shows its facts at full width.
   -->
+  {#snippet fatecharmTargets()}
+    {#if data.fatecharmZone}
+      <div class={styles.fact}>
+        <dt class={styles.label}>Zone</dt>
+        <dd>{data.fatecharmZone}</dd>
+      </div>
+    {/if}
+    {#if data.fatecharmBosses.length}
+      <div class={styles.proseFact}>
+        <dt class={styles.label}>Bosses</dt>
+        <dd>
+          {#each data.fatecharmBosses as boss, i (boss.id)}
+            {#if i > 0},&#32;{/if}<a
+              href="/monsters/{boss.id}"
+              class="{styles.link} whitespace-nowrap">{boss.name}</a
+            >
+          {/each}
+        </dd>
+      </div>
+    {/if}
+  {/snippet}
+
   {#snippet identityCards()}
     <!-- Fatecharm -->
     {#if data.item.luck_token_role === "fatecharm"}
@@ -1323,13 +1345,10 @@
         </Card.Header>
         <Card.Content>
           <dl class={styles.factList}>
-            <div class={styles.fact}>
-              <dt class={styles.label}>Zone</dt>
-              <dd>{data.item.luck_token_zone_name || "Unknown"}</dd>
-            </div>
+            {@render fatecharmTargets()}
             {#if data.item.luck_token_fragment_id && data.item.luck_token_fragment_name}
               <div class={styles.fact}>
-                <dt class={styles.label}>Created From</dt>
+                <dt class="{styles.label} shrink-0">Created From</dt>
                 <dd>
                   <a
                     href="/items/{data.item.luck_token_fragment_id}"
@@ -1356,10 +1375,7 @@
         </Card.Header>
         <Card.Content>
           <dl class={styles.factList}>
-            <div class={styles.fact}>
-              <dt class={styles.label}>Zone</dt>
-              <dd>{data.item.luck_token_zone_name || "Unknown"}</dd>
-            </div>
+            {@render fatecharmTargets()}
             <div class={styles.fact}>
               <dt class={styles.label}>Creates</dt>
               <dd>

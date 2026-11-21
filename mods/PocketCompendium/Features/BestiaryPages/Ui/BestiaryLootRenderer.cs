@@ -26,18 +26,20 @@ internal static class BestiaryLootRenderer
     internal static void Reveal(UIBestiaryDetail detail, Monster monster)
     {
         // Item tooltips depend on the monster, the language, and the player's level and class
-        // (requirement colors), the chances on the Fatecharms in the main inventory, and the marks
+        // (requirement colors), the chances on the boss's Fatecharm, and the marks
         // on two switches, so the slots are rebuilt only when one of those changes.
         var player = Player.localPlayer;
         bool chances = BestiaryPagesFeature.ShowDropChances;
         bool undiscovered = BestiaryPagesFeature.ShowUndiscoveredDrops;
+        var charm = chances ? BossFatecharm(monster) : null;
+        bool armed = charm != null && Fatecharm.Carries(player, charm);
         var key = EntityNameLocalization.LocaleCode + "|" +
                   (player != null ? player.level.current + "|" + player.className : "-") + "|" +
-                  Fatecharm.Carried(player) + "|" + chances + "|" + undiscovered;
+                  (charm != null ? charm.nameItem : "-") + "|" + armed + "|" + chances + "|" + undiscovered;
         if (monster == _renderedMonster && key == _renderedFor)
             return;
 
-        var drops = BuildDisplayItems(monster, chances);
+        var drops = BuildDisplayItems(monster, chances, charm, armed);
         var slots = SlotsFor(detail, drops.Count);
         var capacity = ApplyLayout(detail, drops.Count);
 
@@ -99,7 +101,7 @@ internal static class BestiaryLootRenderer
         public string Chance;
         public Sprite Fatecharm;
         public bool Found;
-        // The zone's Fatecharm is in the main inventory, so the chance includes it.
+        // The matching Fatecharm is in the main inventory, so the chance includes it.
         public bool Armed;
         // Pocket Compendium's lines under the item tooltip, or null.
         public string Lines;
@@ -142,13 +144,11 @@ internal static class BestiaryLootRenderer
         return items;
     }
 
-    private static List<ShownDrop> BuildDisplayItems(Monster monster, bool chances)
+    private static List<ShownDrop> BuildDisplayItems(Monster monster, bool chances, ScriptableItem fatecharm, bool armed)
     {
         var items = PageItems(monster, onePerItem: chances, out int tableItems);
 
         var table = DropTableReader.Read(monster);
-        var fatecharm = ZoneFatecharm(monster);
-        bool armed = fatecharm != null && monster.isBoss && Fatecharm.Carries(Player.localPlayer, fatecharm);
         int levelCap = Player.localPlayer != null ? Player.localPlayer.level.max : 50;
         double altarChance = -1;
         var visible = new List<ShownDrop>();
@@ -165,7 +165,7 @@ internal static class BestiaryLootRenderer
                 var id = DropTableReader.Id(items[index]);
                 var needed = new HashSet<string> { id };
                 double chance = DropChanceCalculator.Calculate(table, id, monster.isBoss, false, needed);
-                double raised = fatecharm != null && monster.isBoss ? DropChanceCalculator.Calculate(table, id, true, true, needed) : chance;
+                double raised = fatecharm != null ? DropChanceCalculator.Calculate(table, id, true, true, needed) : chance;
                 shown.Chance = DropChanceText.Percent(armed ? raised : chance);
                 if (raised > chance + 1e-9)
                 {
@@ -202,12 +202,13 @@ internal static class BestiaryLootRenderer
         return copies;
     }
 
-    // A page shows the monster's prefab, whose zone is not always set, so the zone comes from the
-    // placed monster.
-    private static ScriptableItem ZoneFatecharm(Monster monster)
+    // A placed monster carries its own loot context, which can differ from the Bestiary prefab.
+    private static ScriptableItem BossFatecharm(Monster monster)
     {
         var tracked = Core.Tracking.Tracker.Current?.Find(monster.name);
-        return Fatecharm.ForZone(tracked != null ? tracked.Zone : monster.idZone);
+        if (tracked?.Live != null) return Fatecharm.ForMonster(tracked.Live);
+        if (tracked?.Placed != null) return Fatecharm.ForMonster(tracked.Placed);
+        return Fatecharm.ForMonster(monster);
     }
 
     // Source: UIBestiaryDetail.cs:153. The game's record of found drops. Database.cs:getBossesLootDiscovered

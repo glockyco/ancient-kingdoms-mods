@@ -21,7 +21,7 @@ While drop chances are on, each drop on a Bestiary page SHALL show its chance pe
 
 ### Requirement: A Fatecharm's effect shows on the drops it improves
 
-A drop whose chance per kill the zone's Fatecharm raises SHALL carry that Fatecharm's icon. While the Fatecharm is in the player's main inventory, the first 24 slots, the icon SHALL be lit and the slot SHALL show the raised chance. Otherwise the icon SHALL be dimmed and the slot SHALL show the chance without it. Its tooltip SHALL give both chances, name the Fatecharm, and say that a kill uses it up.
+A drop whose chance per kill the boss's Fatecharm raises SHALL carry that Fatecharm's icon. A boss's Fatecharm is its own one, such as the Primal Fatecharm of a world boss, and otherwise its dungeon's. While the Fatecharm is in the player's main inventory, the first 24 slots, the icon SHALL be lit and the slot SHALL show the raised chance. Otherwise the icon SHALL be dimmed and the slot SHALL show the chance without it. Its tooltip SHALL give both chances, name the Fatecharm, and say that a kill uses it up.
 
 #### Scenario: The charm in the main inventory
 
@@ -99,7 +99,7 @@ A Forgotten Altar elite's page SHALL show each quality of its reward, with the r
 
 ### Requirement: A kill that uses a Fatecharm is announced before it
 
-While a living dungeon boss is the target and its zone's Fatecharm is in the player's main inventory, the game's target frame SHALL show that Fatecharm beside the boss's level, and its hover SHALL say that the kill uses it up and how to keep it. Where the Fatecharm raises none of the boss's drops, the mark SHALL show in red and its hover SHALL say so. The warning SHALL be a feature of its own with its own switch, so it works with the Boss skills panel off.
+While a living boss is the target and its Fatecharm is in the player's main inventory, the game's target frame SHALL show that Fatecharm beside the boss's level, and its hover SHALL say that the kill uses it up and how to keep it. Where the Fatecharm raises none of the boss's drops, the mark SHALL show in red and its hover SHALL say so. The warning SHALL be a feature of its own with its own switch, so it works with the Boss skills panel off.
 
 #### Scenario: A boss the charm does not help
 

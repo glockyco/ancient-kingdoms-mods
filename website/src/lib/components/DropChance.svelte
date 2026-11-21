@@ -74,8 +74,8 @@
             href="/items/{fatecharm.id}"
             class="text-blue-600 hover:underline dark:text-blue-400"
             onclick={selectFatecharm}>{fatecharm.name}</a
-          >{:else}a matching dungeon Fatecharm{/if}. The Fatecharm is consumed
-        when used.
+          >{:else}a matching Fatecharm{/if}. The Fatecharm is consumed when
+        used.
       </p>
     </Popover.Content>
   </Popover.Root>

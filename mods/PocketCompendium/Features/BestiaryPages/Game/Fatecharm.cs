@@ -5,17 +5,24 @@ using PocketCompendium.Features.BestiaryPages.Model;
 namespace PocketCompendium.Features.BestiaryPages.Game;
 
 /// <summary>
-/// The game's Fatecharm rules. Source: Monster.cs:3062-3098. Killing a boss in a dungeon uses the
-/// zone's Fatecharm from the first 24 inventory slots, and its corpse holds one more item.
+/// A matching Fatecharm in the first 24 inventory slots raises the boss's minimum equipment drops.
+/// Source: server-scripts/Monster.cs:OnDeath.
 /// </summary>
 internal static class Fatecharm
 {
     // The main inventory. A Fatecharm in the backpack is kept.
     private const int MainInventorySlots = 24;
 
-    /// <summary>The Fatecharm of a dungeon zone, or null. Source: GameManager.cs:668-685.</summary>
-    public static ScriptableItem ForZone(int zone)
+    /// <summary>The boss's own Fatecharm, then its loot dungeon's. Source: server-scripts/Monster.cs:TryGetBossFatecharm.</summary>
+    public static ScriptableItem ForMonster(Monster monster)
     {
+        if (monster == null || !monster.isBoss) return null;
+        var charm = monster.bossFatecharm;
+        if (charm != null) return charm;
+        int zone = monster.idZone;
+        if (zone <= 0 || ZoneInfo.zones == null || !ZoneInfo.zones.TryGetValue(zone, out var info) || !info.isDungeon)
+            return null;
+
         var tokens = GameManager.singleton != null ? GameManager.singleton.luckTokensDict : null;
         return tokens != null && tokens.TryGetValue(zone, out var token) ? token : null;
     }
@@ -32,17 +39,6 @@ internal static class Fatecharm
         }
 
         return false;
-    }
-
-    /// <summary>The names of the Fatecharms in the main inventory, for a render key.</summary>
-    public static string Carried(Player player)
-    {
-        var tokens = GameManager.singleton != null ? GameManager.singleton.luckTokensDict : null;
-        if (player == null || tokens == null) return string.Empty;
-        var carried = new System.Text.StringBuilder();
-        foreach (var token in tokens.Values)
-            if (token != null && Carries(player, token)) carried.Append(token.nameItem).Append(',');
-        return carried.ToString();
     }
 
     /// <summary>Whether a Fatecharm raises the chance of any of this boss's drops.</summary>

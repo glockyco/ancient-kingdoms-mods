@@ -273,7 +273,7 @@ DATASETS: tuple[Dataset, ...] = (
         ("monsters.json",),
         ("monsters", "_acquisition_input_monsters"),
         model=MonsterData,
-        after=("seasons",),
+        after=("seasons", "items"),
     ),
     Dataset(
         "monster_spawns",

@@ -570,6 +570,7 @@ CREATE TABLE monsters (
     type_name TEXT,                 -- Humanoid, Beast, Undead, Elemental, etc.
     class_name TEXT,                -- specific class within type
     zone_bestiary TEXT DEFAULT '',  -- manually set zone name for bestiary display
+    boss_fatecharm_id TEXT REFERENCES items(id),
 
     -- Combat stats (calculated at base level)
     damage INTEGER DEFAULT 0,
@@ -1953,6 +1954,7 @@ CREATE TABLE acquisition_kill_details (
     loot_zone_number INTEGER,
     loot_zone_id TEXT REFERENCES zones(id) DEFERRABLE INITIALLY DEFERRED,
     loot_zone_withheld INTEGER NOT NULL DEFAULT 0 CHECK (loot_zone_withheld IN (0,1)),
+    fatecharm_item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
     respawn INTEGER NOT NULL CHECK (respawn IN (0,1)),
     exp_multiplier REAL NOT NULL,
     is_boss INTEGER NOT NULL CHECK (is_boss IN (0,1)),
@@ -1967,6 +1969,7 @@ CREATE TABLE acquisition_kill_details (
     gold_min INTEGER NOT NULL,
     gold_max INTEGER NOT NULL,
     gold_probability REAL NOT NULL CHECK (gold_probability >= 0 AND gold_probability <= 1),
+    CHECK (fatecharm_item_id IS NULL OR (is_boss=1 AND event_kind!='lootless')),
     CHECK ((loot_zone_withheld=1 AND loot_zone_number IS NULL AND loot_zone_id IS NULL) OR (loot_zone_withheld=0 AND loot_zone_number IS NOT NULL))
 );
 CREATE TABLE acquisition_vendor_details (

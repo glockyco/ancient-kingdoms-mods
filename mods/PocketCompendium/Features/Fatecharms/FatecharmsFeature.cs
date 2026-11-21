@@ -25,7 +25,7 @@ public sealed class FatecharmsFeature : Feature
     private string _shownFor;
 
     public FatecharmsFeature()
-        : base("Fatecharms", "Fatecharms", "Shows the dungeon's Fatecharm beside a boss's level while killing the boss would use the one in your main inventory. Hover over it to see what you gain.")
+        : base("Fatecharms", "Fatecharms", "Shows the boss's Fatecharm beside its level while killing the boss would use the one in your main inventory. Hover over it to see what you gain.")
     {
     }
 
@@ -65,12 +65,10 @@ public sealed class FatecharmsFeature : Feature
         _shownFor = key;
     }
 
-    // Source: Monster.cs:3062-3076. A living boss in a dungeon uses the zone's Fatecharm.
     private static ScriptableItem WarnedCharm(Player player, Monster monster)
     {
-        if (monster == null || !monster.isBoss || monster.health.current <= 0 || monster.idZone <= 0) return null;
-        if (ZoneInfo.zones == null || !ZoneInfo.zones.ContainsKey(monster.idZone) || !ZoneInfo.zones[monster.idZone].isDungeon) return null;
-        var charm = Fatecharm.ForZone(monster.idZone);
+        if (monster == null || monster.health.current <= 0) return null;
+        var charm = Fatecharm.ForMonster(monster);
         return Fatecharm.Carries(player, charm) ? charm : null;
     }
 

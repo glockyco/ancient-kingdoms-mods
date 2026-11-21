@@ -369,6 +369,42 @@ describe("compact map popups on canonical acquisition", () => {
       );
   });
 
+  test.each([
+    [
+      "ancient_cyclops",
+      "cyclopean_warbelt",
+      "primal_fatecharm",
+      "Primal Fatecharm",
+    ],
+    [
+      "captain_aerendyl",
+      "iron_buckler",
+      "catacombs_fatecharm",
+      "Catacombs Fatecharm",
+    ],
+  ])(
+    "names the effective Fatecharm for %s on both loot surfaces",
+    async (bossId, itemId, id, name) => {
+      const spawn = db
+        .prepare(
+          "SELECT id,level FROM monster_spawns WHERE monster_id=? ORDER BY id LIMIT 1",
+        )
+        .get(bossId) as { id: string; level: number };
+      const [sources, monster] = await Promise.all([
+        getMonsterSources(db, itemId),
+        loadMonsterPopupDetails(bossId, spawn.level, spawn.id, true),
+      ]);
+      const source = sources.find((drop) => drop.monster_id === bossId)!;
+      const popupDrop = monster.drops.find((drop) => drop.itemId === itemId)!;
+      expect(source.fatecharm).toEqual({ id, name });
+      expect(popupDrop.fatecharm).toEqual({ id, name });
+      expect(popupDrop.fatecharmDropRate).toBeGreaterThan(popupDrop.dropRate);
+      expect(source.per_kill_chance_with_fatecharm).toBe(
+        popupDrop.fatecharmDropRate,
+      );
+    },
+  );
+
   test("Worldheart shows the same target-specific chance on item and monster surfaces", async () => {
     const spawn = db
       .prepare(

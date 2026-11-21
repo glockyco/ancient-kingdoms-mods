@@ -11,7 +11,7 @@ export interface BossLootDrop extends BossLootOutcome {
 }
 
 export interface BossLootOptions {
-  // True only when a matching dungeon Fatecharm is consumed for this kill.
+  // True only when the boss's matching Fatecharm is consumed for this kill.
   fatecharm?: boolean;
   // Items needed by the qualifying player or a nearby party member's gather quest.
   neededQuestItemIds?: ReadonlySet<string>;

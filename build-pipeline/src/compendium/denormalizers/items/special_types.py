@@ -19,6 +19,14 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
         SELECT zone_id, zone_name, boss_luck_token_id, fragment_token_id,
                fragment_amount_needed
         FROM luck_tokens
+        UNION ALL
+        SELECT DISTINCT NULL, NULL, d.fatecharm_item_id, f.id, f.fragment_amount_needed
+        FROM acquisition_kill_details d
+        LEFT JOIN items f ON f.fragment_result_item_id=d.fatecharm_item_id
+        WHERE d.fatecharm_item_id IS NOT NULL
+          AND NOT EXISTS (
+              SELECT 1 FROM luck_tokens l WHERE l.boss_luck_token_id=d.fatecharm_item_id
+          )
     """)
 
     fragment_count = 0
@@ -99,5 +107,5 @@ def run(conn: sqlite3.Connection) -> None:
 
     console.print(
         f"  [green]OK[/green] Updated {fragment_count} fragment luck tokens, "
-        f"{boss_token_count} boss luck tokens with zone data"
+        f"{boss_token_count} boss luck tokens"
     )

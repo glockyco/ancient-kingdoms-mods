@@ -4,6 +4,7 @@ import pytest
 from acquisition_fixtures import database, item, monster, normalizer
 
 from compendium.denormalizers.acquisition import STAGING_FAMILIES, derive
+from compendium.denormalizers.items.special_types import run as denormalize_fatecharms
 from compendium.redactions import rekey, validate_semantics
 from compendium.redactions.semantics import InvalidPublication
 
@@ -202,6 +203,67 @@ def test_fragment_eligibility_uses_native_context_not_geographic_zone(tmp_path):
             SELECT p.monster_spawn_id FROM acquisition_outputs o
             JOIN acquisition_providers_monster_spawns p ON p.method_id=o.method_id WHERE o.item_id='fragment'
         """).fetchall() == [("sentinel",)]
+
+
+def test_boss_charm_overrides_native_dungeon_fallback_and_links_fragments(tmp_path):
+    with database(tmp_path) as conn:
+        conn.execute(
+            "INSERT INTO zones(id,zone_id,name,is_dungeon) VALUES('outside',2,'Outside',0)"
+        )
+        build = normalizer(
+            conn,
+            items=[item(id) for id in ("primal", "primal_fragment", "dungeon")],
+            monsters=[
+                monster("primal_boss", is_boss=True, boss_fatecharm_id="primal"),
+                monster("regular_boss", is_boss=True),
+                monster("nonboss", boss_fatecharm_id="primal"),
+            ],
+        )
+        conn.execute(
+            "UPDATE items SET fragment_result_item_id='primal',fragment_amount_needed=5 WHERE id='primal_fragment'"
+        )
+        conn.execute(
+            "INSERT INTO luck_tokens(zone_id,zone_name,boss_luck_token_id) "
+            "VALUES('zone','Zone','dungeon'),('outside','Outside','dungeon')"
+        )
+        cases = {
+            "direct_world": ("primal_boss", 2, "authored", "primal"),
+            "direct_no_zone": ("primal_boss", 0, "authored", "primal"),
+            "direct_dungeon": ("primal_boss", 1, "authored", "primal"),
+            "fallback_dungeon": ("regular_boss", 1, "authored", "dungeon"),
+            "no_fallback_world": ("regular_boss", 2, "authored", None),
+            "nonboss": ("nonboss", 1, "authored", None),
+            "lootless": ("primal_boss", 1, "lootless", None),
+        }
+        for id, (monster_id, zone_number, event, _) in cases.items():
+            conn.execute(
+                "INSERT INTO monster_spawns(id,monster_id,zone_id,level) VALUES(?,?,'zone',10)",
+                (id, monster_id),
+            )
+            definition = build.monsters[monster_id]
+            build.kill_context(
+                id,
+                definition,
+                {**definition, "loot_zone_number": zone_number},
+                provider=("monster_spawns", id),
+                event=event,
+            )
+        assert dict(
+            conn.execute("""
+                SELECT p.monster_spawn_id,d.fatecharm_item_id
+                FROM acquisition_kill_details d
+                JOIN acquisition_providers_monster_spawns p ON p.method_id=d.id
+            """)
+        ) == {id: values[3] for id, values in cases.items()}
+        denormalize_fatecharms(conn)
+        assert conn.execute("""
+            SELECT luck_token_role,luck_token_zone_name,luck_token_fragment_id,
+                   luck_token_fragments_needed
+            FROM items WHERE id IN ('primal','primal_fragment') ORDER BY id
+        """).fetchall() == [
+            ("fatecharm", None, "primal_fragment", 5),
+            ("fragment", None, None, None),
+        ]
 
 
 def test_quest_checks_are_context_local_and_precede_wrapper_resolution(tmp_path):

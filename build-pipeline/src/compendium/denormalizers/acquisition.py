@@ -1142,7 +1142,12 @@ class _Normalizer:
         zone_number = context["loot_zone_number"]
         zone = (
             self.conn.execute(
-                "SELECT id FROM zones WHERE zone_id=?", (zone_number,)
+                """
+                SELECT z.id, t.boss_luck_token_id
+                FROM zones z LEFT JOIN luck_tokens t ON t.zone_id=z.id AND z.is_dungeon=1
+                WHERE z.zone_id=?
+                """,
+                (zone_number,),
             ).fetchone()
             if zone_number > 0
             else None
@@ -1151,6 +1156,13 @@ class _Normalizer:
             raise ValueError(
                 f"Kill context {identity}: native loot zone {zone_number} is absent"
             )
+        # Source: server-scripts/Monster.cs:TryGetBossFatecharm. A boss's own charm
+        # takes precedence over the native loot dungeon's charm.
+        fatecharm_item_id = None
+        if context["is_boss"] and not lootless:
+            fatecharm_item_id = monster.get("boss_fatecharm_id")
+            if fatecharm_item_id is None and zone is not None:
+                fatecharm_item_id = zone[1]
         signature = _key(
             monster["id"],
             rule,
@@ -1205,6 +1217,7 @@ class _Normalizer:
             loot_zone_number=zone_number,
             loot_zone_id=zone[0] if zone else None,
             loot_zone_withheld=0,
+            fatecharm_item_id=fatecharm_item_id,
             respawn=int(context["does_respawn"] and event != "placeholder"),
             exp_multiplier=context["exp_multiplier"],
             is_boss=int(context["is_boss"]),

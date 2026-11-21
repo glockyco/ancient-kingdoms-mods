@@ -81,6 +81,8 @@ public class MonsterData
     public string id { get; set; }
     public string name { get; set; }
     public int loot_zone_number { get; set; }
+    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
+    public string? boss_fatecharm_id { get; set; }
     public bool is_summoned_pet { get; set; }
 
     // Base stats

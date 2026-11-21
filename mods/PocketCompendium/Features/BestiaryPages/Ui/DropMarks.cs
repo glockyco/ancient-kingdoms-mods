@@ -7,7 +7,7 @@ namespace PocketCompendium.Features.BestiaryPages.Ui;
 
 /// <summary>
 /// The marks on a Bestiary drop slot, as chosen on Verdant Glacius: the chance per kill along the
-/// bottom, the zone's Fatecharm in the top-left corner when it raises the chance, lit while the
+/// bottom, the boss's Fatecharm in the top-left corner when it raises the chance, lit while the
 /// charm is in the main inventory and the chance includes it, and a gold check in the top-right
 /// corner for a drop this character has found.
 /// </summary>

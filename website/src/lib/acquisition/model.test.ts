@@ -26,6 +26,7 @@ import { evaluateRequirement } from "./conditions";
 import { BASELINE_ASSUMPTIONS, calculateMethodProbabilities } from "./rules";
 import { itemSourcesFromModel } from "../server/item-sources";
 import { itemUsagesFromModel } from "../server/item-usages";
+import { monsterFatecharm } from "../utils/fatecharm";
 
 const require = createRequire(import.meta.url);
 const schema = readFileSync(
@@ -2833,7 +2834,10 @@ describe("remaining canonical method and definition families", () => {
   it("keeps augments out of guaranteed equipment and retains anonymous top-up competition", async () => {
     const f = fixture();
     try {
-      const pool = addKill(f, "boss", { is_boss: 1 });
+      const pool = addKill(f, "boss", {
+        is_boss: 1,
+        fatecharm_item_id: "rune",
+      });
       f.db
         .prepare(
           "UPDATE acquisition_methods SET rule_id='boss_loot' WHERE id='boss'",
@@ -2867,18 +2871,16 @@ describe("remaining canonical method and definition families", () => {
           amount_max: null,
           delivery: "corpse",
         });
-      f.insert("luck_tokens", {
-        zone_id: "zone",
-        zone_name: "Test dungeon",
-        boss_luck_token_id: "rune",
-      });
       const before = await f.model({
         kind: "items",
         itemIds: ["iron", "augment"],
       });
-      expect(before.methodViews.get("boss")!.probabilityFactors).toEqual([
-        "fatecharm",
-      ]);
+      const boss = before.methodViews.get("boss")!;
+      expect(boss.probabilityFactors).toEqual(["fatecharm"]);
+      expect(monsterFatecharm(before, boss)).toEqual({
+        id: "rune",
+        name: "Cursed Rune",
+      });
       const chance = before.methodViews
         .get("boss")!
         .probabilityResults.find(

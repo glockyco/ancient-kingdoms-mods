@@ -88,6 +88,8 @@ export const load: PageServerLoad = async ({
     redactedQuests: number;
     /** The augment families this item moves along or belongs to, with the item marked. */
     augmentChains: (AugmentChains & { currentId: string | null }) | null;
+    fatecharmZone: string | null;
+    fatecharmBosses: { id: string; name: string }[];
   }
 > => {
   const db = getDb();
@@ -99,6 +101,44 @@ export const load: PageServerLoad = async ({
   if (!item) {
     throw error(404, `Item not found: ${params.id}`);
   }
+  const fatecharmId =
+    item.luck_token_role === "fatecharm"
+      ? item.id
+      : item.luck_token_role === "fragment"
+        ? item.fragment_result_item_id
+        : null;
+  const fatecharmTargets = fatecharmId
+    ? (db
+        .prepare(
+          `SELECT DISTINCT m.id, m.name, d.loot_zone_id
+           FROM acquisition_kill_details d JOIN monsters m ON m.id = d.monster_id
+           WHERE d.fatecharm_item_id = ?
+           ORDER BY m.name, m.id`,
+        )
+        .all(fatecharmId) as {
+        id: string;
+        name: string;
+        loot_zone_id: string | null;
+      }[])
+    : [];
+  const fatecharmZone =
+    item.luck_token_zone_id &&
+    fatecharmTargets.some(
+      (target) => target.loot_zone_id === item.luck_token_zone_id,
+    )
+      ? item.luck_token_zone_name
+      : null;
+  const fatecharmBosses = [
+    ...new Map(
+      fatecharmTargets
+        .filter(
+          (target) =>
+            !fatecharmZone || target.loot_zone_id !== item.luck_token_zone_id,
+        )
+        .map(({ id, name }) => [id, { id, name }]),
+    ).values(),
+  ];
+
   const execute = acquisitionQuery(db);
   const model = await loadItemSourceModel(db, [params.id]);
 
@@ -557,6 +597,8 @@ export const load: PageServerLoad = async ({
 
   return {
     item,
+    fatecharmZone,
+    fatecharmBosses,
     augmentChains,
     maxLevel: progression.max_level,
     chestRewards,

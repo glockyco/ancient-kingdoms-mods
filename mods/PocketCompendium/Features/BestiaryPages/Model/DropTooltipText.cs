@@ -6,7 +6,7 @@ namespace PocketCompendium.Features.BestiaryPages.Model;
 /// </summary>
 internal static class DropTooltipText
 {
-    /// <summary>A drop the zone's Fatecharm raises: both chances and the charm's cost.</summary>
+    /// <summary>A drop the boss's Fatecharm raises: both chances and the charm's cost.</summary>
     public static string Fatecharm(double chance, double raised, string fatecharm) =>
         DropChanceText.Percent(chance) + " per kill.\n" +
         DropChanceText.Percent(raised) + " with the " + fatecharm + " in your main inventory. The kill uses it up.";
