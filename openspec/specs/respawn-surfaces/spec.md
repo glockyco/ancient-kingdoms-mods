@@ -76,12 +76,17 @@ In the boss list's list style, a dead monster's portrait SHALL be dimmed in full
 
 ### Requirement: Compact style shows portraits with times
 
-The compact style SHALL show one portrait tile per monster with its time or state on the tile and a gold corner for watched monsters. Its header bar SHALL appear only while the pointer is over the panel and SHALL include a button that switches back to the list.
+The compact style SHALL show one portrait tile per monster with its time or state on a dark band across the tile's bottom and a gold corner for watched monsters. Its header bar SHALL appear only while the pointer is over the panel and SHALL include a button that switches back to the list.
 
 #### Scenario: Switching back
 
 - **WHEN** the player points at a compact panel and clicks its list button
 - **THEN** the panel shows the list style
+
+#### Scenario: A light portrait
+
+- **WHEN** Spirit of the Forest waits 3 minutes for its hours in the compact style
+- **THEN** its gold "3m" stands on the dark band, readable over the light portrait
 
 ### Requirement: World markers sit on spawn points
 
@@ -211,3 +216,21 @@ A dungeon card SHALL stay while the pointer is on the entrance, on the card or b
 
 - **WHEN** Sunken Temple's card is open and the player switches to the world map
 - **THEN** the card is gone from the world map
+
+### Requirement: The boss list starts compact
+
+At first start the boss list SHALL show in the compact style.
+
+#### Scenario: First start
+
+- **WHEN** a player starts Pocket Compendium for the first time
+- **THEN** the boss list shows portrait tiles with their times
+
+### Requirement: The boss list hides without stopping its tracking
+
+The boss list SHALL show while its switch in the panel menu is on, which it is at first start. Hidden, it SHALL draw nothing, and watched monsters SHALL stay watched and raise their alerts.
+
+#### Scenario: A watched boss spawns while the list is hidden
+
+- **WHEN** the list is hidden and watched Xylevis respawns
+- **THEN** the game's message band and chat announce it

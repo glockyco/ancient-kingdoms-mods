@@ -7,13 +7,23 @@ Defines Pocket Compendium's Gathering panel, how players watch herbs, ores, fish
 
 ### Requirement: The panel lists every gathering type by category
 
-The Gathering panel SHALL show one tab per category, herbs, ores, fishing and sparks, and each tab SHALL show every type of its category in the game as a compact tile. The current zone's types SHALL come first with how many nodes are ready, or the time until the next one when none is. Types of other zones SHALL follow dimmed and without a number, and a tile's tooltip SHALL name the zones where the type grows. Tiles SHALL use the boss list's compact look, with the gold corner for watched types.
+The Gathering panel SHALL show one tab per category, herbs, ores, fishing and sparks, and each tab SHALL show every type of its category in the game as a compact tile. The current zone's types SHALL come first with how many nodes are ready, or the time until the next one when none is, on a dark band across the tile's bottom. Tiles SHALL use the boss list's compact look, with the gold corner for watched types.
 
 #### Scenario: Herbs in The Lone-Lands
 
 - **WHEN** a player in The Lone-Lands opens the herbs tab
 - **THEN** Chamomile, Spike and Violet come first with their ready counts
 - **AND** the other 16 herbs follow dimmed
+
+### Requirement: Other zones' types follow dimmed
+
+Types of other zones SHALL follow the current zone's dimmed and without a number, and a tile's tooltip SHALL name the zones where the type grows.
+
+#### Scenario: An herb of another zone
+
+- **WHEN** a player in The Lone-Lands hovers a dimmed herb
+- **THEN** its tile shows no number
+- **AND** its tooltip names the zones where it grows
 
 ### Requirement: A tile's tooltip says whether a type is worth the walk
 
@@ -42,15 +52,6 @@ The fishing tab SHALL show one tile per fish that a fishing spot's catch list na
 
 - **WHEN** a player watches Ironjaw Catfish in The Lone-Lands
 - **THEN** the two Calm spots that list it are marked, and the Calm spot that lists Blue Dartfish is not
-
-### Requirement: A round button on the minimap shows and hides the panel
-
-A round button in the minimap's own frame, on the minimap's lower left, SHALL show and hide the Gathering panel, and its icon SHALL be gold while the panel shows. Hiding the panel SHALL NOT change what is watched. Whether the panel shows SHALL persist across sessions.
-
-#### Scenario: Hiding while gathering
-
-- **WHEN** a player watching Chamomile clicks the round button while the panel shows
-- **THEN** the panel hides, and the Chamomile pins, minimap icons and arrow stay
 
 ### Requirement: Clicking a tile watches its type
 
@@ -129,14 +130,14 @@ While General's Undiscovered switch is off, a herb, ore or fish the character ha
 - **WHEN** a character who has gathered nothing opens the herbs tab with Undiscovered off
 - **THEN** every herb tile is a black silhouette, and Chamomile can still be watched
 
-### Requirement: The list starts hidden
+### Requirement: The list starts shown on the ores tab
 
-At first start the list SHALL be hidden, and only the round button SHALL show.
+At first start the list SHALL show, on the ores tab, the shortest that still shows the list at work.
 
 #### Scenario: First start
 
-- **WHEN** a player starts the version that adds the gathering helper for the first time
-- **THEN** the minimap shows the round button and the list is hidden
+- **WHEN** a player starts Pocket Compendium for the first time
+- **THEN** the Gathering list shows its ores tab at the bottom right
 
 ### Requirement: Sparks behave like the other types
 
