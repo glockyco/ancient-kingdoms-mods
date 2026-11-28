@@ -270,6 +270,7 @@ public class ItemExporter : BaseExporter
         itemData.weapon_category = equipItem.category ?? "";
         itemData.is_costume = equipItem.isCostume;
         itemData.slot = equipItem.category ?? "";
+        itemData.repair_gold_per_durability = equipItem.repairGoldPerDurability;
 
 
         // Export stats
@@ -517,6 +518,7 @@ public class ItemExporter : BaseExporter
         itemData.weapon_proc_on_spell_cast = weaponItem.procOnSpellCast;
         itemData.weapon_proc_on_direct_heal = weaponItem.procOnDirectHeal;
         itemData.weapon_delay = weaponItem.delay;
+        itemData.weapon_mining_success_bonus = weaponItem.miningSuccessBonus;
     }
 
     private void PopulateAugmentFields(Il2Cpp.ScriptableItem item, ItemData itemData)

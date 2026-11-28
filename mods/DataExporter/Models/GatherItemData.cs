@@ -43,10 +43,27 @@ public class GatherItemData
     // Chest-specific
     public float chest_reward_probability { get; set; }
     public List<string> chest_interaction_messages { get; set; } = new();
+    /// <summary>GatherItem.bonusChestSupplies, or null when the chest has none.</summary>
+    [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+    public ChestSuppliesData chest_supplies { get; set; }
 
     // Faction impact
     public string decrease_faction { get; set; }
 
     // Description and UI
     public string description { get; set; }
+}
+
+/// <summary>
+/// A WorldChestSupplies asset: the potion and scroll a looted chest can add.
+/// Pools keep their authored order.
+/// </summary>
+public class ChestSuppliesData
+{
+    public string id { get; set; }
+    public float potion_chance { get; set; }
+    public float scroll_chance { get; set; }
+    public List<string> potion_ids { get; set; } = new();
+    public List<string> utility_potion_ids { get; set; } = new();
+    public List<string> scroll_ids { get; set; } = new();
 }

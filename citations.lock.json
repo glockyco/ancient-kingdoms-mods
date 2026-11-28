@@ -1748,6 +1748,10 @@
       "sha256": "d2c761fb48bad0e48c38975a495d807dd157c3499a6185cf3c870b42d814a9a7",
       "span": 8
     },
+    "GatherItem.cs:580-583": {
+      "sha256": "ed0877c955bc7fba72a50d8a5e1a9e6ecaef7d59d0b50664105c39c099f16ff8",
+      "span": 4
+    },
     "GatherItem.cs:586-594": {
       "sha256": "c70560ccbb95596e87213408cb7981d66b42bfdea48747180942ef083fcbfa18",
       "span": 9
@@ -6817,6 +6821,9 @@
       "span": 0
     },
     "Wisdom.cs:GetHealingPerSecondBuffBonus": {
+      "span": 0
+    },
+    "WorldChestSupplies.cs:Pick": {
       "span": 0
     },
     "ZoneInfo.cs:189-205": {

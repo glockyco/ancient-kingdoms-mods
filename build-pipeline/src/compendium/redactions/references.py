@@ -89,6 +89,9 @@ PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("items", "fragment_result_item_id"),
         ("items", "luck_token_fragment_id"),
         ("items", "recipe_potion_learned_id"),
+        # A looted chest can add a potion or scroll from its supplies.
+        ("chests", "supplies_id"),
+        ("chest_supply_items", "item_id"),
         ("luck_tokens", "boss_luck_token_id"),
         ("luck_tokens", "fragment_token_id"),
         # A season gives its buff to every online player while it runs.
@@ -148,8 +151,11 @@ JSON_PROVIDES: frozenset[tuple[str, str]] = frozenset(
 
 # Existing aggregate references. Canonical identified memberships are declared
 # separately because each membership is a graph node rather than a junction.
-# A virtue's ranks belong to it, so reaching the virtue reaches them.
-PROVIDED_BY: frozenset[tuple[str, str]] = frozenset({("virtue_ranks", "virtue_id")})
+# A virtue's ranks belong to it, so reaching the virtue reaches them, and a
+# chest's supplies reach the items in their pools.
+PROVIDED_BY: frozenset[tuple[str, str]] = frozenset(
+    {("virtue_ranks", "virtue_id"), ("chest_supply_items", "supplies_id")}
+)
 
 # An armour set bonus is reached by wearing its pieces, so the pieces provide it.
 # A set whose every piece is removed is unobtainable.

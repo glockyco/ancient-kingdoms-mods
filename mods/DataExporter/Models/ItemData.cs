@@ -120,6 +120,12 @@ public class ItemData
     /// <summary>With weapon_proc_on_spell_cast, the proc follows a direct heal instead of a damaging spell (WeaponItem.procOnDirectHeal).</summary>
     public bool weapon_proc_on_direct_heal { get; set; }
     public int weapon_delay { get; set; }
+    /// <summary>Added to a pickaxe's mining success chance (WeaponItem.miningSuccessBonus).</summary>
+    public float weapon_mining_success_bonus { get; set; }
+
+    // === EquipmentItem fields (when the item is equipment) ===
+    /// <summary>NPC repair gold per missing durability point; 0 uses the sell-price formula (EquipmentItem.repairGoldPerDurability).</summary>
+    public int repair_gold_per_durability { get; set; }
 
     // === AugmentItem fields (when item_type = augment) ===
     public string augment_armor_set_name { get; set; }

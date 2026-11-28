@@ -492,6 +492,9 @@ CREATE TABLE items (
     -- With weapon_proc_on_spell_cast, the proc follows a direct heal instead of a damaging spell.
     weapon_proc_on_direct_heal INTEGER NOT NULL DEFAULT 0 CHECK (weapon_proc_on_direct_heal IN (0,1)),
     weapon_delay INTEGER DEFAULT 0,
+    weapon_mining_success_bonus REAL NOT NULL DEFAULT 0.0,
+    -- Repair gold per missing durability point; 0 uses the sell-price formula.
+    repair_gold_per_durability INTEGER NOT NULL DEFAULT 0,
     weapon_required_ammo_id TEXT REFERENCES items(id),
     weapon_required_ammo_withheld INTEGER NOT NULL DEFAULT 0 CHECK (weapon_required_ammo_withheld IN (0,1)),
     fragment_amount_needed INTEGER DEFAULT 0,
@@ -1642,11 +1645,29 @@ CREATE TABLE chests (
 
     -- Metadata
     decrease_faction TEXT DEFAULT '',
+    -- The potion and scroll the chest can add when it holds loot; NULL when it has none.
+    supplies_id TEXT REFERENCES chest_supplies(id),
     keywords TEXT                           -- FTS5 search keywords
 );
 
 CREATE INDEX idx_chests_zone ON chests(zone_id);
 CREATE INDEX idx_chests_sub_zone ON chests(sub_zone_id);
+
+-- A WorldChestSupplies asset, shared by the chests that reference it.
+CREATE TABLE chest_supplies (
+    id TEXT PRIMARY KEY,
+    potion_chance REAL NOT NULL,
+    scroll_chance REAL NOT NULL
+);
+
+-- The items each supply pool can choose, in authored order.
+CREATE TABLE chest_supply_items (
+    supplies_id TEXT NOT NULL REFERENCES chest_supplies(id),
+    pool TEXT NOT NULL CHECK (pool IN ('potion', 'utility_potion', 'scroll')),
+    position INTEGER NOT NULL,
+    item_id TEXT NOT NULL REFERENCES items(id),
+    PRIMARY KEY (supplies_id, pool, position)
+);
 
 -- =============================================================================
 -- CRAFTING RECIPES

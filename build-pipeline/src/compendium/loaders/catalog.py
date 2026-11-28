@@ -405,6 +405,8 @@ DATASETS: tuple[Dataset, ...] = (
             "gathering_resources",
             "gathering_resource_spawns",
             "chests",
+            "chest_supplies",
+            "chest_supply_items",
             "_acquisition_input_gathering",
         ),
         after=("zones", "zone_triggers", "items"),

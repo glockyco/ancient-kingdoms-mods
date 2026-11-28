@@ -163,6 +163,10 @@ public class GatherItemExporter : BaseExporter
                 }
             }
 
+            // Source: server-scripts/GatherItem.cs:580-583 — only chests roll their supplies.
+            if (gatherItem.isChest && gatherItem.bonusChestSupplies != null)
+                gatherItemData.chest_supplies = ExportChestSupplies(gatherItem.bonusChestSupplies);
+
             records.Add(new GatherItemRecord
             {
                 Source = gatherItem,
@@ -176,6 +180,32 @@ public class GatherItemExporter : BaseExporter
 
         WriteJson(ExportJson.SortedRows(records.Select(record => record.Data), row => row.id, "gather_items"), "gather_items.json");
         Logger.Msg($"✓ Exported {records.Count} gather items ({templateCount} templates)");
+    }
+
+    // Source: server-scripts/WorldChestSupplies.cs:Pick — the game skips empty pool entries.
+    private static ChestSuppliesData ExportChestSupplies(Il2Cpp.WorldChestSupplies supplies)
+    {
+        return new ChestSuppliesData
+        {
+            id = SanitizeId(supplies.name),
+            potion_chance = supplies.potionChance,
+            scroll_chance = supplies.scrollChance,
+            potion_ids = PoolIds(supplies.potions),
+            utility_potion_ids = PoolIds(supplies.utilityPotions),
+            scroll_ids = PoolIds(supplies.scrolls),
+        };
+    }
+
+    private static List<string> PoolIds<T>(Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<T> pool)
+        where T : Il2Cpp.ScriptableItem
+    {
+        var ids = new List<string>();
+        if (pool == null) return ids;
+        foreach (var item in pool)
+        {
+            if (item != null) ids.Add(SanitizeId(item.name));
+        }
+        return ids;
     }
 
     private void AssignCanonicalResourceIds(List<GatherItemRecord> records)

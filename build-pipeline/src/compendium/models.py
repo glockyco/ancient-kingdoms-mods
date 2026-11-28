@@ -457,6 +457,9 @@ class ItemData(BaseModel):
     weapon_proc_effect_probability: float = 0.0
     weapon_proc_on_spell_cast: bool = False
     weapon_proc_on_direct_heal: bool = False
+    weapon_mining_success_bonus: float = 0.0
+    # Repair gold per missing durability point; 0 uses the sell-price formula.
+    repair_gold_per_durability: int = 0
     fragment_amount_needed: int = 0
 
     # Equipment properties (continued)
@@ -1508,6 +1511,19 @@ class GatherRandomDrop(BaseModel):
     rate: float = Field(ge=0.0, le=1.0)
 
 
+class ChestSupplies(BaseModel):
+    """A WorldChestSupplies asset: the potion and scroll a looted chest can add."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    potion_chance: float = Field(ge=0.0, le=1.0)
+    scroll_chance: float = Field(ge=0.0, le=1.0)
+    potion_ids: list[str]
+    utility_potion_ids: list[str]
+    scroll_ids: list[str]
+
+
 class GatherItemData(BaseModel):
     """Gather item data from gather_items.json"""
 
@@ -1544,6 +1560,7 @@ class GatherItemData(BaseModel):
     # Chest-specific
     chest_reward_probability: float = 0.0
     chest_interaction_messages: list[str] = []
+    chest_supplies: ChestSupplies | None = None
 
     # Misc
     decrease_faction: str = ""

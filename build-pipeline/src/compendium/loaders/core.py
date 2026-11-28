@@ -17,6 +17,7 @@ from compendium.models import (
     AchievementData,
     AlchemyRecipeData,
     AlchemyTableData,
+    ChestSupplies,
     ClassData,
     CraftingRecipeData,
     CraftingStationData,
@@ -1010,7 +1011,19 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         )
 
     # Insert chests
+    supplies_seen: dict[str, ChestSupplies] = {}
     for chest in chests:
+        supplies = chest.chest_supplies
+        if supplies is not None:
+            previous = supplies_seen.get(supplies.id)
+            if previous is None:
+                _insert_chest_supplies(cursor, supplies)
+                supplies_seen[supplies.id] = supplies
+            elif previous != supplies:
+                raise ValueError(
+                    f"Chest supplies {supplies.id!r} differ between chests"
+                )
+
         # Insert main chest record
         values = {
             "id": chest.id,
@@ -1019,6 +1032,7 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
             "sub_zone_id": chest.sub_zone_id,
             "respawn_time": chest.respawn_time,
             "decrease_faction": chest.decrease_faction,
+            "supplies_id": supplies.id if supplies is not None else None,
         }
 
         # Add position if present
@@ -1040,6 +1054,27 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         f"  [green]OK[/green] Loaded {len(resource_spawns)} gathering resource spawns"
     )
     console.print(f"  [green]OK[/green] Loaded {len(chests)} chests")
+
+
+def _insert_chest_supplies(cursor: sqlite3.Cursor, supplies: ChestSupplies) -> None:
+    cursor.execute(
+        "INSERT INTO chest_supplies (id, potion_chance, scroll_chance) VALUES (?, ?, ?)",
+        (supplies.id, supplies.potion_chance, supplies.scroll_chance),
+    )
+    pools = (
+        ("potion", supplies.potion_ids),
+        ("utility_potion", supplies.utility_potion_ids),
+        ("scroll", supplies.scroll_ids),
+    )
+    cursor.executemany(
+        "INSERT INTO chest_supply_items (supplies_id, pool, position, item_id) "
+        "VALUES (?, ?, ?, ?)",
+        [
+            (supplies.id, pool, position, item_id)
+            for pool, item_ids in pools
+            for position, item_id in enumerate(item_ids)
+        ],
+    )
 
 
 def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
