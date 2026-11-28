@@ -58,7 +58,7 @@ internal static class GatherTooltip
                 Text.Append('\n').Append(summary.Total).Append(" of ").Append(spots).Append(" fishing spots here list it");
                 if (player != null && easiest != null)
                 {
-                    float chance = Utils.GetSuccessProbFishing(ToolQuality(player, "Fishing Rod"), player.fishingLevel, easiest.Level);
+                    float chance = Utils.GetSuccessProbFishing(Tool(player, "Fishing Rod")?.quality ?? 0, player.fishingLevel, easiest.Level);
                     Text.Append('\n');
                     AppendChance(chance, ToolFloor, "Fishing");
                     Text.Append(" at a ").Append(easiest.Name);
@@ -114,7 +114,7 @@ internal static class GatherTooltip
                 break;
             case GatherCategory.Ores:
                 Text.Append('\n');
-                AppendChance(Utils.GetSuccessProbMining(ToolQuality(player, "Pickaxe"), player.miningLevel, type.Level), ToolFloor, "Mining");
+                AppendChance(Utils.GetSuccessProbMining(Tool(player, "Pickaxe"), player.miningLevel, type.Level), ToolFloor, "Mining");
                 break;
         }
     }
@@ -126,26 +126,24 @@ internal static class GatherTooltip
     }
 
     // The game uses the selected tool, or else the best one in the bags, as its hover does.
-    private static int ToolQuality(Player player, string category)
+    private static WeaponItem Tool(Player player, string category)
     {
         var inventory = player.inventory;
-        if (inventory == null) return 0;
+        if (inventory == null) return null;
         int selected = category == "Pickaxe" ? player.slotPickaxeSelected : player.slotFishingRodSelected;
-        int quality = Quality(inventory, selected, category, out bool usable);
-        if (usable) return quality;
+        var tool = UsableTool(inventory, selected, category);
+        if (tool != null) return tool;
         int best = category == "Pickaxe" ? inventory.GetSlotBestPickaxe() : inventory.GetSlotBestFishingRod();
-        return Quality(inventory, best, category, out _);
+        return UsableTool(inventory, best, category);
     }
 
-    private static int Quality(PlayerInventory inventory, int index, string category, out bool usable)
+    private static WeaponItem UsableTool(PlayerInventory inventory, int index, string category)
     {
-        usable = false;
-        if (index < 0 || index >= inventory.slots.Count) return 0;
+        if (index < 0 || index >= inventory.slots.Count) return null;
         var slot = inventory.slots[index];
         var weapon = slot.amount > 0 && slot.item.data != null ? slot.item.data.TryCast<WeaponItem>() : null;
-        if (weapon == null || weapon.category != category) return 0;
-        usable = category != "Pickaxe" || slot.durability > 0;
-        return usable ? weapon.quality : 0;
+        if (weapon == null || weapon.category != category) return null;
+        return category != "Pickaxe" || slot.durability > 0 ? weapon : null;
     }
 
     private static string Zones(GatherType type)
