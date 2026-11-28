@@ -1645,7 +1645,8 @@ CREATE TABLE chests (
 
     -- Metadata
     decrease_faction TEXT DEFAULT '',
-    -- The potion and scroll the chest can add when it holds loot; NULL when it has none.
+    -- The potion and scroll an opening can add. NULL when the chest has none, or
+    -- when it never rolls them: no gold, gift or random drops, or a quest-only gift.
     supplies_id TEXT REFERENCES chest_supplies(id),
     keywords TEXT                           -- FTS5 search keywords
 );

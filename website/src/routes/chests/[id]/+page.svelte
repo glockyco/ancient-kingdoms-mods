@@ -14,11 +14,50 @@
   import ListTree from "@lucide/svelte/icons/list-tree";
   import Gem from "@lucide/svelte/icons/gem";
   import Dices from "@lucide/svelte/icons/dices";
+  import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import { chestRewardChance } from "$lib/utils/chest-reward";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
   const rewardChance = $derived(chestRewardChance(data.chest));
+
+  // Source: server-scripts/WorldChestSupplies.cs:Roll,Pick — potions use the
+  // highest level the character can use, and a third of the potion chance first
+  // tries the utility pool. Scrolls choose among every scroll the level allows.
+  const supplyRows = $derived.by(() => {
+    const items = data.supplies?.items ?? [];
+    const levels = [
+      ...new Set(items.map((item) => Math.max(1, item.level_required))),
+    ].sort((a, b) => a - b);
+    return levels.map((level) => ({
+      level,
+      pools: (["potion", "utility_potion", "scroll"] as const).map((pool) =>
+        items.filter(
+          (item) =>
+            item.pool === pool && Math.max(1, item.level_required) === level,
+        ),
+      ),
+    }));
+  });
+  const utilityFrom = $derived(
+    Math.min(
+      ...(data.supplies?.items ?? [])
+        .filter((item) => item.pool === "utility_potion")
+        .map((item) => Math.max(1, item.level_required)),
+    ),
+  );
+  const firstScrolls = $derived(
+    (data.supplies?.items ?? []).filter(
+      (item) => item.pool === "scroll" && item.level_required <= 1,
+    ),
+  );
+  const moreScrollsFrom = $derived(
+    Math.min(
+      ...(data.supplies?.items ?? [])
+        .filter((item) => item.pool === "scroll" && item.level_required > 1)
+        .map((item) => item.level_required),
+    ),
+  );
 
   function formatPercent(
     value: number,
@@ -220,6 +259,85 @@
             {/each}
           </tbody>
         </table>
+      </div>
+    </section>
+  {/if}
+
+  {#if data.supplies}
+    {@const supplies = data.supplies}
+    <section id="supplies">
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <FlaskConical class="h-5 w-5 text-green-500" />
+        Potions and Scrolls
+      </h2>
+      <div class="bg-muted/30 rounded-md border p-4 space-y-4">
+        <!-- Source: server-scripts/GatherItem.cs:580-583; WorldChestSupplies.cs:Roll,Pick — an opening that gives loot rolls one potion or scroll for the character's level and class. -->
+        <p>
+          When an opening gives loot, the chest can add a potion or a scroll.
+        </p>
+        <ul class="list-disc space-y-1 pl-5">
+          <li>
+            {formatPercent(supplies.potion_chance)} chance of a potion: the highest-level
+            one for your level and class.
+          </li>
+          {#if Number.isFinite(utilityFrom)}
+            <li>
+              From level {utilityFrom}, a third of these potions are a utility
+              potion instead.
+            </li>
+          {/if}
+          <li>
+            {formatPercent(supplies.scroll_chance)} chance of a scroll.
+            {#if firstScrolls.length === 1 && Number.isFinite(moreScrollsFrom)}
+              Below level {moreScrollsFrom}, it is always a
+              <ItemLink
+                itemId={firstScrolls[0].item_id}
+                itemName={firstScrolls[0].item_name}
+                quality={firstScrolls[0].quality}
+              />.
+            {/if}
+          </li>
+        </ul>
+        <div class="rounded-md border bg-background text-sm">
+          <div
+            class="hidden border-b bg-muted/50 font-medium sm:grid sm:grid-cols-[6rem_1fr_1fr_1fr]"
+          >
+            <div class="p-3">Req. Level</div>
+            <div class="p-3">Potion</div>
+            <div class="p-3">Utility Potion</div>
+            <div class="p-3">Scroll</div>
+          </div>
+          {#each supplyRows as row (row.level)}
+            <div
+              class="grid grid-cols-1 border-b pb-2 last:border-b-0 sm:grid-cols-[6rem_1fr_1fr_1fr] sm:pb-0"
+            >
+              <div class="px-3 pt-3 font-medium tabular-nums sm:pb-3">
+                <span class="sm:hidden">Req. Level</span>
+                {row.level}
+              </div>
+              {#each row.pools as pool, index (index)}
+                <div
+                  class={pool.length === 0
+                    ? "hidden px-3 sm:block sm:py-3"
+                    : "px-3 py-1 sm:py-3"}
+                >
+                  <div class="text-xs text-muted-foreground sm:hidden">
+                    {["Potion", "Utility Potion", "Scroll"][index]}
+                  </div>
+                  {#each pool as item (item.item_id)}
+                    <div>
+                      <ItemLink
+                        itemId={item.item_id}
+                        itemName={item.item_name}
+                        quality={item.quality}
+                      />
+                    </div>
+                  {/each}
+                </div>
+              {/each}
+            </div>
+          {/each}
+        </div>
       </div>
     </section>
   {/if}

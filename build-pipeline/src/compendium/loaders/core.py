@@ -1013,7 +1013,9 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     # Insert chests
     supplies_seen: dict[str, ChestSupplies] = {}
     for chest in chests:
-        supplies = chest.chest_supplies
+        supplies = (
+            chest.chest_supplies if _chest_rolls_supplies(cursor, chest) else None
+        )
         if supplies is not None:
             previous = supplies_seen.get(supplies.id)
             if previous is None:
@@ -1054,6 +1056,23 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         f"  [green]OK[/green] Loaded {len(resource_spawns)} gathering resource spawns"
     )
     console.print(f"  [green]OK[/green] Loaded {len(chests)} chests")
+
+
+def _chest_rolls_supplies(cursor: sqlite3.Cursor, chest: GatherItemData) -> bool:
+    # Source: server-scripts/GatherItem.cs:580-583 — supplies roll only for a chest
+    # with gold, a gift or random drops, and never with a quest-only gift.
+    if not (chest.gold_max > 0 or chest.item_reward_id or chest.random_drops):
+        return False
+    if chest.item_reward_id is None:
+        return True
+    row = cursor.execute(
+        "SELECT is_quest_item FROM items WHERE id = ?", (chest.item_reward_id,)
+    ).fetchone()
+    if row is None:
+        raise ValueError(
+            f"Chest {chest.id!r} gives unknown item {chest.item_reward_id!r}"
+        )
+    return not row[0]
 
 
 def _insert_chest_supplies(cursor: sqlite3.Cursor, supplies: ChestSupplies) -> None:

@@ -1,6 +1,10 @@
 import { getDb } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
-import { getChestById, getChestDrops } from "$lib/queries/gather-items.server";
+import {
+  getChestById,
+  getChestDrops,
+  getChestSupplies,
+} from "$lib/queries/gather-items.server";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
@@ -56,5 +60,11 @@ export const load: PageServerLoad = async ({ params }) => {
     reputation_loss: 200,
   });
 
-  return { chest, drops, keyObtainabilityTree, description };
+  return {
+    chest,
+    drops,
+    supplies: getChestSupplies(params.id),
+    keyObtainabilityTree,
+    description,
+  };
 };

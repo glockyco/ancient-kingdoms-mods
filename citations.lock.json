@@ -6829,6 +6829,9 @@
     "WorldChestSupplies.cs:Pick": {
       "span": 0
     },
+    "WorldChestSupplies.cs:Roll": {
+      "span": 0
+    },
     "ZoneInfo.cs:189-205": {
       "sha256": "a603e5bc17255aa41bc285081328b92a1d3ad779d2a96a00e2bf86d5896f3fca",
       "span": 17

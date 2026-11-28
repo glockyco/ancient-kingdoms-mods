@@ -45,6 +45,7 @@ export const PAGE_FINGERPRINT_FIELDS = Object.freeze({
     "position_z",
     "respawn_time",
     "decrease_faction",
+    "supplies_id",
   ],
   traps: [
     "id",

@@ -669,6 +669,48 @@ export function getChestById(id: string): Promise<Chest | null> {
   return getChestByIdFromDb(getDb(), id);
 }
 
+export interface ChestSupplyItem {
+  pool: "potion" | "utility_potion" | "scroll";
+  item_id: string;
+  item_name: string;
+  quality: number;
+  level_required: number;
+}
+
+export interface ChestSupplies {
+  potion_chance: number;
+  scroll_chance: number;
+  items: ChestSupplyItem[];
+}
+
+/** The potion and scroll an opening can add, or null when the chest rolls none. */
+export function getChestSupplies(id: string): ChestSupplies | null {
+  const db = getDb();
+  const supplies = db
+    .prepare(
+      `SELECT s.id, s.potion_chance, s.scroll_chance
+       FROM chests c JOIN chest_supplies s ON s.id = c.supplies_id
+       WHERE c.id = ?`,
+    )
+    .get(id) as
+    { id: string; potion_chance: number; scroll_chance: number } | undefined;
+  if (!supplies) return null;
+  const items = db
+    .prepare(
+      `SELECT csi.pool, i.id AS item_id, i.name AS item_name, i.quality,
+              i.level_required
+       FROM chest_supply_items csi JOIN items i ON i.id = csi.item_id
+       WHERE csi.supplies_id = ?
+       ORDER BY csi.pool, csi.position`,
+    )
+    .all(supplies.id) as ChestSupplyItem[];
+  return {
+    potion_chance: supplies.potion_chance,
+    scroll_chance: supplies.scroll_chance,
+    items,
+  };
+}
+
 /**
  * Get a gather item by ID (either resource or chest).
  */
