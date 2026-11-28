@@ -6,6 +6,8 @@ description: Update decompiled evidence, exporters, generated data, citations, r
 
 The server-script diff is the planning source. A changelog omits implementation details and combines unrelated changes. Obtain the target version, changelog, and whether the world map changed.
 
+Do the update in this session, because handing parts of it to subagents loses context and costs coordination. Use subagents only for read-only visual audits of changed pages, and run those in parallel. Work through to version publication without stopping to report. Pause only for a question asked in Plannotator, such as a comparison under `skill://compare-options`, and for approval to push and deploy.
+
 ## 1. Acquire and diff evidence
 
 See `scripts/update-server-scripts.sh` for the evidence-acquisition commands and snapshot behavior.
@@ -54,7 +56,9 @@ See `build-pipeline/src/compendium/cli.py` for `tiles`, `build`, and `redactions
 
 Tile validation must pass before replacement. Investigate redaction drift. Run `uv run compendium redactions sync --game-version <version>` only after every new decision is explained. The ledger stamps that version, so it states which export the decisions were taken against.
 
-Apply current-tense website changes. Fix each claim that phase 2 recorded, together with the code that carries it. New data also invalidates tests that assert on it, so treat each one as its own concern.
+Apply current-tense website changes. A changelog line is a lead for the diff, not content for the site. Give each line one treatment: nothing, carried by the export, a correction of what a page already states, or new text. Write new text only where a player who opens that page would look the change up. Leave out notes that a rule now also applies somewhere, how to use a UI control, edge cases, and mentions of fixed bugs. Decide these treatments yourself and ask in Plannotator only when unsure, because a question per line costs more review than it saves. A correction keeps the sentence's approved wording and changes only the fact. A new page, section or card goes through `skill://compare-options`.
+
+Fix each claim that phase 2 recorded, together with the code that carries it. New data also invalidates tests that assert on it, so treat each one as its own concern.
 
 The website build regenerates `website/src/lib/generated/`, including the stat vocabulary from the export's `stats.json`. Read that module's diff: a renamed stat or a changed format reaches every page that names the stat, so check those pages before you commit it with the generated data.
 
@@ -79,6 +83,8 @@ uv run compendium citations check
 ```
 
 Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
+
+Before asking to push, start the dev server and list one local URL for each change, on one page that shows it, with what changed there. A change that reaches every item page gets one example item page. Below the links, list each changelog line with its treatment from phase 4, so a wrong call shows before the deploy.
 
 The website's install guide, `/mods/install`, sends players to a fixed MelonLoader build, published as a GitHub release of this repository, because official MelonLoader cannot load the current Unity version. Settle it at every patch:
 
