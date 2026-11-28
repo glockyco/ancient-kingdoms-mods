@@ -17,6 +17,7 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import { chestRewardChance } from "$lib/utils/chest-reward";
   import type { PageData } from "./$types";
+  import { supplyChances } from "$lib/utils/chest-supplies";
 
   let { data }: { data: PageData } = $props();
   const rewardChance = $derived(chestRewardChance(data.chest));
@@ -59,6 +60,45 @@
     ),
   );
 
+  let level = $state(50);
+  let classId = $state("warrior");
+  const itemById = $derived(
+    new Map((data.supplies?.items ?? []).map((item) => [item.item_id, item])),
+  );
+  const chances = $derived(
+    data.supplies
+      ? supplyChances(
+          data.supplies.items,
+          data.supplies.potion_chance,
+          data.supplies.scroll_chance,
+          Math.min(50, Math.max(1, Math.round(level) || 1)),
+          classId,
+        )
+      : [],
+  );
+  const nothingChance = $derived(
+    1 - chances.reduce((total, entry) => total + entry.chance, 0),
+  );
+  // Every item of one pool shares one chance, so the pools are listed once each.
+  const chanceGroups = $derived(
+    (["potion", "utility_potion", "scroll"] as const).flatMap((pool) => {
+      const entries = chances.filter((entry) => entry.pool === pool);
+      return entries.length === 0
+        ? []
+        : [
+            {
+              pool,
+              chance: entries[0].chance,
+              items: entries.map((entry) => entry.item_id),
+            },
+          ];
+    }),
+  );
+  const POOL_LABELS = {
+    potion: "Potion",
+    utility_potion: "Utility Potion",
+    scroll: "Scroll",
+  } as const;
   function formatPercent(
     value: number,
     options: Parameters<typeof formatFraction>[1] = {
@@ -298,46 +338,100 @@
             {/if}
           </li>
         </ul>
-        <div class="rounded-md border bg-background text-sm">
-          <div
-            class="hidden border-b bg-muted/50 font-medium sm:grid sm:grid-cols-[6rem_1fr_1fr_1fr]"
-          >
-            <div class="p-3">Req. Level</div>
-            <div class="p-3">Potion</div>
-            <div class="p-3">Utility Potion</div>
-            <div class="p-3">Scroll</div>
-          </div>
-          {#each supplyRows as row (row.level)}
-            <div
-              class="grid grid-cols-1 border-b pb-2 last:border-b-0 sm:grid-cols-[6rem_1fr_1fr_1fr] sm:pb-0"
-            >
-              <div class="px-3 pt-3 font-medium tabular-nums sm:pb-3">
-                <span class="sm:hidden">Req. Level</span>
-                {row.level}
-              </div>
-              {#each row.pools as pool, index (index)}
-                <div
-                  class={pool.length === 0
-                    ? "hidden px-3 sm:block sm:py-3"
-                    : "px-3 py-1 sm:py-3"}
+        {#snippet item(id: string)}
+          {@const entry = itemById.get(id)!}
+          <ItemLink
+            itemId={entry.item_id}
+            itemName={entry.item_name}
+            quality={entry.quality}
+            tooltipHtml={entry.tooltip_html}
+            imageAvailable={supplies.icon_paths[entry.item_id]}
+            variant="reference"
+          />
+        {/snippet}
+        {#snippet picker()}
+          <div class="rounded-md border bg-background p-4 space-y-3 text-sm">
+            <div class="flex flex-wrap items-end gap-4">
+              <label class="flex flex-col gap-1">
+                <span class="text-xs text-muted-foreground">Your Level</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  bind:value={level}
+                  class="w-20 rounded border bg-background px-2 py-1 tabular-nums"
+                />
+              </label>
+              <label class="flex flex-col gap-1">
+                <span class="text-xs text-muted-foreground">Your Class</span>
+                <select
+                  bind:value={classId}
+                  class="rounded border bg-background px-2 py-1"
                 >
-                  <div class="text-xs text-muted-foreground sm:hidden">
-                    {["Potion", "Utility Potion", "Scroll"][index]}
-                  </div>
-                  {#each pool as item (item.item_id)}
-                    <div>
-                      <ItemLink
-                        itemId={item.item_id}
-                        itemName={item.item_name}
-                        quality={item.quality}
-                      />
-                    </div>
+                  {#each supplies.classes as cls (cls.id)}
+                    <option value={cls.id}>{cls.name}</option>
                   {/each}
+                </select>
+              </label>
+            </div>
+            <div class="divide-y">
+              {#each chanceGroups as group (group.pool)}
+                <div class="py-3 first:pt-1">
+                  <div class="mb-2 flex items-baseline justify-between gap-3">
+                    <span class="font-medium">{POOL_LABELS[group.pool]}</span>
+                    <span class="font-mono tabular-nums text-muted-foreground"
+                      >{formatPercent(group.chance, {
+                        decimals: 2,
+                        trailingZeros: false,
+                      })}{group.items.length > 1 ? " each" : ""}</span
+                    >
+                  </div>
+                  <div class="flex flex-wrap gap-x-5 gap-y-2">
+                    {#each group.items as id (id)}
+                      {@render item(id)}
+                    {/each}
+                  </div>
                 </div>
               {/each}
+              <div
+                class="flex items-baseline justify-between gap-3 pt-3 text-muted-foreground"
+              >
+                <span>Nothing extra</span>
+                <span class="font-mono tabular-nums"
+                  >{formatPercent(nothingChance, {
+                    decimals: 2,
+                    trailingZeros: false,
+                  })}</span
+                >
+              </div>
             </div>
-          {/each}
-        </div>
+          </div>
+        {/snippet}
+        {#snippet tiers()}
+          <div class="space-y-3">
+            {#each supplyRows as row (row.level)}
+              <div class="rounded-md border bg-background p-3">
+                <div class="mb-2 text-sm font-medium">
+                  Req. Level {row.level}
+                </div>
+                <div class="flex flex-wrap gap-x-5 gap-y-1.5">
+                  {#each row.pools.flat() as entry (entry.item_id)}
+                    <span class="inline-flex items-center gap-1 text-sm">
+                      {@render item(entry.item_id)}
+                    </span>
+                  {/each}
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/snippet}
+        {@render picker()}
+        <details>
+          <summary class="cursor-pointer text-sm font-medium"
+            >All Potions and Scrolls by Level</summary
+          >
+          <div class="mt-3">{@render tiers()}</div>
+        </details>
       </div>
     </section>
   {/if}

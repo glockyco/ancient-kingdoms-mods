@@ -2,6 +2,7 @@ import type Database from "better-sqlite3";
 import { getDb, query } from "$lib/db.server";
 import { loadAcquisition } from "$lib/server/acquisition";
 import type { ProviderRef } from "$lib/acquisition/types";
+import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import {
   chestRewardFields,
   primaryRewardFields,
@@ -675,12 +676,17 @@ export interface ChestSupplyItem {
   item_name: string;
   quality: number;
   level_required: number;
+  tooltip_html: string | null;
+  /** Classes that can use the item; empty means every class. */
+  class_ids: string[];
 }
 
 export interface ChestSupplies {
   potion_chance: number;
   scroll_chance: number;
   items: ChestSupplyItem[];
+  icon_paths: Record<string, string | null>;
+  classes: { id: string; name: string }[];
 }
 
 /** The potion and scroll an opening can add, or null when the chest rolls none. */
@@ -695,19 +701,35 @@ export function getChestSupplies(id: string): ChestSupplies | null {
     .get(id) as
     { id: string; potion_chance: number; scroll_chance: number } | undefined;
   if (!supplies) return null;
-  const items = db
+  const rows = db
     .prepare(
       `SELECT csi.pool, i.id AS item_id, i.name AS item_name, i.quality,
-              i.level_required
+              i.level_required, i.tooltip_html,
+              (SELECT group_concat(r.class_id) FROM item_class_requirements r
+               WHERE r.item_id = i.id AND r.class_id IS NOT NULL) AS class_list
        FROM chest_supply_items csi JOIN items i ON i.id = csi.item_id
        WHERE csi.supplies_id = ?
        ORDER BY csi.pool, csi.position`,
     )
-    .all(supplies.id) as ChestSupplyItem[];
+    .all(supplies.id) as (Omit<ChestSupplyItem, "class_ids"> & {
+    class_list: string | null;
+  })[];
+  const items = rows.map(({ class_list, ...item }) => ({
+    ...item,
+    class_ids: class_list ? class_list.split(",") : [],
+  }));
   return {
     potion_chance: supplies.potion_chance,
     scroll_chance: supplies.scroll_chance,
     items,
+    icon_paths: getItemIconPaths(
+      db,
+      items.map((item) => item.item_id),
+    ),
+    classes: db.prepare("SELECT id, name FROM classes ORDER BY name").all() as {
+      id: string;
+      name: string;
+    }[],
   };
 }
 
