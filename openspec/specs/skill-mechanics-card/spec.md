@@ -105,3 +105,13 @@ Mechanics contexts and caster counts SHALL read actual skill memberships by cano
 - **WHEN** normalized NPC membership includes a kind of skill that an existing mechanics guard does not support
 - **THEN** that guard remains effective
 - **AND** a false zero caster count does not suppress it
+
+### Requirement: Attack Power debuffs show how much of a hit they remove
+
+A skill that lowers Attack Power SHALL state that it lowers only the target's Attack Power and that damage a skill adds on top stays the same. It SHALL show Valaark's auto attack and Sundering Maw as before and after bars on one scale, the Attack Power part, the removed part and the added damage told apart, each hit with its whole-hit drop, because players read the debuff's percentage as the drop of every hit.
+
+#### Scenario: Gouge at rank 5
+
+- **WHEN** the Gouge page shows its Attack Power section
+- **THEN** the auto attack bars show a drop of 14.9% and the Sundering Maw bars a drop of 9.6%
+- **AND** the values come from the exported monster and skill data

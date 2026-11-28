@@ -2,11 +2,27 @@ import type { SkillDetailView, SkillMechanicsSpec } from "$lib/types/skills";
 import type { SkillFacts } from "./skill-facts";
 import { hasLinearValue } from "./skill-format";
 
+/**
+ * A monster's hits that show how an Attack Power debuff changes a whole hit: its Attack Power and
+ * the damage each hit adds on top, its default attack first.
+ */
+export interface AttackPowerExample {
+  monster: { id: string; name: string; attackPower: number };
+  hits: {
+    skillId: string;
+    name: string;
+    added: number;
+    defaultAttack: boolean;
+  }[];
+}
+
 /** What a mechanics section reads, both to decide whether it shows and to render. */
 export interface MechanicsContext {
   skill: SkillDetailView;
   spec: SkillMechanicsSpec;
   facts: SkillFacts;
+  /** Set on skills that lower Attack Power, which show it in their Attack Power section. */
+  attackPowerExample: AttackPowerExample | null;
 }
 
 interface MechanicsSectionRule {
@@ -155,6 +171,10 @@ const MECHANICS_SECTIONS = [
         ].some(hasLinearValue)) &&
       skill.skill_type !== "passive" &&
       spec.buffContexts.length > 0,
+  },
+  {
+    id: "attack-power-reduction",
+    shows: ({ skill }) => (skill.damage_percent_bonus?.base_value ?? 0) < 0,
   },
   {
     id: "debuff-scaling",

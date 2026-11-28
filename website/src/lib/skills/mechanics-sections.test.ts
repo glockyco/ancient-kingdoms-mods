@@ -56,6 +56,7 @@ function sections(
     skill: subject,
     spec: fullSpec,
     facts: skillFacts(subject, pets, fullSpec, [], hasMonsters),
+    attackPowerExample: null,
   });
 }
 

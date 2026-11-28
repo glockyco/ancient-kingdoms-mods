@@ -24,6 +24,7 @@
   import DamageOverTimeExecute from "./DamageOverTimeExecute.svelte";
   import DamageShield from "./DamageShield.svelte";
   import DeathBloom from "./DeathBloom.svelte";
+  import AttackPowerReduction from "./AttackPowerReduction.svelte";
   import DebuffResistance from "./DebuffResistance.svelte";
   import DebuffScaling from "./DebuffScaling.svelte";
   import DecreaseResists from "./DecreaseResists.svelte";
@@ -84,6 +85,7 @@
     "balance-health": BalanceHealth,
     healing: Healing,
     "buff-scaling": BuffScaling,
+    "attack-power-reduction": AttackPowerReduction,
     "debuff-scaling": DebuffScaling,
     "debuff-resistance": DebuffResistance,
     "cleanse-resistance": CleanseResistance,
@@ -127,7 +129,8 @@
     sections: MechanicsSectionId[];
   }
 
-  let { id, sections, skill, spec, facts }: Props = $props();
+  let { id, sections, skill, spec, facts, attackPowerExample }: Props =
+    $props();
 
   // Getters keep the sections current when client-side navigation reuses the page.
   setMechanicsContext({
@@ -139,6 +142,9 @@
     },
     get facts() {
       return facts;
+    },
+    get attackPowerExample() {
+      return attackPowerExample;
     },
   });
 </script>

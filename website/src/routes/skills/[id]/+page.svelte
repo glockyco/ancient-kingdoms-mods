@@ -123,7 +123,12 @@
       data.categorySkills.some((other) => other.mercenaryAreaBuff),
   );
   const mechanicsSectionIds = $derived(
-    mechanicsSections({ skill, spec: data.mechanicsSpec, facts }),
+    mechanicsSections({
+      skill,
+      spec: data.mechanicsSpec,
+      facts,
+      attackPowerExample: data.attackPowerExample,
+    }),
   );
   const showCostTiming = $derived(
     !granted &&
@@ -1612,6 +1617,7 @@
       {skill}
       spec={data.mechanicsSpec}
       {facts}
+      attackPowerExample={data.attackPowerExample}
     />
   {/if}
 

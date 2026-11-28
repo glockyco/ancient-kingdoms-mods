@@ -29,6 +29,8 @@ import {
   skillDetailFromRow,
 } from "$lib/skills/skillDetail";
 import { skillMechanicsSpec } from "$lib/utils/skillMechanics";
+import type { AttackPowerExample } from "$lib/skills/mechanics-sections";
+import { linearAt, requireLinearValue } from "$lib/utils/linear-value";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { getSkillCategoryKey } from "$lib/utils/skill-category";
 import { skillLearningAtRank } from "$lib/acquisition/conditions";
@@ -79,6 +81,7 @@ export interface SkillDetailPageData {
   appliedByTraps: SkillTrapUsage[];
   description: string;
   mechanicsSpec: SkillMechanicsSpec;
+  attackPowerExample: AttackPowerExample | null;
   visualAsset: EntityVisualAsset | null;
 }
 
@@ -99,6 +102,49 @@ function prettySeconds(seconds: number): string {
     );
   }
   return parts.join(" ") || "0s";
+}
+
+/**
+ * Valaark's auto attack and Sundering Maw, which adds 15,000 to Attack Power, show how differently
+ * an Attack Power debuff cuts a hit that adds little and one that adds a lot.
+ */
+function loadAttackPowerExample(): AttackPowerExample {
+  const monster = queryOne<{ id: string; name: string; damage: number }>(
+    "SELECT id, name, damage FROM monsters WHERE id = 'valaark'",
+  );
+  if (!monster) throw new Error("Valaark is missing from the database");
+  // Source: server-scripts/MonsterSkills.cs:OnStartServer — monsters cast at rank 1 when learnDefault, otherwise rank 0.
+  const hits = query<{
+    id: string;
+    name: string;
+    damage: string;
+    runtime_level: number;
+    skill_index: number;
+  }>(
+    `SELECT s.id, s.name, s.damage, ms.runtime_level, ms.skill_index
+     FROM monster_skills ms JOIN skills s ON s.id = ms.skill_id
+     WHERE ms.monster_id = ? AND (ms.skill_index = 0 OR s.id = 'sundering_maw')
+     ORDER BY ms.skill_index`,
+    [monster.id],
+  ).map((row) => ({
+    skillId: row.id,
+    name: row.name,
+    added: linearAt(
+      requireLinearValue(row.damage, `${row.id} damage`),
+      row.runtime_level,
+    ),
+    defaultAttack: row.skill_index === 0,
+  }));
+  if (hits.length !== 2)
+    throw new Error("Valaark's default attack or Sundering Maw is missing");
+  return {
+    monster: {
+      id: monster.id,
+      name: monster.name,
+      attackPower: monster.damage,
+    },
+    hits,
+  };
 }
 
 function roundTooltipInteger(value: number): number {
@@ -631,5 +677,9 @@ export const load: PageServerLoad = async ({
     description,
     visualAsset,
     mechanicsSpec: skillMechanicsSpec(skill, casters),
+    attackPowerExample:
+      (skill.damage_percent_bonus?.base_value ?? 0) < 0
+        ? loadAttackPowerExample()
+        : null,
   };
 };
