@@ -294,8 +294,8 @@ describe("combat calculations", () => {
     });
   });
 
-  it("bounds extra Cleanse rolls after Accuracy multiplies the remaining chance", () => {
-    expect(extraCleanseChance(0.5, 0.2)).toBeCloseTo(0.6);
+  it("bounds extra Cleanse rolls after 35% of Accuracy multiplies the remaining chance", () => {
+    expect(extraCleanseChance(0.5, 0.2)).toBeCloseTo(0.535);
     expect(extraCleanseChance(0.1, 1)).toBe(1);
     expect(extraCleanseChance(1, 1)).toBe(0);
   });

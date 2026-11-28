@@ -34,8 +34,8 @@
             decimals: 2,
             preserveNonzero: true,
           },
-        )} × (100% + the cleansing caster's Accuracy) chance of removal, limited to
-        0% - 100%. At 100%, one cast removes all three layers. See
+        )} × (100% + 35% of the cleansing caster's Accuracy) chance of removal, limited
+        to 0% - 100%. At 100%, one cast removes all three layers. See
         <a
           class="text-blue-600 dark:text-blue-400 hover:underline"
           href="/mechanics/combat#cleanse">cleanse calculations</a

@@ -132,7 +132,7 @@ internal static class SkillCardDetails
         var chance = effect.prob_ignore_cleanse ?? 0;
         if (chance >= 1) return "Cleanse Resist: This debuff cannot be cleansed.";
         if (chance <= 0) return "Cleanse Resist: A matching cleanse removes this debuff completely in a single cast.";
-        var text = $"Cleanse Resist: This debuff has {SkillText.Percent(chance)} Cleanse Resist and three layers. Cleansing removes the debuff only after all three are gone. A matching cleanse always removes one layer. Each of the other two layers has an independent {SkillText.Percent(1 - chance)} multiplied by ({SkillText.Percent(1)} + the cleansing caster's Accuracy) chance of removal, limited to {SkillText.Percent(0)} to {SkillText.Percent(1)}. At {SkillText.Percent(1)}, one cast removes all three layers.";
+        var text = $"Cleanse Resist: This debuff has {SkillText.Percent(chance)} Cleanse Resist and three layers. Cleansing removes the debuff only after all three are gone. A matching cleanse always removes one layer. Each of the other two layers has an independent {SkillText.Percent(1 - chance)} multiplied by ({SkillText.Percent(1)} + {SkillText.Percent(0.35)} of the cleansing caster's Accuracy) chance of removal, limited to {SkillText.Percent(0)} to {SkillText.Percent(1)}. At {SkillText.Percent(1)}, one cast removes all three layers.";
         if (Value(effect.healing_per_second_bonus) < 0)
             text += $" After a cleanse removes layers, each damage tick deals {SkillText.Percent(0.85)} with two layers left and {SkillText.Percent(0.7)} with one, rounded up.";
         return text;

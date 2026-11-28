@@ -74,7 +74,7 @@ public class SkillCardDetailsTests
         var c = SkillEffectFormatterTests.LoadCases().First(c => c.monster_id != null && c.skill_id == "blightstorm");
         var text = SkillCardDetails.Hover(new MonsterSkillFacts(c.input, c.delivery!), "Blightstorm", "Scaleblight");
         Assert.Contains("40% Cleanse Resist and three layers", text);
-        Assert.Contains("60% multiplied by (100% + the cleansing caster's Accuracy)", text);
+        Assert.Contains("60% multiplied by (100% + 35% of the cleansing caster's Accuracy)", text);
         Assert.Contains("85% with two layers left and 70% with one, rounded up", text);
         Assert.Contains("Disease Resist reduces each damage tick by 0.05%, up to 90%", text);
     }

@@ -449,13 +449,18 @@ export const threatCalculation: Calculation = {
 
 // Source: server-scripts/BuffSkill.cs:GetCleanseCountersRemoved; TargetBuffSkill.cs:341-355 — a debuff whose probIgnoreCleanse is 1 (100% Cleanse Resist) is skipped, so no layers are removed.
 export function extraCleanseChance(resist: number, accuracy: number) {
-  return clamp(multiplyF32(addF32(1, -resist), addF32(1, accuracy)), 0, 1);
+  return clamp(
+    multiplyF32(addF32(1, -resist), addF32(1, multiplyF32(accuracy, 0.35))),
+    0,
+    1,
+  );
 }
 export const cleanseCalculation: Calculation = {
   steps: [
     {
       name: "Extra-Layer Chance",
-      expression: "(100% − debuff Cleanse Resist) × (100% + caster Accuracy)",
+      expression:
+        "(100% − debuff Cleanse Resist) × (100% + 35% × caster Accuracy)",
       limit: "between 0% and 100%",
     },
     {
@@ -470,7 +475,7 @@ export const cleanseCalculation: Calculation = {
       given: ["50% debuff Cleanse Resist", "20% caster Accuracy"],
       result: `1 guaranteed layer removed, with ${percent(chance, { decimals: 2, preserveNonzero: true })} chance for each of 2 extra layers`,
       working: [
-        `Extra-Layer Chance: (100% − 50%) × (100% + 20%) = ${percent(chance, { decimals: 2, preserveNonzero: true })}`,
+        `Extra-Layer Chance: (100% − 50%) × (100% + 35% × 20%) = ${percent(chance, { decimals: 2, preserveNonzero: true })}`,
       ],
     };
   },
