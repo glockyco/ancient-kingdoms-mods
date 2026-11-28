@@ -665,7 +665,7 @@
         <span class="block">The entire stack must fit in inventory.</span>
         <span class="block">New sales push out the oldest entries.</span>
       </p>
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:CanRepairAtCurrentNpc,CalculateRepairItemPrice,UserCode_CmdRepairItem__Int32__Int64__Boolean,UserCode_CmdRepairMercenaryItem__String__Int32__Int64 — only repair-enabled merchants repair damaged gear; price uses half the sell value times missing durability fraction, less a capped Charisma discount, at least 1 gold. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:CanRepairAtCurrentNpc,CalculateRepairItemPrice,UserCode_CmdRepairItem__Int32__Int64__Boolean,UserCode_CmdRepairMercenaryItem__String__Int32__Int64 — only repair-enabled merchants repair damaged gear; price uses half the sell value times missing durability fraction, or the item's own gold per missing durability point, less a capped Charisma discount, at least 1 gold. -->
       <p>
         <span class="block"
           >Only repair merchants restore damaged equipment.</span
@@ -684,7 +684,7 @@
         >
         <span class="block">It does not work in combat.</span>
       </p>
-      <Calculation calculation={repairCost()} />
+      <Calculation calculation={repairCost(data.repairRates)} />
     </Card.Content>
   </Card.Root>
 

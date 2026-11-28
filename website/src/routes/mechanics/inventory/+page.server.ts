@@ -69,11 +69,12 @@ export interface InventoryMechanicsPageData {
   reputationTiers: ReputationTier[];
   armorBreakingSkills: { id: string; name: string; break_armor_prob: number }[];
   dungeonRefusedPotions: { id: string; name: string }[];
+  repairRates: { id: string; name: string; rate: number }[];
 }
 
 function getBackpackRows(db: Database.Database): BackpackRow[] {
-  // Source: mods/DataExporter/Exporters/ItemExporter.cs:120 — BackpackItem assets export as item_type='backpack'
-  // Source: mods/DataExporter/Exporters/ItemExporter.cs:280-283 — backpack_slots and backpack_is_unique export from BackpackItem fields
+  // Source: mods/DataExporter/Exporters/ItemExporter.cs:DetermineItemType — BackpackItem assets export as item_type='backpack'
+  // Source: mods/DataExporter/Exporters/ItemExporter.cs:PopulateBackpackFields — backpack_slots and backpack_is_unique export from BackpackItem fields
   // Source: server-scripts/BackpackItem.cs:7-9 — BackpackItem.isUnique and numSlots define backpack uniqueness and storage grant
   return db
     .prepare(
@@ -202,5 +203,11 @@ export const load: PageServerLoad =
           "SELECT id, name FROM items WHERE potion_buff_id IS NOT NULL AND potion_buff_allow_dungeon = 0 ORDER BY name",
         )
         .all() as InventoryMechanicsPageData["dungeonRefusedPotions"],
+      // Source: server-scripts/PlayerNpcTrading.cs:CalculateRepairItemPrice — a set repairGoldPerDurability replaces the sell-price formula.
+      repairRates: db
+        .prepare(
+          "SELECT id, name, repair_gold_per_durability AS rate FROM items WHERE repair_gold_per_durability > 0 ORDER BY name",
+        )
+        .all() as InventoryMechanicsPageData["repairRates"],
     };
   };

@@ -39,6 +39,7 @@
     rawTierSuccessChance,
     skillGainChance,
   } from "$lib/data/professions/mechanics";
+  import { rawMiningSuccessChance } from "$lib/utils/mining";
   import { QUALITY_NAMES } from "$lib/constants/quality";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
@@ -153,6 +154,11 @@
 
   let skillLevel = $state(0);
   let pickaxeQuality = $state(0);
+  // Source: server-scripts/Utils.cs:GetSuccessProbMining — a pickaxe's miningSuccessBonus adds to the chance.
+  const pickaxeBonus = $derived(
+    data.pickaxes.find((pickaxe) => pickaxe.quality === pickaxeQuality)
+      ?.success_bonus ?? 0,
+  );
   let selectedCostumeIds = new SvelteSet<string>();
   let selectedRodId = $state(untrack(() => data.rods[0]?.item_id ?? ""));
   const selectedRod = $derived(
@@ -205,11 +211,11 @@
       );
     } else if (resource.is_mineral) {
       return (
-        rawTierSuccessChance(
-          PROFESSION_MECHANICS.mining.success,
+        rawMiningSuccessChance(
           resource.level,
-          skillLevel,
           pickaxeQuality,
+          skillLevel,
+          pickaxeBonus,
         ) * 100
       );
     } else if (resource.is_fishing_spot) {
@@ -346,6 +352,7 @@
                 : resource.is_mineral
                   ? pickaxeQuality
                   : null,
+              toolSuccessBonus: resource.is_mineral ? pickaxeBonus : 0,
               costumePieces: fishermanCostumePieces,
             },
           },

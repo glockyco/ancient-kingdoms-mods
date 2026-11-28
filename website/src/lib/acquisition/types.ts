@@ -544,6 +544,8 @@ export interface ProbabilityAssumptions {
   readonly treasureHunter: number;
   readonly professionFraction: number | null;
   readonly toolQuality: number | null;
+  /** The assumed pickaxe's added mining success chance. */
+  readonly toolSuccessBonus?: number;
   readonly costumePieces: number;
   readonly huntingFraction?: number;
   readonly extraGatherChance?: number;

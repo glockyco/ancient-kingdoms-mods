@@ -6,7 +6,7 @@ import {
 } from "../acquisition/projections";
 import { loadAcquisition } from "./acquisition";
 import { getItemSourceSummaries } from "./item-source-summary";
-import { itemSourcesFromModel } from "./item-sources";
+import { itemSourcesFromModel, loadBestPickaxe } from "./item-sources";
 import type {
   ObtainabilityNode,
   ObtainabilitySourceType,
@@ -250,6 +250,7 @@ async function buildTree(
       "SELECT MAX(quality) AS quality FROM items WHERE weapon_category='Fishing Rod'",
     )
     .get() as { quality: number | null };
+  const bestPickaxe = loadBestPickaxe(db);
   let expanded = 0;
   const getSources = (id: string) => {
     let result = summaries.get(id);
@@ -280,7 +281,12 @@ async function buildTree(
               },
             ];
           });
-        const projected = itemSourcesFromModel(model, id, rod.quality ?? 0);
+        const projected = itemSourcesFromModel(
+          model,
+          id,
+          rod.quality ?? 0,
+          bestPickaxe,
+        );
         const dropOrder = new Map<string, number>();
         for (const monster of projected.monsters) {
           if (!dropOrder.has(monster.monster_id))

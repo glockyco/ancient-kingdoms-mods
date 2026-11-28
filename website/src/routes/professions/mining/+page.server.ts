@@ -2,6 +2,7 @@ import { getDb } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import { loadAcquisition } from "$lib/server/acquisition";
+import { loadBestPickaxe } from "$lib/server/item-sources";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
 import type { MethodView } from "$lib/acquisition/types";
 import {
@@ -51,6 +52,8 @@ interface Pickaxe {
   id: string;
   name: string;
   quality: number;
+  /** Added to the mining success chance. */
+  mining_success_bonus: number;
   tooltip_html: string | null;
   source_groups: {
     type: ItemSourceSummary["type"];
@@ -189,6 +192,7 @@ export const load: PageServerLoad = async (): Promise<MiningPageData> => {
     list.push(method);
     methodsByResource.set(method.detail.resource_id, list);
   }
+  const bestPickaxe = loadBestPickaxe(db);
   const gemOutcomesByMethod = new Map(
     [...oreAcquisition.methodViews.values()].map((method) => {
       const row = oreAcquisition.methods.get(method.methodId);
@@ -201,6 +205,7 @@ export const load: PageServerLoad = async (): Promise<MiningPageData> => {
             scenario: "entered",
             professionFraction: 1,
             toolQuality: 4,
+            toolSuccessBonus: bestPickaxe.successBonus,
           },
         }),
       ] as const;
@@ -275,7 +280,8 @@ export const load: PageServerLoad = async (): Promise<MiningPageData> => {
   const rawPickaxes = db
     .prepare(
       `
-    SELECT id, name, quality, tooltip_html
+    SELECT id, name, quality, weapon_mining_success_bonus AS mining_success_bonus,
+      tooltip_html
     FROM items
     WHERE weapon_category = 'Pickaxe'
     ORDER BY quality

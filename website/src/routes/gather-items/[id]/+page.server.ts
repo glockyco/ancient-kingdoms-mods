@@ -57,6 +57,19 @@ export const load: PageServerLoad = async ({ params }) => {
         tooltip_html: string | null;
       }[])
     : [];
+  const pickaxes = resource.is_mineral
+    ? (db
+        .prepare(
+          `
+          SELECT quality, MAX(weapon_mining_success_bonus) AS success_bonus
+          FROM items
+          WHERE weapon_category = 'Pickaxe'
+          GROUP BY quality
+          ORDER BY quality
+        `,
+        )
+        .all() as { quality: number; success_bonus: number }[])
+    : [];
   const fishPoolRows = resource.is_fishing_spot
     ? (db
         .prepare(
@@ -184,6 +197,7 @@ export const load: PageServerLoad = async ({ params }) => {
     drops,
     spawns,
     rods,
+    pickaxes,
     fishPoolsByQuality,
     toolObtainabilityTree,
     description,

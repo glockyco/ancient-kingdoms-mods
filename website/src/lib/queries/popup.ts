@@ -445,7 +445,14 @@ function targetChance(
   );
   return known.length ? Math.max(...known) : null;
 }
-function chance(model: AcquisitionModel, method: MethodView, itemId: string) {
+// Popups show the best case: full skill and the best tool. A mining method also
+// adds the best pickaxe's success bonus.
+function chance(
+  model: AcquisitionModel,
+  method: MethodView,
+  itemId: string,
+  pickaxeSuccessBonus = 0,
+) {
   const poolIds = new Set(
     model.rows.methodPools
       .filter((binding) => binding.method_id === method.methodId)
@@ -468,6 +475,7 @@ function chance(model: AcquisitionModel, method: MethodView, itemId: string) {
     chestAccess: "key",
     professionFraction: 1,
     toolQuality: 4,
+    toolSuccessBonus: pickaxeSuccessBonus,
   };
   const dropRate =
     targetChance(results(model, method, assumptions, neededItemId), itemId) ??
@@ -521,6 +529,7 @@ function popupDrops(
   model: AcquisitionModel,
   methods: readonly MethodView[],
   bestiaryFirst = false,
+  pickaxeSuccessBonus = 0,
 ): PopupDropItem[] {
   const drops = new Map<string, PopupDropItem>();
   for (const method of methods) {
@@ -537,7 +546,7 @@ function popupDrops(
       ),
     ]);
     for (const itemId of ids) {
-      const rates = chance(model, method, itemId);
+      const rates = chance(model, method, itemId, pickaxeSuccessBonus);
       if (rates.dropRate <= 0 || rates.requiresQuest) continue;
       const item = entity(model, "items", itemId)!;
       const output = method.outputs.find(
@@ -572,6 +581,16 @@ function popupDrops(
       a.itemName.localeCompare(b.itemName),
   );
 }
+// Source: server-scripts/Utils.cs:GetSuccessProbMining — the best pickaxe's
+// miningSuccessBonus adds to the chance the popups assume.
+async function bestPickaxeSuccessBonus(): Promise<number> {
+  const [row] = await query<{ value: number | null }>(
+    `SELECT MAX(weapon_mining_success_bonus) AS value FROM items
+     WHERE weapon_category = 'Pickaxe' AND quality = 4`,
+  );
+  return row?.value ?? 0;
+}
+
 async function providerModel(provider: ProviderRef) {
   const model = await loadBrowserAcquisition({
     kind: "providers",
@@ -914,7 +933,12 @@ export async function loadGatheringPopupDetails(
       drops: [],
       fishingOutcomes: await fishingOutcomes(model, fishing),
     };
-  const drops = popupDrops(model, methods);
+  const drops = popupDrops(
+    model,
+    methods,
+    false,
+    await bestPickaxeSuccessBonus(),
+  );
   for (const drop of drops) {
     const applicable = methods.filter((method) =>
       method.outputs.some(
@@ -1020,6 +1044,7 @@ export async function loadItemPopupDetails(
   if (!item) return null;
   const source = projectItemSources(model, itemId);
   const methods = source.methods;
+  const pickaxeSuccessBonus = await bestPickaxeSuccessBonus();
   const droppers: ItemPopupDropper[] = [];
   const altarSources: ItemPopupAltarSource[] = [];
   const vendors: ItemPopupVendor[] = [];
@@ -1055,7 +1080,7 @@ export async function loadItemPopupDetails(
   for (const method of [...methods, ...wrapperAwards, ...offers]) {
     const rates = wrapperAwards.includes(method)
       ? wrapperChance(model, method, itemId)
-      : chance(model, method, itemId);
+      : chance(model, method, itemId, pickaxeSuccessBonus);
     if (rates.requiresQuest) continue;
     if (method.kind === "kill") {
       const monster = entity(model, "monsters", method.detail.monster_id);

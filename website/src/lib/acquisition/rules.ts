@@ -50,12 +50,14 @@ export interface ProbabilityScenario {
   readonly itemIds?: ReadonlySet<string>;
 }
 
+// Source: server-scripts/Utils.cs:GetSuccessProbMining — a pickaxe's miningSuccessBonus is added before the chance is limited to 100%.
 export function professionAttempt(
   profession: Profession,
   tier: number,
   professionFraction: number,
   toolQuality: number | null,
   food = true,
+  toolSuccessBonus = 0,
 ): { raw: number; qualified: boolean; displayed: number } {
   if (
     !Number.isFinite(professionFraction) ||
@@ -69,12 +71,16 @@ export function professionAttempt(
   )
     return { raw: 0, qualified: false, displayed: 0 };
   const rule = PROFESSION_MECHANICS[profession].success;
-  const raw = rawTierSuccessChance(
+  const tierChance = rawTierSuccessChance(
     rule,
     tier,
     professionFraction * 100,
     toolQuality ?? 0,
   );
+  const raw =
+    profession === "mining"
+      ? Math.min(1, tierChance + toolSuccessBonus)
+      : tierChance;
   const qualified = raw + Number.EPSILON >= rule.floor;
   return {
     raw,
@@ -502,6 +508,8 @@ export function calculateMethodProbabilities(
           Number(resource?.level),
           assumptions.professionFraction,
           assumptions.toolQuality,
+          true,
+          assumptions.toolSuccessBonus ?? 0,
         ).displayed;
       }
     }

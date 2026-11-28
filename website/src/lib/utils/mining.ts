@@ -23,16 +23,22 @@ const mechanics = PROFESSION_MECHANICS.mining;
 export const MINING_SUCCESS_FLOOR = mechanics.success.floor;
 
 // Raw success probability (0..1), ignoring the attempt floor.
+// Source: server-scripts/Utils.cs:GetSuccessProbMining — the pickaxe's
+// miningSuccessBonus is added before the chance is limited to 100%.
 export function rawMiningSuccessChance(
   tier: number,
   pickaxeQuality: number,
   skillPercent: number,
+  pickaxeBonus = 0,
 ): number {
-  return rawTierSuccessChance(
-    mechanics.success,
-    tier,
-    skillPercent,
-    pickaxeQuality,
+  return Math.min(
+    1,
+    rawTierSuccessChance(
+      mechanics.success,
+      tier,
+      skillPercent,
+      pickaxeQuality,
+    ) + pickaxeBonus,
   );
 }
 
@@ -41,9 +47,10 @@ export function isMineable(
   tier: number,
   pickaxeQuality: number,
   skillPercent: number,
+  pickaxeBonus = 0,
 ): boolean {
   return (
-    rawMiningSuccessChance(tier, pickaxeQuality, skillPercent) >=
+    rawMiningSuccessChance(tier, pickaxeQuality, skillPercent, pickaxeBonus) >=
     MINING_SUCCESS_FLOOR
   );
 }
@@ -54,9 +61,13 @@ export function miningSuccessPercent(
   tier: number,
   pickaxeQuality: number,
   skillPercent: number,
+  pickaxeBonus = 0,
 ): number {
-  if (!isMineable(tier, pickaxeQuality, skillPercent)) return 0;
-  return rawMiningSuccessChance(tier, pickaxeQuality, skillPercent) * 100;
+  if (!isMineable(tier, pickaxeQuality, skillPercent, pickaxeBonus)) return 0;
+  return (
+    rawMiningSuccessChance(tier, pickaxeQuality, skillPercent, pickaxeBonus) *
+    100
+  );
 }
 
 // Source: server-scripts/GatherItem.cs:OnInteractServer — a high enough Mining
@@ -83,12 +94,19 @@ export function miningSkillGainRange(
   tier: number,
   pickaxeQuality: number,
   skillPercent: number,
+  pickaxeBonus = 0,
 ): { min: number; max: number } | null {
   // Source: server-scripts/GatherItem.cs:607 — Mining cannot increase at the cap.
   if (skillPercent >= mechanics.capPercent) return null;
-  if (!isMineable(tier, pickaxeQuality, skillPercent)) return null;
+  if (!isMineable(tier, pickaxeQuality, skillPercent, pickaxeBonus))
+    return null;
   if (isMiningEffortless(tier, skillPercent)) return null;
-  const success = rawMiningSuccessChance(tier, pickaxeQuality, skillPercent);
+  const success = rawMiningSuccessChance(
+    tier,
+    pickaxeQuality,
+    skillPercent,
+    pickaxeBonus,
+  );
   return {
     min:
       (mechanics.skillGain.range[0] / (success * mechanics.skillGain.divisor)) *

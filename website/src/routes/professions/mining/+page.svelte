@@ -44,17 +44,24 @@
   const bestPickaxe = $derived(
     data.pickaxes.find((p) => p.quality === pickaxeQuality) ?? null,
   );
+  const pickaxeBonus = $derived(bestPickaxe?.mining_success_bonus ?? 0);
+  const topPickaxe = $derived(data.pickaxes.at(-1) ?? null);
+  const bonusPickaxes = $derived(
+    data.pickaxes.filter((p) => p.mining_success_bonus > 0),
+  );
   const gainChance = $derived(miningSkillGainChancePercent(skillLevel));
   const payingTiers = $derived(
     data.ores.filter(
       (ore) =>
         skillLevel < 100 &&
-        isMineable(ore.tier, pickaxeQuality, skillLevel) &&
+        isMineable(ore.tier, pickaxeQuality, skillLevel, pickaxeBonus) &&
         !isMiningEffortless(ore.tier, skillLevel),
     ),
   );
   const mineableTiers = $derived(
-    data.ores.filter((ore) => isMineable(ore.tier, pickaxeQuality, skillLevel)),
+    data.ores.filter((ore) =>
+      isMineable(ore.tier, pickaxeQuality, skillLevel, pickaxeBonus),
+    ),
   );
 
   // Source: server-scripts/GatherItem.cs:OnInteractServer — the skill above which
@@ -70,7 +77,12 @@
       id: ore.id,
       label: `${ROMAN[ore.tier]} ${ore.name}`,
       chanceAt: (skillPercent: number) =>
-        rawMiningSuccessChance(ore.tier, pickaxeQuality, skillPercent),
+        rawMiningSuccessChance(
+          ore.tier,
+          pickaxeQuality,
+          skillPercent,
+          pickaxeBonus,
+        ),
       // Source: server-scripts/GatherItem.cs:607-615 — no tier grants skill at the cap.
       isEffortlessAt: (skillPercent: number) =>
         skillPercent >= 100 || isMiningEffortless(ore.tier, skillPercent),
@@ -105,15 +117,26 @@
     {sections}
   >
     <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — tier V is 0.05 per
-         pickaxe quality plus 0.5 per skill, so a Draconium pickaxe alone gives 20%
-         and full Mining adds the other 50 points. -->
+         pickaxe quality plus 0.5 per skill plus the pickaxe's success bonus, so a
+         Draconium pickaxe alone gives 30% and full Mining adds the other 50 points. -->
     <p>
       Mine ore from nodes across the world. Your skill and your pickaxe together
       control your chance to get ore from a node.
-      <strong class="font-semibold text-foreground"
-        >A Draconium node with a Draconium pickaxe gives 20% at 0 Mining and 70%
-        at 100.</strong
-      >
+      {#if topPickaxe}
+        <strong class="font-semibold text-foreground"
+          >A Draconium node with a Draconium pickaxe gives {miningSuccessPercent(
+            4,
+            topPickaxe.quality,
+            0,
+            topPickaxe.mining_success_bonus,
+          ).toFixed(0)}% at 0 Mining and {miningSuccessPercent(
+            4,
+            topPickaxe.quality,
+            100,
+            topPickaxe.mining_success_bonus,
+          ).toFixed(0)}% at 100.</strong
+        >
+      {/if}
     </p>
   </ProfessionHeader>
 
@@ -212,9 +235,14 @@
                 />
               </td>
               <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — on tier 4 the
-                   chance is quality × 0.05 plus skill × 0.5. -->
+                   chance is quality × 0.05 plus skill × 0.5 plus the pickaxe's success bonus. -->
               <td class="p-3 text-right tabular-nums"
-                >{miningSuccessPercent(4, pickaxe.quality, 100).toFixed(0)}%</td
+                >{miningSuccessPercent(
+                  4,
+                  pickaxe.quality,
+                  100,
+                  pickaxe.mining_success_bonus,
+                ).toFixed(0)}%</td
               >
               <td class="p-3">
                 <ItemSourceLinks
@@ -234,9 +262,14 @@
     <h2 class="text-xl font-semibold">Success by Skill</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       On Tier V ore, each pickaxe quality adds 5% to your success chance. Each
-      1% Mining adds another 0.5% to that chance. In the shaded bands, the node
-      still gives ore and <MechanicsLink section="experience#gathering-xp"
-        >experience</MechanicsLink
+      1% Mining adds another 0.5% to that chance.
+      {#each bonusPickaxes as pickaxe (pickaxe.id)}
+        On any ore, the {pickaxe.name} adds {(
+          pickaxe.mining_success_bonus * 100
+        ).toFixed(0)}% more.
+      {/each}
+      In the shaded bands, the node still gives ore and <MechanicsLink
+        section="experience#gathering-xp">experience</MechanicsLink
       >, but no more Mining skill.
     </p>
 
@@ -351,11 +384,13 @@
               ore.tier,
               pickaxeQuality,
               skillLevel,
+              pickaxeBonus,
             )}
             {@const gain = miningSkillGainRange(
               ore.tier,
               pickaxeQuality,
               skillLevel,
+              pickaxeBonus,
             )}
             <tr class="border-b last:border-0">
               <td class="p-3 text-muted-foreground">{ROMAN[ore.tier]}</td>

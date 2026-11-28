@@ -227,11 +227,30 @@ export function augmentUpgradeTransformation(
   };
 }
 
+export interface BestPickaxe {
+  quality: number;
+  /** WeaponItem.miningSuccessBonus of that pickaxe. */
+  successBonus: number;
+}
+
+/** The highest-quality pickaxe, which best-case mining chances assume. */
+export function loadBestPickaxe(db: Database.Database): BestPickaxe {
+  const row = db
+    .prepare(
+      `SELECT quality, weapon_mining_success_bonus AS successBonus FROM items
+       WHERE weapon_category = 'Pickaxe'
+       ORDER BY quality DESC, weapon_mining_success_bonus DESC LIMIT 1`,
+    )
+    .get() as BestPickaxe | undefined;
+  return row ?? { quality: 0, successBonus: 0 };
+}
+
 /** Adapt the canonical methods to the existing item tables without introducing new sections. */
 export function itemSourcesFromModel(
   model: AcquisitionModel,
   itemId: string,
   bestRodQuality = 0,
+  bestPickaxe: BestPickaxe = { quality: 0, successBonus: 0 },
 ): ItemSources {
   const result: ItemSources = {
     monsters: [],
@@ -529,6 +548,9 @@ export function itemSourcesFromModel(
             ),
           ].sort((a, b) => (a ?? 0) - (b ?? 0))
         : [];
+      const mining = method.ruleId === "mining";
+      const toolQuality = mining ? bestPickaxe.quality : bestRodQuality;
+      const toolSuccessBonus = mining ? bestPickaxe.successBonus : 0;
       const scenario = calculateMethodProbabilities(
         model.rows,
         model.methods.get(method.methodId)!,
@@ -537,17 +559,20 @@ export function itemSourcesFromModel(
           assumptions: {
             ...BASELINE_ASSUMPTIONS,
             professionFraction: detail.resource_kind === "radiant" ? 0 : 1,
-            toolQuality: bestRodQuality,
+            toolQuality,
+            toolSuccessBonus,
           },
         },
       );
       const outer =
-        method.ruleId === "herbalism" || method.ruleId === "mining"
+        method.ruleId === "herbalism" || mining
           ? professionAttempt(
               method.ruleId,
               num(resource, "level"),
               1,
-              bestRodQuality,
+              toolQuality,
+              true,
+              toolSuccessBonus,
             ).displayed
           : 1;
       const harvestChance = itemProbability(scenario, itemId);
@@ -785,7 +810,12 @@ export async function getItemSourcesFromModel(
       "SELECT MAX(quality) AS quality FROM items WHERE weapon_category = 'Fishing Rod'",
     )
     .get() as { quality: number | null };
-  const sources = itemSourcesFromModel(model, itemId, bestRod.quality ?? 0);
+  const sources = itemSourcesFromModel(
+    model,
+    itemId,
+    bestRod.quality ?? 0,
+    loadBestPickaxe(db),
+  );
   sources.chestItems = await chestItemSources(db, model, itemId);
   return sources;
 }

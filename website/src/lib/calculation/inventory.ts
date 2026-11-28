@@ -39,11 +39,19 @@ const DURABILITY = {
   unit: "%" as const,
 };
 
-// Source: server-scripts/EquipmentItem.cs:ToolTip; server-scripts/ItemSlot.cs:ToolTip; server-scripts/UICharacterInfo.cs:Update; server-scripts/PlayerNpcTrading.cs:CalculateRepairItemPrice — tooltip gold and rounded durability are visible inputs, and repairs use the exact durability fraction.
+// Source: server-scripts/EquipmentItem.cs:ToolTip; server-scripts/ItemSlot.cs:ToolTip; server-scripts/UICharacterInfo.cs:Update; server-scripts/PlayerNpcTrading.cs:CalculateRepairItemPrice — tooltip gold and rounded durability are visible inputs, and repairs use the exact durability fraction unless the item sets its own gold per missing durability point.
 // Source: server-scripts/ScriptableItem.cs:SellPriceInGold; PlayerNpcTrading.cs:UserCode_CmdRepairItem__Int32__Int64__Boolean — token gear's tooltip multiplies its 1–5 token sell value by the token's gold value, but repairs use the token sell value, so they cost 1 or 2 gold.
-export function repairCost(): Calculation {
+export function repairCost(
+  fixedRates: readonly { name: string; rate: number }[] = [],
+): Calculation {
+  const fixed = fixedRates
+    .map(
+      ({ name, rate }) =>
+        ` The ${name} instead costs ${formatNumber(rate)} gold per missing durability point before the discount.`,
+    )
+    .join("");
   return {
-    note: "Read the sell price beside the gold icon and the Durability percentage in the item tooltip. Read Charisma in the character window. This is an estimate because the tooltip rounds durability to a whole percent. Gear bought with tokens always costs 1 or 2 gold to repair.",
+    note: `Read the sell price beside the gold icon and the Durability percentage in the item tooltip. Read Charisma in the character window. This is an estimate because the tooltip rounds durability to a whole percent. Gear bought with tokens always costs 1 or 2 gold to repair.${fixed}`,
     steps: [
       {
         name: "Missing Durability",
