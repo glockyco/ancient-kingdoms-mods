@@ -80,12 +80,12 @@
           You pay the price shown in the house panel when you place the piece.
         </li>
       </ul>
-      <!-- Source: server-scripts/CustomStrucUI.cs:158-171,323-329,364-418 and server-scripts/Player.cs:UserCode_CmdMoveStruc__UInt32__String__Vector3__Quaternion,UserCode_CmdRemoveStruc__UInt32 — movement repositions an owned structure without charging gold; confirmed removal deletes it without a refund. -->
+      <!-- Source: server-scripts/CustomStrucUI.cs:158-171,323-329,364-418 and server-scripts/Player.cs:UserCode_CmdMoveStruc__UInt32__String__Vector3__Quaternion,UserCode_CmdRemoveStruc__UInt32 — movement repositions an owned structure without charging gold; confirmed removal deletes it and refunds its catalog price. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Use Move mode to rearrange your furniture for free.</li>
         <li>
           Remove mode destroys the selected furniture after you confirm. You get
-          no refund.
+          its full price back.
         </li>
       </ul>
       <!-- Source: server-scripts/HousingManager.cs:18-19 and server-scripts/CustomStrucUI.cs:85-96 and server-scripts/CraftingStation.cs:9,19,52-65 and server-scripts/Player.cs:15490-15507,15796-15842 — placed workstation structures retain their station ingredients and learned-recipe checks. -->
@@ -119,7 +119,7 @@
         </li>
         <li>An Alchemy Workbench requires learned potion recipes.</li>
       </ul>
-      <!-- Source: server-scripts/Bookcase.cs:IsInRange,OnInteractServer; UIBooks.cs:ShowLibrary — a placed bookcase opens within 2 yd for the owning account and lists the character's learned books by name, without the learn button. -->
+      <!-- Source: server-scripts/Bookcase.cs:IsInRange,OnInteractServer; UIBooks.cs:ShowLibrary; Database.cs:GetBooksReadByOtherCharacters — a placed bookcase opens within 2 yd for the owning account and lists the learned books of every character on the account by name, without the learn button. -->
       <!-- Source: server-scripts/HousingManager.cs:strucItems — in the running 0.9.35.5 game, the Bookshelf is the only catalog structure whose prefab carries a Bookcase component. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
@@ -127,7 +127,8 @@
             href="/items/bookshelf"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Bookshelf</a
-          > lets you reread every book your character has learned, listed by name.
+          > lets you reread every book any of your characters has learned, listed
+          by name.
         </li>
         <li>
           Only characters on the house owner's account can open it, from within

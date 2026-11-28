@@ -437,10 +437,10 @@
           >
         </p>
         <p>
-          <!-- Source: server-scripts/CustomStrucUI.cs:158-163 and 364-384 — remove mode destroys a selected structure. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:158-163 and 364-384; Player.cs:UserCode_CmdRemoveStruc__UInt32 — remove mode destroys a selected structure and refunds its catalog price. -->
           <!-- Source: server-scripts/CustomStrucUI.cs:188-199 and Player.cs:12485-12518 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
-            >You can destroy an individual chest without receiving gold back.</span
+            >You can destroy an individual chest and get its full price back.</span
           >
           <span class="block"
             >Selling the house removes its <a

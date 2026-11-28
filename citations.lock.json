@@ -1203,6 +1203,9 @@
     "Database.cs:CreateGuild": {
       "span": 0
     },
+    "Database.cs:GetBooksReadByOtherCharacters": {
+      "span": 0
+    },
     "Database.cs:GetGuildManagementText": {
       "span": 0
     },
