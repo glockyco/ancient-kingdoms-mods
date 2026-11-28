@@ -9,6 +9,7 @@
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
   import { repairCost, merchantPrice } from "$lib/calculation/inventory";
+  import { EQUIPMENT_TEMPLATE_COSTS } from "$lib/data/equipment-templates";
   import {
     SOURCE_TYPE_CONFIG,
     type ItemSourceType,
@@ -30,7 +31,6 @@
     cost,
     totalSlots: (index + 1) * 30,
   }));
-  const EQUIPMENT_TEMPLATE_COSTS = [0, 1000, 3000, 5000, 10000];
   const EQUIPMENT_TEMPLATE_ROWS = EQUIPMENT_TEMPLATE_COSTS.map(
     (cost, index) => ({
       template: index + 1,
@@ -771,8 +771,8 @@
           <div
             class="min-w-0 rounded border border-border bg-muted/50 px-2 py-2 text-center"
           >
-            <span class="block truncate text-sm">Template {row.template}</span>
-            <span class="block truncate font-mono text-foreground"
+            <span class="block text-sm">Template {row.template}</span>
+            <span class="block font-mono text-foreground"
               >{row.cost === 0
                 ? "Free"
                 : `${formatNumber(row.cost)} gold`}</span

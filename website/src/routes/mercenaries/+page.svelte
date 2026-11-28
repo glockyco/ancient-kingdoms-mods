@@ -1,5 +1,9 @@
 <script lang="ts">
   import { formatNumber } from "$lib/utils/format";
+  import {
+    EQUIPMENT_TEMPLATE_COSTS,
+    MERCENARY_EQUIPMENT_TEMPLATES,
+  } from "$lib/data/equipment-templates";
   import { statName } from "$lib/stats";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
@@ -31,6 +35,10 @@
   let { data } = $props();
 
   const link = "text-blue-600 hover:underline dark:text-blue-400";
+  const mercenaryTemplateCosts = EQUIPMENT_TEMPLATE_COSTS.slice(
+    0,
+    MERCENARY_EQUIPMENT_TEMPLATES,
+  );
   const rankCalculation = mercenaryRank();
   // The roster section defines the total once for all calculations on this page.
   delete rankCalculation.note;
@@ -720,6 +728,26 @@
       <span class="block"
         >With a two-handed weapon in the main hand, the off-hand cannot hold a
         shield or instrument.</span
+      >
+    </p>
+    <!-- Source: server-scripts/MercenaryEquipment.cs:MaxEquipmentTemplates,UserCode_CmdSelectMercenaryTemplate__Int32__Boolean,ExchangeWithStorage; PlayerEquipment.cs:GetEquipmentTemplateUnlockPrice — a mercenary unlocks up to three templates at the player prices, a new template copies the current gear, and each template's gear stays stored on the mercenary. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block"
+        >Each mercenary can keep up to three
+        <a href="/mechanics/inventory#equipment-templates" class={link}
+          >equipment templates</a
+        >.</span
+      >
+      <span class="block"
+        >The second costs {formatNumber(mercenaryTemplateCosts[1])} gold and the third
+        {formatNumber(mercenaryTemplateCosts[2])} gold.</span
+      >
+      <span class="block"
+        >A new template starts with the mercenary's current gear.</span
+      >
+      <span class="block"
+        >Each template keeps its gear on the mercenary, so switching does not
+        use your bags.</span
       >
     </p>
     <!-- Source: server-scripts/Pet.cs:OnDeath; Combat.cs:828-844. -->

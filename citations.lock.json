@@ -2317,10 +2317,19 @@
     "MercenaryEquipment.cs:CountActiveSetPieces": {
       "span": 0
     },
+    "MercenaryEquipment.cs:ExchangeWithStorage": {
+      "span": 0
+    },
+    "MercenaryEquipment.cs:MaxEquipmentTemplates": {
+      "span": 0
+    },
     "MercenaryEquipment.cs:ModifyEquipmentAttributes": {
       "span": 0
     },
     "MercenaryEquipment.cs:OnEquipmentChanged": {
+      "span": 0
+    },
+    "MercenaryEquipment.cs:UserCode_CmdSelectMercenaryTemplate__Int32__Boolean": {
       "span": 0
     },
     "MercenarySummonSkill.cs:GetPrefab": {
@@ -4323,6 +4332,9 @@
     "PlayerEquipment.cs:874-917": {
       "sha256": "db68bd7827452976aee50dfc5948acf2ff5688f7c8639a0a511380d37398d5d7",
       "span": 44
+    },
+    "PlayerEquipment.cs:GetEquipmentTemplateUnlockPrice": {
+      "span": 0
     },
     "PlayerEquipment.cs:OnEquipmentChanged": {
       "span": 0
