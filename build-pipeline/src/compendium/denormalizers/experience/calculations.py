@@ -6,9 +6,9 @@ and crafting/alchemy recipes based on game formulas from server-scripts.
 Source references:
 - Source: server-scripts/Monster.cs:CalculateRewardExp — CalculateRewardExp (monster EXP)
 - Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — zone discovery EXP
-- Source: server-scripts/GatherItem.cs:630-639 — gathering EXP by tier
-- Source: server-scripts/Player.cs:15784-15790 — crafting EXP by item quality
-- Source: server-scripts/Player.cs:13959-13966 — alchemy EXP by recipe tier
+- Source: server-scripts/GatherItem.cs:649-658 — gathering EXP by tier
+- Source: server-scripts/Player.cs:15827-15833 — crafting EXP by item quality
+- Source: server-scripts/Player.cs:13993-14000 — alchemy EXP by recipe tier
 """
 
 import sqlite3
@@ -102,7 +102,7 @@ def get_discovery_exp(area_name: str, is_dungeon: bool) -> int:
 def get_gathering_exp(level: int) -> int:
     """Get EXP reward for gathering a resource.
 
-    Source: server-scripts/GatherItem.cs:630-639 — gathering EXP by tier.
+    Source: server-scripts/GatherItem.cs:649-658 — gathering EXP by tier.
 
     Args:
         level: Resource level (0-4)
@@ -183,7 +183,7 @@ def run(conn: sqlite3.Connection) -> None:
 
 def run_gathering(conn: sqlite3.Connection) -> None:
     """Derive definition XP from canonical primary outputs before withholding."""
-    # Source: server-scripts/GatherItem.cs:630-645,818-830 — a quest-only primary reward gives no gathering XP. Fishing XP has no such gate.
+    # Source: server-scripts/GatherItem.cs:649-664,837-849 — a quest-only primary reward gives no gathering XP. Fishing XP has no such gate.
     resources = {
         row[0]: row[1:]
         for row in conn.execute("""

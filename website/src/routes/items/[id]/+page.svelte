@@ -1969,7 +1969,7 @@
     </Card.Root>
   {/if}
   {#if data.item.id === "lockpicks"}
-    <!-- Source: server-scripts/GatherItem.cs:368-376,407-428 — Lockpicking skill -->
+    <!-- Source: server-scripts/GatherItem.cs:393-401,432-453 — Lockpicking skill -->
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title level={2}>Lockpicking</Card.Title>
@@ -2183,7 +2183,7 @@
         {/if}
         {#if isPet}
           <div class="space-y-2 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:4598-4628 — using the item summons the pet, or dismisses the one it already summoned. -->
+            <!-- Source: server-scripts/Player.cs:4602-4632 — using the item summons the pet, or dismisses the one it already summoned. -->
             <p>
               Use the whistle to summon the pet. Using it again dismisses that
               pet. Three pets can follow you at once.

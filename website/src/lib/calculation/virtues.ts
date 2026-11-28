@@ -136,7 +136,7 @@ export function valorQuarryLevels(playerLevel: number): [number, number] {
   return [playerLevel - 10, playerLevel + 5];
 }
 
-// Source: server-scripts/Player.cs:10840 — a named boss gives 150 Valor points and a named elite 75.
+// Source: server-scripts/Player.cs:10867 — a named boss gives 150 Valor points and a named elite 75.
 export function valorPoints(isBoss: boolean): number {
   return isBoss ? 150 : 75;
 }

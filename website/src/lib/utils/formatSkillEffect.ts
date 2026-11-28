@@ -777,7 +777,7 @@ function formatBuffDebuffStats(
   };
 
   // 1. Special flags (binary game-changers that define the skill's identity)
-  // Source: server-scripts/Skills.cs:hasDoubleExp; Monster.cs:OnDeath; GatherItem.cs:640,826; Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftItem__NetworkIdentity__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String — double XP covers kills, gathering, fishing, crafting, cooking, alchemy, scribing and augmentation, but not quest rewards.
+  // Source: server-scripts/Skills.cs:hasDoubleExp; Monster.cs:OnDeath; GatherItem.cs:659,845; Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftItem__NetworkIdentity__Int32,UserCode_CmdCraftAugment__NetworkIdentity__String__String — double XP covers kills, gathering, fishing, crafting, cooking, alchemy, scribing and augmentation, but not quest rewards.
   if (skill.is_double_exp_spell) {
     parts.push(
       "2× XP from kills, gathering, fishing, crafting, cooking, alchemy, scribing & augmentation",
@@ -802,7 +802,7 @@ function formatBuffDebuffStats(
   }
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
   // Source: server-scripts/BuffSkill.cs:illusionRace,90-100 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:7391-7401 (ReSkinPlayer picks the illusion race)
+  // server-scripts/Player.cs:7419-7429 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
   // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Player.cs:2084-2087,2100 — undeadIlussion redraws a player as undead.
@@ -1066,7 +1066,7 @@ function formatBuffDebuffStats(
 const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Combat.cs:DealDamageAt — learned Improved Backstab raises the from-behind bonus from 10% to 25% of the damage.
   improved_backstab: "from-behind bonus dmg 25% instead of 10%",
-  // Source: server-scripts/TargetBuffSkill.cs:Apply; Player.cs:UserCode_CmdBindPlayer,3940-3949; TravelItem.cs:25-30 — binding sets the respawn point that Gate Scroll also returns to, except that a Chambers of Chaos respawn returns to the run's entrance.
+  // Source: server-scripts/TargetBuffSkill.cs:Apply; Player.cs:UserCode_CmdBindPlayer,3944-3953; TravelItem.cs:25-30 — binding sets the respawn point that Gate Scroll also returns to, except that a Chambers of Chaos respawn returns to the run's entrance.
   bind_affinity:
     "set bind point (respawn & Gate Scroll destination, except Chambers of Chaos respawns)",
   binding:
@@ -1088,7 +1088,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   alchemy: "craft potions and elixirs",
   baking: "craft food and consumables",
   crafting: "craft equipment and items",
-  // Source: server-scripts/TableUI.cs:96-97; Player.cs:3630-3633 — the scribing table cast.
+  // Source: server-scripts/TableUI.cs:96-97; Player.cs:3634-3637 — the scribing table cast.
   crafting_scroll: "scribe scrolls",
   digging: "dig for buried treasure",
   // Source: server-scripts/Player.cs:CmdFishing — the fishing cast.
@@ -1098,7 +1098,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   mining: "mine ore and minerals",
   // Source: server-scripts/GatherItem.cs:TryGatherItem; Player.cs:CmdOpenChest — every chest opens with this cast.
   opening: "open chests",
-  // Source: server-scripts/GatherItem.cs:368-376,407-428 — Lockpicking allows opening locked chests
+  // Source: server-scripts/GatherItem.cs:393-401,432-453 — Lockpicking allows opening locked chests
   // using lockpicks instead of the specific key. 80% failure chance, consumes one lockpick per attempt.
   lockpicking:
     "open locked chests with lockpicks, 1 per try (20% success chance)",
@@ -1109,7 +1109,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-199,204-217;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:9612-9629 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:9639-9656 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — while active, a Rogue's
   // followupDefaultAttack skill, Stab, switches to Poison damage and adds the rounded 250% Dexterity
@@ -1130,7 +1130,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // stats are in the DB but the gap-closer behavior is hardcoded.
   charge:
     "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
-  // Source: server-scripts/PlayerInventory.cs:2557-2571; Player.cs:3638-3645 — the cast before a travel item takes effect, refused in combat.
+  // Source: server-scripts/PlayerInventory.cs:2557-2571; Player.cs:3642-3649 — the cast before a travel item takes effect, refused in combat.
   teleport: "use travel items (out of combat)",
   // Source: server-scripts/Combat.cs:137 — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
   razor_of_wrath:

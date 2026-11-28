@@ -49,7 +49,7 @@
     return "text-red-500";
   }
 
-  // Source: server-scripts/GatherItem.cs:567-576 — capped skill uses the shared quadratic gain rule.
+  // Source: server-scripts/GatherItem.cs:586-595 — capped skill uses the shared quadratic gain rule.
   function getSkillGainChance(): number {
     return (
       skillGainChance(PROFESSION_MECHANICS.herbalism.skillGain, skillLevel) *
@@ -61,7 +61,7 @@
   const successFloorPercent =
     PROFESSION_MECHANICS.herbalism.success.floor * 100;
 
-  // Source: server-scripts/GatherItem.cs:567-576 — no gain at the cap, otherwise 1-3 divided by success and 1000.
+  // Source: server-scripts/GatherItem.cs:586-595 — no gain at the cap, otherwise 1-3 divided by success and 1000.
   function getSkillGainAmount(successChance: number): [number, number] {
     if (successChance < successFloorPercent || skillLevel >= 100) return [0, 0];
     const successFraction = successChance / 100;
@@ -133,14 +133,14 @@
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
     <h2 class="text-xl font-semibold">How Gathering Plants Works</h2>
-    <!-- Source: server-scripts/GatherItem.cs:211-253,327-350 — a growing plant is not ready and a low-skill attempt is refused. -->
+    <!-- Source: server-scripts/GatherItem.cs:214-256,352-375 — a growing plant is not ready and a low-skill attempt is refused. -->
     <p class="text-muted-foreground">
       <span class="block">A growing plant cannot be gathered.</span>
       <span class="block"
         >You need at least a 10% success chance to harvest a plant.</span
       >
     </p>
-    <!-- Source: server-scripts/GatherItem.cs:379-400 — an allowed harvest starts regrowth before the success roll. -->
+    <!-- Source: server-scripts/GatherItem.cs:404-425 — an allowed harvest starts regrowth before the success roll. -->
     <p class="text-muted-foreground">
       A ready plant starts regrowing when you attempt to harvest it with enough
       inventory space and at least a 10% success chance, even if you gather

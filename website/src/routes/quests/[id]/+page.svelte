@@ -170,7 +170,7 @@
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Utils.cs:601-613 — Adventurer offers require the recommended level and total veteran points. -->
+      <!-- Source: server-scripts/Utils.cs:602-614 — Adventurer offers require the recommended level and total veteran points. -->
       {#if data.quest.is_adventurer_quest}
         <span>
           Offered from level {data.quest.level_recommended}{data.quest

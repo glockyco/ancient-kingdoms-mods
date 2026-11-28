@@ -78,7 +78,7 @@
           >Hardcore starts unchecked for each new character.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:4527-4534,11826-11829 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
+      <!-- Source: server-scripts/Player.cs:4531-4538,11855-11858 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>
         <span class="block"
           >Hardcore death deletes that character instead of allowing a normal
@@ -135,7 +135,7 @@
           > for their timing rules.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMap.cs:206-220,491-499 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
+      <!-- Source: server-scripts/UIMap.cs:204-218,488-496 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
       <p>
         <span class="block"
           ><a
@@ -171,7 +171,7 @@
           >Your notes appear on that zone's local map, not the world map.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMapNotesController.cs:133-145 and server-scripts/UIMap.cs:206-220 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:133-145 and server-scripts/UIMap.cs:204-218 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
       <p>Temple of Valaark has no map notes.</p>
     </Card.Content>
   </Card.Root>
@@ -242,7 +242,7 @@
           Travel scrolls work in every other dungeon.</span
         >
       </p>
-      <!-- Source: server-scripts/NpcTeleport.cs:30-49 and server-scripts/Player.cs:16188-16200 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
+      <!-- Source: server-scripts/NpcTeleport.cs:30-49 and server-scripts/Player.cs:16231-16243 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
       <p>
         <span class="block"
           >A <a
@@ -320,7 +320,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Player.cs:5966-5981,3961-3963, server-scripts/Skills.cs:1510-1530, and server-scripts/MountItem.cs:29-41 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
+      <!-- Source: server-scripts/Player.cs:5994-6009,3965-3967, server-scripts/Skills.cs:1510-1530, and server-scripts/MountItem.cs:29-41 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
           >Passing through a portal ends invisibility, including Resurrection

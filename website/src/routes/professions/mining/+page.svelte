@@ -71,7 +71,7 @@
       label: `${ROMAN[ore.tier]} ${ore.name}`,
       chanceAt: (skillPercent: number) =>
         rawMiningSuccessChance(ore.tier, pickaxeQuality, skillPercent),
-      // Source: server-scripts/GatherItem.cs:588-596 — no tier grants skill at the cap.
+      // Source: server-scripts/GatherItem.cs:607-615 — no tier grants skill at the cap.
       isEffortlessAt: (skillPercent: number) =>
         skillPercent >= 100 || isMiningEffortless(ore.tier, skillPercent),
     })),
@@ -134,7 +134,7 @@
               >pickaxe</a
             > can improve it. A broken pickaxe does not work.
           </p>
-          <!-- Source: server-scripts/Player.cs:12002-12007; server-scripts/PlayerInventory.cs:556-570 — invalid selection falls back to the highest-quality working inventory pickaxe. -->
+          <!-- Source: server-scripts/Player.cs:12031-12036; server-scripts/PlayerInventory.cs:556-570 — invalid selection falls back to the highest-quality working inventory pickaxe. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             If no usable pickaxe is selected, the game selects the best one in
             your inventory.
@@ -160,7 +160,7 @@
         <span class="text-sm tabular-nums text-muted-foreground">3</span>
         <div>
           <p class="font-medium">Collect the ore.</p>
-          <!-- Source: server-scripts/GatherItem.cs:383-405,444-455,547-563 — success depletes the node and can give ore and a separate random drop. -->
+          <!-- Source: server-scripts/GatherItem.cs:408-430,469-480,572-579 — success depletes the node and can give ore and a separate random drop. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             A successful mine gives ore and a separate chance at a <a
               href="#gems"
@@ -316,7 +316,7 @@
         The dashed lines show what you cannot mine.
       </p>
 
-      <!-- Source: server-scripts/GatherItem.cs:588-597 — successful mines can increase skill below the cap; gain chance is 0.95 − 0.6 × miningLevel², and the amount is Random.Range(1, 4) divided by success chance × 1000. -->
+      <!-- Source: server-scripts/GatherItem.cs:607-616 — successful mines can increase skill below the cap; gain chance is 0.95 − 0.6 × miningLevel², and the amount is Random.Range(1, 4) divided by success chance × 1000. -->
       <p class="text-pretty text-sm text-muted-foreground">
         Mining is a value from 0% to 100% and has no experience bar. When mining
         can increase skill, the chance is {miningSkillGainChancePercent(

@@ -83,7 +83,7 @@ export function formatClassName(classId: string): string {
 
 /**
  * Resource type mapping (database ID -> display name)
- * Source: server-scripts/EquipmentItem.cs:747-755, UICharacterInfo.cs:307-315 — energy is displayed as "Rage".
+ * Source: server-scripts/EquipmentItem.cs:751-759, UICharacterInfo.cs:307-315 — energy is displayed as "Rage".
  * Source: server-scripts/Player.cs:1766-1780 — Bard uses an "Active Songs" counter.
  */
 const RESOURCE_DISPLAY_NAMES: Record<string, string> = {

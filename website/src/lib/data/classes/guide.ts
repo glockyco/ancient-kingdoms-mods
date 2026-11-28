@@ -12,7 +12,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-156 — shield slot and two-handed restriction",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:119-137,146-160 — shield slot and two-handed restriction",
     },
     rules: [
       {
@@ -38,7 +38,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-156 — shield slot and two-handed restriction",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:119-137,146-160 — shield slot and two-handed restriction",
     },
     rules: [
       {
@@ -66,13 +66,13 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-156 — shield slot and two-handed restriction",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:119-137,146-160 — shield slot and two-handed restriction",
     },
     rules: [
       {
         text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:849-853,1098-1101; server-scripts/Player.cs:5975-5981 — dungeon casting restriction and buff removal",
+          "Source: server-scripts/PlayerSkills.cs:849-853,1098-1101; server-scripts/Player.cs:6003-6009 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
@@ -144,7 +144,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-156 — shield slot and two-handed restriction",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:119-137,146-160 — shield slot and two-handed restriction",
     },
     rules: [
       {
@@ -175,7 +175,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds your instrument. Songs need it, so you cannot use a two-handed weapon.",
       source:
-        "Source: server-scripts/ScriptableSkill.cs:130-138; server-scripts/EquipmentItem.cs:115-133,142-156 — instrument casting and two-handed restriction",
+        "Source: server-scripts/ScriptableSkill.cs:130-138; server-scripts/EquipmentItem.cs:119-137,146-160 — instrument casting and two-handed restriction",
     },
     rules: [
       {
@@ -208,7 +208,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-164 — Shield slot; two-handed restrictions and requiredClass check",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:119-137,146-168 — Shield slot; two-handed restrictions and requiredClass check",
     },
     rules: [
       {

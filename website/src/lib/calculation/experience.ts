@@ -197,7 +197,7 @@ export function killExperience(): Calculation {
   };
 }
 
-// Source: server-scripts/Experience.cs:588-597; server-scripts/Player.cs:4522-4523 — round 10% of the bar requirement, then cap by current XP.
+// Source: server-scripts/Experience.cs:588-597; server-scripts/Player.cs:4526-4527 — round 10% of the bar requirement, then cap by current XP.
 export function deathExperience(): Calculation {
   return {
     steps: [

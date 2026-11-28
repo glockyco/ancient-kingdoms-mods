@@ -713,7 +713,7 @@
           {/if}
         </dl>
         {#if shortensCast || timingModels.has("player_auto") || hasteCooldownCasters}
-          <!-- Source: server-scripts/Skills.cs:947-956,1164-1196; Player.cs:3765-3802 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
+          <!-- Source: server-scripts/Skills.cs:947-956,1164-1196; Player.cs:3769-3806 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
           <div class="mt-3 space-y-1 text-sm text-muted-foreground">
             {#if shortensCast && skill.cast_time}
               <!-- Source: server-scripts/Pet.cs:TryStartAttackIfInRange; server-scripts/BardMercenarySkills.cs:StartSongCast; Combat.cs:spellHaste — mercenary casts use the mercenary's own spell haste, bounded to −50%–50%. -->

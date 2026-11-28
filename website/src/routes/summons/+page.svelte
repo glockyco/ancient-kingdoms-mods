@@ -398,7 +398,7 @@
           >
         </div>
         <dl class="divide-y">
-          <!-- Source: server-scripts/Player.cs:4597-4629 — up to three followers, keyed by whistle item, outside the summon slot. -->
+          <!-- Source: server-scripts/Player.cs:4601-4633 — up to three followers, keyed by whistle item, outside the summon slot. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Slot</dt>
             <dd class="text-right">Own pet slots</dd>
@@ -424,7 +424,7 @@
           <li>Use the whistle again to dismiss the pet.</li>
           <!-- Source: server-scripts/PetFriendly.cs:380-387,434-455 — a follower without its inventory whistle is removed. -->
           <li>The pet leaves if its whistle is not in your inventory.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:689-703; server-scripts/Player.cs:15411-15415 — petting grants 1–4 faction standing every 30 seconds per animal. -->
+          <!-- Source: server-scripts/PetFriendly.cs:689-703; server-scripts/Player.cs:15454-15458 — petting grants 1–4 faction standing every 30 seconds per animal. -->
           <li>
             <a
               href="/mechanics/reputation#pets"

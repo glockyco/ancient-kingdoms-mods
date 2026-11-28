@@ -483,7 +483,7 @@ export function computeMechanicsSpec(
   // ---------- timing ----------
   // Populated for follow-up attacks and non-spell combat-pet skill 0.
   // Source: server-scripts/Skills.cs:1164-1182; Combat.cs:340-346 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
-  // Source: server-scripts/Player.cs:3765-3802 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
+  // Source: server-scripts/Player.cs:3769-3806 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ caster: Caster; model: TimingModel }> = [];
 

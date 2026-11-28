@@ -51,9 +51,9 @@
           hyphens, or underscores.</span
         >
       </p>
-      <!-- Source: server-scripts/GuildSystem.cs:17; Database.cs:1088-1105 — at most 10 member characters, counted from guild_members rows. -->
+      <!-- Source: server-scripts/GuildSystem.cs:17; Database.cs:1090-1107 — at most 10 member characters, counted from guild_members rows. -->
       <p>A guild holds up to 10 member characters, not 10 accounts.</p>
-      <!-- Source: server-scripts/Database.cs:1075-1086,1121-1133,1335-1377 and server-scripts/UIGuildManagement.cs:168-185,246-267 — membership is per character, leader permissions apply to guild members on the leader's account, and a guildless character on that account can join through Join if there is space. -->
+      <!-- Source: server-scripts/Database.cs:1077-1088,1123-1135,1337-1379 and server-scripts/UIGuildManagement.cs:168-185,246-267 — membership is per character, leader permissions apply to guild members on the leader's account, and a guildless character on that account can join through Join if there is space. -->
       <p>
         <span class="block"
           >Every guild member on the leader's account has leader permissions.</span
@@ -62,7 +62,7 @@
           >Another character on that account can join the guild if it has room.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:13881-13916 and server-scripts/Database.cs:1245-1288 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
+      <!-- Source: server-scripts/Player.cs:13915-13950 and server-scripts/Database.cs:1247-1290 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
       <p>
         <span class="block"
           >The leader can invite an online guildless character by name at the
@@ -70,7 +70,7 @@
         >
         <span class="block">A full guild cannot invite another member.</span>
       </p>
-      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:13848-13866,13904-13915 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
+      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:13882-13900,13938-13949 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
       <p>
         <span class="block">An invitation expires after 5 minutes.</span>
         <span class="block"
@@ -78,7 +78,7 @@
           account for 3 hours, or until the server restarts.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:13932-13947 and server-scripts/Database.cs:1380-1413,1720-1734 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
+      <!-- Source: server-scripts/Player.cs:13966-13981 and server-scripts/Database.cs:1382-1415,1722-1736 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
       <p>
         <span class="block"
           >Leaving at the registrar removes only that character and clears its
@@ -146,7 +146,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/GuildSystem.cs:267-278,400-430 and server-scripts/Database.cs:1159-1187,1301-1319,1380-1402 — points are credited to character save, displayed by member, start at zero on join, clear on leave and synchronize for online guildmates. -->
+      <!-- Source: server-scripts/GuildSystem.cs:267-278,400-430 and server-scripts/Database.cs:1161-1189,1303-1321,1382-1404 — points are credited to character save, displayed by member, start at zero on join, clear on leave and synchronize for online guildmates. -->
       <p>
         <span class="block"
           >Points belong to the credited character, not guildmates or your other

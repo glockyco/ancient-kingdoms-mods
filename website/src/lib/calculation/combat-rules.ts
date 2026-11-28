@@ -447,7 +447,7 @@ export const threatCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/BuffSkill.cs:559-581; TargetBuffSkill.cs:341-355 — a debuff whose probIgnoreCleanse is 1 (100% Cleanse Resist) is skipped, so no layers are removed.
+// Source: server-scripts/BuffSkill.cs:GetCleanseCountersRemoved; TargetBuffSkill.cs:341-355 — a debuff whose probIgnoreCleanse is 1 (100% Cleanse Resist) is skipped, so no layers are removed.
 export function extraCleanseChance(resist: number, accuracy: number) {
   return clamp(multiplyF32(addF32(1, -resist), addF32(1, accuracy)), 0, 1);
 }

@@ -602,7 +602,7 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
   };
 }
 
-// Source: server-scripts/Player.cs:3761-3802; Combat.cs:336-360; Skills.cs:947-956 — float32 cast and recovery durations are added on separate double deadlines, without narrowing their total to float32.
+// Source: server-scripts/Player.cs:3765-3806; Combat.cs:336-360; Skills.cs:947-956 — float32 cast and recovery durations are added on separate double deadlines, without narrowing their total to float32.
 export function attackInterval(castTime: number, delay: number, haste: number) {
   const effective = clamp(f32(haste), f32(-0.8), f32(0.8));
   const rawWait = divideF32(addF32(delay, -multiplyF32(delay, effective)), 25);

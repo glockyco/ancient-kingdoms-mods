@@ -295,7 +295,7 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:413 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:15583-15608 and 15618-15646 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:15626-15651 and 15661-15689 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -406,7 +406,7 @@
         <h3 class="font-semibold text-foreground">Buying and Placing Chests</h3>
         <p>
           <!-- Source: server-scripts/Housing.cs:36-41 — owned house trigger shows the H-key house panel prompt. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:195-207 — H opens the structure panel only inside an owned house buildable zone. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:213-225 — H opens the structure panel only inside an owned house buildable zone. -->
           While inside a house you own, press
           <kbd
             class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -414,15 +414,15 @@
           > to open the house panel.
         </p>
         <p>
-          <!-- Source: server-scripts/CustomStrucUI.cs:67-78 — panel lists structure items and prices from HousingManager.strucItems. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:85-96 — panel lists structure items and prices from HousingManager.strucItems. -->
           <!-- Source: server-scripts/StrucItemUi.cs:29-38 — selecting a chest checks gold, shows the shared-storage warning, and enters placement mode. -->
           Choose a chest from that panel, confirm the purchase warning, then place
           it inside the buildable house area.
         </p>
         <p>
           <span class="block"
-            ><!-- Source: server-scripts/CustomStrucUI.cs:289-312 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:148-154, 415-434 and Player.cs:15334-15346 — move mode hides the structure, then repositions the same one without charging gold. -->
+            ><!-- Source: server-scripts/CustomStrucUI.cs:307-330 — left click or F places the selected structure, or drops a moved one at the new spot. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:166-172, 439-458 and Player.cs:15376-15388 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -437,8 +437,8 @@
           >
         </p>
         <p>
-          <!-- Source: server-scripts/CustomStrucUI.cs:140-145 and 346-364 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:170-181 and Player.cs:12456-12489 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:158-163 and 364-384 — remove mode destroys a selected structure. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:188-199 and Player.cs:12485-12518 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >
@@ -511,7 +511,7 @@
           </p>
         {/if}
       </div>
-      <!-- Source: server-scripts/Housing.cs:OnTriggerEnter2D; Player.cs:UserCode_CmdSpawnStruc__Int32__String__Vector3__Quaternion__Boolean — house purchase applies Charisma; placed structures charge their catalog price. -->
+      <!-- Source: server-scripts/Housing.cs:OnTriggerEnter2D; Player.cs:UserCode_CmdSpawnStruc__Int32__String__Vector3__Quaternion — house purchase applies Charisma; placed structures charge their catalog price. -->
       <p class="text-sm text-muted-foreground">
         House prices are before the Charisma discount of up to 25% (<a
           href="#merchants"
@@ -617,7 +617,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:276-344 — trading requires an idle player near a merchant; purchases check token or gold cost and storage for the full delivered quantity, including pack contents. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:277-345 — trading requires an idle player near a merchant; purchases check token or gold cost and storage for the full delivered quantity, including pack contents. -->
       <p>
         <span class="block"
           >Buying requires an idle character within 2.4 yd of a merchant.</span
@@ -629,7 +629,7 @@
           >Buying a pack puts its contents directly in inventory.</span
         >
       </p>
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:368-436,53-61 — only sellable items are accepted; damaged equipment loses sale value; Charisma adds at most 25% to the sale price. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:369-437,57-65 — only sellable items are accepted; damaged equipment loses sale value; Charisma adds at most 25% to the sale price. -->
       <p>Damaged equipment sells for less.</p>
       <!-- Source: server-scripts/UINpcTrading.cs:CalculatePurchaseItemPrice; website/src/routes/items/[id]/+page.svelte — item pages expose Buy Price; the merchant displays the discounted result. -->
       <p>
@@ -640,7 +640,7 @@
       </p>
       <Calculation calculation={merchantPrice(false)} />
       <Calculation calculation={merchantPrice(true)} />
-      <!-- Source: server-scripts/UINpcTrading.cs:156-163 and server-scripts/PlayerNpcTrading.cs:495-515 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
+      <!-- Source: server-scripts/UINpcTrading.cs:156-163 and server-scripts/PlayerNpcTrading.cs:496-516 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
       <p>
         <span class="block">Selling augmented gear triggers a warning.</span>
         <span class="block"
@@ -654,7 +654,7 @@
           > needs room in your inventory for the returned augment.</span
         >
       </p>
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:18,413-435,613-644 — sales enter a 20-stack player buyback list for 600 seconds; any trading NPC can sell the full stack back for the recorded payout if it fits. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:18,414-436,614-645 — sales enter a 20-stack player buyback list for 600 seconds; any trading NPC can sell the full stack back for the recorded payout if it fits. -->
       <p>
         <span class="block"
           >You can buy back up to 20 recently sold stacks for 10 minutes.</span
@@ -665,7 +665,7 @@
         <span class="block">The entire stack must fit in inventory.</span>
         <span class="block">New sales push out the oldest entries.</span>
       </p>
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:20-50,531-597 — only repair-enabled merchants repair damaged gear; price uses half the sell value times missing durability fraction, less a capped Charisma discount, at least 1 gold. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:CanRepairAtCurrentNpc,CalculateRepairItemPrice,UserCode_CmdRepairItem__Int32__Int64__Boolean,UserCode_CmdRepairMercenaryItem__String__Int32__Int64 — only repair-enabled merchants repair damaged gear; price uses half the sell value times missing durability fraction, less a capped Charisma discount, at least 1 gold. -->
       <p>
         <span class="block"
           >Only repair merchants restore damaged equipment.</span
@@ -787,7 +787,7 @@
           Switching applies saved choices to all 16 equipment slots.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3171-3173 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
+          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3280-3282 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
           Template 1 starts out holding the gear your character was created with.
         </li>
         <!-- Source: server-scripts/PlayerEquipment.cs:455-482,1657-1672 — active template tracks equipment changes and unlocking copies current gear then activates the new template. -->
@@ -824,7 +824,7 @@
           inventory.
         </li>
         <li>
-          <!-- Source: server-scripts/Database.cs:433-443,727-728,2659-2683 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
+          <!-- Source: server-scripts/Database.cs:444-454,729-730,2673-2697 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
           Templates belong to one character and do not carry across your other characters.
         </li>
       </ul>
@@ -923,7 +923,7 @@
           >.</span
         >
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:50-84, server-scripts/PlayerNpcTrading.cs:29-43,531-559 and server-scripts/Player.cs:4986-4989 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
+      <!-- Source: server-scripts/ScrollItem.cs:50-84, server-scripts/PlayerNpcTrading.cs:29-43,UserCode_CmdRepairItem__Int32__Int64__Boolean and server-scripts/Player.cs:4990-4993 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
         <span class="block">Kits do not repair inventory tools.</span>
         <span class="block"
@@ -958,7 +958,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerEquipment.cs:287-317,1631-1642; Equipment.cs:GetArmorSetResistanceBonus and server-scripts/MercenaryEquipment.cs:148-185 — three matching equipped working pieces give attributes and resistances; five give player skill levels; mercenaries apply only the three-piece bonuses. -->
+      <!-- Source: server-scripts/PlayerEquipment.cs:287-317,1631-1642; Equipment.cs:GetArmorSetResistanceBonus and server-scripts/MercenaryEquipment.cs:AdjustSetThreshold,ApplyActiveArmorSetAttributeBonuses,CountActiveSetPieces — three matching equipped working pieces give attributes and resistances; five give player skill levels; mercenaries apply only the three-piece bonuses. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -982,7 +982,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/PlayerEquipment.cs:1597-1612,1631-1642 and server-scripts/EquipmentItem.cs:529-550,561-576 — set membership is by set name and durability must remain above zero. -->
+      <!-- Source: server-scripts/PlayerEquipment.cs:1597-1612,1631-1642 and server-scripts/EquipmentItem.cs:533-554,565-580 — set membership is by set name and durability must remain above zero. -->
       <p>
         <span class="block">The pieces must belong to the same named set.</span>
         <span class="block"
@@ -990,7 +990,7 @@
           bonuses.</span
         >
       </p>
-      <!-- Source: server-scripts/MercenaryEquipment.cs:148-185,226-241; Equipment.cs:GetArmorSetResistanceBonus and server-scripts/EquipmentItem.cs:562-576 — mercenary set processing has the three-piece threshold but no five-piece skill threshold. -->
+      <!-- Source: server-scripts/MercenaryEquipment.cs:AdjustSetThreshold,ApplyActiveArmorSetAttributeBonuses,CountActiveSetPieces,322-337; Equipment.cs:GetArmorSetResistanceBonus and server-scripts/EquipmentItem.cs:566-580 — mercenary set processing has the three-piece threshold but no five-piece skill threshold. -->
       <p>
         <span class="block"
           >Mercenary armor sets grant only the three-piece attribute and
@@ -1048,7 +1048,7 @@
         run out.
         <!-- Source: server-scripts/PlayerInventory.cs:368-373 — starting a timed scroll cast cancels the current cast and clears pending and follow-up skill state. -->
       </p>
-      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3491-3549 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
+      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3495-3553 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
       <p>
         Moving, losing your target, starting a skill, changing or removing the
         casting item, stun, fear, death, trading, or cancelling the action

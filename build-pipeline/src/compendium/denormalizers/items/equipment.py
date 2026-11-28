@@ -49,7 +49,7 @@ def _denormalize_armor_sets(conn: sqlite3.Connection) -> tuple[int, int]:
     ) in cursor.fetchall():
         # Three working pieces add the set's attributes and resistances, listed in
         # the order the set tooltip shows them.
-        # Source: server-scripts/EquipmentItem.cs:563-573; Equipment.cs:GetArmorSetResistanceBonus
+        # Source: server-scripts/EquipmentItem.cs:567-577; Equipment.cs:GetArmorSetResistanceBonus
         attribute_bonuses = []
         if stats_json:
             try:

@@ -385,12 +385,12 @@
   <section id="how-it-works" class="rounded-lg border p-5">
     <h2 class="text-xl font-semibold">How Fishing Works</h2>
     <!-- Source: server-scripts/Utils.cs:577-586 — Fishing spot success chance per tier. -->
-    <!-- Source: server-scripts/GatherItem.cs:699-707 — < 0.2 spot success hard-blocks fishing. -->
-    <!-- Source: server-scripts/GatherItem.cs:707-729,731-742,744-761,763-779,781-798 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
-    <!-- Source: server-scripts/GatherItem.cs:711-726 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->
-    <!-- Source: server-scripts/GatherItem.cs:800-831 — Fishing mastery gain and XP table. -->
-    <!-- Source: server-scripts/GatherItem.cs:1107-1121 — click-window length per tier and valid response. -->
-    <!-- Source: server-scripts/Player.cs:12030-12044; server-scripts/PlayerInventory.cs:572-586 — a missing or invalid rod selection falls back to the best inventory rod; a cast starts after Random.Range(3, 8) seconds. -->
+    <!-- Source: server-scripts/GatherItem.cs:718-726 — < 0.2 spot success hard-blocks fishing. -->
+    <!-- Source: server-scripts/GatherItem.cs:726-748,750-761,763-780,782-798,800-817 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
+    <!-- Source: server-scripts/GatherItem.cs:730-745 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->
+    <!-- Source: server-scripts/GatherItem.cs:819-850 — Fishing mastery gain and XP table. -->
+    <!-- Source: server-scripts/GatherItem.cs:1126-1140 — click-window length per tier and valid response. -->
+    <!-- Source: server-scripts/Player.cs:12059-12073; server-scripts/PlayerInventory.cs:572-586 — a missing or invalid rod selection falls back to the best inventory rod; a cast starts after Random.Range(3, 8) seconds. -->
 
     <div class="mt-4 divide-y">
       <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
@@ -434,7 +434,7 @@
         <div class="text-sm text-muted-foreground">3</div>
         <div>
           <div>Interact with the spot when the fish bites.</div>
-          <!-- Source: server-scripts/GatherItem.cs:1103-1121 — the second interaction must fall inside the tier's bite window. -->
+          <!-- Source: server-scripts/GatherItem.cs:1122-1140 — the second interaction must fall inside the tier's bite window. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
               After the {formatRange(castDelay.min, castDelay.max)} second cast delay,
@@ -453,7 +453,7 @@
         <div class="text-sm text-muted-foreground">4</div>
         <div>
           <div>Wait for a bite.</div>
-          <!-- Source: server-scripts/GatherItem.cs:699-709 — rod quality, Fishing skill, and spot tier determine a separate success roll. -->
+          <!-- Source: server-scripts/GatherItem.cs:718-728 — rod quality, Fishing skill, and spot tier determine a separate success roll. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Rod quality, Fishing skill, and spot tier decide whether the attempt
             succeeds.
@@ -465,7 +465,7 @@
         <div class="text-sm text-muted-foreground">5</div>
         <div>
           <div>Catch a fish, trash, or nothing.</div>
-          <!-- Source: server-scripts/GatherItem.cs:709-798 — after a bite, the spot's fish gets the first chance. On failure, lower-tier fish, trash, or escape can follow. -->
+          <!-- Source: server-scripts/GatherItem.cs:728-817 — after a bite, the spot's fish gets the first chance. On failure, lower-tier fish, trash, or escape can follow. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
               When a fish bites, the game first tries to catch one of the fish

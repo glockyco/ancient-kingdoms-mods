@@ -336,7 +336,7 @@
         <div>
           <div>Summon it into your party.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/UIMercenaries.cs:506-508,584, Player.cs:12605-12610,12793-12812 -->
+            <!-- Source: server-scripts/UIMercenaries.cs:506-508,584, Player.cs:12634-12639,12860-12879 -->
             <p>
               <span class="block">
                 You can keep up to {MAX_HIRED} hired mercenaries.
@@ -358,7 +358,7 @@
               A party holds at most {MAX_PARTY} members, including active mercenaries.
               Make room before summoning one.
             </p>
-            <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean,12605-12610 — a hire spawns only while the party and the level limit have room, otherwise it is saved to the roster. -->
+            <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean,12634-12639 — a hire spawns only while the party and the level limit have room, otherwise it is saved to the roster. -->
             <p>
               A new hire joins your party right away when there is room.
               Otherwise it waits in your roster.
@@ -366,7 +366,7 @@
           </div>
         </div>
       </div>
-      <!-- Source: server-scripts/UITarget.cs:477-502; UIEquipmentMercenary.cs:CanDisband; UIMercenaries.cs:CanUseRecruiter,OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:13021-13043 — combat prevents dismissal and every recruiter action, recall rejects dead mercenaries, and deletion checks equipped gear. -->
+      <!-- Source: server-scripts/UITarget.cs:477-502; UIEquipmentMercenary.cs:CanDisband; UIMercenaries.cs:CanUseRecruiter,OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:13055-13077 — combat prevents dismissal and every recruiter action, recall rejects dead mercenaries, and deletion checks equipped gear. -->
       <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
@@ -401,7 +401,7 @@
         <div>
           <div>It levels up with you.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,5167-5192,12852-12867; PetSkills.cs:RefreshSkillLevels; Health.cs:32-56; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:69-78 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
+            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,5171-5196,12917-12932; PetSkills.cs:RefreshSkillLevels; Health.cs:32-56; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:69-78 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
             <p>
               <span class="block">A mercenary always has your level.</span>
               <span class="block">
@@ -437,7 +437,7 @@
             <Alert variant="info">
               <Info />
               <div>
-                <!-- Source: server-scripts/Player.cs:12642-12648,12855-12862 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
+                <!-- Source: server-scripts/Player.cs:12671-12677,12920-12927 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
                 <p class="font-medium">Veteran Attack Power and Spell Power</p>
                 <p>
                   Each of your total veteran points adds 1 to the mercenary's
@@ -601,7 +601,7 @@
                 </span>
               {/if}
             </p>
-            <!-- Source: server-scripts/TargetHealSkill.cs:275-296, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,12929 -->
+            <!-- Source: server-scripts/TargetHealSkill.cs:275-296, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,12962 -->
             <div class="overflow-x-auto">
               <table class="text-sm">
                 <thead>
@@ -679,7 +679,7 @@
         <div class="text-sm text-muted-foreground">7</div>
         <div>
           <div>If you die, your mercenaries leave.</div>
-          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,15259-15263, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,12748-12767 -->
+          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,15296-15300, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,12777-12796 -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
               Living mercenaries return when you respawn or when someone
@@ -708,7 +708,7 @@
 
   <section id="equipment" class="space-y-4 rounded-lg border p-5">
     <h2 class="text-xl font-semibold">Equipping a Mercenary</h2>
-    <!-- Source: server-scripts/UITarget.cs:477-481; EquipmentItem.cs:172-234; MercenaryEquipment.cs:21-86 — the target-panel helmet icon opens equipment, with owner-level, class, slot, and two-handed checks. -->
+    <!-- Source: server-scripts/UITarget.cs:477-481; EquipmentItem.cs:176-238; MercenaryEquipment.cs:38-103 — the target-panel helmet icon opens equipment, with owner-level, class, slot, and two-handed checks. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Open the selected mercenary's equipment with the helmet icon.</span
@@ -727,7 +727,7 @@
       Gear stays equipped when the mercenary dies. Death does not lower its
       durability.
     </p>
-    <!-- Source: server-scripts/MercenaryEquipment.cs:116-187,201-256 — only durable items and augments grant attributes; three active matching pieces give attribute bonuses, with no five-piece skill bonus. -->
+    <!-- Source: server-scripts/MercenaryEquipment.cs:OnEquipmentChanged,AdjustItemAttributes,AdjustSetThreshold,ApplyActiveArmorSetAttributeBonuses,CountActiveSetPieces,ModifyEquipmentAttributes — only durable items and augments grant attributes; three active matching pieces give attribute bonuses, with no five-piece skill bonus. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Equipment and augments increase a mercenary's attributes.</span
@@ -744,7 +744,7 @@
       >
       <span class="block">Broken gear gives no active attribute bonus.</span>
     </p>
-    <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast; UIEquipmentMercenary.cs:189-197; MercenaryEquipment.cs:289-328 — repair kits select an owned mercenary target and helmet visibility changes the appearance. -->
+    <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast; UIEquipmentMercenary.cs:203-211; MercenaryEquipment.cs:385-424 — repair kits select an owned mercenary target and helmet visibility changes the appearance. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >A repair kit restores equipped gear up to the kit's quality.</span
@@ -763,7 +763,7 @@
 
   <section id="auto-consume" class="space-y-4 rounded-lg border p-5">
     <h2 class="text-xl font-semibold">Auto-Consume</h2>
-    <!-- Source: server-scripts/Pet.cs:NeedsOutOfCombatHealing,298-312,2204-2295; UIEquipmentMercenary.cs:200-321; UIMercenaries.cs:786-793 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat; out of combat, an injured mercenary with an active damage-over-time effect still uses its healing potion and bandages. -->
+    <!-- Source: server-scripts/Pet.cs:NeedsOutOfCombatHealing,298-312,2204-2295; UIEquipmentMercenary.cs:214-217,OnConsumeFoodAndPotionsChanged; UIMercenaries.cs:786-793 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat; out of combat, an injured mercenary with an active damage-over-time effect still uses its healing potion and bandages. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Each mercenary has food, utility potion, healing potion, and resource

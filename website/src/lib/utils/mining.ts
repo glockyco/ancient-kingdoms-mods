@@ -69,7 +69,7 @@ export function isMiningEffortless(
   return isEffortlessAtTier(mechanics.effortless, tier, skillPercent);
 }
 
-// Source: server-scripts/GatherItem.cs:591-593 — skill gain chance is
+// Source: server-scripts/GatherItem.cs:610-612 — skill gain chance is
 // Lerp(0.95, 0.35, miningLevel²).
 export function miningSkillGainChancePercent(skillPercent: number): number {
   return skillGainChance(mechanics.skillGain, skillPercent) * 100;
@@ -84,7 +84,7 @@ export function miningSkillGainRange(
   pickaxeQuality: number,
   skillPercent: number,
 ): { min: number; max: number } | null {
-  // Source: server-scripts/GatherItem.cs:588 — Mining cannot increase at the cap.
+  // Source: server-scripts/GatherItem.cs:607 — Mining cannot increase at the cap.
   if (skillPercent >= mechanics.capPercent) return null;
   if (!isMineable(tier, pickaxeQuality, skillPercent)) return null;
   if (isMiningEffortless(tier, skillPercent)) return null;

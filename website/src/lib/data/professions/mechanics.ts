@@ -80,7 +80,7 @@ const STANDARD_EFFORTLESS_THRESHOLDS = [
   { above: 0.75, throughTier: 2 },
 ] as const satisfies readonly EffortlessThreshold[];
 
-// Source: server-scripts/GatherItem.cs:573-575,594-596 — both skills gain at the same rate.
+// Source: server-scripts/GatherItem.cs:592-594,613-615 — both skills gain at the same rate.
 const HERBALISM_MINING_SKILL_GAIN = {
   base: 0.95,
   skillFactor: -0.6,
@@ -123,7 +123,7 @@ export const PROFESSION_MECHANICS = {
   fishing: {
     capPercent: 100,
     payoff: { effect: "catch chance", source: "fishing spots" },
-    // Source: server-scripts/GatherItem.cs:699-706,800-809 — fishing requires a 20% spot chance and grants skill only on successful spots.
+    // Source: server-scripts/GatherItem.cs:718-725,819-828 — fishing requires a 20% spot chance and grants skill only on successful spots.
     success: { floor: 0.2, tiers: GATHERING_SUCCESS_TIERS },
     effortless: STANDARD_EFFORTLESS_THRESHOLDS,
     skillGain: {
@@ -137,9 +137,9 @@ export const PROFESSION_MECHANICS = {
   herbalism: {
     capPercent: 100,
     payoff: { effect: "plant success chance", source: "plants" },
-    // Source: server-scripts/GatherItem.cs:343-350 — a harvest below 10% success is refused
+    // Source: server-scripts/GatherItem.cs:368-375 — a harvest below 10% success is refused
     success: { floor: 0.1, tiers: HERBALISM_SUCCESS_TIERS },
-    // Source: server-scripts/GatherItem.cs:567-575 — high skill excludes low-tier plants.
+    // Source: server-scripts/GatherItem.cs:586-594 — high skill excludes low-tier plants.
     effortless: STANDARD_EFFORTLESS_THRESHOLDS,
     skillGain: HERBALISM_MINING_SKILL_GAIN,
   },
@@ -149,7 +149,7 @@ export const PROFESSION_MECHANICS = {
     // Source: server-scripts/GatherItem.cs:OnInteractServer
     success: { floor: 0.2, tiers: GATHERING_SUCCESS_TIERS },
     effortless: STANDARD_EFFORTLESS_THRESHOLDS,
-    // Source: server-scripts/GatherItem.cs:588-596 — high skill excludes low-tier minerals.
+    // Source: server-scripts/GatherItem.cs:607-615 — high skill excludes low-tier minerals.
     skillGain: HERBALISM_MINING_SKILL_GAIN,
     // Source: server-scripts/Database.cs:CharacterCreate
     startingBonus: { race: "Dwarf", percent: 5 },
@@ -159,7 +159,7 @@ export const PROFESSION_MECHANICS = {
     payoff: { effect: "Radiant Aether chance", source: "Radiant Sparks" },
     // Source: server-scripts/GatherItem.cs:OnInteractServer
     procChance: { base: 0.05, skillFactor: 0.2 },
-    // Source: server-scripts/GatherItem.cs:609-620 — gain succeeds when the random value exceeds 0.1 + skill / 2.
+    // Source: server-scripts/GatherItem.cs:628-639 — gain succeeds when the random value exceeds 0.1 + skill / 2.
     skillGain: { base: 0.9, skillFactor: -0.5, range: [1, 3], divisor: 1000 },
     // Source: server-scripts/Database.cs:CharacterCreate
     startingBonus: { race: "Fire Goblin", percent: 5 },

@@ -9,7 +9,7 @@ import {
 } from "./mining";
 
 describe("mining server rules", () => {
-  // Source: server-scripts/Utils.cs:GetSuccessProbMining and GatherItem.cs:360-365.
+  // Source: server-scripts/Utils.cs:GetSuccessProbMining and GatherItem.cs:385-390.
   it("refuses attempts below 20% but permits one exactly at the floor", () => {
     expect(rawMiningSuccessChance(4, 3, 0)).toBeCloseTo(0.15);
     expect(isMineable(4, 3, 0)).toBe(false);
@@ -20,7 +20,7 @@ describe("mining server rules", () => {
     expect(rawMiningSuccessChance(0, 4, 100)).toBe(1);
   });
 
-  // Source: server-scripts/GatherItem.cs:588-603 — strict thresholds, quadratic chance, inverse success gain.
+  // Source: server-scripts/GatherItem.cs:607-622 — strict thresholds, quadratic chance, inverse success gain.
   it("uses strict effortless thresholds and inverse-success skill gain", () => {
     expect(isMiningEffortless(0, 25)).toBe(false);
     expect(isMiningEffortless(0, 25.01)).toBe(true);

@@ -721,7 +721,7 @@
           20&#8239;000 XP. Resetting refunds only 1 of the 2 points.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:13089-13124; server-scripts/Npc.cs:1848-1866; server-scripts/PlayerSkills.cs:1947-1974 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
+          <!-- Source: server-scripts/Player.cs:13123-13158; server-scripts/Npc.cs:1848-1866; server-scripts/PlayerSkills.cs:1947-1974 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
           {#if data.veteranMaster}
             <a
               href="/npcs/{data.veteranMaster.id}"
@@ -1036,13 +1036,13 @@
           XP that Double XP does not change.
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
-        <!-- Source: server-scripts/GatherItem.cs:640,826 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:15536-15549 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:15544-15549 — double XP applies to scribing -->
+        <!-- Source: server-scripts/GatherItem.cs:659,845 — double XP applies to gathering -->
+        <!-- Source: server-scripts/Player.cs:15579-15592 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:15587-15592 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — Double XP applies to attaching augments. -->
         <!-- Source: server-scripts/PlayerQuests.cs:723-724 — no double XP for quests -->
-        <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:15120-15123 — no double XP for zone discovery -->
+        <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:15157-15160 — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
           <span class="block"
             >Double XP buffs double the XP you earn from kills, gathering,
@@ -1225,15 +1225,15 @@
     <Card.Header>
       <Card.Title>Gathering XP</Card.Title>
       <Card.Description>
-        <!-- Source: server-scripts/GatherItem.cs:630-645,818-830 — qualifying resources and successful catch rolls award XP, other objects do not. -->
+        <!-- Source: server-scripts/GatherItem.cs:649-664,837-849 — qualifying resources and successful catch rolls award XP, other objects do not. -->
         You earn XP each time you gather an herb, mineral, or radiant spark, or make
         a successful catch at a fishing spot. Resources that give only quest items
         give no XP.
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/GatherItem.cs:630-639 — gathering XP by tier for non-quest plants, minerals, and sparks. -->
-      <!-- Source: server-scripts/GatherItem.cs:818-830 — levelItem selects 15 / 150 / 750 / 4000 / 10000 XP. -->
+      <!-- Source: server-scripts/GatherItem.cs:649-658 — gathering XP by tier for non-quest plants, minerals, and sparks. -->
+      <!-- Source: server-scripts/GatherItem.cs:837-849 — levelItem selects 15 / 150 / 750 / 4000 / 10000 XP. -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1264,7 +1264,7 @@
           </tr>
         </tbody>
       </table>
-      <!-- Source: server-scripts/GatherItem.cs:640-642,826-828; server-scripts/RegionalEvents.cs:376-388; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity adds 15% gathering and fishing XP outdoors in its region, after Double XP, rounded down. -->
+      <!-- Source: server-scripts/GatherItem.cs:659-661,845-847; server-scripts/RegionalEvents.cs:376-388; server-scripts/RegionalEventProgress.cs:157-164 — Prosperity adds 15% gathering and fishing XP outdoors in its region, after Double XP, rounded down. -->
       <p class="mt-3 text-sm text-muted-foreground">
         After a regional event,
         <a
@@ -1294,7 +1294,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:15536-15543 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:15579-15586 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1360,8 +1360,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:15784-15790 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:15800-15835 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:15827-15833 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:15843-15878 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1400,7 +1400,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:15784-15790 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:15827-15833 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1492,7 +1492,7 @@
       <Card.Description>
         Experience earned the first time you discover a zone.
       </Card.Description>
-      <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:15120-15123 — no multipliers apply to zone discovery XP -->
+      <!-- Source: server-scripts/ZoneTrigger.cs:192-194; Player.cs:15157-15160 — no multipliers apply to zone discovery XP -->
     </Card.Header>
     <Card.Content class="space-y-4">
       <!-- Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — discovery XP amounts -->

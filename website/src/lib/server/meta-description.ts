@@ -497,7 +497,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs:28-32; Player.cs:5712-5747 — one-time read,
+  // Source: server-scripts/BookItem.cs:28-32; Player.cs:5740-5775 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -673,7 +673,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:14901-14905,13847-13862
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:14935-14939,13881-13896
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -710,7 +710,7 @@ function keyDescription(ctx: ItemMetaContext): string {
   // portals gated by a key check `player.keys` (or any party member's
   // keyring) for the matching name. Source: server-scripts/ScriptableItem.cs:47
   // — items flagged `isKey` belong in the keyring.
-  // Source: server-scripts/PlayerLooting.cs:187-192; ChestItem.cs:51-54; GatherItem.cs:529-532 — these loot paths route keys to the keyring instead of taking an inventory slot.
+  // Source: server-scripts/PlayerLooting.cs:187-192; ChestItem.cs:51-54; GatherItem.cs:554-557 — these loot paths route keys to the keyring instead of taking an inventory slot.
   // Source: server-scripts/GatherInventoryQuest.cs:21,47 — the keyring also
   // counts as inventory for gather-inventory quest gates that name a key.
   const portals = ctx.usages?.portals ?? [];
@@ -1409,7 +1409,7 @@ export function chestDescription(chest: ChestDescriptionInput): string {
     ? ` Opened with ${chest.key_required_name} or Lockpicking.`
     : "";
 
-  // Source: server-scripts/GatherItem.cs:431 uses integer Random.Range.
+  // Source: server-scripts/GatherItem.cs:456 uses integer Random.Range.
   const goldMax =
     chest.gold_max > chest.gold_min ? chest.gold_max - 1 : chest.gold_min;
   const rewards: string[] = [];
@@ -1747,7 +1747,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32 — subtracts upgradeRequiredSkillPoints
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:7981-7991 and ScriptableSkill.cs:433-435
+  // Source: server-scripts/Player.cs:8008-8018 and ScriptableSkill.cs:433-435
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   // Veteran-tree skills with no player classes are mercenary-side veteran
@@ -1800,7 +1800,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:100; Player.cs:12631-12645,UpdateMercStatsByLevel — familiar level follows
+// Source: server-scripts/SummonSkill.cs:100; Player.cs:12660-12674,UpdateMercStatsByLevel — familiar level follows
 // summoning skill rank, companions match the summoner up to Level.max, and
 // mercenaries hire at player level and gain attributes per level.
 
@@ -1856,7 +1856,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return ` Summoned by a class skill. Its level matches yours, up to level ${input.level_max}.`;
     case "Mercenary":
-      // Source: server-scripts/Player.cs:12631-12645; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:12660-12674; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
       return " Hire one from any Mercenary Recruiter. Its level matches yours.";
   }
 }

@@ -265,7 +265,7 @@
       : null;
   }
 
-  // Source: server-scripts/Utils.cs:616-632 — adventurer quest order uses Unity/Mono's seeded System.Random with a Fisher-Yates shuffle.
+  // Source: server-scripts/Utils.cs:617-633 — adventurer quest order uses Unity/Mono's seeded System.Random with a Fisher-Yates shuffle.
   function shuffleWithDotNetRandom<T>(items: T[], seed: number): T[] {
     const shuffled = [...items];
     const random = new DotNetRandom(seed);
