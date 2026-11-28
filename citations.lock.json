@@ -2543,9 +2543,6 @@
     "Monster.cs:CalculateRewardExp": {
       "span": 0
     },
-    "Monster.cs:CanAutoLoot": {
-      "span": 0
-    },
     "Monster.cs:EndBardCharm": {
       "span": 0
     },
@@ -3147,9 +3144,6 @@
       "span": 0
     },
     "Pet.cs:HasFrontalAttackSkill": {
-      "span": 0
-    },
-    "Pet.cs:NeedsOutOfCombatHealing": {
       "span": 0
     },
     "Pet.cs:OnAggro": {
@@ -4111,9 +4105,6 @@
       "sha256": "819bc2588bcae03000adcce1d30e93d9a5f66f447ce38584606f1eaff348637b",
       "span": 20
     },
-    "PlayerBank.cs:UserCode_CmdAutoStack__Int32": {
-      "span": 0
-    },
     "PlayerChat.cs:24-90": {
       "sha256": "d42b94768fe961a39e2132e59da035ff23074b8509acfaa4c87d8118380d1362",
       "span": 67
@@ -4430,9 +4421,6 @@
       "sha256": "8c6bd7fed67a85660f48871c2b13bbd235d502a4ebdd3e0abbfd0e6c4817b88a",
       "span": 7
     },
-    "PlayerInventory.cs:CanStoreItem": {
-      "span": 0
-    },
     "PlayerInventory.cs:DecreaseDurabilityPickaxe": {
       "span": 0
     },
@@ -4440,9 +4428,6 @@
       "span": 0
     },
     "PlayerInventory.cs:GetAugmentUpgradeEquipment": {
-      "span": 0
-    },
-    "PlayerInventory.cs:MoveAsMuchAsPossibleToBank": {
       "span": 0
     },
     "PlayerInventory.cs:OnDragAndClear_InventorySlot": {
@@ -6048,10 +6033,6 @@
       "sha256": "8b194b097de49c5c7169dd4cf372743fc11a4df3d6b4eea37705f5981e37dc82",
       "span": 17
     },
-    "UICharacterEditor.cs:542-544": {
-      "sha256": "c6bdf4adf31ea1886079a276746c137313d2b4a7298a070d1f79cf96c28bd412",
-      "span": 3
-    },
     "UICharacterEditor.cs:RaceAllowsNecromancer": {
       "span": 0
     },
@@ -6278,12 +6259,6 @@
       "sha256": "055fefedfb3ba091676aa38343d2f8e858c05a910096ebefff7bac7f18009c74",
       "span": 8
     },
-    "UILoot.cs:PrepareCorpseClick": {
-      "span": 0
-    },
-    "UILoot.cs:UpdateAutoLoot": {
-      "span": 0
-    },
     "UIMacroCommandInput.cs:OnUpdateSelected": {
       "span": 0
     },
@@ -6354,9 +6329,6 @@
       "span": 0
     },
     "UIMercenaries.cs:CalculatePriceMercenaryLevel": {
-      "span": 0
-    },
-    "UIMercenaries.cs:CanUseRecruiter": {
       "span": 0
     },
     "UIMercenaries.cs:OnDeleteClicked": {

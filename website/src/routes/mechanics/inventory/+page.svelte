@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { virtueHref } from "$lib/virtues/display";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
@@ -330,16 +329,6 @@
           remainder.</span
         >
         <span class="block">Other items stay in your inventory.</span>
-      </p>
-      <!-- Source: server-scripts/PlayerInventory.cs:CanStoreItem,MoveAsMuchAsPossibleToBank; PlayerBank.cs:UserCode_CmdAutoStack__Int32 — lost belongings cannot be stored, and Auto Stack skips them. -->
-      <p class="text-sm text-muted-foreground">
-        Lost belongings from an
-        <a
-          href={virtueHref("honesty")}
-          class="text-blue-600 dark:text-blue-400 hover:underline">Honesty</a
-        >
-        search cannot go into the bank or a house chest, and Auto Stack leaves them
-        in your bags.
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
@@ -675,14 +664,11 @@
           one item at a time.</span
         >
       </p>
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:GetRepairAllContainers,CalculateRepairAllPrice,UserCode_CmdRepairAll__UInt32__Int64 — Repair All covers the player's equipped and inventory slots and active mercenaries' equipped slots, sums the single-item prices, and refuses while in combat. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:GetRepairAllContainers,CalculateRepairAllPrice,UserCode_CmdRepairAll__UInt32__Int64 — Repair All covers the player's equipped and inventory slots and active mercenaries' equipped slots and sums the single-item prices. -->
       <p>
-        <span class="block"
-          >Repair All fixes your equipped and carried gear and your active
-          mercenaries' equipped gear at once, for the total of the single repair
-          prices.</span
-        >
-        <span class="block">It does not work in combat.</span>
+        Repair All fixes your equipped and carried gear and your active
+        mercenaries' equipped gear at once, for the total of the single repair
+        prices.
       </p>
       <Calculation calculation={repairCost(data.repairRates)} />
     </Card.Content>
@@ -701,10 +687,6 @@
         <li>
           <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean — loot pickup states and 2.4-unit reach check. -->Loot
           pickup works within 2.4 yd.
-        </li>
-        <li>
-          <!-- Source: server-scripts/UILoot.cs:PrepareCorpseClick,UpdateAutoLoot; server-scripts/Monster.cs:CanAutoLoot — shift and left click on a corpse loots everything once in reach, only when you alone can loot it and are not in a party. -->Outside
-          a party, shift-clicking a corpse loots everything.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean — gold deposits directly as carried gold and splits among nearby party members. -->Gold
@@ -733,11 +715,6 @@
           >
           count items in your inventory. A Deliver quest takes them when you turn
           it in.
-        </li>
-        <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32__Boolean — a failed inventory add keeps the loot slot and sends "Your inventory is full". -->When
-          your inventory is full, the item stays in the loot window and you see
-          "Your inventory is full".
         </li>
         <li>
           <!-- Source: server-scripts/ChestLoot.cs:323-340 and Npc.cs:UserCode_CmdLootMonster — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
@@ -858,11 +835,11 @@
           > explains what happens to carried items.</span
         >
       </p>
-      <!-- Source: server-scripts/Combat.cs:DealDamageAt; server-scripts/PlayerEquipment.cs:57-58 — after the miss or resistance check, a successful armor-breaking chance selects any of the 16 player equipment slots and removes 1–4 points from unbroken gear, including mercenary gear. -->
+      <!-- Source: server-scripts/Combat.cs:DealDamageAt; server-scripts/PlayerEquipment.cs:57-58 — after the miss or resistance check, a successful armor-breaking chance selects any of the 16 player equipment slots and removes 1–4 points from unbroken gear. -->
       <p>
         On a successful hit, an armor-breaking skill can select one of your 16
         equipment slots at random. If it holds unbroken gear, that item loses 1
-        to 4 durability points. Mercenary gear can lose durability the same way.
+        to 4 durability points.
       </p>
       <!-- Source: server-scripts/Combat.cs:DealDamageAt — each skill's armor-breaking chance determines whether an equipment slot is selected after a successful hit. -->
       <p>

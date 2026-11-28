@@ -68,15 +68,10 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/UICharacterEditor.cs:542-544 and server-scripts/Database.cs:CanCreateHardcoreCharacter — Hardcore starts unchecked and unlocks when a saved character is level 50 or Hardcore. -->
+      <!-- Source: server-scripts/Database.cs:CanCreateHardcoreCharacter — Hardcore unlocks when a saved character is level 50 or Hardcore. -->
       <p>
-        <span class="block"
-          >The Hardcore option unlocks once one of your characters reaches level
-          50, or once you have a Hardcore character.</span
-        >
-        <span class="block"
-          >Hardcore starts unchecked for each new character.</span
-        >
+        The Hardcore option unlocks once one of your characters reaches level
+        50, or once you have a Hardcore character.
       </p>
       <!-- Source: server-scripts/Player.cs:4531-4538,11855-11858 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>

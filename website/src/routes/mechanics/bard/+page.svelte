@@ -243,7 +243,7 @@
         <a
           href="/mechanics/combat#sleep"
           class="text-blue-600 dark:text-blue-400 hover:underline">sleeping</a
-        > ones. A Bard mercenary's Final Cadence works the same way.
+        > ones.
       </p>
     </Card.Content>
   </Card.Root>

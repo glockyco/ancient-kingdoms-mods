@@ -366,15 +366,10 @@
               A party holds at most {MAX_PARTY} members, including active mercenaries.
               Make room before summoning one.
             </p>
-            <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean,12634-12639 — a hire spawns only while the party and the level limit have room, otherwise it is saved to the roster. -->
-            <p>
-              A new hire joins your party right away when there is room.
-              Otherwise it waits in your roster.
-            </p>
           </div>
         </div>
       </div>
-      <!-- Source: server-scripts/UITarget.cs:477-502; UIEquipmentMercenary.cs:CanDisband; UIMercenaries.cs:CanUseRecruiter,OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:13055-13077 — combat prevents dismissal and every recruiter action, recall rejects dead mercenaries, and deletion checks equipped gear. -->
+      <!-- Source: server-scripts/UITarget.cs:477-502; UIEquipmentMercenary.cs:CanDisband; UIMercenaries.cs:OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:13055-13077 — dismissal sends a mercenary to the roster, recall rejects dead mercenaries, and deletion checks equipped gear. -->
       <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
@@ -382,9 +377,6 @@
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block"
               >Dismissing a mercenary sends it back to your roster.</span
-            >
-            <span class="block"
-              >You cannot dismiss a mercenary or use a recruiter in combat.</span
             >
             <span class="block"
               >A dead mercenary must be resurrected before you can summon it
@@ -661,10 +653,7 @@
                 >Resurrecting all requires enough gold for the complete group.</span
               >
             </p>
-            <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:828-844 -->
-            <p>
-              Gear stays on the mercenary at its current durability after death.
-            </p>
+            <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice -->
             <Calculation calculation={mercenaryPrice(true)} />
             <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
             <!-- Source: the export's items.json — scroll_of_resurrection has level_required 30. -->
@@ -791,7 +780,7 @@
 
   <section id="auto-consume" class="space-y-4 rounded-lg border p-5">
     <h2 class="text-xl font-semibold">Auto-Consume</h2>
-    <!-- Source: server-scripts/Pet.cs:NeedsOutOfCombatHealing,298-312,2204-2295; UIEquipmentMercenary.cs:214-217,OnConsumeFoodAndPotionsChanged; UIMercenaries.cs:786-793 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat; out of combat, an injured mercenary with an active damage-over-time effect still uses its healing potion and bandages. -->
+    <!-- Source: server-scripts/Pet.cs:298-312,2204-2295; UIEquipmentMercenary.cs:214-217,OnConsumeFoodAndPotionsChanged; UIMercenaries.cs:786-793 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Each mercenary has food, utility potion, healing potion, and resource
@@ -804,10 +793,6 @@
         >The Auto-Consume toggle is saved separately for each mercenary.</span
       >
       <span class="block">Supplies are used while you are in combat.</span>
-      <span class="block"
-        >Out of combat, a mercenary hurt by a damage-over-time effect still uses
-        its healing potion and bandages.</span
-      >
     </p>
     <!-- Source: server-scripts/Pet.cs:UpdateServer — integer Random.Range checks food and utility potions every 5–9 seconds, Health and resource potions every 1–2 seconds, with 15-second reuse and 90% efficiency gates. -->
     <div class="overflow-x-auto">
@@ -884,10 +869,6 @@
       <span class="block"
         >Healers reserve 35% of maximum Mana rather than spend it on attacks.</span
       >
-    </p>
-    <!-- Source: server-scripts/Pet.cs:OnAggro,UpdateServer_CASTING. -->
-    <p class="text-sm leading-6 text-muted-foreground">
-      Mercenaries skip training dummies when choosing targets automatically.
     </p>
     <!-- Source: server-scripts/Pet.cs:UpdateServer_CASTING,HasFrontalAttackSkill,GetPreferredRangedAreaClearance — Rogues and Bards seek the back of any target; Rangers, Wizards and Necromancers add bosses and elites; ranged classes count a frontal damage skill only within its cast range plus 1, and frontal projectiles always; ranged mercenaries hold a distance outside cast-time area attacks that their range allows. -->
     <div class="overflow-x-auto rounded-lg border">

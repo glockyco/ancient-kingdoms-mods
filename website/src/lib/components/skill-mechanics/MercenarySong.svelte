@@ -20,8 +20,7 @@
       skill.duration_base,
       skill.duration_per_level,
     )}. A recipient loses the effect when it leaves range. When combat starts or
-    ends, the previous set stops renewing and lasts its remaining duration. A
-    song the mercenary is already singing still finishes and takes effect once.
+    ends, the previous set stops renewing and lasts its remaining duration.
   </p>
   <p class="text-muted-foreground">
     <span class="block"
